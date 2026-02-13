@@ -1,0 +1,227 @@
+[
+  {
+    "id": "1",
+    "slug": "ubapp",
+    "title": "UBApp — Universal Box",
+    "description": "Sistema integral de gestión de envíos con búsqueda semántica impulsada por IA, visualización geográfica y generación de documentos.",
+    "fullDescription": "UBApp es el proyecto principal de titulación: una plataforma completa para la gestión de envíos y almacenamiento. Incorpora búsqueda semántica potenciada por IA para localizar envíos de forma inteligente, además de múltiples módulos como rastreo en tiempo real, gestión de inventario, reportes analíticos y panel de administración. Diseñado para escalar y manejar grandes volúmenes de datos con una interfaz intuitiva.",
+    "category": "P1",
+    "tags": ["Python", "Django", "IA", "Búsqueda Semántica", "PostgreSQL"],
+    "images": {
+      "thumbnail": "/images/projects/ubapp/dashboard.png",
+      "gallery": [
+        "/images/projects/ubapp/dashboard.png",
+        "/images/projects/ubapp/búsqueda semántica.png",
+        "/images/projects/ubapp/envío.png",
+        "/images/projects/ubapp/importar envios.png",
+        "/images/projects/ubapp/métricas semánticas.png",
+        "/images/projects/ubapp/productos.png",
+        "/images/projects/ubapp/resultados semántica.png"
+      ]
+    },
+    "links": {
+      "github": "https://github.com/DavidAucancela/UBAppV2"
+    },
+    "featured": true,
+    "date": {
+      "start": "2025-09-01",
+      "end": "2026-01-01"
+    },
+    "techStack": {
+      "frontend": ["Angular", "TypeScript", "Leaflet", "Char.js", "jsPDF", "xlsx"],
+      "backend": ["Python", "Django", "Django REST Framework"],
+      "tools": ["PostgreSQL + pgvector", "OpenAI API", "Docker", "Redis", "Gunicorn", "Nginx"]
+    },
+    "highlights": [
+      "CRUD completo de envíos, productos y tarifas",
+      "Búsqueda tradicional y semántica con embeddings de OpenAI y pgvector",
+      "Carga masiva desde Excel y generación de recibos en PDF",
+      "Control de acceso basado en roles",
+      "Sistema de notificaciones para usuarios",
+      "Panel de rendimiento y actividad del sistema"
+    ]
+  },
+  {
+    "id": "2",
+    "slug": "ideancestral",
+    "title": "Ideancestral",
+    "description": "Sistema de información y catálogo digital de productos artesanales, preservando la identidad cultural y conectando artesanos con compradores.",
+    "fullDescription": "Ideancestral es una plataforma que digitaliza y cataloga productos artesanales, creando un puente entre artesanos locales y compradores interesados en cultura y tradición. El sistema permite explorar productos por categoría, región y técnica artesanal, con fichas detalladas que incluyen la historia y significado cultural de cada pieza. Incluye sistema de búsqueda, filtros avanzados y galería visual.",
+    "category": "P1",
+    "tags": ["Vue.js", "JavaScript", "Catálogo", "Cultura", "SPA"],
+    "images": {
+      "thumbnail": "https://images.unsplash.com/photo-1513519245088-0e12902e35ca?w=800&h=600&fit=crop",
+      "gallery": [
+        "https://images.unsplash.com/photo-1513519245088-0e12902e35ca?w=1200&h=800&fit=crop",
+        "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=1200&h=800&fit=crop"
+      ]
+    },
+    "links": {
+      "github": "https://github.com/DavidAucancela/IDEANCESTRAL"
+    },
+    "featured": true,
+    "date": {
+      "start": "2025-12-01",
+      "end": "2026-02-09"
+    },
+    "techStack": {
+      "frontend": ["Vue.js", "JavaScript", "CSS3"],
+      "backend": ["Node.js"],
+      "tools": ["Git", "Responsive Design"]
+    },
+    "highlights": [
+      "Catálogo digital completo de productos artesanales",
+      "Preservación de identidad cultural y tradiciones",
+      "Búsqueda y filtros avanzados por categoría y región",
+      "Fichas detalladas con historia y significado cultural",
+      "Galería visual inmersiva",
+      "Diseño responsive y accesible"
+    ]
+  },
+  {
+    "id": "3",
+    "slug": "anaos",
+    "title": "AnaOS — Asistente Financiero",
+    "description": "Asistente virtual financiero inteligente para la gestión integral de cooperativas, con análisis predictivo y reportes automatizados.",
+    "fullDescription": "AnaOS es un asistente virtual financiero diseñado para la gestión de cooperativas. Combina inteligencia artificial con herramientas financieras para ofrecer análisis predictivo, generación automática de reportes, gestión de socios y transacciones, y recomendaciones inteligentes. La interfaz conversacional permite a los usuarios interactuar de forma natural con el sistema.",
+    "category": "P1",
+    "tags": ["TypeScript", "IA", "Finanzas", "Asistente Virtual", "NLP"],
+    "images": {
+      "thumbnail": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop",
+      "gallery": [
+        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=800&fit=crop",
+        "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&h=800&fit=crop"
+      ]
+    },
+    "links": {
+      "github": "https://github.com/DavidAucancela/AnaOS"
+    },
+    "featured": true,
+    "date": {
+      "start": "2025-08-01",
+      "end": "2025-11-21"
+    },
+    "techStack": {
+      "frontend": ["TypeScript", "React"],
+      "backend": ["Node.js", "TypeScript"],
+      "tools": ["OpenAI API", "NLP", "PostgreSQL"]
+    },
+    "highlights": [
+      "Asistente conversacional con procesamiento de lenguaje natural",
+      "Análisis predictivo financiero con IA",
+      "Gestión integral de cooperativas y socios",
+      "Reportes automatizados y dashboards interactivos",
+      "Recomendaciones financieras inteligentes",
+      "Interfaz intuitiva y moderna"
+    ]
+  },
+  {
+    "id": "4",
+    "slug": "equity",
+    "title": "Equity — Gestor de Datos",
+    "description": "Gestor de archivos con población automatizada de base de datos mediante JSON, aplicando limpieza y tratamiento de datos.",
+    "fullDescription": "Equity es una herramienta de gestión de datos que automatiza la población de bases de datos a partir de archivos JSON. Implementa pipelines de limpieza, validación y tratamiento de datos, asegurando la integridad y calidad de la información antes de su almacenamiento. Incluye visualización del estado de los datos, logs de procesamiento y manejo de errores robusto.",
+    "category": "P2",
+    "tags": ["Python", "ETL", "JSON", "Base de Datos", "Limpieza de Datos"],
+    "images": {
+      "thumbnail": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop",
+      "gallery": [
+        "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=1200&h=800&fit=crop"
+      ]
+    },
+    "links": {
+      "github": "https://github.com/DavidAucancela/App-de-prueba-Equity"
+    },
+    "featured": false,
+    "date": {
+      "start": "2025-09-01",
+      "end": "2025-11-05"
+    },
+    "techStack": {
+      "frontend": [],
+      "backend": ["Python", "Django"],
+      "tools": ["PostgreSQL", "JSON", "ETL Pipeline"]
+    },
+    "highlights": [
+      "Pipeline automatizado de limpieza de datos",
+      "Población de BD desde archivos JSON",
+      "Validación y tratamiento de datos robusto",
+      "Logs detallados de procesamiento",
+      "Manejo de errores y datos inconsistentes",
+      "Interfaz de monitoreo del proceso ETL"
+    ]
+  },
+  {
+    "id": "5",
+    "slug": "securabank",
+    "title": "SecuraBank",
+    "description": "Sistema de transacciones bancarias seguro con autenticación robusta, cifrado de datos y auditoría de operaciones.",
+    "fullDescription": "SecuraBank es un sistema de transacciones bancarias que prioriza la seguridad en cada capa. Implementa autenticación multi-factor, cifrado de datos en tránsito y reposo, auditoría completa de operaciones, y protección contra ataques comunes (SQL injection, XSS, CSRF). Permite realizar transferencias, consultar saldos y gestionar cuentas de forma segura.",
+    "category": "P2",
+    "tags": ["JavaScript", "Seguridad", "Node.js", "Cifrado", "Autenticación"],
+    "images": {
+      "thumbnail": "https://images.unsplash.com/photo-1563986768609-322da13575f2?w=800&h=600&fit=crop",
+      "gallery": [
+        "https://images.unsplash.com/photo-1563986768609-322da13575f2?w=1200&h=800&fit=crop",
+        "https://images.unsplash.com/photo-1556742400-b5b7c512f3f0?w=1200&h=800&fit=crop"
+      ]
+    },
+    "links": {
+      "github": "https://github.com/DavidAucancela/SecuraBank"
+    },
+    "featured": false,
+    "date": {
+      "start": "2025-01-01",
+      "end": "2025-02-14"
+    },
+    "techStack": {
+      "frontend": ["HTML", "CSS", "JavaScript"],
+      "backend": ["Node.js", "Express"],
+      "tools": ["JWT", "bcrypt", "PostgreSQL", "Helmet.js"]
+    },
+    "highlights": [
+      "Autenticación multi-factor segura",
+      "Cifrado de datos en tránsito y reposo",
+      "Auditoría completa de transacciones",
+      "Protección contra SQL injection, XSS y CSRF",
+      "Sistema de transferencias y consultas de saldo",
+      "Logs de seguridad y alertas"
+    ]
+  },
+  {
+    "id": "6",
+    "slug": "conquito-fundaciones",
+    "title": "Visualizador de Fundaciones — ConQuito",
+    "description": "Aplicación de visualización interactiva de fundaciones para ConQuito, con mapas y datos estadísticos.",
+    "fullDescription": "Aplicación web desarrollada para ConQuito que permite visualizar y explorar información sobre fundaciones de la ciudad. Incluye mapas interactivos, fichas informativas de cada fundación, filtros por tipo y zona geográfica, y estadísticas de impacto social. Herramienta útil para la toma de decisiones y el análisis del ecosistema de organizaciones sociales.",
+    "category": "P2",
+    "tags": ["JavaScript", "Mapas", "Visualización", "ConQuito", "Datos Abiertos"],
+    "images": {
+      "thumbnail": "https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&h=600&fit=crop",
+      "gallery": [
+        "https://images.unsplash.com/photo-1524661135-423995f22d0b?w=1200&h=800&fit=crop"
+      ]
+    },
+    "links": {
+      "github": "https://github.com/DavidAucancela/Proyect_OpenLab"
+    },
+    "featured": false,
+    "date": {
+      "start": "2025-07-01",
+      "end": "2025-10-04"
+    },
+    "techStack": {
+      "frontend": ["HTML", "CSS", "JavaScript"],
+      "backend": [],
+      "tools": ["Leaflet/Mapas", "Datos Abiertos", "Charts.js"]
+    },
+    "highlights": [
+      "Mapas interactivos con ubicación de fundaciones",
+      "Filtros por tipo de fundación y zona geográfica",
+      "Fichas informativas detalladas",
+      "Estadísticas de impacto social",
+      "Datos abiertos y actualizables",
+      "Desarrollado para ConQuito"
+    ]
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "name": "Jonathan Aucancela",
+  "title": "Ingeniero de Software",
+  "bio": "Experiencia desarrollando aplicaciones web completas desde el diseño hasta el despliegue.",
+  "email": "jonathan_jd@outlook.com",
+  "location": "Quito, Ecuador",
+  "social": {
+    "github": "https://github.com/DavidAucancela",
+    "linkedin": "https://www.linkedin.com/in/jonathan-david-aucancela/",
+    "instagram": "https://instagram.com/jonathan__david/"
+  },
+  "experience": {
+    "years": 2,
+    "description": "Experiencia en el mundo de la informática."
+  }
+}

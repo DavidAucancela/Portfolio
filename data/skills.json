@@ -1,0 +1,36 @@
+[
+  { "name": "Node.js", "category": "backend", "level": 3 },
+  { "name": "Django", "category": "backend", "level": 4 },
+  { "name": "NestJS", "category": "backend", "level": 3 },
+  { "name": "FastAPI", "category": "backend", "level": 3 },
+  { "name": "ASP.NET Core", "category": "backend", "level": 3 },
+
+  { "name": "React", "category": "frontend", "level": 4 },
+  { "name": "Vue.js", "category": "frontend", "level": 4 },
+  { "name": "Angular", "category": "frontend", "level": 3 },
+  { "name": "Svelte", "category": "frontend", "level": 3 },
+  { "name": "Next.js", "category": "frontend", "level": 2 },
+
+  { "name": "PostgreSQL", "category": "database", "level": 5 },
+  { "name": "MySQL", "category": "database", "level": 4 },
+  { "name": "Redis", "category": "database", "level": 4 },
+  { "name": "Microsoft SQL Server", "category": "database", "level": 3 },
+
+  { "name": "Docker", "category": "devops", "level": 4 },
+  { "name": "Kubernetes", "category": "devops", "level": 2 },
+  { "name": "Terraform", "category": "devops", "level": 1 },
+  { "name": "Jenkins", "category": "devops", "level": 2 },
+  { "name": "GitHub Actions", "category": "devops", "level": 1 },
+  { "name": "Postman/Swagger", "category": "devops", "level": 4 },
+
+  { "name": "AWS", "category": "cloud", "level": 3 },
+  { "name": "Google Cloud", "category": "cloud", "level": 2 },
+  { "name": "Microsoft Azure", "category": "cloud", "level": 2 },
+  { "name": "Vercel", "category": "cloud", "level": 3 },
+
+  { "name": "n8n", "category": "ai", "level": 2 },
+  { "name": "OpenAI API", "category": "ai", "level": 4 },
+  { "name": "Claude", "category": "ai", "level": 3 },
+  { "name": "Cursor", "category": "ai", "level": 4 },
+  { "name": "TensorFlow", "category": "ai", "level": 3 }
+]

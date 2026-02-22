@@ -1,0 +1,47 @@
+# ── Dependencias ───────────────────────────────────────────────────────────────
+node_modules
+.npm
+
+# ── Build outputs ──────────────────────────────────────────────────────────────
+.next
+out
+dist
+build
+
+# ── Control de versiones ───────────────────────────────────────────────────────
+.git
+.gitignore
+
+# ── Claude / worktrees ─────────────────────────────────────────────────────────
+.claude
+
+# ── Tests (no se necesitan en producción) ─────────────────────────────────────
+__tests__
+e2e
+playwright-report
+test-results
+coverage
+
+# ── Configs de desarrollo ─────────────────────────────────────────────────────
+vitest.config.ts
+vitest.setup.ts
+playwright.config.ts
+
+# ── Variables de entorno ───────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+
+# ── OS / Editor ────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+
+# ── Documentación ─────────────────────────────────────────────────────────────
+README.md
+CLAUDE.md

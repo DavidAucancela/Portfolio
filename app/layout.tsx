@@ -6,6 +6,8 @@ import Footer from '@/components/Footer';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import CommandPalette from '@/components/CommandPalette';
 import ScrollProgress from '@/components/ScrollProgress';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import { getPersonalInfo } from '@/lib/api';
 
 const inter = Inter({
@@ -118,6 +120,9 @@ export default function RootLayout({
           <main className="min-h-screen">{children}</main>
           <Footer />
         </ThemeProvider>
+        {/* Vercel Analytics + Speed Insights — solo activos en producción */}
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

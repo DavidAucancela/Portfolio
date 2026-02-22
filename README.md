@@ -62,7 +62,7 @@ Edita el archivo `data/personal.json` con tu información:
 
 ### Agregar Proyectos
 
-Edita el archivo `data/projects.json` y agrega tus proyectos siguiendo este formato:
+Edita el archivo `data/projects.json` y agrega tus proyectos siguiendo este formato. El campo `demo` en `links` es la URL del sistema desplegado; si no tienes demo, omítelo o déjalo vacío `""`.
 
 ```json
 {
@@ -78,7 +78,7 @@ Edita el archivo `data/projects.json` y agrega tus proyectos siguiendo este form
     "gallery": ["URL1", "URL2"]
   },
   "links": {
-    "demo": "https://demo.com",
+    "demo": "https://tu-sistema-desplegado.com",
     "github": "https://github.com/usuario/proyecto"
   },
   "featured": true,

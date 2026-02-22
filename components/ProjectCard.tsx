@@ -114,14 +114,27 @@ export default function ProjectCard({ project, featured = false, index = 0 }: Pr
             )}
           </div>
 
-          {/* Action link */}
-          <Link
-            href={`/projects/${project.slug}`}
-            className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-primary-dark transition-colors group/link"
-          >
-            Ver detalles
-            <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover/link:translate-x-1" />
-          </Link>
+          {/* Actions */}
+          <div className="flex flex-wrap items-center gap-3">
+            {project.links.demo && (
+              <Link
+                href={project.links.demo}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-white text-sm font-semibold hover:bg-primary-dark transition-colors shadow-sm hover:shadow-md"
+              >
+                <ExternalLink className="h-4 w-4" />
+                Acceder al sistema
+              </Link>
+            )}
+            <Link
+              href={`/projects/${project.slug}`}
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:text-primary-dark transition-colors group/link"
+            >
+              Ver detalles
+              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover/link:translate-x-1" />
+            </Link>
+          </div>
         </div>
       </div>
     </motion.div>

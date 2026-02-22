@@ -6,6 +6,7 @@ import { getProjectBySlug, getAllProjects } from '@/lib/api';
 import Container from '@/components/ui/Container';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
+import ProjectGallery from '@/components/ProjectGallery';
 import { formatDateRange } from '@/lib/utils';
 
 const categoryLabels: Record<string, { label: string; color: string }> = {
@@ -64,7 +65,18 @@ export default function ProjectDetailPage({
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-3">
             {project.title}
           </h1>
-          <p className="text-xl text-gray-500 max-w-3xl leading-relaxed">{project.description}</p>
+          <p className="text-xl text-gray-500 max-w-3xl leading-relaxed mb-6">{project.description}</p>
+          {project.links.demo && (
+            <Link
+              href={project.links.demo}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark transition-colors shadow-lg hover:shadow-xl"
+            >
+              <ExternalLink className="h-5 w-5" />
+              Acceder al sistema
+            </Link>
+          )}
         </div>
 
         {/* Main Image */}
@@ -114,27 +126,10 @@ export default function ProjectDetailPage({
 
             {/* Gallery */}
             {project.images.gallery && project.images.gallery.length > 0 && (
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-5">
-                  Galería
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {project.images.gallery.map((image, index) => (
-                    <div
-                      key={index}
-                      className="relative h-64 w-full rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300"
-                    >
-                      <Image
-                        src={image}
-                        alt={`${project.title} - Imagen ${index + 1}`}
-                        fill
-                        className="object-cover hover:scale-105 transition-transform duration-500"
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <ProjectGallery
+                images={project.images.gallery}
+                title={project.title}
+              />
             )}
           </div>
 
@@ -150,7 +145,7 @@ export default function ProjectDetailPage({
                   <Link href={project.links.demo} target="_blank" rel="noopener noreferrer" className="block">
                     <Button variant="primary" className="w-full">
                       <ExternalLink className="h-4 w-4 mr-2" />
-                      Ver Demo
+                      Acceder al sistema
                     </Button>
                   </Link>
                 )}

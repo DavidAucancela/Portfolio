@@ -6,21 +6,22 @@
     "description": "Sistema integral de gestión de envíos con búsqueda semántica impulsada por IA, visualización geográfica y generación de documentos.",
     "fullDescription": "UBApp es el proyecto principal de titulación: una plataforma completa para la gestión de envíos y almacenamiento. Incorpora búsqueda semántica potenciada por IA para localizar envíos de forma inteligente, además de múltiples módulos como rastreo en tiempo real, gestión de inventario, reportes analíticos y panel de administración. Diseñado para escalar y manejar grandes volúmenes de datos con una interfaz intuitiva.",
     "category": "P1",
-    "tags": ["Python", "Django", "IA", "Búsqueda Semántica", "PostgreSQL"],
+    "tags": ["Python", "Django", "Angular", "IA", "PostgreSQL"],
     "images": {
-      "thumbnail": "/images/projects/ubapp/dashboard.png",
+      "thumbnail": "/images/projects/ubapp/index.png",
       "gallery": [
+        "/images/projects/ubapp/index.png",
+        "/images/projects/ubapp/Login.png",
         "/images/projects/ubapp/dashboard.png",
-        "/images/projects/ubapp/búsqueda semántica.png",
         "/images/projects/ubapp/envío.png",
         "/images/projects/ubapp/importar envios.png",
-        "/images/projects/ubapp/métricas semánticas.png",
-        "/images/projects/ubapp/productos.png",
+        "/images/projects/ubapp/búsqueda semántica.png",
         "/images/projects/ubapp/resultados semántica.png"
       ]
     },
     "links": {
-      "github": "https://github.com/DavidAucancela/UBAppV2"
+      "github": "https://github.com/DavidAucancela/UBAppV2",
+      "demo": ""
     },
     "featured": true,
     "date": {
@@ -48,16 +49,22 @@
     "description": "Sistema de información y catálogo digital de productos artesanales, preservando la identidad cultural y conectando artesanos con compradores.",
     "fullDescription": "Ideancestral es una plataforma que digitaliza y cataloga productos artesanales, creando un puente entre artesanos locales y compradores interesados en cultura y tradición. El sistema permite explorar productos por categoría, región y técnica artesanal, con fichas detalladas que incluyen la historia y significado cultural de cada pieza. Incluye sistema de búsqueda, filtros avanzados y galería visual.",
     "category": "P1",
-    "tags": ["Vue.js", "JavaScript", "Catálogo", "Cultura", "SPA"],
+    "tags": ["Vue.js", "Node.js", "PostgreSQL", "SPA"],
     "images": {
-      "thumbnail": "https://images.unsplash.com/photo-1513519245088-0e12902e35ca?w=800&h=600&fit=crop",
+      "thumbnail": "/images/projects/ideancestral/index.png",
       "gallery": [
-        "https://images.unsplash.com/photo-1513519245088-0e12902e35ca?w=1200&h=800&fit=crop",
-        "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=1200&h=800&fit=crop"
+        "/images/projects/ideancestral/index.png",
+        "/images/projects/ideancestral/categorias-index.png",
+        "/images/projects/ideancestral/categorias-productos.png",
+        "/images/projects/ideancestral/encuéntranos.png",
+        "/images/projects/ideancestral/productos.png",
+        "/images/projects/ideancestral/admin.png"
+
       ]
     },
     "links": {
-      "github": "https://github.com/DavidAucancela/IDEANCESTRAL"
+      "github": "https://github.com/DavidAucancela/IDEANCESTRAL",
+      "demo": "https://ideancestral.onrender.com/"
     },
     "featured": true,
     "date": {
@@ -65,17 +72,17 @@
       "end": "2026-02-09"
     },
     "techStack": {
-      "frontend": ["Vue.js", "JavaScript", "CSS3"],
-      "backend": ["Node.js"],
-      "tools": ["Git", "Responsive Design"]
+      "frontend": ["Vue.js", "Pinia", "Axios", "i18n", "CSS3"],
+      "backend": ["Node.js", "Express", "PostgreSQL", "JWT", "bcrypt"],
+      "tools": ["Git", "Responsive Design", "Render", "Vercel", "Render"]
     },
     "highlights": [
       "Catálogo digital completo de productos artesanales",
-      "Preservación de identidad cultural y tradiciones",
-      "Búsqueda y filtros avanzados por categoría y región",
-      "Fichas detalladas con historia y significado cultural",
-      "Galería visual inmersiva",
-      "Diseño responsive y accesible"
+      "Búsqueda y filtros de productos por categoría",
+      "Detalle completo de productos con galería de imágenes",
+      "Carro de compras con envío de pedidos por WhatsApp",
+      "Internacionalización para español,inglés y portugués",
+      "Modo oscuro y claro para una mejor experiencia de usuario"
     ]
   },
   {
@@ -94,7 +101,8 @@
       ]
     },
     "links": {
-      "github": "https://github.com/DavidAucancela/AnaOS"
+      "github": "https://github.com/DavidAucancela/AnaOS",
+      "demo": ""
     },
     "featured": true,
     "date": {
@@ -130,7 +138,8 @@
       ]
     },
     "links": {
-      "github": "https://github.com/DavidAucancela/App-de-prueba-Equity"
+      "github": "https://github.com/DavidAucancela/App-de-prueba-Equity",
+      "demo": ""
     },
     "featured": false,
     "date": {
@@ -167,7 +176,8 @@
       ]
     },
     "links": {
-      "github": "https://github.com/DavidAucancela/SecuraBank"
+      "github": "https://github.com/DavidAucancela/SecuraBank",
+      "demo": ""
     },
     "featured": false,
     "date": {
@@ -203,7 +213,8 @@
       ]
     },
     "links": {
-      "github": "https://github.com/DavidAucancela/Proyect_OpenLab"
+      "github": "https://github.com/DavidAucancela/Proyect_OpenLab",
+      "demo": ""
     },
     "featured": false,
     "date": {

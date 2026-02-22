@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import CommandPalette from '@/components/CommandPalette';
+import ScrollProgress from '@/components/ScrollProgress';
 import { getPersonalInfo } from '@/lib/api';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -36,6 +38,8 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={inter.className}>
+        <ScrollProgress />
+        <CommandPalette />
         <Navigation />
         <main className="min-h-screen">{children}</main>
         <Footer />

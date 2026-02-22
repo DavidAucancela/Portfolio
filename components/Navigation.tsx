@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Search } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import Container from './ui/Container';
@@ -43,6 +43,21 @@ export default function Navigation() {
               </Link>
             ))}
           </div>
+
+          {/* Command palette trigger */}
+          <button
+            onClick={() =>
+              window.dispatchEvent(new CustomEvent('command-palette:open'))
+            }
+            className="hidden items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm text-gray-500 transition-colors hover:border-primary/40 hover:bg-primary/5 hover:text-primary md:flex"
+            aria-label="Abrir búsqueda"
+          >
+            <Search className="h-3.5 w-3.5" />
+            <span>Buscar…</span>
+            <kbd className="rounded border border-gray-200 bg-white px-1 py-0.5 font-mono text-[10px] leading-none shadow-sm">
+              ⌘K
+            </kbd>
+          </button>
 
           {/* Mobile menu button */}
           <button

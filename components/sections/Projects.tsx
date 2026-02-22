@@ -30,7 +30,11 @@ export default function ProjectsSection({
   const sectionTitle = title || (featured ? 'Proyectos Destacados' : 'Todos los Proyectos');
 
   return (
-    <section id="projects" className="py-24 bg-gradient-to-b from-white via-gray-50/50 to-white">
+    <section
+      id="projects"
+      className="py-24 bg-gradient-to-b from-white dark:from-gray-950 via-gray-50/50 dark:via-gray-900/50 to-white dark:to-gray-950"
+      aria-labelledby="projects-heading"
+    >
       <Container>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -39,14 +43,17 @@ export default function ProjectsSection({
           transition={{ duration: 0.5 }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 bg-primary/5 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-4">
-            <Sparkles className="h-4 w-4" />
+          <div className="inline-flex items-center gap-2 bg-primary/5 dark:bg-primary/10 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-4">
+            <Sparkles className="h-4 w-4" aria-hidden="true" />
             Portafolio
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <h2
+            id="projects-heading"
+            className="font-display text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-50 mb-4"
+          >
             {sectionTitle}
           </h2>
-          <p className="text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
             Proyectos reales que reflejan mi experiencia en desarrollo fullstack,
             desde sistemas de IA hasta plataformas de gestión empresarial.
           </p>
@@ -65,7 +72,10 @@ export default function ProjectsSection({
             <Link href="/projects">
               <Button size="lg" variant="outline" className="group">
                 Ver Todos los Proyectos
-                <ArrowRight className="h-4 w-4 ml-2 transition-transform group-hover:translate-x-1" />
+                <ArrowRight
+                  className="h-4 w-4 ml-2 transition-transform group-hover:translate-x-1"
+                  aria-hidden="true"
+                />
               </Button>
             </Link>
           </motion.div>

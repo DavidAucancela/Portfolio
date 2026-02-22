@@ -8,15 +8,20 @@ export default function Skills() {
   const allSkills = getAllSkills();
 
   return (
-    <section className="py-20 bg-gray-50">
+    <section
+      className="py-20 bg-gray-50 dark:bg-gray-900/50"
+      aria-labelledby="skills-heading"
+    >
       <Container>
         <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <h2
+            id="skills-heading"
+            className="font-display text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-50 mb-4"
+          >
             Stack Tecnológico
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Tecnologías y herramientas que utilizo para crear soluciones
-            innovadoras.
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            Tecnologías y herramientas que utilizo para crear soluciones innovadoras.
           </p>
         </div>
 

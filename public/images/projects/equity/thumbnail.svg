@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#064E3B"/>
+      <stop offset="50%" style="stop-color:#065F46"/>
+      <stop offset="100%" style="stop-color:#047857"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <!-- pipeline nodes -->
+  <circle cx="130" cy="150" r="40" fill="rgba(52,211,153,0.25)" stroke="rgba(52,211,153,0.6)" stroke-width="2"/>
+  <text x="130" y="156" font-family="monospace" font-size="11" fill="rgba(52,211,153,0.9)" text-anchor="middle">JSON</text>
+  <line x1="170" y1="150" x2="250" y2="150" stroke="rgba(52,211,153,0.5)" stroke-width="2" stroke-dasharray="6,3"/>
+  <circle cx="290" cy="150" r="40" fill="rgba(52,211,153,0.2)" stroke="rgba(52,211,153,0.5)" stroke-width="2"/>
+  <text x="290" y="156" font-family="monospace" font-size="11" fill="rgba(52,211,153,0.85)" text-anchor="middle">Clean</text>
+  <line x1="330" y1="150" x2="410" y2="150" stroke="rgba(52,211,153,0.5)" stroke-width="2" stroke-dasharray="6,3"/>
+  <circle cx="450" cy="150" r="40" fill="rgba(52,211,153,0.2)" stroke="rgba(52,211,153,0.5)" stroke-width="2"/>
+  <text x="450" y="156" font-family="monospace" font-size="11" fill="rgba(52,211,153,0.85)" text-anchor="middle">Valid</text>
+  <line x1="490" y1="150" x2="570" y2="150" stroke="rgba(52,211,153,0.5)" stroke-width="2" stroke-dasharray="6,3"/>
+  <circle cx="610" cy="150" r="40" fill="rgba(52,211,153,0.25)" stroke="rgba(52,211,153,0.6)" stroke-width="2"/>
+  <text x="610" y="156" font-family="monospace" font-size="11" fill="rgba(52,211,153,0.9)" text-anchor="middle">DB</text>
+  <!-- log lines -->
+  <rect x="60" y="220" width="680" height="120" rx="10" fill="rgba(0,0,0,0.3)"/>
+  <text x="80" y="244" font-family="monospace" font-size="12" fill="rgba(52,211,153,0.8)">[INFO]  Iniciando pipeline ETL...</text>
+  <text x="80" y="264" font-family="monospace" font-size="12" fill="rgba(52,211,153,0.7)">[INFO]  Cargando 1,247 registros desde JSON</text>
+  <text x="80" y="284" font-family="monospace" font-size="12" fill="rgba(234,179,8,0.8)">[WARN]  12 registros con campos incompletos</text>
+  <text x="80" y="304" font-family="monospace" font-size="12" fill="rgba(52,211,153,0.9)">[OK]    1,235 registros insertados correctamente</text>
+  <text x="80" y="324" font-family="monospace" font-size="12" fill="rgba(52,211,153,0.6)">[INFO]  Pipeline completado en 2.4s</text>
+  <!-- title -->
+  <text x="400" y="430" font-family="system-ui, sans-serif" font-size="42" font-weight="700" fill="white" text-anchor="middle">Equity</text>
+  <text x="400" y="472" font-family="system-ui, sans-serif" font-size="18" fill="rgba(255,255,255,0.65)" text-anchor="middle">Gestor de Datos ETL</text>
+  <text x="400" y="510" font-family="system-ui, sans-serif" font-size="13" fill="rgba(255,255,255,0.4)" text-anchor="middle">Python · Django · PostgreSQL</text>
+</svg>

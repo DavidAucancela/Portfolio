@@ -50,10 +50,9 @@
     "category": "P1",
     "tags": ["Vue.js", "JavaScript", "Catálogo", "Cultura", "SPA"],
     "images": {
-      "thumbnail": "https://images.unsplash.com/photo-1513519245088-0e12902e35ca?w=800&h=600&fit=crop",
+      "thumbnail": "/images/projects/ideancestral/thumbnail.svg",
       "gallery": [
-        "https://images.unsplash.com/photo-1513519245088-0e12902e35ca?w=1200&h=800&fit=crop",
-        "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=1200&h=800&fit=crop"
+        "/images/projects/ideancestral/thumbnail.svg"
       ]
     },
     "links": {
@@ -87,10 +86,9 @@
     "category": "P1",
     "tags": ["TypeScript", "IA", "Finanzas", "Asistente Virtual", "NLP"],
     "images": {
-      "thumbnail": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop",
+      "thumbnail": "/images/projects/anaos/thumbnail.svg",
       "gallery": [
-        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=800&fit=crop",
-        "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&h=800&fit=crop"
+        "/images/projects/anaos/thumbnail.svg"
       ]
     },
     "links": {
@@ -124,9 +122,9 @@
     "category": "P2",
     "tags": ["Python", "ETL", "JSON", "Base de Datos", "Limpieza de Datos"],
     "images": {
-      "thumbnail": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop",
+      "thumbnail": "/images/projects/equity/thumbnail.svg",
       "gallery": [
-        "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=1200&h=800&fit=crop"
+        "/images/projects/equity/thumbnail.svg"
       ]
     },
     "links": {
@@ -160,10 +158,9 @@
     "category": "P2",
     "tags": ["JavaScript", "Seguridad", "Node.js", "Cifrado", "Autenticación"],
     "images": {
-      "thumbnail": "https://images.unsplash.com/photo-1563986768609-322da13575f2?w=800&h=600&fit=crop",
+      "thumbnail": "/images/projects/securabank/thumbnail.svg",
       "gallery": [
-        "https://images.unsplash.com/photo-1563986768609-322da13575f2?w=1200&h=800&fit=crop",
-        "https://images.unsplash.com/photo-1556742400-b5b7c512f3f0?w=1200&h=800&fit=crop"
+        "/images/projects/securabank/thumbnail.svg"
       ]
     },
     "links": {
@@ -197,9 +194,9 @@
     "category": "P2",
     "tags": ["JavaScript", "Mapas", "Visualización", "ConQuito", "Datos Abiertos"],
     "images": {
-      "thumbnail": "https://images.unsplash.com/photo-1524661135-423995f22d0b?w=800&h=600&fit=crop",
+      "thumbnail": "/images/projects/conquito-fundaciones/thumbnail.svg",
       "gallery": [
-        "https://images.unsplash.com/photo-1524661135-423995f22d0b?w=1200&h=800&fit=crop"
+        "/images/projects/conquito-fundaciones/thumbnail.svg"
       ]
     },
     "links": {

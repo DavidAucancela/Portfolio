@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0F172A"/>
+      <stop offset="50%" style="stop-color:#1E293B"/>
+      <stop offset="100%" style="stop-color:#334155"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <!-- shield icon -->
+  <path d="M400 50 L500 90 L500 170 Q500 230 400 260 Q300 230 300 170 L300 90 Z" fill="rgba(59,130,246,0.15)" stroke="rgba(59,130,246,0.5)" stroke-width="2"/>
+  <path d="M400 80 L470 108 L470 166 Q470 208 400 228 Q330 208 330 166 L330 108 Z" fill="rgba(59,130,246,0.1)" stroke="rgba(99,179,237,0.4)" stroke-width="1.5"/>
+  <text x="400" y="178" font-family="system-ui" font-size="40" text-anchor="middle" fill="rgba(59,130,246,0.9)">🔒</text>
+  <!-- security badges row -->
+  <rect x="60" y="290" width="150" height="50" rx="10" fill="rgba(34,197,94,0.15)" stroke="rgba(34,197,94,0.4)" stroke-width="1"/>
+  <text x="135" y="321" font-family="system-ui, sans-serif" font-size="13" fill="rgba(34,197,94,0.9)" text-anchor="middle">✓ JWT Auth</text>
+  <rect x="230" y="290" width="150" height="50" rx="10" fill="rgba(34,197,94,0.15)" stroke="rgba(34,197,94,0.4)" stroke-width="1"/>
+  <text x="305" y="321" font-family="system-ui, sans-serif" font-size="13" fill="rgba(34,197,94,0.9)" text-anchor="middle">✓ bcrypt</text>
+  <rect x="400" y="290" width="150" height="50" rx="10" fill="rgba(34,197,94,0.15)" stroke="rgba(34,197,94,0.4)" stroke-width="1"/>
+  <text x="475" y="321" font-family="system-ui, sans-serif" font-size="13" fill="rgba(34,197,94,0.9)" text-anchor="middle">✓ CSRF</text>
+  <rect x="570" y="290" width="170" height="50" rx="10" fill="rgba(34,197,94,0.15)" stroke="rgba(34,197,94,0.4)" stroke-width="1"/>
+  <text x="655" y="321" font-family="system-ui, sans-serif" font-size="13" fill="rgba(34,197,94,0.9)" text-anchor="middle">✓ Helm.js</text>
+  <!-- title -->
+  <text x="400" y="430" font-family="system-ui, sans-serif" font-size="42" font-weight="700" fill="white" text-anchor="middle">SecuraBank</text>
+  <text x="400" y="472" font-family="system-ui, sans-serif" font-size="18" fill="rgba(255,255,255,0.6)" text-anchor="middle">Sistema Bancario Seguro</text>
+  <text x="400" y="510" font-family="system-ui, sans-serif" font-size="13" fill="rgba(255,255,255,0.35)" text-anchor="middle">Node.js · Express · PostgreSQL · JWT</text>
+</svg>

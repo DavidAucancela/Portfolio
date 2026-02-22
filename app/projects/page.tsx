@@ -31,7 +31,7 @@ export default function ProjectsPage() {
   const activeCategory = categories.find((c) => c.key === selectedCategory);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 via-white to-gray-50 py-20">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 dark:from-gray-950 via-white dark:via-gray-950 to-gray-50 dark:to-gray-950 py-20">
       <Container>
         {/* Header */}
         <motion.div
@@ -40,14 +40,14 @@ export default function ProjectsPage() {
           transition={{ duration: 0.5 }}
           className="text-center mb-14"
         >
-          <div className="inline-flex items-center gap-2 bg-primary/5 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-4">
-            <Layers className="h-4 w-4" />
-            Repositorios & Proyectos
+          <div className="inline-flex items-center gap-2 bg-primary/5 dark:bg-primary/10 text-primary text-sm font-semibold px-4 py-1.5 rounded-full mb-4">
+            <Layers className="h-4 w-4" aria-hidden="true" />
+            Repositorios &amp; Proyectos
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <h1 className="font-display text-4xl md:text-5xl font-bold text-gray-900 dark:text-gray-50 mb-4 tracking-tight">
             Mis Proyectos
           </h1>
-          <p className="text-lg text-gray-500 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
             Cada proyecto representa un reto real resuelto con código, creatividad y
             tecnología. Desde IA y búsqueda semántica hasta seguridad bancaria.
           </p>
@@ -59,6 +59,8 @@ export default function ProjectsPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.15 }}
           className="flex flex-wrap justify-center gap-2 mb-4"
+          role="group"
+          aria-label="Filtrar proyectos por categoría"
         >
           {categories.map((category) => {
             const Icon = category.icon;
@@ -68,16 +70,19 @@ export default function ProjectsPage() {
               <button
                 key={category.key}
                 onClick={() => setSelectedCategory(category.key)}
+                aria-pressed={isActive}
+                aria-label={category.description}
                 className={`
                   inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
-                  transition-all duration-300 border
+                  transition-all duration-200 border active:scale-95
+                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary
                   ${isActive
                     ? 'bg-primary text-white border-primary shadow-lg shadow-primary/25'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-primary/30 hover:text-primary hover:bg-primary/5'
+                    : 'bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-primary/30 hover:text-primary hover:bg-primary/5 dark:hover:bg-primary/10'
                   }
                 `}
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="h-4 w-4" aria-hidden="true" />
                 {category.label}
               </button>
             );
@@ -90,8 +95,10 @@ export default function ProjectsPage() {
           animate={{ opacity: 1 }}
           transition={{ duration: 0.3, delay: 0.2 }}
           className="text-center mb-10"
+          aria-live="polite"
+          aria-atomic="true"
         >
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-gray-400 dark:text-gray-500">
             {projects.length} proyecto{projects.length !== 1 ? 's' : ''}
             {activeCategory && selectedCategory !== 'all' && (
               <> &middot; {activeCategory.description}</>

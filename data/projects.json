@@ -40,7 +40,78 @@
       "Control de acceso basado en roles",
       "Sistema de notificaciones para usuarios",
       "Panel de rendimiento y actividad del sistema"
-    ]
+    ],
+    "process": {
+      "overview": "Proyecto de titulación desarrollado aplicando metodología ágil con sprints de 2 semanas. Abarca desde el análisis de requerimientos con el cliente hasta el despliegue en contenedores Docker, integrando IA para búsqueda semántica.",
+      "pasos": [
+        {
+          "id": "problema",
+          "resumen": "Universal Box operaba con hojas de cálculo para la gestión de sus envíos, generando errores manuales, pérdida de información y tiempos altos de búsqueda. Con más de 5.000 registros activos, localizar un envío podía tomar hasta 3 minutos. Se necesitaba una solución digital escalable con búsqueda inteligente.",
+          "puntos": [
+            "Búsqueda manual de envíos en archivos Excel con +5.000 registros",
+            "Sin visibilidad geográfica del estado y ubicación de los paquetes",
+            "Proceso de importación de datos completamente manual y propenso a errores",
+            "Sin control de roles ni historial de acciones de los operadores",
+            "Generación manual de recibos y reportes por cada envío"
+          ]
+        },
+        {
+          "id": "analisis",
+          "resumen": "Se realizó el levantamiento de requerimientos con el cliente, identificando 8 módulos funcionales. Se optó por una arquitectura REST desacoplada (Angular + Django) para permitir escalabilidad independiente, y se seleccionó pgvector con embeddings de OpenAI para la búsqueda semántica.",
+          "puntos": [
+            "Arquitectura desacoplada: Angular SPA + Django REST API + PostgreSQL",
+            "Búsqueda semántica con embeddings OpenAI text-embedding-ada-002 y pgvector",
+            "Sistema de roles: Administrador, Operador y Cliente con permisos diferenciados",
+            "Módulos definidos: Envíos, Productos, Tarifas, Reportes, Mapa, Notificaciones, Admin, Dashboard",
+            "Docker Compose para orquestación de servicios y consistencia entre entornos"
+          ]
+        },
+        {
+          "id": "desarrollo",
+          "resumen": "Se implementó la API REST con Django REST Framework con serializers validados, el frontend SPA con Angular usando módulos lazy-loaded para optimizar la carga inicial, integración con OpenAI para búsqueda semántica y Leaflet para visualización geográfica en tiempo real.",
+          "puntos": [
+            "API REST con DRF: serializers, viewsets y permissions por cada módulo",
+            "Embeddings con OpenAI text-embedding-ada-002 almacenados como vectores en pgvector",
+            "Búsqueda híbrida: tradicional (ILIKE) + semántica (similitud coseno) en paralelo",
+            "Frontend Angular con lazy loading, guards de ruta y módulos independientes",
+            "Carga masiva desde Excel (xlsx) y generación de recibos PDF con jsPDF",
+            "Visualización geográfica con Leaflet y markers dinámicos por estado del envío"
+          ]
+        },
+        {
+          "id": "despliegue",
+          "resumen": "Despliegue con Docker Compose orquestando 4 servicios. Nginx actúa como reverse proxy, sirve el frontend compilado y redirige las peticiones /api/ a Gunicorn. Las migraciones de base de datos y la generación de embeddings iniciales se ejecutan automáticamente.",
+          "puntos": [
+            "Docker Compose: Nginx, Gunicorn (Django), PostgreSQL + pgvector, Redis",
+            "Nginx como reverse proxy: rutas /api/ → Gunicorn, / → Angular build",
+            "Variables de entorno separadas en .env para desarrollo y producción",
+            "Scripts de migración (manage.py migrate) y seed automatizados al inicio",
+            "Redis para caché de sesiones JWT y cola de tareas asíncronas",
+            "Volúmenes Docker para persistencia de la base de datos y archivos estáticos"
+          ]
+        },
+        {
+          "id": "seguridad",
+          "resumen": "Se implementaron múltiples capas de seguridad siguiendo principios OWASP. El control de acceso se basa en roles (RBAC) con JWT para autenticación stateless, HTTPS forzado en Nginx y validación estricta de entradas mediante serializers de DRF.",
+          "puntos": [
+            "Autenticación JWT con access token (1h) y refresh token (7 días)",
+            "RBAC: cada rol accede únicamente a sus rutas y datos autorizados mediante DRF permissions",
+            "Validación y sanitización de entradas en serializers de DRF (previene injection)",
+            "CORS restrictivo: solo el dominio del frontend puede consumir la API",
+            "HTTPS forzado en Nginx con redirección automática de HTTP a HTTPS",
+            "ORM de Django previene SQL injection en todas las consultas",
+            "Rate limiting en Nginx para endpoints críticos de autenticación"
+          ]
+        }
+      ],
+      "resultado": "Sistema en producción validado con más de 500 envíos gestionados durante las pruebas con el cliente. La búsqueda semántica redujo el tiempo de localización de envíos de 3 minutos a menos de 10 segundos, representando una mejora del 95% en eficiencia operativa.",
+      "metricas": [
+        { "label": "Tiempo de búsqueda", "value": "< 10s" },
+        { "label": "Mejora de eficiencia", "value": "95%" },
+        { "label": "Módulos funcionales", "value": "8" },
+        { "label": "Servicios Docker", "value": "4" }
+      ]
+    }
   },
   {
     "id": "2",
@@ -82,7 +153,78 @@
       "Carro de compras con envío de pedidos por WhatsApp",
       "Internacionalización para español, inglés y portugués",
       "Modo oscuro y claro para una mejor experiencia de usuario"
-    ]
+    ],
+    "process": {
+      "overview": "Plataforma desarrollada en 2 meses para digitalizar el catálogo de artesanías ecuatorianas. Implementación full-stack con Vue.js 3 y Node.js/Express, desplegada en Vercel (frontend) y Render (backend), con soporte multiidioma y modo oscuro.",
+      "pasos": [
+        {
+          "id": "problema",
+          "resumen": "Los artesanos ecuatorianos carecían de presencia digital, limitando su alcance a mercados físicos locales. No existía una plataforma que combinara el catálogo digital con el contexto cultural e histórico de cada pieza, ni un canal de ventas accesible para artesanos sin conocimiento técnico.",
+          "puntos": [
+            "Artesanos sin canal de ventas digital, dependientes de mercados locales",
+            "Pérdida del contexto cultural e histórico de los productos artesanales",
+            "Proceso de pedidos manual (llamadas telefónicas o visita presencial)",
+            "Barrera de idioma con compradores nacionales e internacionales",
+            "Sin herramienta de gestión para el catálogo de productos"
+          ]
+        },
+        {
+          "id": "analisis",
+          "resumen": "Se diseñó una SPA multiidioma con Vue.js para el catálogo público y un panel administrativo para gestión. Se optó por WhatsApp como canal de pedidos para reducir la barrera tecnológica para los artesanos y no requerir pasarela de pagos.",
+          "puntos": [
+            "SPA con Vue 3 Composition API y Pinia para gestión de estado global",
+            "Internacionalización en 3 idiomas (ES/EN/PT) con vue-i18n",
+            "Backend RESTful con Node.js/Express y PostgreSQL como base de datos",
+            "Carrito de compras con generación de pedido en mensaje de WhatsApp",
+            "Panel administrativo para CRUD de productos, categorías y usuarios",
+            "Diseño mobile-first con modo oscuro/claro mediante variables CSS"
+          ]
+        },
+        {
+          "id": "desarrollo",
+          "resumen": "Frontend Vue 3 con composables reutilizables y Pinia para estado global. Backend Express con pool de conexiones PostgreSQL, middleware JWT y validación de datos. Diseño mobile-first con CSS3 y variables CSS para theming dinámico.",
+          "puntos": [
+            "Vue 3 Composition API con composables para lógica reutilizable del catálogo",
+            "Pinia stores: carrito, usuario autenticado e idioma activo",
+            "vue-i18n con archivos JSON de traducción por idioma (ES/EN/PT)",
+            "API REST Express con middleware de validación y manejo de errores centralizado",
+            "PostgreSQL con pool de conexiones pg para eficiencia en concurrencia",
+            "Variables CSS para theming: colores, espaciados y tipografía en modo claro/oscuro"
+          ]
+        },
+        {
+          "id": "despliegue",
+          "resumen": "Frontend desplegado en Vercel con CI/CD automático desde GitHub. Backend y base de datos PostgreSQL en Render. Ambas plataformas proveen HTTPS automático y dominios personalizados sin configuración adicional.",
+          "puntos": [
+            "Vercel: despliegue automático en cada push a main con preview por PR",
+            "Render: backend Node.js + PostgreSQL gestionada en plan gratuito",
+            "Variables de entorno separadas por plataforma (DATABASE_URL, JWT_SECRET)",
+            "HTTPS automático en ambas plataformas sin configuración adicional",
+            "Build optimizado de Vue.js con Vite para bundle mínimo en producción",
+            "Despliegue zero-downtime en Vercel con rollback instantáneo"
+          ]
+        },
+        {
+          "id": "seguridad",
+          "resumen": "Autenticación JWT para el panel administrativo con bcrypt para contraseñas. CORS configurado para solo permitir el dominio del frontend. Sanitización de inputs en cliente y servidor para prevenir XSS.",
+          "puntos": [
+            "JWT con firma HS256 y expiración de 24h para sesiones del panel admin",
+            "bcrypt con factor de costo 12 para hashing seguro de contraseñas",
+            "CORS restrictivo: solo el dominio de Vercel puede consumir la API de Render",
+            "Sanitización de inputs en frontend antes de enviar al backend",
+            "Middleware de autorización en todas las rutas protegidas del panel",
+            "HTTPS forzado: todas las comunicaciones cliente-servidor cifradas en tránsito"
+          ]
+        }
+      ],
+      "resultado": "Plataforma live con catálogo de más de 50 productos artesanales. Accesible en 3 idiomas con diseño responsive optimizado para móviles. Los artesanos pueden gestionar su catálogo desde el panel admin sin conocimiento técnico.",
+      "metricas": [
+        { "label": "Idiomas soportados", "value": "3" },
+        { "label": "Productos en catálogo", "value": "50+" },
+        { "label": "Plataformas despliegue", "value": "2" },
+        { "label": "Tiempo de carga", "value": "< 1.5s" }
+      ]
+    }
   },
   {
     "id": "3",
@@ -118,7 +260,76 @@
       "Reportes automatizados y dashboards interactivos",
       "Recomendaciones financieras inteligentes",
       "Interfaz intuitiva y moderna"
-    ]
+    ],
+    "process": {
+      "overview": "Exploración de IA conversacional aplicada al dominio financiero de cooperativas. El sistema enriquece cada consulta del usuario con datos reales de la base de datos antes de enviarlos a OpenAI API, evitando exponer información sensible.",
+      "pasos": [
+        {
+          "id": "problema",
+          "resumen": "Las cooperativas financieras gestionan datos de socios, transacciones y análisis con herramientas genéricas como hojas de cálculo. Los gestores necesitaban una herramienta que entendiera el contexto financiero cooperativo y respondiera consultas en lenguaje natural sin curva de aprendizaje.",
+          "puntos": [
+            "Gestión manual de socios y transacciones en hojas de cálculo",
+            "Sin herramienta de análisis predictivo accesible para no técnicos",
+            "Reportes financieros generados manualmente con alto costo de tiempo",
+            "Alta curva de aprendizaje para herramientas financieras existentes",
+            "Sin histórico conversacional para tomar decisiones basadas en contexto"
+          ]
+        },
+        {
+          "id": "analisis",
+          "resumen": "Se diseñó una arquitectura conversacional donde el backend enriquece cada mensaje del usuario con datos reales de la cooperativa antes de llamar a OpenAI API. Esto permite respuestas precisas sin exponer datos sensibles directamente al modelo.",
+          "puntos": [
+            "Interfaz tipo chat con historial de conversación persistente por sesión",
+            "OpenAI API con system prompt especializado en finanzas de cooperativas",
+            "Backend como intermediario: consulta BD y enriquece contexto antes de llamar a IA",
+            "4 módulos: gestión de socios, transacciones, análisis predictivo, reportes",
+            "TypeScript en frontend (React) y backend (Node.js) para type safety completo",
+            "PostgreSQL para persistencia de datos de socios, cuentas y transacciones"
+          ]
+        },
+        {
+          "id": "desarrollo",
+          "resumen": "Frontend React con custom hooks para el estado del chat y streaming de respuestas. Backend Node.js que gestiona el contexto de conversación, consulta la base de datos y llama a OpenAI API con el contexto enriquecido.",
+          "puntos": [
+            "React con custom hooks: useChat, useMessages, useStreamResponse",
+            "Streaming de respuestas de OpenAI para experiencia de chat fluida",
+            "Backend construye contexto dinámico: consulta BD según intención del usuario",
+            "Sistema de intenciones: detecta si el usuario pide datos, análisis o acción",
+            "Generación automática de reportes en texto estructurado por el asistente",
+            "TypeScript estricto en todas las capas: tipos compartidos entre frontend y backend"
+          ]
+        },
+        {
+          "id": "despliegue",
+          "resumen": "Arquitectura preparada para despliegue en VPS con PM2 y Nginx. Actualmente operativo en entorno de desarrollo local con Docker Compose para simular el entorno de producción.",
+          "puntos": [
+            "Docker Compose para desarrollo local con hot reload",
+            "PM2 configurado para gestión de procesos Node.js en producción",
+            "Nginx como reverse proxy con soporte WebSocket para streaming",
+            "Variables de entorno para OPENAI_API_KEY y credenciales de BD",
+            "Scripts de seed para datos de prueba de cooperativa de ejemplo"
+          ]
+        },
+        {
+          "id": "seguridad",
+          "resumen": "Datos sensibles de socios procesados localmente sin ser enviados a OpenAI. Autenticación por roles para proteger la información financiera de la cooperativa. Prompts diseñados con restricciones para prevenir prompt injection.",
+          "puntos": [
+            "JWT para autenticación de gestores con roles: Gerente y Analista",
+            "Datos de socios procesados localmente; OpenAI solo recibe resúmenes agregados",
+            "System prompt con restricciones: solo responde sobre finanzas cooperativas",
+            "Validación de intenciones para prevenir prompt injection malicioso",
+            "TypeScript estricto previene errores de tipo en manejo de datos financieros",
+            "Variables de entorno para todas las credenciales y API keys"
+          ]
+        }
+      ],
+      "resultado": "Asistente funcional capaz de responder consultas financieras en lenguaje natural, generar reportes automáticos y analizar tendencias de la cooperativa. Demostración exitosa del patrón RAG (Retrieval-Augmented Generation) aplicado al dominio financiero.",
+      "metricas": [
+        { "label": "Módulos IA", "value": "4" },
+        { "label": "Cobertura TypeScript", "value": "100%" },
+        { "label": "Datos expuestos a OpenAI", "value": "0 PII" }
+      ]
+    }
   },
   {
     "id": "4",
@@ -154,7 +365,76 @@
       "Logs detallados de procesamiento",
       "Manejo de errores y datos inconsistentes",
       "Interfaz de monitoreo del proceso ETL"
-    ]
+    ],
+    "process": {
+      "overview": "Herramienta ETL construida con Python y Django para automatizar la población de bases de datos desde archivos JSON. Implementa un pipeline Extract → Transform → Load con validación de schemas, transacciones atómicas y logs de auditoría.",
+      "pasos": [
+        {
+          "id": "problema",
+          "resumen": "El proceso de carga de datos desde archivos JSON a la base de datos era completamente manual, propenso a errores de formato y sin registro de las operaciones realizadas. Los datos inconsistentes causaban fallos silenciosos en la aplicación destino.",
+          "puntos": [
+            "Carga manual de datos con errores frecuentes de formato y tipo",
+            "Sin validación de schema ni integridad de datos antes de insertar",
+            "Sin logs de las operaciones realizadas ni historial de cargas",
+            "Datos inconsistentes (nulos, tipos incorrectos) causaban errores en producción",
+            "Tiempos altos para importar grandes volúmenes de registros JSON"
+          ]
+        },
+        {
+          "id": "analisis",
+          "resumen": "Se diseñó un pipeline ETL (Extract, Transform, Load) que automatiza la lectura de JSON, aplica validaciones y limpieza de datos, e inserta en PostgreSQL con transacciones atómicas para garantizar consistencia.",
+          "puntos": [
+            "Pipeline ETL: Extract (lectura JSON) → Transform (validar + limpiar) → Load (insertar BD)",
+            "Validación de schemas con reglas configurables por tipo de datos",
+            "Transacciones atómicas: todo el lote se inserta o ningún registro lo hace",
+            "Sistema de logs con niveles INFO / WARNING / ERROR por cada operación",
+            "Interfaz Django Admin para monitoreo del estado del proceso en tiempo real",
+            "Manejo granular de excepciones separado por tipo de error"
+          ]
+        },
+        {
+          "id": "desarrollo",
+          "resumen": "Python con Django management commands para la lógica ETL ejecutable desde CLI. Validación de schemas con diccionarios Python. Bulk insert para optimizar rendimiento con grandes volúmenes. Logs persistentes para auditoría post-proceso.",
+          "puntos": [
+            "Django management commands: python manage.py run_etl --file data.json",
+            "Validación de schemas antes de cualquier operación en base de datos",
+            "Limpieza de datos: normalización de strings, conversión de tipos, manejo de nulos",
+            "Inserción en bulk (bulk_create) para optimizar rendimiento con alto volumen",
+            "Logs persistentes en BD con timestamp, nivel y detalle de cada operación",
+            "Django Admin con vistas customizadas para monitoreo del proceso ETL"
+          ]
+        },
+        {
+          "id": "despliegue",
+          "resumen": "Aplicación Django desplegada en entorno local/interno. El proceso ETL se ejecuta como management command desde CLI, permitiendo integrarlo en scripts de automatización o cron jobs.",
+          "puntos": [
+            "Django con PostgreSQL local configurado en settings.py",
+            "Ejecución por CLI: python manage.py run_etl --file [ruta] --dry-run",
+            "Modo --dry-run para validar sin insertar (simulación completa del pipeline)",
+            "Archivos JSON de entrada configurables por parámetro",
+            "Compatible con automatización: cron jobs o scripts de CI/CD"
+          ]
+        },
+        {
+          "id": "seguridad",
+          "resumen": "Validación estricta de schemas antes de cualquier inserción en base de datos. Transacciones atómicas previenen estados inconsistentes. Sanitización de datos para prevenir inyección de código en campos de texto.",
+          "puntos": [
+            "Validación de schema completa antes de iniciar el pipeline",
+            "Transacciones atómicas: ningún estado parcial en base de datos ante fallos",
+            "Sanitización de campos string para prevenir SQL injection y XSS",
+            "Acceso a BD exclusivamente mediante ORM de Django (sin queries raw)",
+            "Logs inmutables: registro de auditoría que no puede ser modificado post-ejecución",
+            "Modo dry-run para validar datos sin riesgo de modificar la base de datos"
+          ]
+        }
+      ],
+      "resultado": "Pipeline ETL que procesa cientos de registros JSON en segundos con validación completa de schema, reemplazando el proceso manual. El modo dry-run permite validar la calidad de los datos antes de cualquier inserción.",
+      "metricas": [
+        { "label": "Automatización", "value": "100%" },
+        { "label": "Validación", "value": "Schema completo" },
+        { "label": "Modo dry-run", "value": "✓" }
+      ]
+    }
   },
   {
     "id": "5",
@@ -190,7 +470,76 @@
       "Protección contra SQL injection, XSS y CSRF",
       "Sistema de transferencias y consultas de saldo",
       "Logs de seguridad y alertas"
-    ]
+    ],
+    "process": {
+      "overview": "Sistema bancario demostrativo construido con Node.js que implementa el OWASP Top 10 y buenas prácticas de seguridad en cada capa. Proyecto educativo enfocado en demostrar seguridad como requisito de diseño, no como añadido posterior.",
+      "pasos": [
+        {
+          "id": "problema",
+          "resumen": "Las aplicaciones bancarias son los objetivos más críticos de ciberseguridad. Este proyecto nació para explorar e implementar las medidas de seguridad del OWASP Top 10 en un sistema de transacciones real, demostrando que la seguridad debe diseñarse desde el inicio, no añadirse después.",
+          "puntos": [
+            "OWASP Top 10 frecuentemente ignorado en proyectos de práctica",
+            "Vulnerabilidades comunes (XSS, SQLi, CSRF) fáciles de introducir sin guía",
+            "Autenticación débil como causa principal de brechas en sistemas financieros",
+            "Sin ejemplos completos de autenticación multi-capa en proyectos educativos",
+            "Ausencia de auditoría de transacciones para detectar actividad sospechosa"
+          ]
+        },
+        {
+          "id": "analisis",
+          "resumen": "Se realizó threat modeling sobre el flujo de transacciones para identificar vectores de ataque. Cada módulo fue analizado contra el OWASP Top 10 antes del desarrollo, definiendo las contramedidas concretas para cada vulnerabilidad identificada.",
+          "puntos": [
+            "Threat modeling: identificación de vectores de ataque por cada módulo",
+            "OWASP Top 10 como checklist de diseño previo al desarrollo",
+            "JWT con access token corto (15min) + refresh token (7 días) para mitigar token theft",
+            "bcrypt con salt rounds 12 para almacenamiento seguro de contraseñas",
+            "Helmet.js para configuración automática de headers HTTP de seguridad",
+            "Rate limiting en endpoints de autenticación para prevenir fuerza bruta"
+          ]
+        },
+        {
+          "id": "desarrollo",
+          "resumen": "Node.js con Express y Helmet.js. Cada ruta implementa su capa de middleware de validación, autorización y auditoría. Queries parametrizadas en todas las operaciones de base de datos. CSRF tokens en formularios sensibles.",
+          "puntos": [
+            "Helmet.js: CSP, HSTS, X-Frame-Options, X-XSS-Protection configurados",
+            "JWT: access token 15min + refresh token 7 días con rotación automática",
+            "bcrypt con 12 salt rounds para hashing de contraseñas en registro y login",
+            "Queries parametrizadas en todas las operaciones SQL (previene SQLi)",
+            "CSRF tokens generados y validados en formularios de transferencia",
+            "Sistema de auditoría: cada transacción registrada con timestamp, IP y usuario"
+          ]
+        },
+        {
+          "id": "despliegue",
+          "resumen": "Servidor Node.js local con HTTPS mediante certificados autofirmados para simular entorno de producción seguro. Configuración separada por ambiente con variables de entorno para todas las credenciales.",
+          "puntos": [
+            "HTTPS con certificados autofirmados en desarrollo para simular producción",
+            "Variables de entorno: JWT_SECRET, DB_URL, REFRESH_SECRET en .env",
+            "Separación estricta de configuración por ambiente (development/production)",
+            "Express configurado con trust proxy para headers X-Forwarded-For correctos",
+            "PostgreSQL con usuario de BD de solo lectura para consultas de saldo"
+          ]
+        },
+        {
+          "id": "seguridad",
+          "resumen": "Implementación completa de 6 categorías del OWASP Top 10. Sistema de auditoría inmutable con 5 capas de seguridad: autenticación, autorización, headers, validación de entrada y cifrado.",
+          "puntos": [
+            "A01 Broken Access Control: RBAC con middleware de autorización por ruta",
+            "A02 Cryptographic Failures: bcrypt + HTTPS + JWT firmado con HS256",
+            "A03 Injection: queries parametrizadas en el 100% de las operaciones SQL",
+            "A05 Security Misconfiguration: Helmet.js con política CSP estricta",
+            "A07 Identification Failures: rate limiting + refresh tokens + expiración corta",
+            "Auditoría inmutable: cada transacción y acceso registrado con timestamp e IP"
+          ]
+        }
+      ],
+      "resultado": "Sistema bancario demostrativo con 6 vulnerabilidades del OWASP Top 10 mitigadas, cobertura completa de autenticación, autorización y auditoría. Demostración exitosa de 'security by design' aplicada a un sistema financiero.",
+      "metricas": [
+        { "label": "OWASP mitigados", "value": "6 / 10" },
+        { "label": "Capas de seguridad", "value": "5" },
+        { "label": "Cobertura auditoría", "value": "100%" }
+      ]
+    }
   },
   {
     "id": "6",
@@ -226,6 +575,76 @@
       "Estadísticas de impacto social",
       "Datos abiertos y actualizables",
       "Desarrollado para ConQuito"
-    ]
+    ],
+    "process": {
+      "overview": "Aplicación web de datos abiertos desarrollada para ConQuito con JavaScript vanilla y Leaflet. El enfoque fue crear una herramienta accesible y mantenible por el equipo de ConQuito, sin dependencias de framework que complejicen actualizaciones futuras.",
+      "pasos": [
+        {
+          "id": "problema",
+          "resumen": "ConQuito necesitaba hacer accesible la información de fundaciones de Quito para ciudadanos y tomadores de decisiones municipales. Los datos existían en formato tabular sin visualización interactiva, dificultando identificar la distribución geográfica y el impacto de las organizaciones.",
+          "puntos": [
+            "Datos de fundaciones disponibles solo en formato tabular (Excel/CSV)",
+            "Sin visualización geográfica del ecosistema de organizaciones sociales",
+            "Difícil identificar distribución por tipo de fundación y zona de Quito",
+            "Datos no accesibles ni comprensibles para ciudadanos sin conocimiento técnico",
+            "Sin herramienta para análisis de impacto social por sector de la ciudad"
+          ]
+        },
+        {
+          "id": "analisis",
+          "resumen": "Se optó por JavaScript vanilla (sin framework) para minimizar dependencias y facilitar el mantenimiento por el equipo técnico de ConQuito. Leaflet para mapas y Charts.js para estadísticas. Datos en JSON estático para actualizaciones sin redeployment de código.",
+          "puntos": [
+            "JavaScript vanilla modular: cero dependencias de framework para máxima longevidad",
+            "Leaflet.js para mapas interactivos con markers personalizados por tipo de fundación",
+            "Charts.js para visualizaciones estadísticas de distribución y cobertura",
+            "Filtros dinámicos por tipo y zona geográfica que actualizan mapa y gráficos",
+            "Datos en JSON estático actualizable sin modificar código fuente",
+            "Diseño responsive con CSS Grid para acceso desde dispositivos móviles"
+          ]
+        },
+        {
+          "id": "desarrollo",
+          "resumen": "Aplicación modular en JavaScript con separación de responsabilidades. Cada módulo maneja una funcionalidad: mapa, filtros, estadísticas, datos. Los filtros actualizan el mapa y los gráficos en tiempo real mediante event-driven communication.",
+          "puntos": [
+            "Módulos JS separados: mapModule.js, filterModule.js, chartsModule.js, dataModule.js",
+            "Markers Leaflet personalizados con iconos SVG por tipo de fundación",
+            "Popups informativos con datos completos: nombre, tipo, zona, contacto e impacto",
+            "Event-driven: los filtros disparan eventos que actualizan mapa y estadísticas simultáneamente",
+            "Charts.js con gráficos de distribución por tipo y zona geográfica",
+            "Diseño responsive mobile-first con CSS Grid y variables CSS"
+          ]
+        },
+        {
+          "id": "despliegue",
+          "resumen": "Static site desplegado en servidor web simple. Sin backend requerido, lo que facilita el mantenimiento, reduce costos de infraestructura y la hace compatible con cualquier hosting estático como GitHub Pages.",
+          "puntos": [
+            "Static site: solo HTML, CSS y JavaScript vanilla",
+            "Compatible con GitHub Pages, Netlify, Vercel o cualquier servidor web",
+            "JSON de datos actualizable por el equipo de ConQuito sin conocimiento técnico",
+            "Sin servidor backend: reduce superficie de ataque y costos de infraestructura",
+            "Carga inicial rápida: archivos estáticos cacheables por el navegador",
+            "Sin dependencias de npm: actualizaciones sin gestión de paquetes"
+          ]
+        },
+        {
+          "id": "seguridad",
+          "resumen": "Aplicación de datos públicos sin autenticación. Sanitización de datos antes del renderizado en DOM para prevenir XSS. Datos de fuentes oficiales del municipio de Quito. Content Security Policy básico en headers del servidor.",
+          "puntos": [
+            "Sanitización de datos JSON antes de renderizar en innerHTML del DOM",
+            "Datos de fuentes oficiales del municipio de Quito (confiables y verificados)",
+            "Sin inputs de usuario que generen vectores de ataque o inyección",
+            "Content Security Policy básico configurado en headers del servidor web",
+            "Sin almacenamiento de datos de usuarios (sin cookies, sin localStorage sensible)",
+            "Sin backend que proteger: superficie de ataque mínima"
+          ]
+        }
+      ],
+      "resultado": "Herramienta de visualización de datos abiertos con más de 30 fundaciones mapeadas geográficamente, filtros interactivos y estadísticas de impacto social. Entregada a ConQuito como herramienta de decisiones para análisis del ecosistema social de Quito.",
+      "metricas": [
+        { "label": "Fundaciones mapeadas", "value": "30+" },
+        { "label": "Dependencias externas", "value": "0 npm" },
+        { "label": "Tipo de despliegue", "value": "Static" }
+      ]
+    }
   }
 ]

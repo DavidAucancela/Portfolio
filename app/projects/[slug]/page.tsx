@@ -7,6 +7,7 @@ import { getProjectBySlug, getAllProjects } from '@/lib/api';
 import Container from '@/components/ui/Container';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
+import ProjectProcess from '@/components/ProjectProcess';
 import { formatDateRange } from '@/lib/utils';
 
 const categoryLabels: Record<string, { label: string; color: string }> = {
@@ -287,7 +288,13 @@ export default function ProjectDetailPage({
               )}
             </Card>
           </div>
+
         </div>
+
+        {/* Process case study — full width below the grid */}
+        {project.process && (
+          <ProjectProcess process={project.process} />
+        )}
       </Container>
     </div>
   );

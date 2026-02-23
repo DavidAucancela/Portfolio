@@ -1,3 +1,16 @@
+export interface ProcessStep {
+  id: 'problema' | 'analisis' | 'desarrollo' | 'despliegue' | 'seguridad';
+  resumen: string;
+  puntos: string[];
+}
+
+export interface ProjectProcess {
+  overview?: string;
+  pasos: ProcessStep[];
+  resultado?: string;
+  metricas?: Array<{ label: string; value: string }>;
+}
+
 export interface Project {
   id: string;
   slug: string;
@@ -26,6 +39,7 @@ export interface Project {
     tools: string[];
   };
   highlights: string[];
+  process?: ProjectProcess;
 }
 
 export type SkillCategory = 'frontend' | 'backend' | 'database' | 'devops' | 'cloud' | 'ai';

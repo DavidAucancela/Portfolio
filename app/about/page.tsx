@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import Link from 'next/link';
 import { getPersonalInfo, getAllSkills } from '@/lib/api';
 import Container from '@/components/ui/Container';
@@ -46,26 +45,26 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
           {/* About Card */}
           <Card className="lg:col-span-2">
-            {/* Photo + name */}
-            <div className="flex items-center gap-5 mb-6">
-              {personalInfo.photoUrl && (
-                <div className="flex-shrink-0">
-                  <Image
-                    src={personalInfo.photoUrl}
-                    alt={`Foto de ${personalInfo.name}`}
-                    width={88}
-                    height={88}
-                    className="rounded-full object-cover ring-4 ring-primary/20"
-                    priority
-                  />
-                </div>
-              )}
-              <div>
-                <h2 className="font-display text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  {personalInfo.name}
-                </h2>
-                <p className="text-lg text-primary font-medium">{personalInfo.title}</p>
+            {/* Photo */}
+            {personalInfo.photoUrl && (
+              <div className="flex justify-center mb-6">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={personalInfo.photoUrl}
+                  alt={`Foto de ${personalInfo.name}`}
+                  width={160}
+                  height={160}
+                  className="w-40 h-40 rounded-full object-cover ring-4 ring-primary/20 shadow-lg"
+                />
               </div>
+            )}
+
+            {/* Name + title */}
+            <div className="text-center mb-6">
+              <h2 className="font-display text-2xl font-bold text-gray-900 dark:text-gray-100">
+                {personalInfo.name}
+              </h2>
+              <p className="text-lg text-primary font-medium">{personalInfo.title}</p>
             </div>
 
             <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed mb-6">

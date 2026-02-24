@@ -16,7 +16,6 @@ const categoryLabels: Record<string, { label: string; color: string }> = {
   P3: { label: 'Práctica', color: 'bg-amber-500' },
 };
 
-/* ── Open Graph por proyecto ── */
 export async function generateMetadata({
   params,
 }: {
@@ -63,8 +62,8 @@ export default function ProjectDetailPage({
   if (!project) notFound();
 
   const catInfo = categoryLabels[project.category] || categoryLabels.P2;
+  const gallery = project.images.gallery?.filter(Boolean) ?? [];
 
-  /* JSON-LD por proyecto */
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
@@ -97,7 +96,7 @@ export default function ProjectDetailPage({
         </div>
 
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-10">
           <div className="flex items-center gap-2 mb-4">
             <span className={`${catInfo.color} text-white text-xs font-bold px-3 py-1 rounded-full`}>
               {catInfo.label}
@@ -117,32 +116,36 @@ export default function ProjectDetailPage({
           </p>
         </div>
 
-        {/* Main Image */}
-        <div className="relative h-72 md:h-96 w-full rounded-2xl overflow-hidden mb-10 shadow-lg bg-gray-100 dark:bg-gray-800">
-          <Image
-            src={project.images.thumbnail}
-            alt={`Captura principal de ${project.title}`}
-            fill
-            priority
-            className="object-cover"
-            sizes="100vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-        </div>
-
-        {/* Project Info Grid */}
+        {/* Info Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <h2 className="font-display text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-                Sobre el Proyecto
-              </h2>
-              <p className="text-gray-600 dark:text-gray-400 whitespace-pre-line leading-relaxed">
-                {project.fullDescription || project.description}
-              </p>
+            {/* About card — thumbnail inside */}
+            <Card className="overflow-hidden !p-0">
+              {project.images.thumbnail && (
+                <div className="relative h-64 w-full bg-gray-100 dark:bg-gray-800">
+                  <Image
+                    src={project.images.thumbnail}
+                    alt={`Vista principal de ${project.title}`}
+                    fill
+                    priority
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 66vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                </div>
+              )}
+              <div className="p-6">
+                <h2 className="font-display text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
+                  Sobre el Proyecto
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400 whitespace-pre-line leading-relaxed">
+                  {project.fullDescription || project.description}
+                </p>
+              </div>
             </Card>
 
+            {/* Highlights */}
             {project.highlights && project.highlights.length > 0 && (
               <Card>
                 <h2 className="font-display text-2xl font-bold text-gray-900 dark:text-gray-100 mb-5">
@@ -157,30 +160,6 @@ export default function ProjectDetailPage({
                   ))}
                 </ul>
               </Card>
-            )}
-
-            {project.images.gallery && project.images.gallery.length > 0 && (
-              <div>
-                <h2 className="font-display text-2xl font-bold text-gray-900 dark:text-gray-100 mb-5">
-                  Galería
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {project.images.gallery.map((image, index) => (
-                    <div
-                      key={index}
-                      className="relative h-64 w-full rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300 bg-gray-100 dark:bg-gray-800"
-                    >
-                      <Image
-                        src={image}
-                        alt={`${project.title} — imagen ${index + 1}`}
-                        fill
-                        className="object-cover hover:scale-105 transition-transform duration-500"
-                        sizes="(max-width: 768px) 100vw, 50vw"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
             )}
           </div>
 
@@ -288,12 +267,63 @@ export default function ProjectDetailPage({
               )}
             </Card>
           </div>
-
         </div>
 
-        {/* Process case study — full width below the grid */}
+        {/* Process case study */}
         {project.process && (
           <ProjectProcess process={project.process} />
+        )}
+
+        {/* Gallery — al final, después del resultado */}
+        {gallery.length > 0 && (
+          <div className="mt-16">
+            <div className="mb-8">
+              <h2 className="font-display text-3xl font-bold text-gray-900 dark:text-gray-50 mb-2">
+                Capturas del Proyecto
+              </h2>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">
+                {gallery.length} {gallery.length === 1 ? 'imagen' : 'imágenes'} del sistema en funcionamiento
+              </p>
+            </div>
+
+            <div className={`grid gap-5 ${
+              gallery.length === 1
+                ? 'grid-cols-1 max-w-2xl mx-auto'
+                : gallery.length === 2
+                ? 'grid-cols-1 md:grid-cols-2'
+                : 'grid-cols-1 md:grid-cols-2 xl:grid-cols-3'
+            }`}>
+              {gallery.map((image, index) => {
+                const label = image.split('/').pop()?.replace(/\.[^.]+$/, '') ?? `Pantalla ${index + 1}`;
+                return (
+                  <div
+                    key={index}
+                    className="group relative aspect-video rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-500 bg-gray-100 dark:bg-gray-800 ring-1 ring-gray-200 dark:ring-gray-700 hover:ring-primary/30"
+                  >
+                    <Image
+                      src={image}
+                      alt={`${project.title} — ${label}`}
+                      fill
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                    />
+                    {/* Overlay on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    {/* Label */}
+                    <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-2 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                      <p className="text-white text-sm font-medium capitalize truncate">
+                        {label}
+                      </p>
+                    </div>
+                    {/* Index badge */}
+                    <div className="absolute top-3 right-3 w-7 h-7 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">{index + 1}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         )}
       </Container>
     </div>

@@ -1,9 +1,12 @@
 {
   "name": "Jonathan Aucancela",
   "title": "Ingeniero de Software",
-  "bio": "Experiencia desarrollando aplicaciones web completas desde el diseño hasta el despliegue.",
+  "bio": "Soy Jonathan Aucancela, Ingeniero de Software graduado de la ESPOCH. Desde niño me fascinó lo que se puede construir con una computadora — esa capacidad de transformar una idea en algo real me sigue motivando hoy.\n\nTrabajo principalmente en desarrollo full stack y DevOps, integro IA en mis proyectos, y actualmente me adentro en el mundo de la seguridad informática. He desarrollado sistemas para clientes reales y proyectos académicos: desde plataformas web hasta asistentes financieros inteligentes.\n\nMi forma de trabajar: no me ato a un lenguaje o herramienta, me ato al problema. Aprendo lo necesario, lo entiendo de raíz, y lo aplico.",
+  "bioShort": "Ingeniero de Software graduado de la ESPOCH. Full stack, DevOps e IA — y actualmente explorando la seguridad informática. No me ato a una herramienta; me ato al problema.",
   "email": "jonathan_jd@outlook.com",
   "location": "Quito, Ecuador",
+  "photoUrl": "/Foto%20principal.jpg",
+  "cvUrl": "/Hoja%20de%20vida%20-%20Final.pdf",
   "social": {
     "github": "https://github.com/DavidAucancela",
     "linkedin": "https://www.linkedin.com/in/jonathan-david-aucancela/",
@@ -11,6 +14,56 @@
   },
   "experience": {
     "years": 2,
-    "description": "Experiencia en el mundo de la informática."
-  }
+    "description": "Graduado de la ESPOCH con experiencia en proyectos académicos, para clientes reales y trabajo freelance. Enfocado en soluciones full stack, DevOps e IA, con creciente interés en seguridad informática."
+  },
+  "timeline": [
+    {
+      "role": "Desarrollador Full Stack",
+      "type": "Titulación",
+      "project": "UBApp — Universal Box",
+      "projectSlug": "ubapp",
+      "description": "Sistema integral de gestión de envíos con búsqueda semántica impulsada por IA. Stack: Django, Angular, PostgreSQL + pgvector, Docker.",
+      "period": "Sep 2025 — Ene 2026"
+    },
+    {
+      "role": "Desarrollador Full Stack",
+      "type": "Freelance",
+      "project": "Ideancestral",
+      "projectSlug": "ideancestral",
+      "description": "Catálogo digital de artesanías ecuatorianas con soporte multiidioma y panel administrativo. Stack: Vue.js, Node.js, PostgreSQL.",
+      "period": "Dic 2025 — Feb 2026"
+    },
+    {
+      "role": "Desarrollador Full Stack + IA",
+      "type": "Académico",
+      "project": "AnaOS — Asistente Financiero",
+      "projectSlug": "anaos",
+      "description": "Asistente conversacional con IA para gestión de cooperativas financieras. Stack: React, Node.js, OpenAI API.",
+      "period": "Ago 2025 — Nov 2025"
+    },
+    {
+      "role": "Desarrollador Frontend",
+      "type": "Cliente",
+      "project": "Visualizador de Fundaciones — ConQuito",
+      "projectSlug": "conquito-fundaciones",
+      "description": "Herramienta de visualización de datos abiertos con mapas interactivos para el municipio de Quito.",
+      "period": "Jul 2025 — Oct 2025"
+    },
+    {
+      "role": "Desarrollador Backend",
+      "type": "Académico",
+      "project": "Equity — Gestor de Datos",
+      "projectSlug": "equity",
+      "description": "Pipeline ETL automatizado para gestión y limpieza de datos en bases de datos. Stack: Python, Django, PostgreSQL.",
+      "period": "Sep 2025 — Nov 2025"
+    },
+    {
+      "role": "Desarrollador + Seguridad",
+      "type": "Práctica",
+      "project": "SecuraBank",
+      "projectSlug": "securabank",
+      "description": "Sistema bancario demostrativo con implementación del OWASP Top 10 y múltiples capas de seguridad.",
+      "period": "Ene 2025 — Feb 2025"
+    }
+  ]
 }

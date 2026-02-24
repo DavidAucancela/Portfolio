@@ -50,20 +50,34 @@ export interface Skill {
   level: number; // 1 (empezando) - 5 (pro)
 }
 
+export interface ExperienceEntry {
+  role: string;
+  type: string;
+  project: string;
+  projectSlug?: string;
+  description: string;
+  period: string;
+}
+
 export interface PersonalInfo {
   name: string;
   title: string;
   bio: string;
+  bioShort?: string;
   email: string;
   location: string;
+  photoUrl?: string;
+  cvUrl?: string;
   social: {
     github?: string;
     linkedin?: string;
     twitter?: string;
     website?: string;
+    instagram?: string;
   };
   experience: {
     years: number;
     description: string;
   };
+  timeline?: ExperienceEntry[];
 }

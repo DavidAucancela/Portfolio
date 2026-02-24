@@ -1,7 +1,7 @@
 'use client';
 
 import { motion, useInView } from 'framer-motion';
-import { ArrowDown, MapPin, Sparkles } from 'lucide-react';
+import { ArrowDown, Download, MapPin, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { getPersonalInfo } from '@/lib/api';
@@ -211,7 +211,7 @@ export default function Hero() {
             </div>
 
             <p className="text-base md:text-lg text-gray-500 dark:text-gray-400 mb-10 max-w-xl mx-auto leading-relaxed text-balance">
-              {personalInfo.bio}
+              {personalInfo.bioShort ?? personalInfo.bio}
             </p>
           </motion.div>
 
@@ -236,6 +236,17 @@ export default function Hero() {
                 Contactar
               </Button>
             </Link>
+            {personalInfo.cvUrl && (
+              <a
+                href={personalInfo.cvUrl}
+                download
+                aria-label="Descargar CV en PDF"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:border-primary hover:text-primary dark:hover:text-primary bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm active:scale-95 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              >
+                <Download className="h-4 w-4" aria-hidden="true" />
+                CV
+              </a>
+            )}
           </motion.div>
 
           {/* Stats counters */}

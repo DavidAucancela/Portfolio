@@ -1,12 +1,12 @@
 {
   "name": "Jonathan Aucancela",
   "title": "Ingeniero de Software",
-  "bio": "Soy Jonathan Aucancela, Ingeniero de Software graduado de la ESPOCH. Desde niño me fascinó lo que se puede construir con una computadora — esa capacidad de transformar una idea en algo real me sigue motivando hoy.\n\nTrabajo principalmente en desarrollo full stack y DevOps, integro IA en mis proyectos, y actualmente me adentro en el mundo de la seguridad informática. He desarrollado sistemas para clientes reales y proyectos académicos: desde plataformas web hasta asistentes financieros inteligentes.\n\nMi forma de trabajar: no me ato a un lenguaje o herramienta, me ato al problema. Aprendo lo necesario, lo entiendo de raíz, y lo aplico.",
-  "bioShort": "Ingeniero de Software graduado de la ESPOCH. Full stack, DevOps e IA — y actualmente explorando la seguridad informática. No me ato a una herramienta; me ato al problema.",
+  "bio": "Soy Jonathan Aucancela, Ingeniero de Software. Desde niño me fascinó lo que se puede construir mediante un par de líneas de código. Esa capacidad de transformar una idea en algo real me sigue motivando hoy.\n\nTrabajo principalmente en desarrollo full stack y DevOps, integro IA en mis proyectos, y actualmente me adentro en el mundo de la seguridad informática. He desarrollado sistemas para clientes reales y proyectos académicos: desde plataformas web hasta asistentes financieros inteligentes.\n\nMi forma de trabajar: no me ato a un lenguaje o herramienta, me ato al problema. Aprendo lo necesario, lo entiendo de raíz, y lo aplico.",
+  "bioShort": "Ingeniero de Software - Full stack - DevOps - IA - Seguridad \n\n No me ato a una herramienta, me ato al problema.",
   "email": "jonathan_jd@outlook.com",
   "location": "Quito, Ecuador",
-  "photoUrl": "/Foto principal.jpg",
-  "cvUrl": "/Hoja%20de%20vida%20-%20Final.pdf",
+  "photoUrl": "/Foto2.jpeg",
+  "cvUrl": "/CV-DavidAucancela.pdf",
   "social": {
     "github": "https://github.com/DavidAucancela",
     "linkedin": "https://www.linkedin.com/in/jonathan-david-aucancela/",
@@ -35,15 +35,15 @@
     },
     {
       "role": "Desarrollador Full Stack + IA",
-      "type": "Académico",
+      "type": "Cliente",
       "project": "AnaOS — Asistente Financiero",
       "projectSlug": "anaos",
       "description": "Asistente conversacional con IA para gestión de cooperativas financieras. Stack: React, Node.js, OpenAI API.",
       "period": "Ago 2025 — Nov 2025"
     },
     {
-      "role": "Desarrollador Frontend",
-      "type": "Cliente",
+      "role": "Desarrollador Backend",
+      "type": "Hackathon",
       "project": "Visualizador de Fundaciones — ConQuito",
       "projectSlug": "conquito-fundaciones",
       "description": "Herramienta de visualización de datos abiertos con mapas interactivos para el municipio de Quito.",
@@ -51,7 +51,7 @@
     },
     {
       "role": "Desarrollador Backend",
-      "type": "Académico",
+      "type": "Cliente",
       "project": "Equity — Gestor de Datos",
       "projectSlug": "equity",
       "description": "Pipeline ETL automatizado para gestión y limpieza de datos en bases de datos. Stack: Python, Django, PostgreSQL.",

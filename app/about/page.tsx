@@ -22,6 +22,7 @@ const typeColors: Record<string, string> = {
   Académico: 'bg-violet-500/10 text-violet-600 dark:text-violet-400',
   Cliente: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
   Práctica: 'bg-sky-500/10 text-sky-600 dark:text-sky-400',
+  Hackathon: 'bg-rose-500/10 text-rose-600 dark:text-rose-400',
 };
 
 export default function AboutPage() {

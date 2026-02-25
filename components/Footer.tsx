@@ -38,7 +38,7 @@ export default function Footer() {
               Jonathan.dev
             </h3>
             <p className="text-gray-400 text-sm leading-relaxed">
-              Ingeniero de Software construyendo soluciones web con React, Django y IA.
+              Ingeniero de Software construyendo soluciones digitales eficientes y escalables.
             </p>
           </div>
 
@@ -92,10 +92,7 @@ export default function Footer() {
 
         <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-gray-500 text-sm">
           <p>
-            © {new Date().getFullYear()} {personalInfo.name}. Todos los derechos reservados.
-          </p>
-          <p className="font-mono text-xs text-gray-600">
-            Built with Next.js + TypeScript
+            © {new Date().getFullYear()} {personalInfo.name}. 
           </p>
         </div>
       </Container>

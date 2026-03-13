@@ -1,0 +1,586 @@
+/* ============================================================
+   SECTIONS.CSS — Estilos específicos por sección
+   Complementa main.css con componentes de alto detalle
+   ============================================================ */
+
+/* ─────────────────────────────────────────────────────────────
+   1. ABOUT — FOCUS CARD (tarjeta de especialización por modo)
+   ───────────────────────────────────────────────────────────── */
+.about-focus-card {
+  display: flex;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  transition:
+    background 0.4s ease,
+    border-color 0.4s ease;
+}
+
+.about-focus-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--gradient-accent);
+  transition: background 0.4s ease;
+}
+
+.focus-card-icon {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--tag-bg);
+  border-radius: 10px;
+  transition: background 0.4s ease;
+}
+
+.focus-card-body { flex: 1; }
+
+.focus-card-title {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  margin-bottom: 0.35rem;
+  transition: color 0.4s ease;
+}
+
+.focus-card-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  transition: color 0.3s ease;
+}
+
+.focus-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.6rem;
+}
+
+.focus-card-tag {
+  padding: 0.15rem 0.5rem;
+  background: var(--tag-bg);
+  border: 1px solid var(--tag-border);
+  border-radius: 100px;
+  font-size: 0.72rem;
+  font-family: var(--font-display);
+  color: var(--tag-text);
+  transition: background 0.4s ease, border-color 0.4s ease, color 0.4s ease;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   2. ABOUT — LINKS SOCIALES
+   ───────────────────────────────────────────────────────────── */
+.about-social-links {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.social-link {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.social-link:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-color-hover);
+  color: var(--color-accent);
+  transform: translateY(-3px);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   3. SKILLS — DEVICONS Y CARDS MEJORADAS
+   ───────────────────────────────────────────────────────────── */
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(105px, 1fr));
+  gap: 0.85rem;
+}
+
+.skill-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1.1rem 0.6rem 0.9rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  cursor: default;
+  position: relative;
+  overflow: hidden;
+  transition:
+    background 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.skill-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-color-hover);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-5px) scale(1.02);
+}
+
+/* Brillo sutil en hover */
+.skill-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--color-accent-glow), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.skill-card:hover::after { opacity: 1; }
+
+/* Icono con Devicon */
+.skill-icon-wrap {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+}
+
+.skill-icon-wrap i {
+  font-size: 2rem;
+  line-height: 1;
+  filter: grayscale(0.2);
+  transition: filter 0.3s ease, transform 0.3s ease;
+}
+
+.skill-card:hover .skill-icon-wrap i {
+  filter: grayscale(0);
+  transform: scale(1.12);
+}
+
+/* Fallback cuando no hay devicon (SVG o emoji) */
+.skill-icon-fallback {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  background: var(--tag-bg);
+  border-radius: 8px;
+  transition: background 0.3s ease, transform 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.skill-card:hover .skill-icon-fallback {
+  background: var(--bg-card-hover);
+  transform: scale(1.12);
+}
+
+.skill-icon-fallback svg {
+  width: 22px;
+  height: 22px;
+  fill: var(--color-accent);
+  transition: fill 0.4s ease;
+}
+
+.skill-name {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.3;
+  transition: color 0.3s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.skill-card:hover .skill-name { color: var(--text-primary); }
+
+/* Nivel de skill (punto de color) */
+.skill-level {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  opacity: 0.6;
+  transition: background 0.4s ease;
+}
+
+/* ─── Encabezado de categoría de skills ────────────────────── */
+.skill-category-wrap {
+  margin-bottom: 2.5rem;
+}
+
+.skill-category-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.skill-category-title {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0;
+  transition: color 0.4s ease;
+}
+
+.skill-category-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(to right, var(--border-color), transparent);
+  transition: background 0.4s ease;
+}
+
+.skill-count-badge {
+  padding: 0.1rem 0.5rem;
+  background: var(--tag-bg);
+  border: 1px solid var(--tag-border);
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-family: var(--font-display);
+  color: var(--tag-text);
+  transition: background 0.4s ease, border-color 0.4s ease, color 0.4s ease;
+}
+
+/* ─── Descripción del stack técnico por modo ────────────────── */
+.skills-mode-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1.25rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  margin-bottom: 2.5rem;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  transition: background 0.4s ease, border-color 0.4s ease, color 0.3s ease;
+  animation: fadeIn 0.4s ease;
+}
+
+.skills-mode-summary strong {
+  color: var(--color-accent);
+  font-family: var(--font-display);
+  transition: color 0.4s ease;
+}
+
+.skills-mode-summary-icon {
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   4. EXPERIENCE — TIMELINE MEJORADO
+   ───────────────────────────────────────────────────────────── */
+.timeline-item-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.75rem;
+}
+
+.exp-tag {
+  padding: 0.2rem 0.55rem;
+  background: var(--tag-bg);
+  border: 1px solid var(--tag-border);
+  border-radius: 100px;
+  font-size: 0.72rem;
+  font-family: var(--font-display);
+  color: var(--tag-text);
+  transition: background 0.4s ease, border-color 0.4s ease, color 0.4s ease;
+}
+
+/* Tipo de entrada en el timeline */
+.timeline-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.18rem 0.55rem;
+  border-radius: 100px;
+  font-size: 0.68rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.type-work    { background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
+.type-project { background: rgba(34,197,94,0.12);  color: #4ade80; border: 1px solid rgba(34,197,94,0.25); }
+.type-edu     { background: rgba(168,85,247,0.12); color: #c084fc; border: 1px solid rgba(168,85,247,0.25); }
+
+/* Dot del timeline con ícono por tipo */
+.timeline-dot-icon {
+  position: absolute;
+  left: 3px;
+  top: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--bg-primary);
+  border: 2px solid var(--timeline-dot);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  box-shadow: 0 0 12px var(--timeline-dot-glow);
+  transition:
+    background 0.4s ease,
+    border-color 0.4s ease,
+    box-shadow 0.4s ease;
+}
+
+/* ─── Modo SEC: timeline con estilo terminal ─────────────────── */
+[data-theme="sec"] .timeline-content {
+  border-radius: 4px;
+  font-family: var(--font-display);
+}
+
+[data-theme="sec"] .timeline-date::before {
+  content: '$ ';
+  color: var(--color-accent);
+  opacity: 0.7;
+}
+
+[data-theme="sec"] .timeline-title::before {
+  content: '> ';
+  color: var(--color-accent);
+}
+
+/* ─── Modo IA: glassmorphism en timeline ─────────────────────── */
+[data-theme="ia"] .timeline-content {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: rgba(18, 4, 42, 0.6) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   5. CONTACT — SECCIÓN MEJORADA
+   ───────────────────────────────────────────────────────────── */
+.contact-availability {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.85rem;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-family: var(--font-display);
+  color: #4ade80;
+  margin-bottom: 1.25rem;
+}
+
+.availability-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* ─── Formulario con floating labels ────────────────────────── */
+.form-field {
+  position: relative;
+  margin-bottom: 1.25rem;
+}
+
+.form-field label {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  pointer-events: none;
+  transition: all 0.2s ease;
+  background: transparent;
+  padding: 0 0.25rem;
+}
+
+.form-field.textarea-field label {
+  top: 1rem;
+  transform: none;
+}
+
+.form-field input:focus ~ label,
+.form-field input:not(:placeholder-shown) ~ label,
+.form-field textarea:focus ~ label,
+.form-field textarea:not(:placeholder-shown) ~ label {
+  top: 0;
+  transform: translateY(-50%);
+  font-size: 0.75rem;
+  color: var(--color-accent);
+  background: var(--bg-primary);
+}
+
+.form-field.textarea-field input:focus ~ label,
+.form-field.textarea-field textarea:focus ~ label,
+.form-field.textarea-field textarea:not(:placeholder-shown) ~ label {
+  top: 0;
+  transform: translateY(-50%);
+}
+
+/* ─── Sección sec: Terminal prompt de contacto ──────────────── */
+[data-theme="sec"] .contact-form .form-input,
+[data-theme="sec"] .contact-form .form-textarea {
+  font-family: var(--font-display);
+  border-radius: 2px;
+}
+
+[data-theme="sec"] .contact-form .form-input::placeholder,
+[data-theme="sec"] .contact-form .form-textarea::placeholder {
+  color: var(--text-muted);
+  font-family: var(--font-display);
+}
+
+/* ─── Botón copiar email ─────────────────────────────────────── */
+.copy-email-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.7rem;
+  background: var(--tag-bg);
+  border: 1px solid var(--tag-border);
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-family: var(--font-display);
+  color: var(--tag-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  vertical-align: middle;
+  margin-left: 0.5rem;
+}
+
+.copy-email-btn:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-color-hover);
+  color: var(--color-accent);
+}
+
+.copy-email-btn.copied {
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #4ade80;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   6. BACK TO TOP BUTTON
+   ───────────────────────────────────────────────────────────── */
+.back-to-top {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease,
+    transform 0.3s ease,
+    background 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease;
+  z-index: 50;
+}
+
+.back-to-top.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.back-to-top:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-color-hover);
+  color: var(--color-accent);
+  box-shadow: var(--border-glow);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   7. STAT COUNTER ANIMATION
+   ───────────────────────────────────────────────────────────── */
+.stat-value {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  transition: color 0.4s ease;
+  min-height: 2.2rem;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   8. RESPONSIVE
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .skills-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .about-focus-card {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .back-to-top {
+    bottom: 1.25rem;
+    right: 1.25rem;
+  }
+
+  .contact-availability { font-size: 0.75rem; }
+}
+
+@media (max-width: 480px) {
+  .skills-grid { grid-template-columns: repeat(3, 1fr); }
+}

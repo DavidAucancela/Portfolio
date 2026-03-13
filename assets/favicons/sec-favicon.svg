@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="6" fill="#000000"/>
+  <!-- Escudo / candado en verde terminal -->
+  <path d="M16 4 L26 8 L26 18 C26 23 21 27 16 29 C11 27 6 23 6 18 L6 8 Z"
+        fill="none" stroke="#00ff41" stroke-width="1.5"/>
+  <!-- Cerrojo interno -->
+  <rect x="12" y="15" width="8" height="7" rx="1" fill="none" stroke="#00ff41" stroke-width="1.2"/>
+  <path d="M13 15 L13 13 C13 10.8 19 10.8 19 13 L19 15"
+        fill="none" stroke="#00ff41" stroke-width="1.2"/>
+  <circle cx="16" cy="18.5" r="1.2" fill="#00ff41"/>
+</svg>

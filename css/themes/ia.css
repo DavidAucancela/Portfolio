@@ -1,0 +1,127 @@
+/* ============================================================
+   TEMA: Jonathan.ia — Inteligencia Artificial
+   Paleta: Violeta profundo / Cyan neón / Negro
+   Vibe: Desarrollador que domina la IA aplicada
+   ============================================================ */
+
+[data-theme="ia"] {
+  /* Fondos */
+  --bg-primary:        #0d0221;
+  --bg-secondary:      #110330;
+  --bg-tertiary:       #150535;
+  --bg-card:           #12042a;
+  --bg-card-hover:     #1c0840;
+  --bg-nav:            rgba(13, 2, 33, 0.85);
+  --bg-input:          #0f0228;
+
+  /* Colores de acento */
+  --color-accent:      #06ffa5;
+  --color-accent-dim:  #00cc84;
+  --color-accent-glow: rgba(6, 255, 165, 0.35);
+  --color-secondary:   #b14eff;
+  --color-highlight:   #d585ff;
+  --color-danger:      #ff4d6d;
+  --color-success:     #06ffa5;
+
+  /* Texto */
+  --text-primary:      #e8d5ff;
+  --text-secondary:    #a78bca;
+  --text-accent:       #06ffa5;
+  --text-muted:        #5c3d7a;
+  --text-inverse:      #0d0221;
+
+  /* Gradientes */
+  --gradient-hero:     linear-gradient(135deg, #0d0221 0%, #150535 50%, #0a1525 100%);
+  --gradient-card:     linear-gradient(145deg, #12042a, #1c0840);
+  --gradient-accent:   linear-gradient(90deg, #06ffa5, #b14eff);
+  --gradient-glow:     radial-gradient(ellipse at 50% 0%, rgba(177,78,255,0.2) 0%, transparent 70%);
+  --gradient-text:     linear-gradient(135deg, #06ffa5, #b14eff, #06ffa5);
+
+  /* Efectos de borde y sombra */
+  --border-color:      rgba(177, 78, 255, 0.2);
+  --border-color-hover:rgba(6, 255, 165, 0.5);
+  --border-glow:       0 0 20px rgba(177, 78, 255, 0.3), 0 0 40px rgba(6, 255, 165, 0.1);
+  --border-glow-strong:0 0 30px rgba(6, 255, 165, 0.5), 0 0 60px rgba(177, 78, 255, 0.4), 0 0 100px rgba(177, 78, 255, 0.15);
+  --shadow-card:       0 4px 24px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(177, 78, 255, 0.15);
+  --shadow-card-hover: 0 8px 40px rgba(177, 78, 255, 0.3), 0 0 0 1px rgba(6, 255, 165, 0.4);
+  --shadow-nav:        0 1px 0 rgba(177, 78, 255, 0.2);
+  --shadow-button:     0 0 20px rgba(6, 255, 165, 0.4), 0 0 40px rgba(6, 255, 165, 0.2);
+
+  /* Tipografía display */
+  --font-display:      'Orbitron', 'Space Mono', monospace;
+  --font-body:         'Inter', system-ui, sans-serif;
+
+  /* Sufijo del modo */
+  --mode-suffix:       ".ia";
+  --mode-color:        #06ffa5;
+
+  /* Efectos especiales */
+  --scanline-opacity:  0;
+  --noise-opacity:     0.05;
+  --grid-color:        rgba(177, 78, 255, 0.04);
+  --particle-color:    #06ffa5;
+
+  /* Scroll bar */
+  --scrollbar-track:   #0d0221;
+  --scrollbar-thumb:   #4c1d95;
+  --scrollbar-hover:   #b14eff;
+
+  /* Tag / Badge */
+  --tag-bg:            rgba(6, 255, 165, 0.1);
+  --tag-border:        rgba(6, 255, 165, 0.3);
+  --tag-text:          #06ffa5;
+
+  /* Timeline */
+  --timeline-line:     #4c1d95;
+  --timeline-dot:      #b14eff;
+  --timeline-dot-glow: rgba(177, 78, 255, 0.6);
+
+  /* Botón primario */
+  --btn-bg:            linear-gradient(135deg, #06ffa5, #00cc84);
+  --btn-bg-hover:      linear-gradient(135deg, #00cc84, #009966);
+  --btn-text:          #0d0221;
+  --btn-outline-border:#06ffa5;
+  --btn-outline-text:  #06ffa5;
+
+  /* Cursor / partículas */
+  --cursor-color:      #06ffa5;
+  --cursor-trail:      rgba(6, 255, 165, 0.5);
+}
+
+/* ─── Glassmorphism para cards en modo IA ───────────────────── */
+[data-theme="ia"] .project-card {
+  backdrop-filter: blur(12px) saturate(1.5);
+  -webkit-backdrop-filter: blur(12px) saturate(1.5);
+  background: rgba(18, 4, 42, 0.7) !important;
+}
+
+/* ─── Efecto de borde pulsante neón ────────────────────────── */
+[data-theme="ia"] .project-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(6,255,165,0.6), rgba(177,78,255,0.6), rgba(6,255,165,0.2));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+[data-theme="ia"] .project-card:hover::before { opacity: 1; }
+
+/* ─── Scrollbar personalizado ───────────────────────────────── */
+[data-theme="ia"]::-webkit-scrollbar { width: 6px; }
+[data-theme="ia"]::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+[data-theme="ia"]::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+}
+[data-theme="ia"]::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-hover); }
+
+/* ─── Selección de texto ────────────────────────────────────── */
+[data-theme="ia"] ::selection {
+  background: rgba(6, 255, 165, 0.25);
+  color: #e8d5ff;
+}

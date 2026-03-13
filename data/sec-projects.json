@@ -1,0 +1,78 @@
+[
+  {
+    "id": "lab-001",
+    "title": "Meow",
+    "description": "Enumeración de servicios expuestos y acceso mediante credenciales por defecto en servicio Telnet.",
+    "tags": ["Telnet", "Default Credentials", "Enumeration", "Linux"],
+    "image": null,
+    "liveUrl": null,
+    "repoUrl": null,
+    "featured": false,
+    "date": "2025-01",
+    "lab": {
+      "platform": "HackTheBox",
+      "difficulty": "Very Easy",
+      "os": "Linux",
+      "rating": "4.6",
+      "status": "Pwned",
+      "techniques": ["Telnet", "Default Credentials", "Reconnaissance"]
+    }
+  },
+  {
+    "id": "lab-002",
+    "title": "Fawn",
+    "description": "Explotación de FTP con acceso anónimo habilitado para extracción de archivos sensibles del servidor.",
+    "tags": ["FTP", "Anonymous Login", "Enumeration", "Linux"],
+    "image": null,
+    "liveUrl": null,
+    "repoUrl": null,
+    "featured": false,
+    "date": "2025-01",
+    "lab": {
+      "platform": "HackTheBox",
+      "difficulty": "Very Easy",
+      "os": "Linux",
+      "rating": "4.7",
+      "status": "Pwned",
+      "techniques": ["FTP", "Anonymous Login", "File Enumeration"]
+    }
+  },
+  {
+    "id": "lab-003",
+    "title": "Dancing",
+    "description": "Acceso a shares SMB sin autenticación para obtener credenciales y flag del sistema Windows.",
+    "tags": ["SMB", "Anonymous Share", "Enumeration", "Windows"],
+    "image": null,
+    "liveUrl": null,
+    "repoUrl": null,
+    "featured": false,
+    "date": "2025-01",
+    "lab": {
+      "platform": "HackTheBox",
+      "difficulty": "Very Easy",
+      "os": "Windows",
+      "rating": "4.7",
+      "status": "Pwned",
+      "techniques": ["SMB", "Anonymous Shares", "Enumeration"]
+    }
+  },
+  {
+    "id": "lab-004",
+    "title": "Redeemer",
+    "description": "Explotación de instancia Redis expuesta sin autenticación para dump de base de datos en memoria.",
+    "tags": ["Redis", "Unauthenticated Access", "Enumeration", "Linux"],
+    "image": null,
+    "liveUrl": null,
+    "repoUrl": null,
+    "featured": false,
+    "date": "2025-01",
+    "lab": {
+      "platform": "HackTheBox",
+      "difficulty": "Very Easy",
+      "os": "Linux",
+      "rating": "4.6",
+      "status": "Pwned",
+      "techniques": ["Redis", "Unauthenticated Access", "DB Dump"]
+    }
+  }
+]

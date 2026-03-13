@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404 — Jonathan.dev</title>
+  <link rel="icon" href="assets/favicons/dev-favicon.svg" type="image/svg+xml" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0a0a1a;
+      --accent:  #0066FF;
+      --text:    #f0f0f0;
+      --muted:   rgba(240,240,240,0.45);
+      --border:  rgba(255,255,255,0.08);
+      --font:    'Inter', system-ui, sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+      overflow: hidden;
+    }
+
+    canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.35;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+      max-width: 520px;
+    }
+
+    .code {
+      font-size: clamp(6rem, 20vw, 10rem);
+      font-weight: 900;
+      font-family: 'Courier New', monospace;
+      line-height: 1;
+      color: transparent;
+      -webkit-text-stroke: 2px var(--accent);
+      letter-spacing: -0.04em;
+      animation: glitchIn 0.6s ease both;
+      position: relative;
+    }
+
+    .code::before, .code::after {
+      content: '404';
+      position: absolute;
+      inset: 0;
+      -webkit-text-stroke: 2px var(--accent);
+      color: transparent;
+    }
+
+    .code::before {
+      color: rgba(255,0,80,0.5);
+      -webkit-text-stroke: 0;
+      animation: glitch1 3s infinite;
+      clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+    }
+
+    .code::after {
+      color: rgba(0,255,165,0.5);
+      -webkit-text-stroke: 0;
+      animation: glitch2 3s infinite;
+      clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+    }
+
+    .label {
+      display: inline-block;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      color: var(--accent);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      border: 1px solid rgba(0,102,255,0.3);
+      padding: 0.3rem 0.8rem;
+      border-radius: 100px;
+      margin: 1.5rem 0 1rem;
+      animation: fadeUp 0.6s ease 0.3s both;
+    }
+
+    h1 {
+      font-size: clamp(1.2rem, 4vw, 1.6rem);
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      animation: fadeUp 0.6s ease 0.4s both;
+    }
+
+    p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 2rem;
+      animation: fadeUp 0.6s ease 0.5s both;
+    }
+
+    .actions {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      animation: fadeUp 0.6s ease 0.6s both;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.65rem 1.4rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.2s, opacity 0.2s;
+    }
+
+    .btn:hover { transform: translateY(-2px); opacity: 0.9; }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .terminal {
+      margin-top: 2.5rem;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-align: left;
+      animation: fadeUp 0.6s ease 0.7s both;
+    }
+
+    .terminal .prompt { color: #0066FF; }
+    .terminal .ok     { color: #9fef00; }
+    .terminal .err    { color: #ff4444; }
+
+    @keyframes glitchIn {
+      from { opacity:0; transform: skewX(-8deg) scale(1.05); }
+      to   { opacity:1; transform: skewX(0) scale(1); }
+    }
+
+    @keyframes glitch1 {
+      0%,95%,100% { transform: translate(0); }
+      96% { transform: translate(-3px, 1px); }
+      98% { transform: translate(3px, -1px); }
+    }
+
+    @keyframes glitch2 {
+      0%,92%,100% { transform: translate(0); }
+      93% { transform: translate(3px, 2px); }
+      95% { transform: translate(-3px, -1px); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(16px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+
+<div class="content">
+  <div class="code">404</div>
+  <div class="label">// error: page_not_found</div>
+  <h1>Esta ruta no existe</h1>
+  <p>La página que buscas fue movida, eliminada o nunca existió.<br>Vuelve al inicio y sigue explorando.</p>
+
+  <div class="actions">
+    <a href="index.html" class="btn btn-primary">
+      ← Volver al inicio
+    </a>
+    <a href="index.html#contact" class="btn btn-outline">
+      Contactar
+    </a>
+  </div>
+
+  <div class="terminal">
+    <div><span class="prompt">jonathan@dev:~$</span> curl -I /ruta-invalida</div>
+    <div><span class="err">HTTP/1.1 404 Not Found</span></div>
+    <div><span class="prompt">jonathan@dev:~$</span> cd ~</div>
+    <div><span class="ok">→ Redirigiendo a /home ...</span></div>
+  </div>
+</div>
+
+<script>
+  // Partículas de fondo
+  const canvas = document.getElementById('c');
+  const ctx    = canvas.getContext('2d');
+  let   pts    = [];
+
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  for (let i = 0; i < 55; i++) {
+    pts.push({
+      x:  Math.random() * canvas.width,
+      y:  Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      r:  1 + Math.random() * 2,
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const p of pts) {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0 || p.x > canvas.width)  p.vx *= -1;
+      if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+
+      for (const q of pts) {
+        const d = Math.hypot(p.x - q.x, p.y - q.y);
+        if (d < 120) {
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(q.x, q.y);
+          ctx.strokeStyle = `rgba(0,102,255,${(1-d/120)*0.2})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fillStyle = 'rgba(0,102,255,0.5)';
+      ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+</script>
+</body>
+</html>

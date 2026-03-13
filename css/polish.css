@@ -1,0 +1,871 @@
+/* ============================================================
+   POLISH.CSS — Efectos visuales premium y animaciones avanzadas
+   PASO 7: El corazón del diseño de alto impacto
+   ============================================================ */
+
+/* ─────────────────────────────────────────────────────────────
+   1. CURSOR PERSONALIZADO
+   ───────────────────────────────────────────────────────────── */
+@media (hover: hover) and (pointer: fine) {
+  body { cursor: none; }
+
+  .cursor-dot {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    background: var(--color-accent);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: background 0.3s ease, transform 0.1s ease, width 0.2s ease, height 0.2s ease;
+    mix-blend-mode: difference;
+  }
+
+  .cursor-ring {
+    position: fixed;
+    width: 36px;
+    height: 36px;
+    border: 1.5px solid var(--color-accent);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9997;
+    transform: translate(-50%, -50%);
+    transition:
+      transform 0.12s ease,
+      width 0.25s ease,
+      height 0.25s ease,
+      border-color 0.3s ease,
+      opacity 0.3s ease;
+    opacity: 0.6;
+  }
+
+  /* Cursor expandido al hacer hover en elementos interactivos */
+  body.cursor-hover .cursor-dot  { width: 12px; height: 12px; }
+  body.cursor-hover .cursor-ring { width: 52px; height: 52px; opacity: 0.4; }
+
+  /* Cursor en modo click */
+  body.cursor-click .cursor-dot  { transform: translate(-50%, -50%) scale(0.6); }
+  body.cursor-click .cursor-ring { transform: translate(-50%, -50%) scale(0.8); }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   2. CANVAS DE TRAIL DEL CURSOR (.dev)
+   ───────────────────────────────────────────────────────────── */
+#cursor-trail-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9996;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+[data-theme="dev"]  #cursor-trail-canvas { opacity: 1; }
+[data-theme="ia"]   #cursor-trail-canvas { opacity: 0.7; }
+[data-theme="sec"]  #cursor-trail-canvas { opacity: 1; }
+
+/* ─────────────────────────────────────────────────────────────
+   3. SCANLINES GLOBALES (.sec)
+   ───────────────────────────────────────────────────────────── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9995;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.03) 3px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+[data-theme="sec"] body::after,
+[data-theme="sec"]::after { opacity: 1; }
+
+/* ─────────────────────────────────────────────────────────────
+   4. HERO — EFECTOS AVANZADOS POR MODO
+   ───────────────────────────────────────────────────────────── */
+
+/* .dev — Grid de puntos sutil en el fondo */
+[data-theme="dev"] .hero-section::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    circle, rgba(59,130,246,0.12) 1px, transparent 1px
+  );
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+  animation: gridDrift 20s linear infinite;
+}
+
+@keyframes gridDrift {
+  0%   { background-position: 0 0; }
+  100% { background-position: 40px 40px; }
+}
+
+/* .ia — Gradiente animado que pulsa */
+[data-theme="ia"] .hero-section::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 60% 40% at 30% 60%,
+    rgba(177,78,255,0.08) 0%,
+    transparent 70%
+  ),
+  radial-gradient(
+    ellipse 50% 50% at 70% 30%,
+    rgba(6,255,165,0.06) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 0;
+  animation: iaPulse 6s ease-in-out infinite alternate;
+}
+
+@keyframes iaPulse {
+  0%   { opacity: 0.6; transform: scale(1); }
+  100% { opacity: 1;   transform: scale(1.05); }
+}
+
+/* .sec — Ruido/grain overlay */
+[data-theme="sec"] .hero-section::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.5;
+}
+
+/* Título del hero con gradiente animado según modo */
+.hero-title .hero-suffix {
+  background: var(--gradient-text);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: titleGradient 4s linear infinite;
+}
+
+@keyframes titleGradient {
+  0%   { background-position: 0%   center; }
+  100% { background-position: 200% center; }
+}
+
+/* Nombre del hero — efecto de subrayado deslizante */
+.hero-name {
+  position: relative;
+  display: inline-block;
+}
+
+.hero-name::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 0;
+  width: 0;
+  height: 3px;
+  background: var(--gradient-accent);
+  border-radius: 2px;
+  animation: nameUnderline 1.2s ease 1s forwards;
+  transition: background 0.4s ease;
+}
+
+@keyframes nameUnderline {
+  to { width: 100%; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   5. GLITCH EN EL SUFIJO AL CAMBIAR MODO
+   ───────────────────────────────────────────────────────────── */
+@keyframes glitchShift {
+  0%   { clip-path: inset(0% 0 95% 0); transform: translate(-3px, 0); }
+  10%  { clip-path: inset(40% 0 40% 0); transform: translate(3px, 0); }
+  20%  { clip-path: inset(80% 0 5% 0); transform: translate(-2px, 0); }
+  30%  { clip-path: inset(20% 0 60% 0); transform: translate(2px, 0); }
+  40%  { clip-path: inset(60% 0 20% 0); transform: translate(-3px, 0); }
+  50%  { clip-path: inset(10% 0 80% 0); transform: translate(0, 0); }
+  60%  { clip-path: inset(50% 0 30% 0); transform: translate(2px, 0); }
+  70%  { clip-path: inset(30% 0 55% 0); transform: translate(-2px, 0); }
+  80%  { clip-path: inset(70% 0 15% 0); transform: translate(1px, 0); }
+  90%  { clip-path: inset(5% 0 85% 0); transform: translate(-1px, 0); }
+  100% { clip-path: inset(0% 0 0% 0); transform: translate(0, 0); }
+}
+
+.hero-suffix.glitching::before,
+.hero-suffix.glitching::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-suffix.glitching::before {
+  color: #ff0050;
+  animation: glitchShift 0.25s steps(2, end) forwards;
+  left: 2px;
+}
+
+.hero-suffix.glitching::after {
+  color: #00ffff;
+  animation: glitchShift 0.25s steps(2, end) 0.05s forwards;
+  left: -2px;
+}
+
+.hero-suffix { position: relative; }
+
+/* ─────────────────────────────────────────────────────────────
+   6. NAVBAR — EFECTOS DE CALIDAD
+   ───────────────────────────────────────────────────────────── */
+
+/* Línea inferior del navbar con color del modo */
+.navbar::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--color-accent),
+    transparent
+  );
+  opacity: 0.4;
+  transition: opacity 0.4s ease, background 0.4s ease;
+}
+
+.navbar.scrolled::after { opacity: 0.7; }
+
+/* Logo con hover glow */
+.navbar__logo:hover .logo-name {
+  text-shadow: 0 0 20px var(--color-accent-glow);
+}
+
+/* Sufijo con efecto de borde activo */
+.logo-suffix {
+  position: relative;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+[data-theme="dev"]  .logo-suffix { text-shadow: 0 0 12px rgba(59,130,246,0.5); }
+[data-theme="ia"]   .logo-suffix { text-shadow: 0 0 12px rgba(6,255,165,0.5), 0 0 24px rgba(177,78,255,0.3); }
+[data-theme="sec"]  .logo-suffix { text-shadow: 0 0 10px rgba(0,255,65,0.6), 0 0 20px rgba(0,255,65,0.3); }
+
+/* ─────────────────────────────────────────────────────────────
+   7. SECTION LABELS — EFECTO GLITCH EN .sec
+   ───────────────────────────────────────────────────────────── */
+[data-theme="sec"] .section-label {
+  font-family: var(--font-display);
+  animation: secLabelFlicker 4s ease-in-out infinite;
+}
+
+@keyframes secLabelFlicker {
+  0%, 95%, 100% { opacity: 1; text-shadow: 0 0 8px rgba(0,255,65,0.5); }
+  96%           { opacity: 0.4; }
+  97%           { opacity: 1; }
+  98%           { opacity: 0.3; }
+  99%           { opacity: 1; }
+}
+
+/* Section title con underline animado */
+.section-title {
+  position: relative;
+  display: inline-block;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   8. PROJECT CARDS — EFECTOS PREMIUM
+   ───────────────────────────────────────────────────────────── */
+
+/* Card featured más grande */
+.project-card--featured {
+  grid-column: span 1;
+}
+
+/* Overlay oscuro sobre imagen con info on hover */
+.card-image-wrap {
+  position: relative;
+}
+
+.card-image-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 40%,
+    rgba(0,0,0,0.7) 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.project-card:hover .card-image-overlay { opacity: 1; }
+
+/* Borde animado en cards .ia */
+[data-theme="ia"] .project-card {
+  position: relative;
+}
+
+[data-theme="ia"] .project-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 13px;
+  background: conic-gradient(
+    from var(--card-angle, 0deg),
+    transparent 0deg,
+    var(--color-accent) 60deg,
+    var(--color-secondary) 120deg,
+    transparent 180deg
+  );
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+[data-theme="ia"] .project-card:hover::before {
+  opacity: 0.6;
+  animation: rotateBorder 3s linear infinite;
+}
+
+@keyframes rotateBorder {
+  to { --card-angle: 360deg; }
+}
+
+@property --card-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+/* Cards .sec — escáner animado en hover */
+[data-theme="sec"] .project-card::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(to right, transparent, var(--color-accent), transparent);
+  top: -2px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+[data-theme="sec"] .project-card:hover::after {
+  opacity: 0.8;
+  animation: scanLine 1.5s linear infinite;
+}
+
+@keyframes scanLine {
+  0%   { top: 0%;   opacity: 0.8; }
+  90%  { top: 100%; opacity: 0.8; }
+  100% { top: 100%; opacity: 0; }
+}
+
+/* Número de secuencia en cards .sec */
+[data-theme="sec"] .project-card .card-body::before {
+  content: attr(data-index);
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   9. BUTTONS — EFECTOS MAGNÉTICOS Y GLOW
+   ───────────────────────────────────────────────────────────── */
+
+/* Botón primary con glow pulsante en .ia */
+[data-theme="ia"] .btn-primary {
+  background: linear-gradient(135deg, #06ffa5, #00cc84);
+  color: #0d0221;
+  position: relative;
+  overflow: visible;
+}
+
+[data-theme="ia"] .btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, #06ffa5, #b14eff);
+  filter: blur(8px);
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 0.3s ease;
+}
+
+[data-theme="ia"] .btn-primary:hover::before { opacity: 0.5; }
+
+/* Botón primary .sec con efecto terminal */
+[data-theme="sec"] .btn-primary {
+  font-family: var(--font-display);
+  letter-spacing: 0.05em;
+  position: relative;
+}
+
+[data-theme="sec"] .btn-primary::before {
+  content: '> ';
+  color: #000;
+  font-weight: 700;
+}
+
+/* Botones outline con hover de relleno fluido */
+.btn-outline {
+  background-size: 200% 100%;
+  background-position: right center;
+  background-image: linear-gradient(
+    to left,
+    transparent 50%,
+    var(--color-accent-glow) 50%
+  );
+  transition:
+    background-position 0.3s ease,
+    color 0.3s ease,
+    border-color 0.3s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.btn-outline:hover {
+  background-position: left center;
+  color: var(--btn-outline-text);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   10. SKILLS — EFECTOS POR MODO
+   ───────────────────────────────────────────────────────────── */
+
+/* Modo .dev — border azul en hover */
+[data-theme="dev"] .skill-card:hover {
+  box-shadow: 0 0 0 1px rgba(59,130,246,0.5), var(--shadow-card-hover);
+}
+
+/* Modo .ia — glow neón en hover */
+[data-theme="ia"] .skill-card:hover {
+  box-shadow:
+    0 0 0 1px rgba(6,255,165,0.4),
+    0 0 20px rgba(6,255,165,0.15),
+    var(--shadow-card-hover);
+}
+
+/* Modo .sec — borde verde con scanline en hover */
+[data-theme="sec"] .skill-card {
+  border-radius: 2px;
+  font-family: var(--font-display);
+}
+
+[data-theme="sec"] .skill-card:hover {
+  box-shadow: 0 0 0 1px rgba(0,255,65,0.5), 0 0 12px rgba(0,255,65,0.15);
+}
+
+[data-theme="sec"] .skill-name {
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+}
+
+/* Icono de devicon con color del modo al hacer hover */
+[data-theme="dev"]  .skill-card:hover .skill-icon-wrap i { filter: drop-shadow(0 0 6px rgba(59,130,246,0.6)); }
+[data-theme="ia"]   .skill-card:hover .skill-icon-wrap i { filter: drop-shadow(0 0 6px rgba(6,255,165,0.6)); }
+[data-theme="sec"]  .skill-card:hover .skill-icon-wrap i { filter: drop-shadow(0 0 6px rgba(0,255,65,0.6)) grayscale(0.3) brightness(1.1); }
+
+/* ─────────────────────────────────────────────────────────────
+   11. ABOUT — FOTO CON EFECTOS POR MODO
+   ───────────────────────────────────────────────────────────── */
+
+/* .dev — glow azul pulsante */
+[data-theme="dev"] .about-avatar {
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.3), 0 0 30px rgba(59,130,246,0.15);
+  animation: avatarGlowDev 3s ease-in-out infinite;
+}
+
+@keyframes avatarGlowDev {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(59,130,246,0.3), 0 0 30px rgba(59,130,246,0.15); }
+  50%       { box-shadow: 0 0 0 3px rgba(59,130,246,0.5), 0 0 50px rgba(59,130,246,0.25); }
+}
+
+/* .ia — border con gradiente animado */
+[data-theme="ia"] .about-avatar-wrap::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: calc(var(--border-radius-lg) + 4px);
+  background: conic-gradient(from 0deg, #06ffa5, #b14eff, #06ffa5);
+  animation: rotateGradient 4s linear infinite;
+  z-index: -1;
+}
+
+@keyframes rotateGradient {
+  to { transform: rotate(360deg); }
+}
+
+[data-theme="ia"] .about-avatar {
+  box-shadow: none;
+}
+
+/* .sec — glitch ocasional */
+[data-theme="sec"] .about-avatar {
+  filter: grayscale(0.6) brightness(0.85) contrast(1.15);
+  box-shadow: 0 0 0 2px rgba(0,255,65,0.25), 0 0 20px rgba(0,255,65,0.1);
+  animation: avatarSecGlitch 8s ease-in-out infinite;
+}
+
+@keyframes avatarSecGlitch {
+  0%, 92%, 100% { filter: grayscale(0.6) brightness(0.85) contrast(1.15); }
+  93% { filter: grayscale(0.6) brightness(0.85) contrast(1.15) hue-rotate(90deg); }
+  94% { filter: grayscale(0.6) brightness(0.85) contrast(1.15); }
+  96% { filter: grayscale(0.6) brightness(0.85) contrast(1.15) hue-rotate(-30deg) saturate(2); }
+  97% { filter: grayscale(0.6) brightness(0.85) contrast(1.15); }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   12. TIMELINE — EFECTOS POR MODO
+   ───────────────────────────────────────────────────────────── */
+
+/* Línea del timeline con gradiente animado en .ia */
+[data-theme="ia"] .timeline::before {
+  background: linear-gradient(
+    to bottom,
+    #b14eff,
+    #06ffa5,
+    transparent
+  );
+  animation: timelineGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes timelineGlow {
+  0%   { filter: drop-shadow(0 0 4px rgba(177,78,255,0.5)); }
+  100% { filter: drop-shadow(0 0 8px rgba(6,255,165,0.5)); }
+}
+
+/* Dot icon con efecto de pulso */
+.timeline-dot-icon {
+  animation: dotPulse 2.5s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes dotPulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--timeline-dot-glow); }
+  50%       { box-shadow: 0 0 0 6px transparent; }
+}
+
+/* Entrada del timeline con slide */
+.timeline-item {
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+.timeline-item.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Delay stagger para items del timeline */
+.timeline-item:nth-child(1) { transition-delay: 0.05s; }
+.timeline-item:nth-child(2) { transition-delay: 0.15s; }
+.timeline-item:nth-child(3) { transition-delay: 0.25s; }
+.timeline-item:nth-child(4) { transition-delay: 0.35s; }
+.timeline-item:nth-child(5) { transition-delay: 0.45s; }
+
+/* ─────────────────────────────────────────────────────────────
+   13. CONTACT — EFECTOS POR MODO
+   ───────────────────────────────────────────────────────────── */
+
+/* Links de contacto con desplazamiento al hover */
+.contact-link-item {
+  overflow: hidden;
+  position: relative;
+}
+
+.contact-link-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--gradient-accent);
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 0.25s ease;
+}
+
+.contact-link-item:hover::before { transform: scaleY(1); }
+
+/* Form inputs con glow de foco */
+.form-input:focus,
+.form-textarea:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-glow), inset 0 1px 0 rgba(255,255,255,0.05);
+  outline: none;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   14. COMING SOON — ESTADOS PREMIUM
+   ───────────────────────────────────────────────────────────── */
+.coming-soon {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Orbs decorativos de fondo */
+.coming-soon::before,
+.coming-soon::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: orbFloat 6s ease-in-out infinite;
+}
+
+.coming-soon::before {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, var(--color-accent-glow), transparent 70%);
+  top: -100px;
+  right: -100px;
+  animation-delay: 0s;
+}
+
+.coming-soon::after {
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, var(--color-accent-glow), transparent 70%);
+  bottom: -80px;
+  left: -80px;
+  animation-delay: 3s;
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(10px, -15px) scale(1.05); }
+}
+
+.coming-soon-badge--terminal {
+  font-family: var(--font-display);
+  border-radius: 2px;
+  animation: terminalBlink 2s step-end infinite;
+}
+
+@keyframes terminalBlink {
+  0%, 100% { border-color: rgba(0,255,65,0.3); }
+  50%       { border-color: rgba(0,255,65,0.7); box-shadow: 0 0 8px rgba(0,255,65,0.3); }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   15. TRANSICIÓN DE MODO — OVERLAY MEJORADO
+   ───────────────────────────────────────────────────────────── */
+.theme-transition-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.theme-transition-overlay.active {
+  animation: themeWipe 0.45s ease forwards;
+}
+
+@keyframes themeWipe {
+  0%   { opacity: 0; clip-path: circle(0% at 50% 50%); }
+  40%  { opacity: 1; clip-path: circle(30% at 50% 50%); }
+  70%  { opacity: 0.6; clip-path: circle(80% at 50% 50%); }
+  100% { opacity: 0; clip-path: circle(150% at 50% 50%); }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   16. SCROLL PROGRESS — GLOW
+   ───────────────────────────────────────────────────────────── */
+.scroll-progress {
+  box-shadow: 0 0 12px var(--color-accent-glow), 0 0 4px var(--color-accent);
+  transition:
+    width 0.1s linear,
+    background 0.4s ease,
+    box-shadow 0.4s ease;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   17. FOOTER — TEXTO ANIMADO
+   ───────────────────────────────────────────────────────────── */
+.footer__mode strong {
+  position: relative;
+  display: inline-block;
+}
+
+.footer__mode strong::after {
+  content: '█';
+  font-size: 0.6em;
+  vertical-align: middle;
+  margin-left: 2px;
+  animation: cursorBlink 0.8s step-end infinite;
+  color: var(--color-accent);
+  transition: color 0.4s ease;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   18. SECTION HEADERS — ANIMACIÓN DE ENTRADA
+   ───────────────────────────────────────────────────────────── */
+.animate-on-scroll {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.6s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+.animate-on-scroll.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.animate-on-scroll.from-left  { transform: translateX(-32px); }
+.animate-on-scroll.from-right { transform: translateX(32px); }
+.animate-on-scroll.from-scale { transform: scale(0.93); }
+
+.animate-on-scroll.from-left.visible,
+.animate-on-scroll.from-right.visible,
+.animate-on-scroll.from-scale.visible {
+  transform: translate(0) scale(1);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   19. BACK TO TOP — EFECTO DE REBOTE
+   ───────────────────────────────────────────────────────────── */
+.back-to-top:hover svg {
+  animation: bounceUp 0.4s ease infinite alternate;
+}
+
+@keyframes bounceUp {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-4px); }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   20. MODO IA — EFECTOS ESPECIALES NEÓN
+   ───────────────────────────────────────────────────────────── */
+
+/* Tags con glow pulsante en .ia */
+[data-theme="ia"] .tag {
+  animation: tagPulseIA 3s ease-in-out infinite;
+}
+
+[data-theme="ia"] .tag:nth-child(2n) { animation-delay: 0.5s; }
+[data-theme="ia"] .tag:nth-child(3n) { animation-delay: 1s; }
+
+@keyframes tagPulseIA {
+  0%, 100% { box-shadow: none; }
+  50%       { box-shadow: 0 0 6px rgba(6,255,165,0.3); }
+}
+
+/* Focus card con borde gradiente animado en .ia */
+[data-theme="ia"] .about-focus-card {
+  background: rgba(18, 4, 42, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+[data-theme="ia"] .about-focus-card::before {
+  background: linear-gradient(180deg, #06ffa5, #b14eff);
+  animation: focusBorderIA 2s ease-in-out infinite alternate;
+}
+
+@keyframes focusBorderIA {
+  from { opacity: 0.6; }
+  to   { opacity: 1; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   21. MODO SEC — EFECTOS TERMINAL
+   ───────────────────────────────────────────────────────────── */
+
+/* Texto con efecto de "flicker" ocasional */
+[data-theme="sec"] h1,
+[data-theme="sec"] h2 {
+  animation: secHeadingFlicker 10s ease-in-out infinite;
+}
+
+@keyframes secHeadingFlicker {
+  0%, 97%, 100% { opacity: 1; }
+  97.5%         { opacity: 0.7; }
+  98%           { opacity: 1; }
+}
+
+/* Indicador de carga terminal en la sección hero */
+[data-theme="sec"] .hero-badge {
+  font-family: var(--font-display);
+  border-radius: 2px;
+}
+
+/* "Boot text" efecto en hero title */
+[data-theme="sec"] .hero-title {
+  text-shadow: 0 0 20px rgba(0,255,65,0.2);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   22. RESPONSIVE FINAL POLISH
+   ───────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  /* Deshabilitar cursor custom en mobile */
+  .cursor-dot, .cursor-ring { display: none; }
+  body { cursor: auto; }
+
+  /* Reducir efectos pesados en mobile */
+  [data-theme="dev"]  .hero-section::after { display: none; }
+  [data-theme="ia"]   .hero-section::after { animation: none; }
+  [data-theme="ia"]   .about-avatar-wrap::before { display: none; }
+  [data-theme="sec"]  body::after { display: none; }
+
+  /* Cards sin tilt en mobile (ya controlado en JS) */
+  .project-card:hover {
+    transform: translateY(-4px) !important;
+  }
+
+  /* Hero title más pequeño */
+  .hero-title { font-size: clamp(2.2rem, 10vw, 3.5rem); }
+
+  /* Coming soon orbs reducidos */
+  .coming-soon::before { width: 150px; height: 150px; }
+  .coming-soon::after  { width: 100px; height: 100px; }
+}
+
+@media (max-width: 480px) {
+  .hero-cta-group .btn { width: 100%; justify-content: center; }
+  .about-stats { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+  .stat-value  { font-size: 1.4rem; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   23. PREFERENCIAS DE ACCESIBILIDAD
+   ───────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.05ms !important;
+  }
+
+  .cursor-dot, .cursor-ring { display: none !important; }
+  body { cursor: auto !important; }
+}

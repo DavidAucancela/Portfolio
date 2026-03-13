@@ -1,0 +1,155 @@
+/* ============================================================
+   TEMA: Jonathan.sec — Seguridad / Pentesting
+   Paleta: Negro puro / Verde terminal / Rojo alerta
+   Vibe: Especialista en romper y proteger sistemas
+   ============================================================ */
+
+[data-theme="sec"] {
+  /* Fondos */
+  --bg-primary:        #000000;
+  --bg-secondary:      #050505;
+  --bg-tertiary:       #0a0a0a;
+  --bg-card:           #080808;
+  --bg-card-hover:     #0f0f0f;
+  --bg-nav:            rgba(0, 0, 0, 0.92);
+  --bg-input:          #050505;
+
+  /* Colores de acento */
+  --color-accent:      #00ff41;
+  --color-accent-dim:  #00cc33;
+  --color-accent-glow: rgba(0, 255, 65, 0.35);
+  --color-secondary:   #ff0033;
+  --color-highlight:   #39ff14;
+  --color-danger:      #ff0033;
+  --color-success:     #00ff41;
+
+  /* Texto */
+  --text-primary:      #c8ffc8;
+  --text-secondary:    #4dff4d;
+  --text-accent:       #00ff41;
+  --text-muted:        #1a4d1a;
+  --text-inverse:      #000000;
+
+  /* Gradientes */
+  --gradient-hero:     radial-gradient(ellipse at center top, #0a1a0a 0%, #050a05 40%, #000000 100%);
+  --gradient-card:     linear-gradient(145deg, #080808, #0d0d0d);
+  --gradient-accent:   linear-gradient(90deg, #00ff41, #39ff14);
+  --gradient-glow:     radial-gradient(ellipse at 50% 0%, rgba(0,255,65,0.1) 0%, transparent 70%);
+  --gradient-text:     linear-gradient(135deg, #00ff41, #39ff14, #00ff41);
+
+  /* Efectos de borde y sombra */
+  --border-color:      rgba(0, 255, 65, 0.15);
+  --border-color-hover:rgba(0, 255, 65, 0.5);
+  --border-glow:       0 0 10px rgba(0, 255, 65, 0.3);
+  --border-glow-strong:0 0 20px rgba(0, 255, 65, 0.6), 0 0 40px rgba(0, 255, 65, 0.2), inset 0 0 20px rgba(0, 255, 65, 0.05);
+  --shadow-card:       0 4px 20px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(0, 255, 65, 0.1);
+  --shadow-card-hover: 0 0 30px rgba(0, 255, 65, 0.2), 0 0 0 1px rgba(0, 255, 65, 0.4);
+  --shadow-nav:        0 1px 0 rgba(0, 255, 65, 0.1);
+  --shadow-button:     0 0 15px rgba(0, 255, 65, 0.5), 0 0 30px rgba(0, 255, 65, 0.2);
+
+  /* Tipografía display */
+  --font-display:      'Fira Code', 'Source Code Pro', 'Courier New', monospace;
+  --font-body:         'Fira Code', 'Source Code Pro', monospace;
+
+  /* Sufijo del modo */
+  --mode-suffix:       ".sec";
+  --mode-color:        #00ff41;
+
+  /* Efectos especiales */
+  --scanline-opacity:  0.03;
+  --noise-opacity:     0.08;
+  --grid-color:        rgba(0, 255, 65, 0.03);
+  --particle-color:    #00ff41;
+
+  /* Scroll bar */
+  --scrollbar-track:   #000000;
+  --scrollbar-thumb:   #004d14;
+  --scrollbar-hover:   #00ff41;
+
+  /* Tag / Badge */
+  --tag-bg:            rgba(0, 255, 65, 0.08);
+  --tag-border:        rgba(0, 255, 65, 0.3);
+  --tag-text:          #00ff41;
+
+  /* Timeline */
+  --timeline-line:     #004d14;
+  --timeline-dot:      #00ff41;
+  --timeline-dot-glow: rgba(0, 255, 65, 0.6);
+
+  /* Botón primario */
+  --btn-bg:            #00ff41;
+  --btn-bg-hover:      #00cc33;
+  --btn-text:          #000000;
+  --btn-outline-border:#00ff41;
+  --btn-outline-text:  #00ff41;
+
+  /* Cursor / partículas */
+  --cursor-color:      #00ff41;
+  --cursor-trail:      rgba(0, 255, 65, 0.5);
+}
+
+/* ─── Estética terminal/CLI para cards ──────────────────────── */
+[data-theme="sec"] .project-card {
+  font-family: var(--font-display);
+  border-style: solid;
+  border-width: 1px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ─── Efecto scanlines sobre las cards ──────────────────────── */
+[data-theme="sec"] .project-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.15) 2px,
+    rgba(0, 0, 0, 0.15) 4px
+  );
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 0;
+}
+
+/* ─── Pseudo-prompt terminal en card hover ──────────────────── */
+[data-theme="sec"] .project-card .card-prompt {
+  font-family: var(--font-display);
+  color: var(--color-accent);
+  font-size: 0.75rem;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: all 0.2s ease;
+}
+[data-theme="sec"] .project-card:hover .card-prompt {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ─── Overlay de noise/grain en modo sec ────────────────────── */
+[data-theme="sec"] .hero-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+  opacity: var(--noise-opacity);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ─── Scrollbar personalizado ───────────────────────────────── */
+[data-theme="sec"]::-webkit-scrollbar { width: 6px; }
+[data-theme="sec"]::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+[data-theme="sec"]::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 0;
+}
+[data-theme="sec"]::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-hover); }
+
+/* ─── Selección de texto ────────────────────────────────────── */
+[data-theme="sec"] ::selection {
+  background: rgba(0, 255, 65, 0.2);
+  color: #00ff41;
+}

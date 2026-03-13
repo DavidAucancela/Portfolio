@@ -1,0 +1,74 @@
+[
+  {
+    "id": "project-001",
+    "title": "UBApp — Universal Box",
+    "description": "Sistema de almacenamiento de envíos con búsqueda semántica impulsada por IA, visualización geográfica y generación de documentos.",
+    "longDescription": "Sistema fullstack de gestión de envíos con búsqueda semántica potenciada por OpenAI + pgvector. Incluye rastreo en tiempo real, gestión de inventario, reportes analíticos y panel de administración. Redujo el tiempo de búsqueda de 4 minutos a menos de 20 segundos.",
+    "tags": ["Django", "Angular", "PostgreSQL", "Docker", "OpenAI"],
+    "image": "public/images/projects/ubapp/index.png",
+    "liveUrl": "https://ubapp-frontend.onrender.com",
+    "repoUrl": "https://github.com/DavidAucancela/UBAppV2",
+    "featured": true,
+    "date": "2026-01"
+  },
+  {
+    "id": "project-002",
+    "title": "Ideancestral",
+    "description": "Plataforma de catálogo digital multiidioma para artesanos ecuatorianos con carrito de compras vía WhatsApp.",
+    "longDescription": "Sistema fullstack con Vue.js 3 y Node.js/Express. Soporta 3 idiomas (ES/EN/PT), modo oscuro/claro, carrito de compras con integración WhatsApp y panel administrativo para gestión de productos sin conocimiento técnico.",
+    "tags": ["Vue.js", "Node.js", "PostgreSQL", "i18n", "Vercel"],
+    "image": "public/images/projects/ideancestral/index.png",
+    "liveUrl": "https://ideancestral.onrender.com/",
+    "repoUrl": "https://github.com/DavidAucancela/IDEANCESTRAL",
+    "featured": true,
+    "date": "2026-02"
+  },
+  {
+    "id": "project-003",
+    "title": "AnaOS — Asistente Financiero IA",
+    "description": "Asistente virtual conversacional para cooperativas con análisis predictivo financiero y RAG sobre datos reales.",
+    "longDescription": "Asistente financiero que combina OpenAI API con un backend que enriquece el contexto con datos reales de la cooperativa antes de llamar a la IA. Patrón RAG aplicado a finanzas. TypeScript end-to-end.",
+    "tags": ["TypeScript", "React", "OpenAI", "Node.js", "PostgreSQL"],
+    "image": "public/images/projects/anaos/thumbnail.svg",
+    "liveUrl": null,
+    "repoUrl": "https://github.com/DavidAucancela/AnaOS",
+    "featured": true,
+    "date": "2025-11"
+  },
+  {
+    "id": "project-004",
+    "title": "Equity — Gestor de Datos ETL",
+    "description": "Pipeline automatizado de limpieza y carga de datos desde JSON a PostgreSQL con validación de schema y modo dry-run.",
+    "longDescription": "Herramienta ETL construida con Python/Django que automatiza Extract→Transform→Load desde archivos JSON. Incluye validación de schemas, transacciones atómicas, logs de auditoría y modo dry-run para validar sin insertar.",
+    "tags": ["Python", "Django", "PostgreSQL", "ETL"],
+    "image": "public/images/projects/equity/thumbnail.svg",
+    "liveUrl": null,
+    "repoUrl": "https://github.com/DavidAucancela/App-de-prueba-Equity",
+    "featured": false,
+    "date": "2025-11"
+  },
+  {
+    "id": "project-005",
+    "title": "SecuraBank",
+    "description": "Sistema bancario demostrativo con 6 categorías del OWASP Top 10 mitigadas, JWT con rotación y auditoría completa.",
+    "longDescription": "Sistema de transacciones bancarias que implementa security by design. Threat modeling aplicado antes del desarrollo, Helmet.js, CSRF tokens, queries parametrizadas al 100%, rate limiting y auditoría inmutable.",
+    "tags": ["Node.js", "OWASP", "JWT", "Helmet.js", "bcrypt"],
+    "image": "public/images/projects/securabank/thumbnail.svg",
+    "liveUrl": null,
+    "repoUrl": "https://github.com/DavidAucancela/SecuraBank",
+    "featured": false,
+    "date": "2025-02"
+  },
+  {
+    "id": "project-006",
+    "title": "ConQuito — Fundaciones",
+    "description": "Visualización interactiva de fundaciones de Quito para ConQuito con mapas Leaflet y estadísticas de impacto social.",
+    "longDescription": "Aplicación de datos abiertos con JavaScript vanilla y Leaflet. Filtros por tipo y zona geográfica, markers personalizados, popups informativos y gráficos Chart.js. Entregada a ConQuito como herramienta de decisiones.",
+    "tags": ["JavaScript", "Leaflet", "Chart.js", "Datos Abiertos"],
+    "image": "public/images/projects/conquito-fundaciones/thumbnail.svg",
+    "liveUrl": null,
+    "repoUrl": "https://github.com/DavidAucancela/Proyect_OpenLab",
+    "featured": false,
+    "date": "2025-10"
+  }
+]

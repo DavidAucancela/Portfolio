@@ -1,0 +1,104 @@
+/* ============================================================
+   TEMA: Jonathan.dev — Software Engineering
+   Paleta: Azul oscuro / Azul eléctrico / Blanco
+   Vibe: Ingeniero que construye sistemas sólidos
+   ============================================================ */
+
+[data-theme="dev"] {
+  /* Fondos */
+  --bg-primary:        #0a0a1a;
+  --bg-secondary:      #111128;
+  --bg-tertiary:       #1a1a3e;
+  --bg-card:           #12122a;
+  --bg-card-hover:     #1e1e45;
+  --bg-nav:            rgba(10, 10, 26, 0.85);
+  --bg-input:          #0f0f28;
+
+  /* Colores de acento */
+  --color-accent:      #3b82f6;
+  --color-accent-dim:  #1d4ed8;
+  --color-accent-glow: rgba(59, 130, 246, 0.35);
+  --color-secondary:   #60a5fa;
+  --color-highlight:   #93c5fd;
+  --color-danger:      #ef4444;
+  --color-success:     #22c55e;
+
+  /* Texto */
+  --text-primary:      #e2e8f0;
+  --text-secondary:    #94a3b8;
+  --text-accent:       #3b82f6;
+  --text-muted:        #475569;
+  --text-inverse:      #0a0a1a;
+
+  /* Gradientes */
+  --gradient-hero:     linear-gradient(135deg, #0a0a1a 0%, #111128 40%, #0d2060 100%);
+  --gradient-card:     linear-gradient(145deg, #12122a, #1a1a3e);
+  --gradient-accent:   linear-gradient(90deg, #3b82f6, #60a5fa);
+  --gradient-glow:     radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.15) 0%, transparent 70%);
+  --gradient-text:     linear-gradient(135deg, #60a5fa, #3b82f6, #1d4ed8);
+
+  /* Efectos de borde y sombra */
+  --border-color:      rgba(59, 130, 246, 0.2);
+  --border-color-hover:rgba(59, 130, 246, 0.6);
+  --border-glow:       0 0 20px rgba(59, 130, 246, 0.3);
+  --border-glow-strong:0 0 40px rgba(59, 130, 246, 0.5), 0 0 80px rgba(59, 130, 246, 0.2);
+  --shadow-card:       0 4px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(59, 130, 246, 0.1);
+  --shadow-card-hover: 0 8px 40px rgba(59, 130, 246, 0.25), 0 0 0 1px rgba(59, 130, 246, 0.4);
+  --shadow-nav:        0 1px 0 rgba(59, 130, 246, 0.15);
+  --shadow-button:     0 0 20px rgba(59, 130, 246, 0.4);
+
+  /* Tipografía display */
+  --font-display:      'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  --font-body:         'Inter', system-ui, sans-serif;
+
+  /* Sufijo del modo */
+  --mode-suffix:       ".dev";
+  --mode-color:        #3b82f6;
+
+  /* Efectos especiales */
+  --scanline-opacity:  0;
+  --noise-opacity:     0.03;
+  --grid-color:        rgba(59, 130, 246, 0.04);
+  --particle-color:    #3b82f6;
+
+  /* Scroll bar */
+  --scrollbar-track:   #0a0a1a;
+  --scrollbar-thumb:   #1d4ed8;
+  --scrollbar-hover:   #3b82f6;
+
+  /* Tag / Badge */
+  --tag-bg:            rgba(59, 130, 246, 0.12);
+  --tag-border:        rgba(59, 130, 246, 0.3);
+  --tag-text:          #93c5fd;
+
+  /* Timeline */
+  --timeline-line:     #1d4ed8;
+  --timeline-dot:      #3b82f6;
+  --timeline-dot-glow: rgba(59, 130, 246, 0.5);
+
+  /* Botón primario */
+  --btn-bg:            #3b82f6;
+  --btn-bg-hover:      #2563eb;
+  --btn-text:          #ffffff;
+  --btn-outline-border:#3b82f6;
+  --btn-outline-text:  #3b82f6;
+
+  /* Cursor / partículas */
+  --cursor-color:      #3b82f6;
+  --cursor-trail:      rgba(59, 130, 246, 0.6);
+}
+
+/* ─── Scrollbar personalizado (WebKit) ─────────────────────── */
+[data-theme="dev"]::-webkit-scrollbar { width: 6px; }
+[data-theme="dev"]::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+[data-theme="dev"]::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+}
+[data-theme="dev"]::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-hover); }
+
+/* ─── Selección de texto ────────────────────────────────────── */
+[data-theme="dev"] ::selection {
+  background: rgba(59, 130, 246, 0.35);
+  color: #e2e8f0;
+}

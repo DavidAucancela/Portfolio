@@ -1,0 +1,13 @@
+{
+  "roles": [
+    "Ingeniero de Software",
+    "Desarrollador Full Stack",
+    "Desarrollador Web",
+    "Entusiasta de IA"
+  ],
+  "stats": [
+    { "label": "Proyectos", "value": 6, "suffix": "" },
+    { "label": "Tecnologías", "value": 35, "suffix": "+" },
+    { "label": "Años de experiencia", "value": 2, "suffix": "" }
+  ]
+}

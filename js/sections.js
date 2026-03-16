@@ -245,54 +245,138 @@ const Sections = (() => {
   ════════════════════════════════════════════════════════════ */
   const EXPERIENCE_DATA = [
     {
-      date:    'Feb 2025 — Ene 2026',
-      title:   'Proyecto de Titulación — UBApp',
-      org:     'Universidad / Universal Box · Quito, Ecuador',
-      type:    'project',
-      typeLabel: 'Proyecto',
-      desc:    'Sistema fullstack de gestión de envíos con búsqueda semántica impulsada por IA (embeddings OpenAI + pgvector). Django REST + Angular + Docker. Reducción del 90% en tiempo de búsqueda.',
-      tags:    ['Django', 'Angular', 'OpenAI', 'pgvector', 'Docker', 'PostgreSQL'],
-      icon:    '🚀',
+      date:      'Feb 2025 — Ene 2026',
+      title:     'UBApp — Universal Box',
+      role:      'Desarrollador Full Stack · Titulación',
+      org:       'Universidad / Universal Box · Quito',
+      type:      'project',
+      typeLabel: 'Titulación',
+      desc:      'Sistema integral de gestión de envíos con búsqueda semántica impulsada por IA. Django REST + Angular + PostgreSQL + pgvector + Docker. Proyecto de grado con distinción.',
+      tags:      ['Django', 'Angular', 'OpenAI', 'pgvector', 'Docker', 'PostgreSQL'],
+      icon:      '🚀',
+      highlights: [
+        'Búsqueda semántica con embeddings OpenAI — reduce tiempo de 4 min a 20 s',
+        'CRUD completo con carga masiva Excel y generación de recibos PDF',
+        'Control de acceso por roles (RBAC) + JWT + Docker Compose 4 servicios',
+      ],
+      metricas: [
+        { label: 'Mejora eficiencia', value: '90%' },
+        { label: 'Módulos', value: '7' },
+        { label: 'Tiempo búsqueda', value: '<20s' },
+      ],
+      github: 'https://github.com/DavidAucancela/UBAppV2',
+      demo:   'https://ubapp-frontend.onrender.com',
     },
     {
-      date:    'Ene 2026 — Feb 2026',
-      title:   'Ideancestral — Catálogo Digital Artesanal',
-      org:     'Proyecto independiente · Remoto',
-      type:    'project',
-      typeLabel: 'Proyecto',
-      desc:    'Plataforma fullstack multiidioma para artesanos ecuatorianos. Vue.js 3 + Node.js/Express + PostgreSQL. Soporte ES/EN/PT, modo oscuro/claro, carrito con WhatsApp.',
-      tags:    ['Vue.js', 'Node.js', 'PostgreSQL', 'i18n', 'Vercel'],
-      icon:    '🎨',
+      date:      'Ene 2026 — Feb 2026',
+      title:     'Ideancestral',
+      role:      'Desarrollador Full Stack · Freelance',
+      org:       'Proyecto independiente · Remoto',
+      type:      'project',
+      typeLabel: 'Freelance',
+      desc:      'Catálogo digital de artesanías ecuatorianas con soporte multiidioma (ES/EN/PT), panel administrativo, carrito con pedidos por WhatsApp y modo oscuro/claro.',
+      tags:      ['Vue.js', 'Node.js', 'PostgreSQL', 'Pinia', 'i18n', 'Vercel'],
+      icon:      '🎨',
+      highlights: [
+        'SPA multiidioma (ES/EN/PT) con vue-i18n y Pinia para estado global',
+        'Panel admin CRUD de productos, categorías y usuarios',
+        'Carrito con generación de pedido en mensaje WhatsApp',
+      ],
+      metricas: [
+        { label: 'Idiomas', value: '3' },
+        { label: 'Productos', value: '+100' },
+        { label: 'Seguridad', value: '4 capas' },
+      ],
+      github: 'https://github.com/DavidAucancela/IDEANCESTRAL',
+      demo:   'https://ideancestral.onrender.com/',
     },
     {
-      date:    'Ago 2025 — Nov 2025',
-      title:   'AnaOS — Asistente Financiero IA',
-      org:     'Proyecto independiente · Remoto',
-      type:    'project',
-      typeLabel: 'IA',
-      desc:    'Asistente virtual financiero para cooperativas usando OpenAI API con RAG. TypeScript + React + Node.js. El backend enriquece el contexto con datos reales antes de llamar a la IA.',
-      tags:    ['TypeScript', 'React', 'OpenAI', 'RAG', 'Node.js'],
-      icon:    '🤖',
+      date:      'Ago 2025 — Nov 2025',
+      title:     'AnaOS — Asistente Financiero',
+      role:      'Desarrollador Full Stack + IA · Cliente',
+      org:       'Cooperativa financiera · Remoto',
+      type:      'project',
+      typeLabel: 'Cliente',
+      desc:      'Asistente conversacional con IA para gestión de cooperativas financieras. El backend enriquece cada consulta con datos reales antes de llamar a OpenAI, sin exponer datos PII.',
+      tags:      ['TypeScript', 'React', 'Node.js', 'OpenAI', 'RAG', 'PostgreSQL'],
+      icon:      '🤖',
+      highlights: [
+        'Patrón RAG: backend consulta BD y enriquece contexto antes de llamar a IA',
+        'Streaming de respuestas OpenAI para experiencia de chat fluida',
+        '0 datos PII expuestos al modelo — privacidad financiera garantizada',
+      ],
+      metricas: [
+        { label: 'Módulos IA', value: '4' },
+        { label: 'TypeScript', value: '100%' },
+        { label: 'PII expuesto', value: '0' },
+      ],
+      github: 'https://github.com/DavidAucancela/AnaOS',
     },
     {
-      date:    'Ene 2025 — Feb 2025',
-      title:   'SecuraBank — Sistema Bancario Seguro',
-      org:     'Proyecto educativo · OWASP',
-      type:    'project',
-      typeLabel: 'Seguridad',
-      desc:    'Sistema bancario demostrativo con 6 categorías del OWASP Top 10 mitigadas. Node.js + Helmet.js + JWT con rotación. "Security by design" aplicado a finanzas.',
-      tags:    ['Node.js', 'OWASP', 'JWT', 'Helmet.js', 'bcrypt'],
-      icon:    '🔒',
+      date:      'Jul 2025 — Oct 2025',
+      title:     'Fundaciones — ConQuito',
+      role:      'Desarrollador Backend · Hackathon',
+      org:       'ConQuito · Quito, Ecuador',
+      type:      'project',
+      typeLabel: 'Hackathon',
+      desc:      'Herramienta de datos abiertos para el municipio de Quito: visualización interactiva de fundaciones con mapas Leaflet, filtros dinámicos y estadísticas de impacto social.',
+      tags:      ['JavaScript', 'Leaflet', 'Charts.js', 'Datos Abiertos'],
+      icon:      '🗺️',
+      highlights: [
+        'Mapas interactivos Leaflet con markers por tipo de fundación',
+        'Filtros dinámicos que actualizan mapa y gráficos simultáneamente',
+        'Static site — cero dependencias npm, compatible con cualquier hosting',
+      ],
+      metricas: [
+        { label: 'Fundaciones', value: '30+' },
+        { label: 'Deps npm', value: '0' },
+        { label: 'Deploy', value: 'Static' },
+      ],
+      github: 'https://github.com/DavidAucancela/Proyect_OpenLab',
     },
     {
-      date:    '2021 — 2026',
-      title:   'Ingeniería en Informática',
-      org:     'Universidad · Quito, Ecuador',
-      type:    'edu',
-      typeLabel: 'Educación',
-      desc:    'Formación en sistemas distribuidos, bases de datos, redes, algoritmos, seguridad informática y metodologías ágiles. Proyecto de grado con distinción en integración de IA aplicada.',
-      tags:    ['Algoritmos', 'BD', 'Redes', 'Seguridad', 'Scrum'],
-      icon:    '🎓',
+      date:      'Sep 2025 — Nov 2025',
+      title:     'Equity — Gestor de Datos',
+      role:      'Desarrollador Backend · Cliente',
+      org:       'Cliente empresarial · Remoto',
+      type:      'project',
+      typeLabel: 'Cliente',
+      desc:      'Pipeline ETL (Extract → Transform → Load) que automatiza la población de bases de datos desde archivos JSON con validación de schema, transacciones atómicas y logs de auditoría.',
+      tags:      ['Python', 'Django', 'PostgreSQL', 'ETL', 'JSON'],
+      icon:      '⚙️',
+      highlights: [
+        'Pipeline ETL completo con validación de schema antes de cada inserción',
+        'Modo dry-run para validar datos sin modificar la base de datos',
+        'Logs inmutables de auditoría con niveles INFO / WARNING / ERROR',
+      ],
+      metricas: [
+        { label: 'Automatización', value: '100%' },
+        { label: 'Dry-run', value: '✓' },
+        { label: 'Validación', value: 'Schema completo' },
+      ],
+      github: 'https://github.com/DavidAucancela/App-de-prueba-Equity',
+    },
+    {
+      date:      'Ene 2025 — Feb 2025',
+      title:     'SecuraBank',
+      role:      'Desarrollador + Seguridad · Práctica',
+      org:       'Proyecto educativo · OWASP',
+      type:      'project',
+      typeLabel: 'Práctica',
+      desc:      'Sistema bancario demostrativo que implementa 6 categorías del OWASP Top 10. Node.js + Helmet.js + JWT con rotación. Seguridad diseñada desde el inicio, no como añadido.',
+      tags:      ['Node.js', 'OWASP', 'JWT', 'Helmet.js', 'bcrypt', 'PostgreSQL'],
+      icon:      '🔒',
+      highlights: [
+        '6 vulnerabilidades OWASP Top 10 mitigadas: A01, A02, A03, A05, A07',
+        'JWT access (15 min) + refresh (7 días) con rotación automática',
+        'Auditoría inmutable: cada transacción registrada con timestamp e IP',
+      ],
+      metricas: [
+        { label: 'OWASP mitigados', value: '6/10' },
+        { label: 'Capas seguridad', value: '5' },
+        { label: 'Auditoría', value: '100%' },
+      ],
+      github: 'https://github.com/DavidAucancela/SecuraBank',
     },
   ];
 
@@ -467,31 +551,159 @@ const Sections = (() => {
     return { dev: 'Software Engineering', ia: 'IA & ML', sec: 'Cybersecurity' }[mode] || mode;
   }
 
-  /* ─── EXPERIENCE ─────────────────────────────────────────── */
+  /* ─── EXPERIENCE (interactive two-column) ───────────────── */
+  let _expActiveIndex = 0;
+
   function renderExperience(mode) {
     const container = document.getElementById('timeline-container');
     if (!container) return;
 
-    // El modo sec añade clase terminal al contenedor
     container.dataset.mode = mode;
+    container.innerHTML = '';
 
-    container.innerHTML = EXPERIENCE_DATA.map(item => `
-      <article class="timeline-item" aria-label="${item.title}">
-        <div class="timeline-dot-icon" aria-hidden="true">${item.icon}</div>
-        <div class="timeline-content">
-          <span class="timeline-type-badge type-${item.type}">${item.typeLabel}</span>
-          <time class="timeline-date">${item.date}</time>
-          <h3 class="timeline-title">${item.title}</h3>
-          <p class="timeline-org">${item.org}</p>
-          <p class="timeline-desc">${item.desc}</p>
-          <div class="timeline-item-tags">
-            ${item.tags.map(t => `<span class="exp-tag">${t}</span>`).join('')}
-          </div>
+    const wrap = document.createElement('div');
+    wrap.className = 'tray-layout';
+
+    // ── Phase list (left) ──────────────────────────────────
+    const phaseList = document.createElement('div');
+    phaseList.className = 'tray-phase-list';
+    phaseList.innerHTML = `<div class="tray-connector" aria-hidden="true"></div>`;
+
+    EXPERIENCE_DATA.forEach((item, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'tray-phase-btn' + (i === _expActiveIndex ? ' active' : '');
+      btn.setAttribute('aria-label', `Ver fase ${i + 1}: ${item.title}`);
+      btn.dataset.index = i;
+      btn.innerHTML = `
+        <div class="tray-phase-dot" data-type="${item.typeLabel}">
+          <span class="tray-phase-num">${String(i + 1).padStart(2, '0')}</span>
         </div>
-      </article>
+        <div class="tray-phase-info">
+          <div class="tray-phase-meta">
+            <span class="tray-type-badge type-${item.type} tray-type-sm">${item.typeLabel}</span>
+            <span class="tray-phase-year">${item.date.split(' — ')[0]}</span>
+          </div>
+          <p class="tray-phase-title">${item.title}</p>
+          <p class="tray-phase-role">${item.role}</p>
+        </div>
+        <svg class="tray-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      `;
+      btn.addEventListener('click', () => _showPhaseDetail(i, wrap));
+      phaseList.appendChild(btn);
+    });
+
+    // ── Detail panel (right) ───────────────────────────────
+    const detailPanel = document.createElement('div');
+    detailPanel.className = 'tray-detail';
+    detailPanel.id = 'tray-detail-panel';
+
+    wrap.appendChild(phaseList);
+    wrap.appendChild(detailPanel);
+    container.appendChild(wrap);
+
+    // Render initial detail
+    _renderDetailCard(EXPERIENCE_DATA[_expActiveIndex], detailPanel, false);
+    _refreshObservers();
+  }
+
+  function _showPhaseDetail(index, wrap) {
+    if (index === _expActiveIndex) return;
+    _expActiveIndex = index;
+
+    // Update active button state
+    wrap.querySelectorAll('.tray-phase-btn').forEach((btn, i) => {
+      btn.classList.toggle('active', i === index);
+    });
+
+    const panel = document.getElementById('tray-detail-panel');
+    if (!panel) return;
+
+    // Fade out → swap → fade in
+    panel.style.opacity    = '0';
+    panel.style.transform  = 'translateY(10px)';
+    setTimeout(() => {
+      _renderDetailCard(EXPERIENCE_DATA[index], panel, true);
+      panel.style.transition = 'opacity 0.22s ease, transform 0.22s ease';
+      panel.style.opacity    = '1';
+      panel.style.transform  = 'translateY(0)';
+    }, 180);
+  }
+
+  function _renderDetailCard(item, panel, animated) {
+    const highlightsHTML = (item.highlights || []).map(h => `
+      <li class="tray-highlight-item">
+        <span class="tray-highlight-dot type-${item.type}" aria-hidden="true"></span>
+        ${h}
+      </li>
     `).join('');
 
-    _refreshObservers();
+    const metricasHTML = (item.metricas || []).map(m => `
+      <div class="tray-metric">
+        <span class="tray-metric-value">${m.value}</span>
+        <span class="tray-metric-label">${m.label}</span>
+      </div>
+    `).join('');
+
+    const tagsHTML = (item.tags || []).map(t => `<span class="exp-tag">${t}</span>`).join('');
+
+    const ctasHTML = `
+      ${item.github ? `<a href="${item.github}" target="_blank" rel="noopener noreferrer"
+          class="tray-cta tray-cta--ghost" aria-label="Ver código en GitHub de ${item.title}">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482
+            0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.462-1.11-1.462
+            -.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832
+            .092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683
+            -.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836a9.59 9.59 0
+            012.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028
+            1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012
+            2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
+          </svg>
+          GitHub
+        </a>` : ''}
+      ${item.demo ? `<a href="${item.demo}" target="_blank" rel="noopener noreferrer"
+          class="tray-cta tray-cta--ghost" aria-label="Ver demo de ${item.title}">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
+            <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+          Demo live
+        </a>` : ''}
+    `;
+
+    panel.style.transition = animated ? 'opacity 0.22s ease, transform 0.22s ease' : 'none';
+    panel.innerHTML = `
+      <div class="tray-card">
+        <div class="tray-card-header">
+          <div class="tray-card-header-top">
+            <span class="tray-type-badge type-${item.type}">${item.typeLabel}</span>
+            <time class="tray-card-date">${item.date}</time>
+          </div>
+          <h3 class="tray-card-title">${item.icon} ${item.title}</h3>
+          <p class="tray-card-role">${item.role}</p>
+        </div>
+        <div class="tray-card-body">
+          <p class="tray-card-desc">${item.desc}</p>
+
+          ${tagsHTML ? `<div class="tray-card-section">
+            <p class="tray-card-section-label">Stack</p>
+            <div class="timeline-item-tags">${tagsHTML}</div>
+          </div>` : ''}
+
+          ${highlightsHTML ? `<div class="tray-card-section">
+            <p class="tray-card-section-label">Highlights</p>
+            <ul class="tray-highlights-list">${highlightsHTML}</ul>
+          </div>` : ''}
+
+          ${metricasHTML ? `<div class="tray-metrics-grid">${metricasHTML}</div>` : ''}
+
+          ${ctasHTML.trim() ? `<div class="tray-ctas">${ctasHTML}</div>` : ''}
+        </div>
+      </div>
+    `;
   }
 
   /* ─── CONTACT ────────────────────────────────────────────── */

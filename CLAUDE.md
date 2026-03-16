@@ -1,93 +1,94 @@
-# Portfolio Project (PP) — CLAUDE.md
+# Portfolio Project — CLAUDE.md
 
 ## Project Overview
-Personal portfolio website for Jonathan Aucancela. All UI copy is in **Spanish**.
+Portfolio personal de Jonathan Aucancela. Todo el copy de UI está en **español**.
 
-- **Framework:** Next.js 14 (App Router), TypeScript (strict), Tailwind CSS, Framer Motion
-- **Path:** `C:\Users\david\Personal\PP`
+- **Stack:** HTML5, CSS3, JavaScript vanilla (sin framework, sin build step)
+- **Deploy:** Vercel static (`@vercel/static`)
+- **Path:** `C:\Users\david\Portfolio`
 
-## Commands
+## Cómo ver el proyecto
+Abrir `index.html` directamente en el navegador, o usar cualquier servidor HTTP estático:
 ```bash
-npm run dev      # Dev server at http://localhost:3000
-npm run build    # Production build
-npm run start    # Start production server
-npm run lint     # ESLint
+npx serve .          # con Node instalado
+python -m http.server 8080
 ```
 
-## Project Structure
+## Estructura
 ```
-app/                    # Next.js App Router
-  layout.tsx            # Root layout (Navigation, Footer, CommandPalette, ScrollProgress)
-  page.tsx              # Home (Hero, Featured Projects, Skills)
-  projects/page.tsx     # Projects listing with category filters
-  projects/[slug]/page.tsx  # Dynamic project detail page
-  about/page.tsx
-  contact/page.tsx
-components/             # Reusable components (PascalCase)
-  Navigation.tsx        # Sticky nav with mobile menu & ⌘K search trigger
-  CommandPalette.tsx    # Ctrl+K / ⌘K command palette
-  ScrollProgress.tsx    # Fixed top glowing scroll progress bar
-  ProjectCard.tsx
-  sections/Hero.tsx, Projects.tsx, Skills.tsx
-  ui/Button.tsx, Card.tsx, Container.tsx
+index.html            # Página principal (única)
+404.html              # Página de error
+css/
+  main.css            # Variables, reset, layout base, tipografía
+  sections.css        # Estilos por sección (hero, about, projects, skills, contact)
+  animations.css      # Keyframes y clases de animación
+  polish.css          # Detalles visuales, jonathan-panel, trayectoria interactiva
+  themes/             # Overrides por modo (dev, ia, sec)
+js/
+  main.js             # Init global, jonathan-panel, formulario de contacto
+  sections.js         # Renderizadores por sección (EXPERIENCE_DATA, ABOUT_DATA, etc.)
+  projects.js         # Renderizado de tarjetas de proyectos
+  animations.js       # Scroll observer, animaciones de entrada
+  effects.js          # Efectos visuales, parallax, partículas
+  theme-switcher.js   # Cambio entre modos dev / ia / sec
+  lang.js             # Internacionalización ES/EN
+  section-nav.js      # Navegación lateral por secciones
+  ia-assistant.js     # Asistente IA (solo modo .ia)
 data/
-  projects.json         # 6 projects (ubapp, ideancestral, anaos, equity, securabank, conquistador)
-  personal.json         # Name, bio, email, social links
-  skills.json           # 35 skills across 6 categories
-lib/
-  api.ts                # Data access (getAllProjects, getProjectBySlug, etc.)
-  utils.ts              # cn(), formatDate(), formatDateRange()
-types/index.ts          # Project, Skill, PersonalInfo interfaces
-public/images/projects/ # Local project screenshots
+  projects.json       # 6 proyectos con proceso, métricas, links
+  personal.json       # Nombre, bio, email, redes, timeline
+  skills.json         # Skills por categoría
+  hero.json           # Contenido del hero por modo
+assets/               # Fuentes, íconos SVG
+public/               # Imágenes (foto, screenshots de proyectos)
+vercel.json           # Config deploy estático
 ```
 
-## Architecture & Key Patterns
+## Arquitectura & Patrones clave
 
-**Server vs Client Components:**
-- Default: server components (layout, pages, Footer)
-- Mark with `'use client'` when needed (Navigation, CommandPalette, ScrollProgress, interactive sections)
+**Sin build step:** Todo se carga directamente en el navegador. Los JS se cargan en orden al final del `<body>`.
 
-**Data Flow:**
-- Static JSON → `lib/api.ts` → Components (all build-time bundled, no API calls)
-- Import JSON directly in client components (bundled at build time)
+**Módulo IIFE:** Cada JS usa patrón IIFE con API pública:
+```js
+const Sections = (function() {
+  // ...
+  return { init, render, renderExperience };
+})();
+```
 
-**Custom Event Decoupling:**
-```ts
-// Fire from Navigation button to open CommandPalette without direct coupling
+**Modos del portfolio:** `dev` | `ia` | `sec` — cambian contenido, estilos y secciones visibles.
+```js
+window.dispatchEvent(new CustomEvent('portfolio:modeChange', { detail: { mode } }));
+```
+
+**Eventos custom para desacoplamiento:**
+```js
+window.dispatchEvent(new CustomEvent('portfolio:modeChange', { detail: { mode } }))
 window.dispatchEvent(new CustomEvent('command-palette:open'))
 ```
 
-**Dynamic Routes:**
-- `[slug]` pages use `generateStaticParams()` for static generation
+**Jonathan Panel:** Drawer lateral (derecho) que se abre al clic en "Jonathan" del nav.
+Contiene la **Trayectoria Interactiva** — dos columnas: lista de fases (izquierda) + panel de detalle (derecha).
 
-**Animations:** Framer Motion throughout — `motion` components, `AnimatePresence`, `whileInView`, `initial/animate/exit`
+## Secciones en index.html
+- `#hero` — presentación con modos
+- `#about` — bio, stats, focus card
+- `#projects` — grid de proyectos (renderizado por `projects.js`)
+- `#skills` — grid de habilidades técnicas
+- `#ia-assistant-section` — solo visible en modo `.ia`
+- `#contact` — formulario y redes
+- `#jonathan-panel` — drawer de trayectoria (fuera del `<main>`)
 
-## Design System
-- **Primary color:** `#0066FF` (Tailwind: `primary`, CSS var: `--color-primary`)
-- **Secondary:** `#1A1A1A`
-- **Fonts:** Inter (body), Poppins (display)
-- **Tailwind custom classes:** `text-primary`, `bg-primary`, `hover:bg-primary-dark`
+## Datos
+- JSON en `data/` se usan directamente como archivos estáticos (sin fetch en runtime)
+- Los datos están embebidos en los JS (`EXPERIENCE_DATA`, `ABOUT_DATA`, `SKILLS_DATA`)
 
-## Project Categories
-- `P1` — Principal/Destacado (featured)
-- `P2` — Proyecto (secondary)
-- `P3` — Práctica (learning)
+## Convenciones
+- **CSS:** BEM-like (`.section__element--modifier`)
+- **Variables CSS:** `--color-accent`, `--color-text`, `--bg-card`, `--font-display`, `--font-mono`
+- **IDs de sección:** kebab-case (`jonathan-panel`, `timeline-container`)
+- **Clases de animación:** `animate-on-scroll`, `from-left`, `from-right`, `stagger-item`
 
-## TypeScript
-- Strict mode enabled
-- Path alias: `@/*` maps to project root
-- Key interfaces: `Project`, `Skill`, `PersonalInfo`, `SkillCategory`
-- Component prop interfaces suffixed with `Props`
-
-## Naming Conventions
-- **Components:** PascalCase (`ProjectCard.tsx`)
-- **Pages:** lowercase (`page.tsx`, `[slug]`)
-- **Utilities/data:** lowercase (`api.ts`, `projects.json`)
-- **Custom events:** kebab-case with namespace (`command-palette:open`)
-
-## Images
-- Local: `/public/images/projects/<project-name>/`
-- External domains configured in `next.config.js`: `images.unsplash.com`, `via.placeholder.com`
-
-## No Tests
-No Jest/Vitest configured. Use `npm run lint` and TypeScript strict mode for validation.
+## Imágenes
+- Foto de Jonathan: `/public/Foto2.jpeg`
+- Screenshots de proyectos: `/public/images/projects/<slug>/`

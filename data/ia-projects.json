@@ -1,1 +1,26 @@
-[]
+[
+  {
+    "id": "project-001",
+    "title": "UBApp — Universal Box",
+    "description": "Sistema de almacenamiento de envíos con búsqueda semántica impulsada por IA, visualización geográfica y generación de documentos.",
+    "longDescription": "Sistema fullstack de gestión de envíos con búsqueda semántica potenciada por OpenAI + pgvector. Incluye rastreo en tiempo real, gestión de inventario, reportes analíticos y panel de administración. Redujo el tiempo de búsqueda de 4 minutos a menos de 20 segundos.",
+    "tags": ["Django", "Angular", "PostgreSQL", "Docker", "OpenAI"],
+    "image": "public/images/projects/ubapp/index.png",
+    "liveUrl": "https://ubapp-frontend.onrender.com",
+    "repoUrl": "https://github.com/DavidAucancela/UBAppV2",
+    "featured": true,
+    "date": "2026-01"
+  },
+  {
+    "id": "project-003",
+    "title": "AnaOS — Asistente Financiero IA",
+    "description": "Asistente virtual conversacional para cooperativas con análisis predictivo financiero y RAG sobre datos reales.",
+    "longDescription": "Asistente financiero que combina OpenAI API con un backend que enriquece el contexto con datos reales de la cooperativa antes de llamar a la IA. Patrón RAG aplicado a finanzas. TypeScript end-to-end.",
+    "tags": ["TypeScript", "React", "OpenAI", "Node.js", "PostgreSQL"],
+    "image": "public/images/projects/anaos/thumbnail.svg",
+    "liveUrl": null,
+    "repoUrl": "https://github.com/DavidAucancela/AnaOS",
+    "featured": true,
+    "date": "2025-11"
+  }
+]

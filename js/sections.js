@@ -509,7 +509,7 @@ const Sections = (() => {
     const copyBtn = document.getElementById('copy-email-btn');
     if (copyBtn) {
       copyBtn.onclick = () => {
-        navigator.clipboard.writeText('david.aucancela@gmail.com').then(() => {
+        navigator.clipboard.writeText('jonathan_jd@outlook.com').then(() => {
           copyBtn.textContent = '✓ Copiado';
           copyBtn.classList.add('copied');
           setTimeout(() => {
@@ -541,10 +541,16 @@ const Sections = (() => {
    * se "resuelve" al caracter final.
    */
   function _decodeText(el, finalText) {
+    // Si el usuario prefiere movimiento reducido, usar fade simple
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      _fadeText(el, finalText);
+      return;
+    }
+
     const chars   = '!@#$%^&*<>[]{}|\\/01アイウエオカキ';
-    const steps   = 3;         // cuántas veces cambia el caracter antes de resolverse
-    const delay   = 30;        // ms entre cada caracter
-    const stepMs  = 50;        // ms entre cada "scramble step"
+    const steps   = 2;         // cuántas veces cambia el caracter antes de resolverse
+    const delay   = 12;        // ms entre cada caracter (era 30 — ~9s → ~2.5s)
+    const stepMs  = 40;        // ms entre cada "scramble step"
     let output    = '';
 
     // Ocultar brevemente

@@ -28,6 +28,12 @@ document.addEventListener('DOMContentLoaded', () => {
     sec: '$_',
   };
 
+  const AVATAR_SRC = {
+    dev: 'public/Foto principal.jpg',
+    ia:  'public/personalIA.jpg',
+    sec: 'public/personalSec.jpg',
+  };
+
   const PROJECTS_SUBTITLE = {
     dev: 'Sistemas y aplicaciones construidos con énfasis en calidad y arquitectura.',
     ia:  'Proyectos que integran inteligencia artificial para resolver problemas reales.',
@@ -82,14 +88,14 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ────────────────────────────────────────────────────
      NAVBAR — LINK ACTIVO POR SECCIÓN
   ──────────────────────────────────────────────────── */
-  const SECTION_IDS = ['hero', 'about', 'skills', 'projects', 'experience', 'contact'];
-  const navLinks    = document.querySelectorAll('[data-section]');
+  const ALL_SECTION_IDS = ['hero', 'about', 'projects', 'skills', 'ia-assistant-section', 'contact'];
+  const navLinks        = document.querySelectorAll('[data-section]');
 
   function _updateActiveSection() {
     let active = '';
-    for (const id of SECTION_IDS) {
+    for (const id of ALL_SECTION_IDS) {
       const el = document.getElementById(id);
-      if (!el) continue;
+      if (!el || el.style.display === 'none') continue;
       const { top, bottom } = el.getBoundingClientRect();
       if (top <= 90 && bottom >= 90) { active = id; break; }
     }
@@ -134,6 +140,46 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* ────────────────────────────────────────────────────
+     JONATHAN PANEL
+  ──────────────────────────────────────────────────── */
+  const jonathanPanel = document.getElementById('jonathan-panel');
+  const jonathanBtn   = document.getElementById('jonathan-panel-btn');
+  const jonathanClose = document.getElementById('jonathan-panel-close');
+
+  function _openJonathanPanel() {
+    jonathanPanel?.classList.add('open');
+    jonathanPanel?.setAttribute('aria-hidden', 'false');
+    jonathanBtn?.setAttribute('aria-expanded', 'true');
+    jonathanClose?.focus();
+    document.body.style.overflow = 'hidden';
+  }
+
+  function _closeJonathanPanel() {
+    jonathanPanel?.classList.remove('open');
+    jonathanPanel?.setAttribute('aria-hidden', 'true');
+    jonathanBtn?.setAttribute('aria-expanded', 'false');
+    jonathanBtn?.focus();
+    document.body.style.overflow = '';
+  }
+
+  jonathanBtn?.addEventListener('click', e => {
+    e.preventDefault();
+    const isOpen = jonathanPanel?.classList.contains('open');
+    isOpen ? _closeJonathanPanel() : _openJonathanPanel();
+  });
+
+  jonathanClose?.addEventListener('click', _closeJonathanPanel);
+
+  jonathanPanel?.querySelector('.jonathan-panel__backdrop')
+    ?.addEventListener('click', _closeJonathanPanel);
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && jonathanPanel?.classList.contains('open')) {
+      _closeJonathanPanel();
+    }
+  });
+
+  /* ────────────────────────────────────────────────────
      SMOOTH SCROLL
   ──────────────────────────────────────────────────── */
   document.querySelectorAll('a[href^="#"]').forEach(link => {
@@ -165,7 +211,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const accessInput = document.createElement('input');
     accessInput.type  = 'hidden';
     accessInput.name  = 'access_key';
-    accessInput.value = 'TU_ACCESS_KEY_WEB3FORMS'; // reemplazar en web3forms.com
+    accessInput.value = 'd15ed95c-e7ba-4f74-8a64-cd78c8571033';
     contactForm.appendChild(accessInput);
 
     const subjectInput = document.createElement('input');
@@ -266,6 +312,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const heroBg = document.getElementById('hero-bg-text');
     if (heroBg) heroBg.textContent = HERO_BG_TEXT[mode] || '';
 
+    // Foto del about según modo
+    const avatarImg = document.getElementById('about-avatar-img');
+    if (avatarImg && AVATAR_SRC[mode]) avatarImg.src = AVATAR_SRC[mode];
+
     // Footer
     const footerLabel = document.getElementById('footer-mode-label');
     if (footerLabel) footerLabel.textContent = `.${mode}`;
@@ -274,21 +324,29 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ────────────────────────────────────────────────────
      INICIALIZACIÓN
   ──────────────────────────────────────────────────── */
-  // Esperar a que ThemeSwitcher esté listo para sincronizar el estado inicial
-  let checkCount = 0;
-  const waitForTheme = setInterval(() => {
-    checkCount++;
-    if (typeof ThemeSwitcher !== 'undefined' || checkCount > 40) {
-      clearInterval(waitForTheme);
-      const mode = ThemeSwitcher?.getCurrentMode() || 'dev';
+  // Sincronizar UI con el modo inicial una sola vez
+  let _syncDone = false;
+  function _syncInitialMode() {
+    if (_syncDone) return;
+    _syncDone = true;
 
-      // Sincronizar footer y hero bg text con el modo inicial
-      const footerLabel = document.getElementById('footer-mode-label');
-      if (footerLabel) footerLabel.textContent = `.${mode}`;
+    const mode = ThemeSwitcher?.getCurrentMode()
+      || document.body.dataset.theme
+      || 'dev';
 
-      const heroBg = document.getElementById('hero-bg-text');
-      if (heroBg) heroBg.textContent = HERO_BG_TEXT[mode] || '';
-    }
-  }, 50);
+    const footerLabel = document.getElementById('footer-mode-label');
+    if (footerLabel) footerLabel.textContent = `.${mode}`;
+
+    const heroBg = document.getElementById('hero-bg-text');
+    if (heroBg) heroBg.textContent = HERO_BG_TEXT[mode] || '';
+
+    const avatarImg = document.getElementById('about-avatar-img');
+    if (avatarImg && AVATAR_SRC[mode]) avatarImg.src = AVATAR_SRC[mode];
+  }
+
+  // Usar el primer evento modeChange (más confiable que polling)
+  // El setTimeout actúa como fallback si ThemeSwitcher tarda o falla
+  window.addEventListener('portfolio:modeChange', _syncInitialMode, { once: true });
+  setTimeout(_syncInitialMode, 500);
 
 });

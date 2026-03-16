@@ -98,7 +98,6 @@ const CursorTrail = (() => {
 
   let canvas, ctx;
   let particles   = [];
-  let lightning   = [];        // rayos activos en modo sec
   let trailPoints = [];        // historial de posiciones del cursor
   let mouseX = 0, mouseY = 0;
   let prevX  = 0, prevY  = 0;
@@ -109,9 +108,20 @@ const CursorTrail = (() => {
   };
 
   // Nodos de red neuronal para modo ia
-  let iaNodos    = [];   // nodos que flotan cerca del cursor
-  let iaPulses   = [];   // anillos de pulso que se expanden
-  let iaOrbiters = [];   // partículas que orbitan el cursor
+  let iaNodos    = [];
+  let iaPulses   = [];
+  let iaOrbiters = [];
+
+  // ── Thunderfury (.sec) ────────────────────────────────────
+  let thunderOrbs  = [];
+  let tfBoltCache  = new Map(); // key `minId_maxId` → {pts, branchPts}
+  let tfFrame      = 0;
+  let tfOrbId      = 0;
+  const TF_ORB_LIFETIME = 620;  // ms
+  const TF_ORB_MAX_R    = 6;
+  const TF_CONNECT_DIST = 140;  // px máx entre orbes para conectar
+  const TF_BRANCH_PROB  = 0.55; // probabilidad de rama lateral (más ramas)
+  const TF_MAX_CONN     = 4;    // máx conexiones por orbe (evita O(n²) extremo)
 
   function init() {
     canvas = document.getElementById('cursor-trail-canvas');
@@ -129,7 +139,7 @@ const CursorTrail = (() => {
       if (trailPoints.length > 20) trailPoints.shift();
 
       if (currentMode === 'sec') {
-        _spawnLightning();
+        _spawnThunderfury();
       } else if (currentMode === 'ia') {
         _spawnIAEffect();
       } else {
@@ -138,13 +148,14 @@ const CursorTrail = (() => {
     });
 
     window.addEventListener('portfolio:modeChange', e => {
-      currentMode = e.detail.mode;
-      particles   = [];
-      lightning   = [];
-      trailPoints = [];
-      iaNodos     = [];
-      iaPulses    = [];
-      iaOrbiters  = [];
+      currentMode  = e.detail.mode;
+      particles    = [];
+      trailPoints  = [];
+      iaNodos      = [];
+      iaPulses     = [];
+      iaOrbiters   = [];
+      thunderOrbs  = [];
+      tfBoltCache  = new Map();
     });
 
     currentMode = localStorage.getItem('portfolio-mode') || 'dev';
@@ -329,112 +340,204 @@ const CursorTrail = (() => {
     if (particles.length > 80) particles.shift();
   }
 
-  /* ── Relámpago (sec) ──────────────────────────────────────── */
-  function _spawnLightning() {
-    const dx = mouseX - prevX;
-    const dy = mouseY - prevY;
-    const dist = Math.hypot(dx, dy);
-    if (dist < 2) return;
+  /* ══════════════════════════════════════════════════════════
+     THUNDERFURY TRAIL (.sec)
+  ══════════════════════════════════════════════════════════ */
 
-    // Rayo principal — segmentos zigzag desde prev hasta mouse
-    const segments = _buildZigzag(prevX, prevY, mouseX, mouseY, 3 + Math.floor(dist / 18));
-    lightning.push({
-      segments,
-      alpha:    1,
-      decay:    0.07 + Math.random() * 0.06,
-      width:    1.2 + Math.random() * 1.2,
-      flicker:  Math.random() < 0.5,
+  /* Spawner: un orbe por evento mousemove */
+  function _spawnThunderfury() {
+    const now = performance.now();
+    thunderOrbs.push({
+      x:    mouseX + (Math.random() - 0.5) * 5,
+      y:    mouseY + (Math.random() - 0.5) * 5,
+      born: now,
+      id:   tfOrbId++,
     });
+    if (thunderOrbs.length > 45) thunderOrbs.shift();
 
-    // Rayos secundarios (ramas) — salen del punto medio
-    const branchCount = Math.floor(Math.random() * 3);
-    for (let b = 0; b < branchCount; b++) {
-      const midIdx = Math.floor(segments.length / 2) + Math.floor(Math.random() * 3) - 1;
-      const origin = segments[Math.min(midIdx, segments.length - 1)];
-      const angle  = Math.atan2(dy, dx) + (Math.random() - 0.5) * Math.PI * 0.9;
-      const len    = 20 + Math.random() * 40;
-      const ex     = origin.x + Math.cos(angle) * len;
-      const ey     = origin.y + Math.sin(angle) * len;
-      lightning.push({
-        segments: _buildZigzag(origin.x, origin.y, ex, ey, 2 + Math.floor(Math.random() * 3)),
-        alpha:    0.7 + Math.random() * 0.3,
-        decay:    0.10 + Math.random() * 0.08,
-        width:    0.6 + Math.random() * 0.8,
-        flicker:  true,
-      });
+    // Chispas — más cantidad y más grandes
+    const dist = Math.hypot(mouseX - prevX, mouseY - prevY);
+    if (dist > 3) {
+      const count = 4 + Math.floor(dist / 6);
+      for (let i = 0; i < count; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 1.5 + Math.random() * 4.5;
+        particles.push({
+          x:     mouseX, y: mouseY,
+          vx:    Math.cos(angle) * speed,
+          vy:    Math.sin(angle) * speed - 1,
+          r:     0.8 + Math.random() * 1.8,
+          alpha: 0.9,
+          decay: 0.03 + Math.random() * 0.04,
+          col:   Math.random() < 0.55
+            ? { r: 255, g: 255, b: 255 }
+            : { r: 136, g: 204, b: 255 },
+        });
+      }
+      if (particles.length > 200) particles.splice(0, particles.length - 200);
     }
-
-    // Chispas en el cursor
-    for (let i = 0; i < 4; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = 1.5 + Math.random() * 3;
-      particles.push({
-        x: mouseX, y: mouseY,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed - 1,
-        r:     0.8 + Math.random() * 1.5,
-        alpha: 0.9,
-        decay: 0.04 + Math.random() * 0.04,
-        col:   { r: 255, g: 255, b: 255 },
-      });
-    }
-    if (particles.length > 120) particles.splice(0, particles.length - 120);
-    if (lightning.length  > 40)  lightning.splice(0,  lightning.length - 40);
   }
 
-  /* Genera una poligonal zigzag entre dos puntos */
-  function _buildZigzag(x1, y1, x2, y2, steps) {
-    const pts = [{ x: x1, y: y1 }];
-    const dx  = x2 - x1;
-    const dy  = y2 - y1;
-    const perp = Math.hypot(dx, dy) * 0.25; // amplitud del zigzag
-
-    for (let i = 1; i < steps; i++) {
-      const t   = i / steps;
-      const nx  = x1 + dx * t;
-      const ny  = y1 + dy * t;
-      // desplazamiento perpendicular
-      const px  = -dy / Math.hypot(dx, dy || 1) * (Math.random() - 0.5) * perp * 2;
-      const py  =  dx / Math.hypot(dx, dy || 1) * (Math.random() - 0.5) * perp * 2;
-      pts.push({ x: nx + px, y: ny + py });
-    }
-    pts.push({ x: x2, y: y2 });
-    return pts;
+  /**
+   * Midpoint displacement recursivo para rayos jagged.
+   * Depth fijo = 3 → 8 segmentos: buen detalle sin coste excesivo.
+   */
+  function _jaggedLine(x1, y1, x2, y2, roughness, depth) {
+    if (depth === 0) return [{ x: x1, y: y1 }, { x: x2, y: y2 }];
+    const mx = (x1 + x2) / 2 + (Math.random() - 0.5) * roughness;
+    const my = (y1 + y2) / 2 + (Math.random() - 0.5) * roughness;
+    const L  = _jaggedLine(x1, y1, mx, my, roughness / 1.7, depth - 1);
+    const R  = _jaggedLine(mx, my, x2, y2, roughness / 1.7, depth - 1);
+    return [...L, ...R.slice(1)];
   }
 
-  /* ── Draw de relámpagos ───────────────────────────────────── */
-  function _drawLightning() {
-    for (const bolt of lightning) {
-      const a = bolt.flicker ? bolt.alpha * (0.6 + Math.random() * 0.4) : bolt.alpha;
-      if (a <= 0.01) continue;
+  /** 3 pasadas: halo externo · capa azul · núcleo blanco */
+  function _drawBolt(pts, alpha, width, glowR, glowG, glowB) {
+    if (pts.length < 2 || alpha < 0.03) return;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.lineCap  = 'round';
+    ctx.lineJoin = 'round';
+
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let k = 1; k < pts.length; k++) ctx.lineTo(pts[k].x, pts[k].y);
+    ctx.strokeStyle = `rgba(${glowR},${glowG},${glowB},${alpha * 0.13})`;
+    ctx.lineWidth   = width * 4;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let k = 1; k < pts.length; k++) ctx.lineTo(pts[k].x, pts[k].y);
+    ctx.strokeStyle = `rgba(136,204,255,${alpha * 0.50})`;
+    ctx.lineWidth   = width * 1.8;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(pts[0].x, pts[0].y);
+    for (let k = 1; k < pts.length; k++) ctx.lineTo(pts[k].x, pts[k].y);
+    ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
+    ctx.lineWidth   = width;
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  /* Dibuja orbes + rayos con caché de paths */
+  function _drawThunderfury() {
+    tfFrame++;
+    const now   = performance.now();
+    const regen = (tfFrame % 3 === 0); // regenerar caminos cada 3 frames
+
+    // Filtrar orbes muertos
+    thunderOrbs = thunderOrbs.filter(o => now - o.born < TF_ORB_LIFETIME);
+    const living = thunderOrbs;
+
+    // Limpiar entradas stale del caché cada 30 frames
+    if (tfFrame % 30 === 0) {
+      const liveSet = new Set(living.map(o => o.id));
+      for (const k of tfBoltCache.keys()) {
+        const u = k.indexOf('_');
+        if (!liveSet.has(+k.slice(0, u)) || !liveSet.has(+k.slice(u + 1)))
+          tfBoltCache.delete(k);
+      }
+    }
+
+    // ── Rayos entre orbes cercanos ──────────────────────── //
+    const connCount = new Int8Array(living.length); // conexiones por orbe
+
+    for (let i = 0; i < living.length; i++) {
+      if (connCount[i] >= TF_MAX_CONN) continue;
+      const a    = living[i];
+      const ageA = now - a.born;
+      const ratA = 1 - ageA / TF_ORB_LIFETIME;
+
+      for (let j = i + 1; j < living.length; j++) {
+        if (connCount[i] >= TF_MAX_CONN || connCount[j] >= TF_MAX_CONN) continue;
+        const b  = living[j];
+        const dx = a.x - b.x, dy = a.y - b.y;
+        const d  = Math.sqrt(dx * dx + dy * dy);
+        if (d > TF_CONNECT_DIST) continue;
+
+        const ageB  = now - b.born;
+        const ratB  = 1 - ageB / TF_ORB_LIFETIME;
+        const alpha = Math.min(ratA, ratB) * (1 - d / TF_CONNECT_DIST) * 1.1;
+        if (alpha < 0.05) continue;
+
+        connCount[i]++;
+        connCount[j]++;
+
+        // Caché: regenerar solo en frames múltiplo de 3
+        const cKey = `${Math.min(a.id, b.id)}_${Math.max(a.id, b.id)}`;
+        let cached = tfBoltCache.get(cKey);
+
+        if (!cached || regen) {
+          const rough = d * 0.42;
+          const pts   = _jaggedLine(a.x, a.y, b.x, b.y, rough, 3);
+          let branchPts = null;
+          if (Math.random() < TF_BRANCH_PROB) {
+            const mid   = pts[Math.floor(pts.length / 2)];
+            const angle = Math.atan2(b.y - a.y, b.x - a.x)
+                          + (Math.random() - 0.5) * Math.PI * 0.9;
+            const len   = 16 + Math.random() * d * 0.45;
+            branchPts   = _jaggedLine(mid.x, mid.y,
+                                      mid.x + Math.cos(angle) * len,
+                                      mid.y + Math.sin(angle) * len,
+                                      rough * 0.65, 3);
+          }
+          cached = { pts, branchPts };
+          tfBoltCache.set(cKey, cached);
+        }
+
+        const w = 0.7 + Math.random() * 0.4;
+        _drawBolt(cached.pts, alpha, w, 160, 210, 255);
+        if (cached.branchPts)
+          _drawBolt(cached.branchPts, alpha * 0.65, w * 0.8, 200, 230, 255);
+      }
+    }
+
+    // ── Orbes ──────────────────────────────────────────── //
+    for (const o of living) {
+      const ratio = 1 - (now - o.born) / TF_ORB_LIFETIME;
+      const r     = TF_ORB_MAX_R * ratio;
+      const alpha = ratio;
 
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
 
-      // Halo exterior (blur simulado con línea gruesa y baja opacidad)
+      const g = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, r * 5.5);
+      g.addColorStop(0,   `rgba(136,204,255,${alpha * 0.55})`);
+      g.addColorStop(0.4, `rgba(100,180,255,${alpha * 0.20})`);
+      g.addColorStop(1,   'rgba(0,0,0,0)');
       ctx.beginPath();
-      for (let i = 0; i < bolt.segments.length; i++) {
-        const p = bolt.segments[i];
-        i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y);
-      }
-      ctx.strokeStyle = `rgba(180,210,255,${a * 0.25})`;
-      ctx.lineWidth   = bolt.width * 5;
-      ctx.lineCap     = 'round';
-      ctx.lineJoin    = 'round';
-      ctx.stroke();
+      ctx.arc(o.x, o.y, r * 5.5, 0, Math.PI * 2);
+      ctx.fillStyle = g;
+      ctx.fill();
 
-      // Núcleo blanco brillante
+      const c = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, r);
+      c.addColorStop(0,   `rgba(255,255,255,${alpha})`);
+      c.addColorStop(0.5, `rgba(136,204,255,${alpha * 0.85})`);
+      c.addColorStop(1,   'rgba(80,160,255,0)');
       ctx.beginPath();
-      for (let i = 0; i < bolt.segments.length; i++) {
-        const p = bolt.segments[i];
-        i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y);
-      }
-      ctx.strokeStyle = `rgba(255,255,255,${a})`;
-      ctx.lineWidth   = bolt.width;
-      ctx.stroke();
+      ctx.arc(o.x, o.y, r, 0, Math.PI * 2);
+      ctx.fillStyle = c;
+      ctx.fill();
 
       ctx.restore();
     }
+
+    // ── Cursor central ─────────────────────────────────── //
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    const cg = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, 9);
+    cg.addColorStop(0,   'rgba(255,255,255,0.85)');
+    cg.addColorStop(0.5, 'rgba(136,204,255,0.25)');
+    cg.addColorStop(1,   'rgba(0,0,0,0)');
+    ctx.beginPath();
+    ctx.arc(mouseX, mouseY, 9, 0, Math.PI * 2);
+    ctx.fillStyle = cg;
+    ctx.fill();
+    ctx.restore();
   }
 
   /* ── Loop principal ───────────────────────────────────────── */
@@ -458,11 +561,9 @@ const CursorTrail = (() => {
       ctx.restore();
     }
 
-    // Rayos (solo sec)
+    // Thunderfury (solo sec)
     if (currentMode === 'sec') {
-      _drawLightning();
-      lightning = lightning.filter(b => b.alpha > 0.01);
-      for (const b of lightning) b.alpha -= b.decay;
+      _drawThunderfury();
     }
 
     // Red neuronal (solo ia)

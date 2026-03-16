@@ -383,20 +383,15 @@ const Projects = (() => {
      EVENTOS
   ──────────────────────────────────────────────────── */
   window.addEventListener('portfolio:modeChange', e => {
-    const mode    = e.detail.mode;
-    const section = document.getElementById('projects');
-    if (section) section.style.display = mode === 'ia' ? 'none' : '';
-    if (mode !== 'ia') loadProjects(mode);
+    loadProjects(e.detail.mode);
   });
 
   /* ────────────────────────────────────────────────────
      INIT
   ──────────────────────────────────────────────────── */
   function init() {
-    const mode    = localStorage.getItem('portfolio-mode') || 'dev';
-    const section = document.getElementById('projects');
-    if (section) section.style.display = mode === 'ia' ? 'none' : '';
-    if (mode !== 'ia') loadProjects(mode);
+    const mode = localStorage.getItem('portfolio-mode') || 'dev';
+    loadProjects(mode);
   }
 
   document.addEventListener('DOMContentLoaded', init);

@@ -79,45 +79,49 @@
   <header class="navbar" id="navbar" role="banner">
     <div class="container navbar__inner">
 
-      <!-- Logo -->
+      <!-- Logo — joined pill [ Jonathan · .dev ▾ ] -->
       <a href="#hero" class="navbar__logo" aria-label="Jonathan Aucancela — inicio">
-        <span class="logo-name">Jonathan</span>
-        <div style="position: relative;">
-          <span
-            class="logo-suffix"
-            id="logo-suffix"
-            role="button"
-            tabindex="0"
-            aria-haspopup="listbox"
-            aria-label="Cambiar modo del portfolio"
-          >.dev</span>
+        <div class="logo-pill" id="logo-pill">
+          <button class="logo-name--btn logo-pill__name" id="jonathan-panel-btn"
+                  aria-label="Ver trayectoria de Jonathan" aria-expanded="false">Jonathan</button>
+          <span class="logo-pill__divider" aria-hidden="true"></span>
+          <div style="position: relative;">
+            <span
+              class="logo-suffix"
+              id="logo-suffix"
+              role="button"
+              tabindex="0"
+              aria-haspopup="listbox"
+              aria-label="Cambiar modo del portfolio"
+            >.dev</span>
 
-          <!-- Dropdown selector de modo -->
-          <div id="mode-dropdown" class="mode-dropdown" role="listbox"
-               aria-label="Seleccionar modo" aria-expanded="false">
-            <button class="mode-option active" data-mode-option="dev"
-                    role="option" aria-selected="true" title="Software Engineering">
-              <span class="mode-option-dot" style="background:#3b82f6;"></span>.dev
-            </button>
-            <button class="mode-option" data-mode-option="ia"
-                    role="option" aria-selected="false" title="Inteligencia Artificial">
-              <span class="mode-option-dot" style="background:#06ffa5;"></span>.ia
-            </button>
-            <button class="mode-option" data-mode-option="sec"
-                    role="option" aria-selected="false" title="Ciberseguridad">
-              <span class="mode-option-dot" style="background:#00ff41;"></span>.sec
-            </button>
+            <!-- Dropdown selector de modo -->
+            <div id="mode-dropdown" class="mode-dropdown" role="listbox"
+                 aria-label="Seleccionar modo" aria-expanded="false">
+              <button class="mode-option active" data-mode-option="dev"
+                      role="option" aria-selected="true" title="Software Engineering">
+                <span class="mode-option-dot" style="background:#3b82f6;"></span>.dev
+              </button>
+              <button class="mode-option" data-mode-option="ia"
+                      role="option" aria-selected="false" title="Inteligencia Artificial">
+                <span class="mode-option-dot" style="background:#06ffa5;"></span>.ia
+              </button>
+              <button class="mode-option" data-mode-option="sec"
+                      role="option" aria-selected="false" title="Ciberseguridad">
+                <span class="mode-option-dot" style="background:#00ff41;"></span>.sec
+              </button>
+            </div>
           </div>
         </div>
       </a>
 
       <!-- Links desktop -->
       <nav class="navbar__links" role="navigation" aria-label="Navegación principal">
-        <a href="#about" class="nav-link" data-section="about" data-i18n="nav.about">Sobre mí</a>
-        <a href="#skills" class="nav-link" data-section="skills" data-i18n="nav.skills">Skills</a>
-        <a href="#projects" class="nav-link" data-section="projects" data-i18n="nav.projects">Proyectos</a>
-        <a href="#experience" class="nav-link" data-section="experience" data-i18n="nav.experience">Experiencia</a>
-        <a href="#contact" class="nav-link" data-section="contact" data-i18n="nav.contact">Contacto</a>
+        <a href="#about"               class="nav-link" data-section="about"               data-i18n="nav.about">Sobre mí</a>
+        <a href="#projects"            class="nav-link" data-section="projects"            data-i18n="nav.projects">Proyectos</a>
+        <a href="#skills"              class="nav-link" data-section="skills"              data-i18n="nav.skills">Skills</a>
+        <a href="#ia-assistant-section" class="nav-link nav-link--ia-only" data-section="ia-assistant-section">Consulta IA</a>
+        <a href="#contact"             class="nav-link" data-section="contact"             data-i18n="nav.contact">Contacto</a>
       </nav>
 
       <!-- Acciones -->
@@ -145,11 +149,11 @@
     <!-- Menú mobile -->
     <nav class="navbar__mobile-menu" id="mobile-menu" role="navigation"
          aria-label="Navegación móvil" aria-hidden="true">
-      <a href="#about"      class="mobile-nav-link" data-section="about">Sobre mí</a>
-      <a href="#skills"     class="mobile-nav-link" data-section="skills">Skills</a>
-      <a href="#projects"   class="mobile-nav-link" data-section="projects">Proyectos</a>
-      <a href="#experience" class="mobile-nav-link" data-section="experience">Experiencia</a>
-      <a href="#contact"    class="mobile-nav-link" data-section="contact">Contacto</a>
+      <a href="#about"               class="mobile-nav-link" data-section="about">Sobre mí</a>
+      <a href="#projects"            class="mobile-nav-link" data-section="projects">Proyectos</a>
+      <a href="#skills"              class="mobile-nav-link" data-section="skills">Skills</a>
+      <a href="#ia-assistant-section" class="mobile-nav-link mobile-nav-link--ia-only" data-section="ia-assistant-section">Consulta IA</a>
+      <a href="#contact"             class="mobile-nav-link" data-section="contact">Contacto</a>
       <div style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border-color);">
         <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.75rem; font-family:var(--font-display);">MODO ACTIVO</p>
         <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
@@ -246,10 +250,12 @@
           <div class="about-avatar-wrap animate-on-scroll from-left">
             <div class="about-avatar-glow" aria-hidden="true"></div>
             <img
+              id="about-avatar-img"
               src="public/Foto principal.jpg"
               alt="Foto de Jonathan Aucancela"
               class="about-avatar"
               loading="lazy"
+              decoding="async"
               width="320" height="320"
               onerror="this.src='assets/images/avatar-placeholder.svg'; this.onerror=null;"
             />
@@ -267,7 +273,7 @@
                   <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
                 </svg>
               </a>
-              <a href="mailto:david.aucancela@gmail.com" class="social-link" aria-label="Email">
+              <a href="mailto:jonathan_jd@outlook.com" class="social-link" aria-label="Email">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
@@ -346,7 +352,52 @@
     </section>
 
     <!-- ══════════════════════════════════════════════
-         § 3 — SKILLS
+         § 3 — PROJECTS
+    ══════════════════════════════════════════════ -->
+    <section class="section section--alt" id="projects" aria-label="Proyectos">
+      <div class="container">
+
+        <div class="section-header animate-on-scroll">
+          <span class="section-label">// proyectos</span>
+          <h2 class="section-title" data-i18n="projects.title">Soluciones implementadas</h2>
+          <p class="section-description" id="projects-subtitle">
+            Sistemas y aplicaciones construidos con énfasis en calidad y arquitectura.
+          </p>
+        </div>
+
+        <!-- Renderizado por projects.js -->
+        <div id="projects-grid" class="projects-grid" aria-live="polite" aria-label="Lista de proyectos">
+          <!-- Loading skeletons -->
+          <div class="project-card" aria-hidden="true">
+            <div class="card-image-wrap"><div class="skeleton" style="height:100%;"></div></div>
+            <div class="card-body">
+              <div class="skeleton" style="height:20px; width:60%; margin-bottom:8px;"></div>
+              <div class="skeleton" style="height:14px; width:100%; margin-bottom:6px;"></div>
+              <div class="skeleton" style="height:14px; width:80%;"></div>
+            </div>
+          </div>
+          <div class="project-card" aria-hidden="true">
+            <div class="card-image-wrap"><div class="skeleton" style="height:100%;"></div></div>
+            <div class="card-body">
+              <div class="skeleton" style="height:20px; width:60%; margin-bottom:8px;"></div>
+              <div class="skeleton" style="height:14px; width:100%; margin-bottom:6px;"></div>
+              <div class="skeleton" style="height:14px; width:80%;"></div>
+            </div>
+          </div>
+          <div class="project-card" aria-hidden="true">
+            <div class="card-image-wrap"><div class="skeleton" style="height:100%;"></div></div>
+            <div class="card-body">
+              <div class="skeleton" style="height:20px; width:60%; margin-bottom:8px;"></div>
+              <div class="skeleton" style="height:14px; width:80%;"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════
+         § 4 — SKILLS
     ══════════════════════════════════════════════ -->
     <section class="section" id="skills" aria-label="Habilidades técnicas">
       <div class="container">
@@ -453,77 +504,8 @@
     </section>
 
     <!-- ══════════════════════════════════════════════
-         § 4 — PROJECTS
-    ══════════════════════════════════════════════ -->
-    <section class="section section--alt" id="projects" aria-label="Proyectos">
-      <div class="container">
-
-        <div class="section-header animate-on-scroll">
-          <span class="section-label">// proyectos</span>
-          <h2 class="section-title" data-i18n="projects.title">Soluciones implementadas</h2>
-          <p class="section-description" id="projects-subtitle">
-            Sistemas y aplicaciones construidos con énfasis en calidad y arquitectura.
-          </p>
-        </div>
-
-        <!-- Renderizado por projects.js -->
-        <div id="projects-grid" class="projects-grid" aria-live="polite" aria-label="Lista de proyectos">
-          <!-- Loading skeletons -->
-          <div class="project-card" aria-hidden="true">
-            <div class="card-image-wrap"><div class="skeleton" style="height:100%;"></div></div>
-            <div class="card-body">
-              <div class="skeleton" style="height:20px; width:60%; margin-bottom:8px;"></div>
-              <div class="skeleton" style="height:14px; width:100%; margin-bottom:6px;"></div>
-              <div class="skeleton" style="height:14px; width:80%;"></div>
-            </div>
-          </div>
-          <div class="project-card" aria-hidden="true">
-            <div class="card-image-wrap"><div class="skeleton" style="height:100%;"></div></div>
-            <div class="card-body">
-              <div class="skeleton" style="height:20px; width:60%; margin-bottom:8px;"></div>
-              <div class="skeleton" style="height:14px; width:100%; margin-bottom:6px;"></div>
-              <div class="skeleton" style="height:14px; width:80%;"></div>
-            </div>
-          </div>
-          <div class="project-card" aria-hidden="true">
-            <div class="card-image-wrap"><div class="skeleton" style="height:100%;"></div></div>
-            <div class="card-body">
-              <div class="skeleton" style="height:20px; width:60%; margin-bottom:8px;"></div>
-              <div class="skeleton" style="height:14px; width:80%;"></div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ══════════════════════════════════════════════
          § 5 — EXPERIENCE
     ══════════════════════════════════════════════ -->
-    <section class="section" id="experience" aria-label="Experiencia">
-      <div class="container">
-
-        <div class="section-header animate-on-scroll">
-          <span class="section-label">// experiencia</span>
-          <h2 class="section-title" data-i18n="exp.title">Trayectoria</h2>
-          <p class="section-description">Proyectos reales, formación y trabajo independiente.</p>
-        </div>
-
-        <!-- Timeline — renderizado por sections.js -->
-        <div class="timeline" id="timeline-container" aria-live="polite">
-          <!-- Placeholder -->
-          <article class="timeline-item animate-on-scroll">
-            <div class="timeline-dot-icon" aria-hidden="true">🚀</div>
-            <div class="timeline-content">
-              <div class="skeleton" style="height:16px; width:40%; margin-bottom:8px;"></div>
-              <div class="skeleton" style="height:20px; width:70%; margin-bottom:6px;"></div>
-              <div class="skeleton" style="height:14px; width:90%;"></div>
-            </div>
-          </article>
-        </div>
-
-      </div>
-    </section>
 
     <!-- ══════════════════════════════════════════════
          § 6 — CONTACT
@@ -649,6 +631,41 @@
   </main>
 
   <!-- ════════════════════════════════════════════════════
+       JONATHAN PANEL — trayectoria / timeline
+  ════════════════════════════════════════════════════ -->
+  <div id="jonathan-panel" class="jonathan-panel" aria-hidden="true" role="dialog"
+       aria-modal="true" aria-label="Trayectoria de Jonathan">
+    <div class="jonathan-panel__backdrop"></div>
+    <div class="jonathan-panel__drawer">
+      <div class="jonathan-panel__header">
+        <div>
+          <span class="jonathan-panel__label">// trayectoria</span>
+          <h2 class="jonathan-panel__title">Jonathan Aucancela</h2>
+          <p class="jonathan-panel__sub">Proyectos reales, formación y trabajo independiente.</p>
+        </div>
+        <button class="jonathan-panel__close" id="jonathan-panel-close" aria-label="Cerrar panel">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="jonathan-panel__body">
+        <div class="timeline" id="timeline-container" aria-live="polite">
+          <article class="timeline-item">
+            <div class="timeline-dot-icon" aria-hidden="true">🚀</div>
+            <div class="timeline-content">
+              <div class="skeleton" style="height:14px;width:40%;margin-bottom:8px;"></div>
+              <div class="skeleton" style="height:18px;width:70%;margin-bottom:6px;"></div>
+              <div class="skeleton" style="height:12px;width:90%;"></div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════
        FOOTER
   ════════════════════════════════════════════════════ -->
   <footer class="footer" role="contentinfo">
@@ -683,6 +700,7 @@
   <script src="js/main.js"></script>
   <script src="js/ia-assistant.js"></script>
   <script src="js/lang.js"></script>
+  <script src="js/section-nav.js"></script>
 
 </body>
 </html>

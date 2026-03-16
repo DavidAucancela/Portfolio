@@ -505,9 +505,76 @@ body.theme-transitioning * {
     transition-duration: 0.01ms !important;
   }
 
+  /* Hero: mostrar texto directamente sin typewriter ni float */
   .hero-typewriter {
     clip-path: none !important;
     border-right: none !important;
     animation: none !important;
+    white-space: normal;
   }
+
+  .hero-decoration { animation: none !important; }
+  .hero-subtitle,
+  .hero-cta        { animation: none !important; opacity: 1; }
+
+  /* Secciones: mostrar elementos ya visibles sin transición */
+  .animate-on-scroll {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .stagger-item {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+
+  /* Timeline */
+  .timeline-dot {
+    transform: scale(1) !important;
+    transition: none !important;
+  }
+
+  .timeline-content {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  /* Skill bars: aparecer al ancho final sin animación */
+  .skill-bar-fill {
+    transition: none !important;
+  }
+
+  /* Cards: sin lift ni zoom en hover */
+  .project-card       { transition: none !important; }
+  .project-card:hover { transform: none !important; }
+  .card-image-wrap img { transition: none !important; }
+  .project-card:hover .card-image-wrap img { transform: none !important; }
+
+  /* Botones: sin ripple ni lift */
+  .btn         { transition: none !important; }
+  .btn:hover   { transform: none !important; box-shadow: none !important; }
+  .btn::after  { display: none !important; }
+
+  /* Navbar suffix: sin clip-path animate */
+  .mode-suffix.erasing,
+  .mode-suffix.writing { animation: none !important; opacity: 1 !important; }
+  .suffix-cursor       { animation: none !important; opacity: 1 !important; }
+
+  /* Skeleton / loading */
+  .skeleton { animation: none !important; }
+
+  /* Modo IA: sin glow pulsante ni gradiente animado */
+  [data-theme="ia"] .glow-pulse    { animation: none !important; }
+  [data-theme="ia"] .gradient-text { animation: none !important; }
+
+  /* Modo SEC: sin glitch */
+  [data-theme="sec"] .hero-name.glitching { animation: none !important; }
+
+  /* Overlay de transición de tema */
+  .theme-transition-overlay,
+  .theme-transition-overlay.active { animation: none !important; opacity: 0 !important; }
+  body.theme-transitioning * { transition: none !important; }
 }

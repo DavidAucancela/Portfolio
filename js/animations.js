@@ -26,6 +26,9 @@ const HeroAnimations = (() => {
   let isVisible     = true;
   let resizeTimer   = null;
 
+  // Respetar preferencia de movimiento reducido del sistema operativo
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
   /* ────────────────────────────────────────────────────
      INICIALIZACIÓN
   ──────────────────────────────────────────────────── */
@@ -83,7 +86,7 @@ const HeroAnimations = (() => {
   function startAnimation(mode) {
     _stopLoop();
     currentMode = mode;
-    if (!isVisible) return;
+    if (!isVisible || reducedMotion.matches) return;
     _startLoop(_getRunner(mode));
   }
 

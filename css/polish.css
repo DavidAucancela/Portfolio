@@ -251,8 +251,8 @@ body::after {
 .navbar.scrolled::after { opacity: 0.7; }
 
 /* Logo con hover glow */
-.navbar__logo:hover .logo-name {
-  text-shadow: 0 0 20px var(--color-accent-glow);
+.navbar__logo:hover .logo-pill__name {
+  text-shadow: 0 0 16px var(--color-accent-glow);
 }
 
 /* Sufijo con efecto de borde activo */
@@ -868,4 +868,252 @@ body::after {
 
   .cursor-dot, .cursor-ring { display: none !important; }
   body { cursor: auto !important; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SECTION-NAV — indicador lateral derecho
+   ───────────────────────────────────────────────────────────── */
+
+#sn-panel {
+  position: fixed;
+  right: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 900;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+
+  /* Oculto por defecto, aparece al acumular */
+  opacity: 0;
+  transform: translateY(-50%) translateX(16px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+#sn-panel.sn-active {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+/* ── Labels de sección ── */
+.sn-label {
+  font-size: 0.65rem;
+  font-family: var(--font-mono, monospace);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  text-align: center;
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sn-label-to {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+/* ── Flecha ── */
+#sn-arrow {
+  font-size: 0.75rem;
+  color: var(--color-accent);
+  line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+#sn-arrow.sn-arrow-up {
+  transform: none; /* ya es ↑ en texto */
+}
+
+/* ── Barra de progreso ── */
+#sn-bar-track {
+  position: relative;
+  width: 4px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+#sn-bar-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0%;
+  background: var(--color-accent);
+  border-radius: 4px;
+  box-shadow: 0 0 8px var(--color-accent-glow, var(--color-accent));
+  transition: height 0.06s linear;
+}
+
+/* Porcentaje encima de la barra */
+#sn-bar-pct {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.55rem;
+  font-family: var(--font-mono, monospace);
+  color: var(--color-text);
+  font-weight: 700;
+  pointer-events: none;
+  mix-blend-mode: difference;
+  white-space: nowrap;
+}
+
+/* Ocultar en mobile */
+@media (max-width: 767px) {
+  #sn-panel { display: none !important; }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  #sn-panel     { transition: none; }
+  #sn-bar-fill  { transition: none; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   JONATHAN PANEL — botón logo + drawer overlay
+   ───────────────────────────────────────────────────────────── */
+
+/* .logo-name--btn styles are now handled by .logo-pill__name in main.css */
+
+/* Panel overlay */
+.jonathan-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: stretch;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.jonathan-panel.open {
+  pointer-events: all;
+  visibility: visible;
+}
+
+/* Fondo oscuro */
+.jonathan-panel__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.jonathan-panel.open .jonathan-panel__backdrop {
+  opacity: 1;
+}
+
+/* Drawer lateral derecho */
+.jonathan-panel__drawer {
+  position: relative;
+  margin-left: auto;
+  width: min(520px, 92vw);
+  height: 100%;
+  background: var(--bg-card, #0f0f1a);
+  border-left: 1px solid var(--color-border, rgba(255,255,255,0.1));
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.jonathan-panel.open .jonathan-panel__drawer {
+  transform: translateX(0);
+}
+
+/* Header del drawer */
+.jonathan-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 2rem 2rem 1.25rem;
+  border-bottom: 1px solid var(--color-border, rgba(255,255,255,0.08));
+  flex-shrink: 0;
+}
+
+.jonathan-panel__label {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.7rem;
+  color: var(--color-accent);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.jonathan-panel__title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 0.25rem;
+}
+
+.jonathan-panel__sub {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Botón cerrar */
+.jonathan-panel__close {
+  background: transparent;
+  border: 1px solid var(--color-border, rgba(255,255,255,0.12));
+  border-radius: 6px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.jonathan-panel__close:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: rgba(var(--color-accent-rgb, 59,130,246), 0.08);
+}
+
+/* Cuerpo scrolleable */
+.jonathan-panel__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.75rem 2rem 3rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-accent) transparent;
+}
+
+.jonathan-panel__body::-webkit-scrollbar { width: 4px; }
+.jonathan-panel__body::-webkit-scrollbar-thumb { background: var(--color-accent); border-radius: 2px; }
+
+/* Timeline dentro del panel — hereda estilos existentes */
+.jonathan-panel__body .timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Mobile: drawer ocupa todo el ancho */
+@media (max-width: 480px) {
+  .jonathan-panel__drawer { width: 100%; border-left: none; }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .jonathan-panel__drawer   { transition: none; }
+  .jonathan-panel__backdrop { transition: none; }
 }

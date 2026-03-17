@@ -136,6 +136,17 @@ const Projects = (() => {
     card.className = `project-card${p.featured ? ' project-card--featured' : ''}`;
     card.setAttribute('aria-label', p.title);
 
+    // Derive slug from id for project highlight navigation
+    const slugMap = {
+      'project-002': 'ideancestral',
+      'project-004': 'equity',
+      'project-005': 'securabank',
+      'project-006': 'conquito-fundaciones',
+      'project-001': 'ubapp',
+      'project-003': 'anaos',
+    };
+    if (p.id && slugMap[p.id]) card.dataset.slug = slugMap[p.id];
+
     // Imagen o placeholder
     const imgHTML = p.image
       ? `<img src="${p.image}" alt="Captura de ${p.title}" loading="lazy"

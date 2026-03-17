@@ -249,6 +249,8 @@ const Sections = (() => {
       title:     'UBApp — Universal Box',
       role:      'Desarrollador Full Stack · Titulación',
       org:       'Universidad / Universal Box · Quito',
+      slug:      'ubapp',
+      completed: true,
       type:      'project',
       typeLabel: 'Titulación',
       desc:      'Sistema integral de gestión de envíos con búsqueda semántica impulsada por IA. Django REST + Angular + PostgreSQL + pgvector + Docker. Proyecto de grado con distinción.',
@@ -272,6 +274,8 @@ const Sections = (() => {
       title:     'Ideancestral',
       role:      'Desarrollador Full Stack · Freelance',
       org:       'Proyecto independiente · Remoto',
+      slug:      'ideancestral',
+      completed: true,
       type:      'project',
       typeLabel: 'Freelance',
       desc:      'Catálogo digital de artesanías ecuatorianas con soporte multiidioma (ES/EN/PT), panel administrativo, carrito con pedidos por WhatsApp y modo oscuro/claro.',
@@ -295,6 +299,8 @@ const Sections = (() => {
       title:     'AnaOS — Asistente Financiero',
       role:      'Desarrollador Full Stack + IA · Cliente',
       org:       'Cooperativa financiera · Remoto',
+      slug:      'anaos',
+      completed: true,
       type:      'project',
       typeLabel: 'Cliente',
       desc:      'Asistente conversacional con IA para gestión de cooperativas financieras. El backend enriquece cada consulta con datos reales antes de llamar a OpenAI, sin exponer datos PII.',
@@ -317,6 +323,8 @@ const Sections = (() => {
       title:     'Fundaciones — ConQuito',
       role:      'Desarrollador Backend · Hackathon',
       org:       'ConQuito · Quito, Ecuador',
+      slug:      'conquito-fundaciones',
+      completed: true,
       type:      'project',
       typeLabel: 'Hackathon',
       desc:      'Herramienta de datos abiertos para el municipio de Quito: visualización interactiva de fundaciones con mapas Leaflet, filtros dinámicos y estadísticas de impacto social.',
@@ -339,6 +347,8 @@ const Sections = (() => {
       title:     'Equity — Gestor de Datos',
       role:      'Desarrollador Backend · Cliente',
       org:       'Cliente empresarial · Remoto',
+      slug:      'equity',
+      completed: true,
       type:      'project',
       typeLabel: 'Cliente',
       desc:      'Pipeline ETL (Extract → Transform → Load) que automatiza la población de bases de datos desde archivos JSON con validación de schema, transacciones atómicas y logs de auditoría.',
@@ -361,6 +371,8 @@ const Sections = (() => {
       title:     'SecuraBank',
       role:      'Desarrollador + Seguridad · Práctica',
       org:       'Proyecto educativo · OWASP',
+      slug:      'securabank',
+      completed: true,
       type:      'project',
       typeLabel: 'Práctica',
       desc:      'Sistema bancario demostrativo que implementa 6 categorías del OWASP Top 10. Node.js + Helmet.js + JWT con rotación. Seguridad diseñada desde el inicio, no como añadido.',
@@ -551,159 +563,336 @@ const Sections = (() => {
     return { dev: 'Software Engineering', ia: 'IA & ML', sec: 'Cybersecurity' }[mode] || mode;
   }
 
-  /* ─── EXPERIENCE (interactive two-column) ───────────────── */
-  let _expActiveIndex = 0;
+  /* ─── EXPERIENCE — Story + Timeline animado ─────────────── */
+  let _expIndex   = 0;
+  let _expTimer   = null;
+  let _expPaused  = false;
+  const EXP_DURATION = 4000;
+
+  const COMPLETED_DATA = EXPERIENCE_DATA.filter(e => e.completed !== false);
 
   function renderExperience(mode) {
     const container = document.getElementById('timeline-container');
     if (!container) return;
-
     container.dataset.mode = mode;
+    _expIndex  = 0;
+    _expPaused = false;
+    _clearExpTimer();
+    _buildStoryLayout(container);
+  }
+
+  function _buildStoryLayout(container) {
     container.innerHTML = '';
+    const data = COMPLETED_DATA;
 
-    const wrap = document.createElement('div');
-    wrap.className = 'tray-layout';
+    const layout = document.createElement('div');
+    layout.className = 'story-layout';
 
-    // ── Phase list (left) ──────────────────────────────────
-    const phaseList = document.createElement('div');
-    phaseList.className = 'tray-phase-list';
-    phaseList.innerHTML = `<div class="tray-connector" aria-hidden="true"></div>`;
+    /* ── Progress strips ── */
+    const strips = document.createElement('div');
+    strips.className = 'story-strips';
+    strips.setAttribute('aria-hidden', 'true');
+    data.forEach((_, i) => {
+      const strip = document.createElement('div');
+      strip.className = 'story-strip';
+      strip.dataset.index = i;
+      const fill = document.createElement('div');
+      fill.className = 'story-strip__fill';
+      strip.appendChild(fill);
+      strips.appendChild(strip);
+    });
+    layout.appendChild(strips);
 
-    EXPERIENCE_DATA.forEach((item, i) => {
-      const btn = document.createElement('button');
-      btn.className = 'tray-phase-btn' + (i === _expActiveIndex ? ' active' : '');
-      btn.setAttribute('aria-label', `Ver fase ${i + 1}: ${item.title}`);
-      btn.dataset.index = i;
-      btn.innerHTML = `
-        <div class="tray-phase-dot" data-type="${item.typeLabel}">
-          <span class="tray-phase-num">${String(i + 1).padStart(2, '0')}</span>
+    /* ── Timeline track ── */
+    const track = document.createElement('div');
+    track.className = 'story-track';
+    track.setAttribute('aria-label', 'Línea de tiempo');
+
+    const trackLine = document.createElement('div');
+    trackLine.className = 'story-track__line';
+    track.appendChild(trackLine);
+
+    const trackProgress = document.createElement('div');
+    trackProgress.className = 'story-track__progress';
+    trackProgress.id = 'story-track-progress';
+    track.appendChild(trackProgress);
+
+    data.forEach((item, i) => {
+      const node = document.createElement('button');
+      node.className = 'story-node' + (i === 0 ? ' active' : '') + (i < 0 ? ' visited' : '');
+      node.dataset.index = i;
+      node.setAttribute('aria-label', `Ver ${item.title}`);
+      node.innerHTML = `
+        <div class="story-node__dot">
+          <span class="story-node__icon">${item.icon}</span>
+          <span class="story-node__pulse" aria-hidden="true"></span>
         </div>
-        <div class="tray-phase-info">
-          <div class="tray-phase-meta">
-            <span class="tray-type-badge type-${item.type} tray-type-sm">${item.typeLabel}</span>
-            <span class="tray-phase-year">${item.date.split(' — ')[0]}</span>
-          </div>
-          <p class="tray-phase-title">${item.title}</p>
-          <p class="tray-phase-role">${item.role}</p>
+        <div class="story-node__info">
+          <span class="story-node__name">${item.title.split(' — ')[0].split(' ')[0]}</span>
+          <span class="story-node__year">${item.date.split(' — ').pop().split(' ').pop()}</span>
         </div>
-        <svg class="tray-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
-             aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
       `;
-      btn.addEventListener('click', () => _showPhaseDetail(i, wrap));
-      phaseList.appendChild(btn);
+      node.addEventListener('click', () => _goToIndex(i, true));
+      track.appendChild(node);
+    });
+    layout.appendChild(track);
+
+    /* ── Slide area ── */
+    const slideWrap = document.createElement('div');
+    slideWrap.className = 'story-slide-wrap';
+    slideWrap.id = 'story-slide-wrap';
+    layout.appendChild(slideWrap);
+
+    /* ── Pause on hover ── */
+    layout.addEventListener('mouseenter', () => {
+      _expPaused = true;
+      _pauseStrip();
+      _clearExpTimer();
+    });
+    layout.addEventListener('mouseleave', () => {
+      _expPaused = false;
+      _resumeStrip();
+      _startExpTimer();
     });
 
-    // ── Detail panel (right) ───────────────────────────────
-    const detailPanel = document.createElement('div');
-    detailPanel.className = 'tray-detail';
-    detailPanel.id = 'tray-detail-panel';
-
-    wrap.appendChild(phaseList);
-    wrap.appendChild(detailPanel);
-    container.appendChild(wrap);
-
-    // Render initial detail
-    _renderDetailCard(EXPERIENCE_DATA[_expActiveIndex], detailPanel, false);
-    _refreshObservers();
+    container.appendChild(layout);
+    _renderSlide(_expIndex, false);
+    _updateTrack();
+    _startStrip(_expIndex);
+    _startExpTimer();
   }
 
-  function _showPhaseDetail(index, wrap) {
-    if (index === _expActiveIndex) return;
-    _expActiveIndex = index;
+  /* ── Slide renderer ─────────────────────────────────────── */
+  function _renderSlide(index, animated) {
+    const wrap = document.getElementById('story-slide-wrap');
+    if (!wrap) return;
+    const item = COMPLETED_DATA[index];
+    if (!item) return;
 
-    // Update active button state
-    wrap.querySelectorAll('.tray-phase-btn').forEach((btn, i) => {
-      btn.classList.toggle('active', i === index);
-    });
+    const highlightsHTML = (item.highlights || []).slice(0, 3).map(h => `
+      <li class="story-highlight">
+        <span class="story-highlight__dot story-dot--${item.type}" aria-hidden="true"></span>
+        <span>${h}</span>
+      </li>`).join('');
 
-    const panel = document.getElementById('tray-detail-panel');
-    if (!panel) return;
+    const metricasHTML = (item.metricas || []).slice(0, 3).map(m => `
+      <div class="story-metric">
+        <span class="story-metric__value">${m.value}</span>
+        <span class="story-metric__label">${m.label}</span>
+      </div>`).join('');
 
-    // Fade out → swap → fade in
-    panel.style.opacity    = '0';
-    panel.style.transform  = 'translateY(10px)';
-    setTimeout(() => {
-      _renderDetailCard(EXPERIENCE_DATA[index], panel, true);
-      panel.style.transition = 'opacity 0.22s ease, transform 0.22s ease';
-      panel.style.opacity    = '1';
-      panel.style.transform  = 'translateY(0)';
-    }, 180);
-  }
+    const tagsHTML = (item.tags || []).slice(0, 4).map(t =>
+      `<span class="story-tag">${t}</span>`).join('');
 
-  function _renderDetailCard(item, panel, animated) {
-    const highlightsHTML = (item.highlights || []).map(h => `
-      <li class="tray-highlight-item">
-        <span class="tray-highlight-dot type-${item.type}" aria-hidden="true"></span>
-        ${h}
-      </li>
-    `).join('');
-
-    const metricasHTML = (item.metricas || []).map(m => `
-      <div class="tray-metric">
-        <span class="tray-metric-value">${m.value}</span>
-        <span class="tray-metric-label">${m.label}</span>
-      </div>
-    `).join('');
-
-    const tagsHTML = (item.tags || []).map(t => `<span class="exp-tag">${t}</span>`).join('');
-
-    const ctasHTML = `
-      ${item.github ? `<a href="${item.github}" target="_blank" rel="noopener noreferrer"
-          class="tray-cta tray-cta--ghost" aria-label="Ver código en GitHub de ${item.title}">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482
-            0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.462-1.11-1.462
-            -.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832
-            .092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683
-            -.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836a9.59 9.59 0
-            012.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028
-            1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012
-            2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
-          </svg>
-          GitHub
-        </a>` : ''}
-      ${item.demo ? `<a href="${item.demo}" target="_blank" rel="noopener noreferrer"
-          class="tray-cta tray-cta--ghost" aria-label="Ver demo de ${item.title}">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
-            <polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-          </svg>
-          Demo live
-        </a>` : ''}
-    `;
-
-    panel.style.transition = animated ? 'opacity 0.22s ease, transform 0.22s ease' : 'none';
-    panel.innerHTML = `
-      <div class="tray-card">
-        <div class="tray-card-header">
-          <div class="tray-card-header-top">
-            <span class="tray-type-badge type-${item.type}">${item.typeLabel}</span>
-            <time class="tray-card-date">${item.date}</time>
+    const slide = document.createElement('div');
+    slide.className = 'story-slide story-slide--' + item.type;
+    slide.innerHTML = `
+      <div class="story-slide__bg" aria-hidden="true"></div>
+      <div class="story-slide__content">
+        <div class="story-slide__top">
+          <div class="story-slide__icon-wrap" aria-hidden="true">
+            <span class="story-slide__icon">${item.icon}</span>
+            <span class="story-slide__icon-glow" aria-hidden="true"></span>
           </div>
-          <h3 class="tray-card-title">${item.icon} ${item.title}</h3>
-          <p class="tray-card-role">${item.role}</p>
+          <div class="story-slide__header">
+            <span class="story-badge story-badge--${item.type}">${item.typeLabel}</span>
+            <h3 class="story-slide__title">${item.title}</h3>
+            <p class="story-slide__role">${item.role.split(' · ')[0]}</p>
+          </div>
         </div>
-        <div class="tray-card-body">
-          <p class="tray-card-desc">${item.desc}</p>
 
-          ${tagsHTML ? `<div class="tray-card-section">
-            <p class="tray-card-section-label">Stack</p>
-            <div class="timeline-item-tags">${tagsHTML}</div>
-          </div>` : ''}
+        ${tagsHTML ? `<div class="story-slide__tags">${tagsHTML}</div>` : ''}
 
-          ${highlightsHTML ? `<div class="tray-card-section">
-            <p class="tray-card-section-label">Highlights</p>
-            <ul class="tray-highlights-list">${highlightsHTML}</ul>
-          </div>` : ''}
+        ${highlightsHTML ? `<ul class="story-slide__highlights">${highlightsHTML}</ul>` : ''}
 
-          ${metricasHTML ? `<div class="tray-metrics-grid">${metricasHTML}</div>` : ''}
+        ${metricasHTML ? `<div class="story-slide__metrics">${metricasHTML}</div>` : ''}
 
-          ${ctasHTML.trim() ? `<div class="tray-ctas">${ctasHTML}</div>` : ''}
+        <div class="story-slide__footer">
+          <button class="story-nav story-nav--prev" id="story-prev" aria-label="Proyecto anterior">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+
+          ${item.slug ? `
+          <button class="story-goto" data-slug="${item.slug}" aria-label="Ir al proyecto ${item.title}">
+            <span>Ver proyecto</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="5" y1="12" x2="19" y2="12"/>
+              <polyline points="12 5 19 12 12 19"/>
+            </svg>
+          </button>` : '<span></span>'}
+
+          <button class="story-nav story-nav--next" id="story-next" aria-label="Siguiente proyecto">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
         </div>
       </div>
     `;
+
+    /* Wire navigation */
+    slide.querySelector('#story-prev')?.addEventListener('click', () => {
+      const prev = (_expIndex - 1 + COMPLETED_DATA.length) % COMPLETED_DATA.length;
+      _goToIndex(prev, true);
+    });
+    slide.querySelector('#story-next')?.addEventListener('click', () => {
+      const next = (_expIndex + 1) % COMPLETED_DATA.length;
+      _goToIndex(next, true);
+    });
+    slide.querySelector('.story-goto')?.addEventListener('click', e => {
+      const slug = e.currentTarget.dataset.slug;
+      if (slug && window.App?.navigateToProject) {
+        window.App.navigateToProject(slug);
+      }
+    });
+
+    if (animated) {
+      /* Fade out old → fade in new */
+      const old = wrap.querySelector('.story-slide');
+      if (old) {
+        old.style.transition = 'opacity 0.18s ease, transform 0.18s ease';
+        old.style.opacity    = '0';
+        old.style.transform  = 'translateY(8px) scale(0.98)';
+        setTimeout(() => {
+          wrap.innerHTML = '';
+          _enterSlide(slide, wrap);
+        }, 190);
+      } else {
+        _enterSlide(slide, wrap);
+      }
+    } else {
+      _enterSlide(slide, wrap);
+    }
+  }
+
+  function _enterSlide(slide, wrap) {
+    slide.style.opacity   = '0';
+    slide.style.transform = 'translateY(12px) scale(0.98)';
+    wrap.appendChild(slide);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        slide.style.transition = 'opacity 0.3s ease, transform 0.3s cubic-bezier(0.34,1.2,0.64,1)';
+        slide.style.opacity    = '1';
+        slide.style.transform  = 'translateY(0) scale(1)';
+      });
+    });
+
+    /* Stagger children */
+    const children = slide.querySelectorAll(
+      '.story-slide__top, .story-slide__tags, .story-slide__highlights, .story-slide__metrics, .story-slide__footer'
+    );
+    children.forEach((el, i) => {
+      el.style.opacity   = '0';
+      el.style.transform = 'translateY(10px)';
+      setTimeout(() => {
+        el.style.transition = `opacity 0.3s ease ${i * 60}ms, transform 0.3s ease ${i * 60}ms`;
+        el.style.opacity    = '1';
+        el.style.transform  = 'translateY(0)';
+      }, 80 + i * 60);
+    });
+  }
+
+  /* ── Go to index ────────────────────────────────────────── */
+  function _goToIndex(index, resetTimer) {
+    if (index === _expIndex && !resetTimer) return;
+    _expIndex = index;
+    _clearExpTimer();
+    _stopStrip();
+    _renderSlide(index, true);
+    _updateTrack();
+    if (!_expPaused) {
+      _startStrip(index);
+      _startExpTimer();
+    }
+  }
+
+  /* ── Track update ───────────────────────────────────────── */
+  function _updateTrack() {
+    const nodes = document.querySelectorAll('.story-node');
+    nodes.forEach((node, i) => {
+      node.classList.toggle('active',  i === _expIndex);
+      node.classList.toggle('visited', i < _expIndex);
+    });
+
+    /* Animate progress line */
+    const progressLine = document.getElementById('story-track-progress');
+    if (progressLine && nodes.length > 1) {
+      const pct = (_expIndex / (COMPLETED_DATA.length - 1)) * 100;
+      progressLine.style.width = pct + '%';
+    }
+  }
+
+  /* ── Progress strip (top bars) ──────────────────────────── */
+  function _startStrip(index) {
+    /* Mark previous strips as full */
+    document.querySelectorAll('.story-strip').forEach((strip, i) => {
+      const fill = strip.querySelector('.story-strip__fill');
+      if (!fill) return;
+      if (i < index) {
+        fill.style.transition = 'none';
+        fill.style.width = '100%';
+      } else if (i === index) {
+        fill.style.transition = 'none';
+        fill.style.width = '0%';
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            fill.style.transition = `width ${EXP_DURATION}ms linear`;
+            fill.style.width = '100%';
+          });
+        });
+      } else {
+        fill.style.transition = 'none';
+        fill.style.width = '0%';
+      }
+    });
+  }
+
+  function _stopStrip() {
+    const strip = document.querySelector(`.story-strip[data-index="${_expIndex}"] .story-strip__fill`);
+    if (!strip) return;
+    const computed = getComputedStyle(strip).width;
+    strip.style.transition = 'none';
+    strip.style.width = computed;
+  }
+
+  function _pauseStrip() {
+    const strip = document.querySelector(`.story-strip[data-index="${_expIndex}"] .story-strip__fill`);
+    if (!strip) return;
+    const computed = getComputedStyle(strip).width;
+    strip.style.transition = 'none';
+    strip.style.width = computed;
+  }
+
+  function _resumeStrip() {
+    const strip = document.querySelector(`.story-strip[data-index="${_expIndex}"] .story-strip__fill`);
+    if (!strip) return;
+    const currentW    = parseFloat(strip.style.width) || 0;
+    const totalW      = strip.parentElement?.offsetWidth || 100;
+    const remaining   = ((totalW - currentW) / totalW) * EXP_DURATION;
+    strip.style.transition = `width ${remaining}ms linear`;
+    strip.style.width = '100%';
+  }
+
+  /* ── Timer ──────────────────────────────────────────────── */
+  function _startExpTimer() {
+    _clearExpTimer();
+    _expTimer = setTimeout(() => {
+      if (!_expPaused) {
+        const next = (_expIndex + 1) % COMPLETED_DATA.length;
+        _goToIndex(next, false);
+        _startStrip(next);
+        _startExpTimer();
+      }
+    }, EXP_DURATION);
+  }
+
+  function _clearExpTimer() {
+    if (_expTimer) { clearTimeout(_expTimer); _expTimer = null; }
   }
 
   /* ─── CONTACT ────────────────────────────────────────────── */

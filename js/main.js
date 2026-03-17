@@ -162,6 +162,37 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.style.overflow = '';
   }
 
+  /* ────────────────────────────────────────────────────
+     NAVIGATE TO PROJECT (from trayectoria)
+  ──────────────────────────────────────────────────── */
+  function _navigateToProject(slug) {
+    const projectsSection = document.getElementById('projects');
+    if (!projectsSection) return;
+
+    // Scroll to projects section
+    const navH = parseInt(
+      getComputedStyle(document.documentElement).getPropertyValue('--nav-height')
+    ) || 70;
+    window.scrollTo({
+      top: projectsSection.getBoundingClientRect().top + window.scrollY - navH - 16,
+      behavior: 'smooth',
+    });
+
+    // After scroll, highlight the card
+    setTimeout(() => {
+      const card = document.querySelector(`[data-slug="${slug}"]`);
+      if (!card) return;
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      card.classList.add('project-card--highlight');
+      // Remove highlight after 2.5s
+      setTimeout(() => card.classList.remove('project-card--highlight'), 2800);
+    }, 750);
+  }
+
+  // Expose globally for sections.js
+  window.App = window.App || {};
+  window.App.navigateToProject = _navigateToProject;
+
   jonathanBtn?.addEventListener('click', e => {
     e.preventDefault();
     const isOpen = jonathanPanel?.classList.contains('open');

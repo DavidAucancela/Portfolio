@@ -1,5 +1,41 @@
 [
   {
+    "id": "project-008",
+    "title": "LLM Observatory",
+    "description": "Dashboard open-source de observabilidad para la API de Claude. Monitorea tokens, costo y latencia en tiempo real con un SDK wrapper drop-in de cero overhead.",
+    "longDescription": "Monorepo con SDK wrapper para @anthropic-ai/sdk, backend Express + Socket.io y dashboard React. El SDK intercepta métricas async (fire & forget) sin impacto en latencia. WebSocket para live updates, alertas de presupuesto, comparación de modelos y exportación CSV.",
+    "tags": ["React", "Node.js", "PostgreSQL", "Socket.io", "Claude API"],
+    "image": "public/images/projects/llm-observatory/thumbnail.svg",
+    "liveUrl": "https://llm-web-production.up.railway.app/settings",
+    "repoUrl": "https://github.com/DavidAucancela/llm-observatory",
+    "featured": true,
+    "date": "2026-03"
+  },
+  {
+    "id": "project-003",
+    "title": "AnaOS — SaaS de Cooperativas",
+    "description": "Plataforma SaaS multi-tenant para gestión de cooperativas y agencias con planes de suscripción, auth completo y deploy en Railway.",
+    "longDescription": "Backend ASP.NET Core (C#) + Entity Framework con 7 modelos (Cooperativa, Agencia, Usuario, Cuenta, PlanSuscripcion, Suscripcion, HistorialSuscripcion). Frontend React + TypeScript + Vite con dashboards por rol, flujos de pago por plan y verificación de email.",
+    "tags": ["ASP.NET Core", "React", "TypeScript", "Railway", "Docker"],
+    "image": "public/images/projects/anaos/thumbnail.svg",
+    "liveUrl": "https://frontend-production-cc73.up.railway.app/",
+    "repoUrl": "https://github.com/DavidAucancela/AnaOS",
+    "featured": true,
+    "date": "2025-11"
+  },
+  {
+    "id": "project-007",
+    "title": "MapCriminals — Más Buscados del Mundo",
+    "description": "Mapa mundial interactivo de criminales más buscados integrando la FBI API en tiempo real, Google Trends y datos manuales por país.",
+    "longDescription": "Backend Express como proxy agregador con caché por niveles (FBI 1h, Google Trends 6h). Leaflet.js con overlay estilo sala de operaciones, panel por país, filtros cruzados (nombre, crimen, nacionalidad, fuente) y soporte bilingüe ES/EN.",
+    "tags": ["Node.js", "Leaflet", "FBI API", "Google Trends", "Railway"],
+    "image": "public/images/projects/mapcriminals/thumbnail.svg",
+    "liveUrl": "https://mapcriminalscode-production.up.railway.app/",
+    "repoUrl": "https://github.com/DavidAucancela/MapCriminalsCode",
+    "featured": false,
+    "date": "2025-12"
+  },
+  {
     "id": "project-002",
     "title": "Ideancestral",
     "description": "Plataforma de catálogo digital multiidioma para artesanos ecuatorianos con carrito de compras vía WhatsApp.",

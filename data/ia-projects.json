@@ -1,5 +1,17 @@
 [
   {
+    "id": "project-008",
+    "title": "LLM Observatory",
+    "description": "Dashboard open-source de observabilidad para la API de Claude. Monitorea tokens, costo y latencia en tiempo real con un SDK wrapper drop-in de cero overhead.",
+    "longDescription": "Monorepo con SDK wrapper para @anthropic-ai/sdk, backend Express + Socket.io y dashboard React. El SDK intercepta métricas async (fire & forget) sin impacto en latencia. WebSocket para live updates, alertas de presupuesto, comparación de modelos y exportación CSV.",
+    "tags": ["React", "Node.js", "PostgreSQL", "Socket.io", "Claude API"],
+    "image": "public/images/projects/llm-observatory/thumbnail.svg",
+    "liveUrl": "https://llm-web-production.up.railway.app/settings",
+    "repoUrl": "https://github.com/DavidAucancela/llm-observatory",
+    "featured": true,
+    "date": "2026-03"
+  },
+  {
     "id": "project-001",
     "title": "UBApp — Universal Box",
     "description": "Sistema de almacenamiento de envíos con búsqueda semántica impulsada por IA, visualización geográfica y generación de documentos.",
@@ -13,12 +25,12 @@
   },
   {
     "id": "project-003",
-    "title": "AnaOS — Asistente Financiero IA",
-    "description": "Asistente virtual conversacional para cooperativas con análisis predictivo financiero y RAG sobre datos reales.",
-    "longDescription": "Asistente financiero que combina OpenAI API con un backend que enriquece el contexto con datos reales de la cooperativa antes de llamar a la IA. Patrón RAG aplicado a finanzas. TypeScript end-to-end.",
-    "tags": ["TypeScript", "React", "OpenAI", "Node.js", "PostgreSQL"],
+    "title": "AnaOS — SaaS de Cooperativas",
+    "description": "Plataforma SaaS multi-tenant para gestión de cooperativas y agencias con planes de suscripción, auth completo y deploy en Railway.",
+    "longDescription": "Backend ASP.NET Core (C#) + Entity Framework con 7 modelos del dominio. Frontend React + TypeScript + Vite con dashboards por rol, tres planes de suscripción (Basic, Professional, Enterprise) y flujos de pago independientes.",
+    "tags": ["ASP.NET Core", "React", "TypeScript", "Railway", "Docker"],
     "image": "public/images/projects/anaos/thumbnail.svg",
-    "liveUrl": null,
+    "liveUrl": "https://frontend-production-cc73.up.railway.app/",
     "repoUrl": "https://github.com/DavidAucancela/AnaOS",
     "featured": true,
     "date": "2025-11"

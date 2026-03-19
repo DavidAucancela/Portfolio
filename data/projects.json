@@ -225,11 +225,11 @@
   {
     "id": "3",
     "slug": "anaos",
-    "title": "AnaOS — Asistente Financiero",
-    "description": "Asistente virtual financiero inteligente para la gestión integral de cooperativas, con análisis predictivo y reportes automatizados.",
-    "fullDescription": "AnaOS es un asistente virtual financiero diseñado para la gestión de cooperativas. Combina inteligencia artificial con herramientas financieras para ofrecer análisis predictivo, generación automática de reportes, gestión de socios y transacciones, y recomendaciones inteligentes. La interfaz conversacional permite a los usuarios interactuar de forma natural con el sistema.",
+    "title": "AnaOS — Plataforma SaaS de Cooperativas",
+    "description": "Plataforma SaaS multi-tenant para la gestión integral de cooperativas y agencias, con planes de suscripción, autenticación completa y deploy en Railway.",
+    "fullDescription": "AnaOS es una plataforma SaaS diseñada para que cooperativas gestionen sus agencias, usuarios, cuentas y suscripciones desde un único sistema. El backend en ASP.NET Core con Entity Framework expone una API REST con autenticación JWT y control de acceso por roles. El frontend en React + TypeScript ofrece dashboards diferenciados, flujos de pago por plan (Basic, Professional, Enterprise), gestión de usuarios, verificación de email y reset de contraseña. Todo listo para despliegue en Railway con Dockerfiles independientes.",
     "category": "P1",
-    "tags": ["TypeScript", "IA", "Finanzas", "Asistente Virtual", "NLP"],
+    "tags": ["ASP.NET Core", "React", "TypeScript", "SaaS", "Railway"],
     "images": {
       "thumbnail": "/images/projects/anaos/thumbnail.svg",
       "gallery": [
@@ -237,7 +237,8 @@
       ]
     },
     "links": {
-      "github": "https://github.com/DavidAucancela/AnaOS"
+      "github": "https://github.com/DavidAucancela/AnaOS",
+      "demo": "https://frontend-production-cc73.up.railway.app/"
     },
     "featured": true,
     "date": {
@@ -245,85 +246,87 @@
       "end": "2025-11-21"
     },
     "techStack": {
-      "frontend": ["TypeScript", "React"],
-      "backend": ["Node.js", "TypeScript"],
-      "tools": ["OpenAI API", "NLP", "PostgreSQL"]
+      "frontend": ["React", "TypeScript", "Vite"],
+      "backend": ["ASP.NET Core", "C#", "Entity Framework"],
+      "tools": ["SQL Server", "JWT", "Docker", "Railway"]
     },
     "highlights": [
-      "Asistente conversacional con procesamiento de lenguaje natural",
-      "Análisis predictivo financiero con IA",
-      "Gestión integral de cooperativas y socios",
-      "Reportes automatizados y dashboards interactivos",
-      "Recomendaciones financieras inteligentes",
-      "Interfaz intuitiva y moderna"
+      "Arquitectura SaaS multi-tenant: Cooperativas → Agencias → Usuarios → Cuentas",
+      "Tres planes de suscripción (Basic, Professional, Enterprise) con flujos de pago independientes",
+      "Autenticación completa: JWT, verificación de email, reset de contraseña",
+      "Dashboard de usuario y AdminDashboard con control de acceso por roles",
+      "API REST en ASP.NET Core con Entity Framework y repositorios tipados",
+      "Dockerfiles independientes para backend y frontend, listos para Railway"
     ],
     "process": {
-      "overview": "Exploración de IA conversacional aplicada al dominio financiero de cooperativas. El sistema enriquece cada consulta del usuario con datos reales de la base de datos antes de enviarlos a OpenAI API, evitando exponer información sensible.",
+      "overview": "Plataforma SaaS construida con ASP.NET Core (C#) y React + TypeScript. El diseño sigue una jerarquía multi-tenant: cada Cooperativa contiene Agencias, las Agencias tienen Usuarios con Cuentas, y el acceso se controla mediante PlanSuscripcion + Suscripcion activa.",
       "pasos": [
         {
           "id": "problema",
-          "resumen": "Las cooperativas financieras gestionan datos de socios, transacciones y análisis con herramientas genéricas como hojas de cálculo. Los gestores necesitaban una herramienta que entendiera el contexto financiero cooperativo y respondiera consultas en lenguaje natural sin curva de aprendizaje.",
+          "resumen": "Las cooperativas gestionan múltiples agencias con decenas de usuarios, cuentas y suscripciones de forma fragmentada. No existía una plataforma centralizada que unificara la administración de la estructura organizacional, el control de acceso y la facturación por plan de suscripción.",
           "puntos": [
-            "Gestión manual de socios y transacciones en hojas de cálculo",
-            "Sin herramienta de análisis predictivo accesible para no técnicos",
-            "Reportes financieros generados manualmente con alto costo de tiempo",
-            "Alta curva de aprendizaje para herramientas financieras existentes",
-            "Sin histórico conversacional para tomar decisiones basadas en contexto"
+            "Sin plataforma centralizada para gestionar la jerarquía Cooperativa → Agencia → Usuario",
+            "Control de acceso manual sin roles ni permisos diferenciados por nivel",
+            "Gestión de suscripciones y planes sin historial ni trazabilidad",
+            "Sin flujos de onboarding automatizados: verificación de email, reset de contraseña",
+            "Administración dispersa en múltiples herramientas sin integración"
           ]
         },
         {
           "id": "analisis",
-          "resumen": "Se diseñó una arquitectura conversacional donde el backend enriquece cada mensaje del usuario con datos reales de la cooperativa antes de llamar a OpenAI API. Esto permite respuestas precisas sin exponer datos sensibles directamente al modelo.",
+          "resumen": "Se definió un modelo de datos jerárquico: Cooperativa como raíz multi-tenant, Agencias como unidades operativas, Usuarios con Cuentas y un sistema de PlanSuscripcion + Suscripcion + HistorialSuscripcion para trazabilidad completa del ciclo de vida de cada cliente.",
           "puntos": [
-            "Interfaz tipo chat con historial de conversación persistente por sesión",
-            "OpenAI API con system prompt especializado en finanzas de cooperativas",
-            "Backend como intermediario: consulta BD y enriquece contexto antes de llamar a IA",
-            "4 módulos: gestión de socios, transacciones, análisis predictivo, reportes",
-            "TypeScript en frontend (React) y backend (Node.js) para type safety completo",
-            "PostgreSQL para persistencia de datos de socios, cuentas y transacciones"
+            "Modelos: Cooperativa, Agencia, Usuario, Cuenta, PlanSuscripcion, Suscripcion, HistorialSuscripcion",
+            "Controllers REST por entidad + AccesoController para auth (login, registro, verify, reset)",
+            "Patrón repositorio + servicios para desacoplar lógica de negocio del acceso a datos",
+            "Frontend por roles: Dashboard (usuario), AdminDashboard (admin), páginas de pago por plan",
+            "Vite + React + TypeScript para tipado estricto y build optimizado",
+            "Dockerfiles separados: backend ASP.NET Core y frontend React servido con Nginx"
           ]
         },
         {
           "id": "desarrollo",
-          "resumen": "Frontend React con custom hooks para el estado del chat y streaming de respuestas. Backend Node.js que gestiona el contexto de conversación, consulta la base de datos y llama a OpenAI API con el contexto enriquecido.",
+          "resumen": "Backend ASP.NET Core con Entity Framework Code-First: migraciones versionadas, repositorios genéricos y servicios por entidad. Frontend React con TypeScript estricto, rutas protegidas por rol y páginas de pago independientes por plan (PaymentProfessional, PaymentEnterprise).",
           "puntos": [
-            "React con custom hooks: useChat, useMessages, useStreamResponse",
-            "Streaming de respuestas de OpenAI para experiencia de chat fluida",
-            "Backend construye contexto dinámico: consulta BD según intención del usuario",
-            "Sistema de intenciones: detecta si el usuario pide datos, análisis o acción",
-            "Generación automática de reportes en texto estructurado por el asistente",
-            "TypeScript estricto en todas las capas: tipos compartidos entre frontend y backend"
+            "Entity Framework Code-First con migraciones para todos los modelos del dominio",
+            "Repositorios genéricos e interfaces de servicio por entidad para inversión de dependencias",
+            "Middleware de autenticación JWT con validación de roles en cada endpoint protegido",
+            "AccesoController: login, signup, verificación de email y reset de contraseña",
+            "React Router con rutas protegidas: redirige según rol (usuario / admin)",
+            "Páginas de pago independientes: Payment, PaymentProfessional, PaymentEnterprise"
           ]
         },
         {
           "id": "despliegue",
-          "resumen": "Arquitectura preparada para despliegue en VPS con PM2 y Nginx. Actualmente operativo en entorno de desarrollo local con Docker Compose para simular el entorno de producción.",
+          "resumen": "Infraestructura como código con Dockerfiles independientes para backend y frontend. Railway detecta automáticamente cada Dockerfile y despliega los servicios con variables de entorno gestionadas desde su dashboard.",
           "puntos": [
-            "Docker Compose para desarrollo local con hot reload",
-            "PM2 configurado para gestión de procesos Node.js en producción",
-            "Nginx como reverse proxy con soporte WebSocket para streaming",
-            "Variables de entorno para OPENAI_API_KEY y credenciales de BD",
-            "Scripts de seed para datos de prueba de cooperativa de ejemplo"
+            "Dockerfile backend: imagen ASP.NET Core con build multi-stage para imagen mínima",
+            "Dockerfile frontend: build Vite + Nginx para servir el SPA en producción",
+            "Railway: despliegue automático desde GitHub con variables de entorno por servicio",
+            "Variables de entorno: ConnectionStrings, JWT__Secret, SMTP config para emails",
+            "Base de datos SQL Server como servicio gestionado en Railway",
+            "Health checks configurados para reinicio automático ante fallos"
           ]
         },
         {
           "id": "seguridad",
-          "resumen": "Datos sensibles de socios procesados localmente sin ser enviados a OpenAI. Autenticación por roles para proteger la información financiera de la cooperativa. Prompts diseñados con restricciones para prevenir prompt injection.",
+          "resumen": "Autenticación JWT con control de acceso por roles en el nivel del middleware de ASP.NET Core. Flujo de verificación de email para activar cuentas nuevas y reset de contraseña con tokens de uso único con expiración.",
           "puntos": [
-            "JWT para autenticación de gestores con roles: Gerente y Analista",
-            "Datos de socios procesados localmente; OpenAI solo recibe resúmenes agregados",
-            "System prompt con restricciones: solo responde sobre finanzas cooperativas",
-            "Validación de intenciones para prevenir prompt injection malicioso",
-            "TypeScript estricto previene errores de tipo en manejo de datos financieros",
-            "Variables de entorno para todas las credenciales y API keys"
+            "JWT con claims de rol (admin/usuario) validados en cada endpoint mediante [Authorize]",
+            "Verificación de email obligatoria antes de permitir acceso al dashboard",
+            "Reset de contraseña con tokens seguros de un solo uso y expiración de 1 hora",
+            "Entity Framework previene SQL injection mediante queries parametrizadas automáticas",
+            "HTTPS forzado en Railway; credenciales en variables de entorno, nunca en código",
+            "Middleware de manejo global de excepciones para no exponer detalles internos"
           ]
         }
       ],
-      "resultado": "Asistente funcional capaz de responder consultas financieras en lenguaje natural, generar reportes automáticos y analizar tendencias de la cooperativa. Demostración exitosa del patrón RAG (Retrieval-Augmented Generation) aplicado al dominio financiero.",
+      "resultado": "Plataforma SaaS funcional con jerarquía multi-tenant completa, tres planes de suscripción y flujo de autenticación end-to-end. Backend ASP.NET Core y frontend React listos para producción en Railway con Dockerfiles independientes.",
       "metricas": [
-        { "label": "Módulos IA", "value": "4" },
+        { "label": "Entidades del dominio", "value": "7" },
+        { "label": "Planes de suscripción", "value": "3" },
         { "label": "Cobertura TypeScript", "value": "100%" },
-        { "label": "Datos expuestos a OpenAI", "value": "0 PII" }
+        { "label": "Deploy", "value": "Railway" }
       ]
     }
   },
@@ -640,6 +643,221 @@
         { "label": "Fundaciones mapeadas", "value": "30+" },
         { "label": "Dependencias externas", "value": "0 npm" },
         { "label": "Tipo de despliegue", "value": "Static" }
+      ]
+    }
+  },
+  {
+    "id": "8",
+    "slug": "llm-observatory",
+    "title": "LLM Observatory",
+    "description": "Dashboard open-source de observabilidad para la API de Claude. Monitorea tokens, costos y latencia en tiempo real con un SDK wrapper de integración instantánea.",
+    "fullDescription": "LLM Observatory es una herramienta open-source para equipos que usan la API de Claude y necesitan visibilidad completa de su uso. Incluye un SDK wrapper drop-in para @anthropic-ai/sdk que intercepta métricas de forma asíncrona con cero overhead, un backend Express + Socket.io que almacena métricas en PostgreSQL y las emite en tiempo real, y un dashboard React con gráficos interactivos, alertas de presupuesto, comparación de modelos y exportación CSV. Desplegable en Docker Compose o Railway.",
+    "category": "P1",
+    "tags": ["Claude API", "Observabilidad", "React", "Node.js", "Open Source"],
+    "images": {
+      "thumbnail": "/images/projects/llm-observatory/thumbnail.svg",
+      "gallery": [
+        "/images/projects/llm-observatory/thumbnail.svg"
+      ]
+    },
+    "links": {
+      "github": "https://github.com/DavidAucancela/llm-observatory",
+      "demo": "https://llm-web-production.up.railway.app/settings"
+    },
+    "featured": true,
+    "date": {
+      "start": "2026-01-01",
+      "end": "2026-03-01"
+    },
+    "techStack": {
+      "frontend": ["React 18", "Vite", "Tailwind CSS", "Recharts"],
+      "backend": ["Node.js", "Express", "Socket.io", "Zod"],
+      "tools": ["PostgreSQL 16", "Docker Compose", "Railway", "Anthropic SDK"]
+    },
+    "highlights": [
+      "SDK wrapper drop-in para @anthropic-ai/sdk: métricas enviadas async con cero overhead de latencia",
+      "Dashboard en tiempo real con WebSocket (Socket.io): sin recargar la página",
+      "Cálculo de costo por request con precios por modelo (Opus, Sonnet, Haiku)",
+      "Comparación de modelos con recomendaciones inteligentes de optimización",
+      "Alertas de presupuesto con barras de progreso y umbrales configurables",
+      "Exportación CSV con filtros aplicados y seed de 500+ registros de demo"
+    ],
+    "process": {
+      "overview": "Monorepo con tres paquetes independientes: SDK wrapper (packages/sdk), API backend (packages/api) y frontend React (packages/web). El SDK intercepta las llamadas a Claude API y dispara un POST asíncrono al backend sin bloquear la respuesta principal. El backend persiste en PostgreSQL y emite eventos por WebSocket al dashboard.",
+      "pasos": [
+        {
+          "id": "problema",
+          "resumen": "Los equipos que integran la API de Claude no tienen visibilidad sobre el gasto real, la distribución de modelos ni los picos de latencia hasta que revisan la factura mensual. No existía una herramienta open-source de observabilidad específica para Claude API con integración de cero fricción.",
+          "puntos": [
+            "Sin visibilidad en tiempo real del consumo de tokens y costos por request",
+            "Imposible detectar picos de latencia o errores sin instrumentación manual",
+            "Comparación de modelos (Opus vs Sonnet vs Haiku) sin datos históricos propios",
+            "Alertas de presupuesto ausentes hasta recibir la factura de Anthropic",
+            "Integración de observabilidad requería modificar cada llamada al SDK manualmente"
+          ]
+        },
+        {
+          "id": "analisis",
+          "resumen": "Se diseñó un SDK wrapper que extiende el cliente oficial de Anthropic sin modificar su API pública. El patrón fire & forget para el envío de métricas garantiza cero overhead en las llamadas a Claude. El monorepo permite publicar el SDK independientemente del servidor de observabilidad.",
+          "puntos": [
+            "MonitoredAnthropic extiende @anthropic-ai/sdk sin cambiar la interfaz de uso",
+            "Métricas enviadas con POST asíncrono (fire & forget) después de cada response",
+            "Backend Express + Socket.io: persiste en PostgreSQL y emite eventos en tiempo real",
+            "Precios por modelo hardcodeados: Opus ($15/$75), Sonnet ($3/$15), Haiku ($0.80/$4)",
+            "Monorepo: packages/sdk, packages/api, packages/web con dependencias independientes",
+            "Docker Compose orquesta los 3 servicios + PostgreSQL para setup de un comando"
+          ]
+        },
+        {
+          "id": "desarrollo",
+          "resumen": "SDK en Node.js con tipado TypeScript completo. Backend Express con validación Zod en cada endpoint, Socket.io para emitir nuevas métricas a todos los clientes conectados y endpoints REST para consultas paginadas con filtros. Frontend React 18 con Recharts para gráficos de series de tiempo y distribución de modelos.",
+          "puntos": [
+            "MonitoredAnthropic: wrapper con proxy que intercepta messages.create y stream",
+            "9 endpoints REST: métricas, resumen, exportación CSV, presupuestos (CRUD)",
+            "Socket.io emite evento metric:new al insertar en PostgreSQL para live updates",
+            "Recharts: gráficos de series de tiempo (tokens/costo/latencia) y distribución de modelos",
+            "Alertas de presupuesto: cálculo de gasto acumulado vs límite con colores por umbral",
+            "Seed script: genera 500+ registros con distribución realista de modelos y horarios pico"
+          ]
+        },
+        {
+          "id": "despliegue",
+          "resumen": "Docker Compose para setup local en un comando. Para Railway: monorepo con dos servicios independientes (API y Web) usando Private Networking para comunicación interna. PostgreSQL como plugin gestionado por Railway con inyección automática de DATABASE_URL.",
+          "puntos": [
+            "docker-compose up -d --build: levanta API + Web + PostgreSQL en un comando",
+            "Railway: servicio API (packages/api) + servicio Web (packages/web) separados",
+            "Private Networking Railway: API_INTERNAL_URL=http://api.railway.internal:3001",
+            "PostgreSQL plugin de Railway con DATABASE_URL inyectado automáticamente",
+            "HTTPS automático en Railway; HTTP en local vía Nginx en puerto 80",
+            "Variables de entorno documentadas en .env.example con todos los valores requeridos"
+          ]
+        },
+        {
+          "id": "seguridad",
+          "resumen": "El SDK nunca registra el contenido de los mensajes enviados a Claude, solo métricas de uso (tokens, modelo, latencia, costo). Validación estricta con Zod en todos los endpoints del backend. La API key de Anthropic permanece en el entorno del usuario y nunca pasa por el servidor de observabilidad.",
+          "puntos": [
+            "SDK registra solo metadatos: tokens, modelo, latencia, costo — nunca el contenido",
+            "API key de Anthropic permanece en el entorno del usuario; el observatory no la ve",
+            "Validación Zod en todos los endpoints: rechaza payloads malformados con 400",
+            "PostgreSQL con usuario dedicado de solo los permisos necesarios",
+            "Variables de entorno para DATABASE_URL y configuración sensible",
+            "Licencia MIT: código auditado y modificable por la comunidad"
+          ]
+        }
+      ],
+      "resultado": "Herramienta open-source en producción en Railway con dashboard en tiempo real, SDK wrapper funcional y seed de demo. Permite a equipos integrar observabilidad en sus proyectos Claude API con un cambio de una línea de código.",
+      "metricas": [
+        { "label": "Overhead de latencia", "value": "0ms" },
+        { "label": "Endpoints API", "value": "9" },
+        { "label": "Modelos con pricing", "value": "4" },
+        { "label": "Registros de demo", "value": "500+" }
+      ]
+    }
+  },
+  {
+    "id": "7",
+    "slug": "mapcriminals",
+    "title": "MapCriminals — Más Buscados del Mundo",
+    "description": "Mapa mundial interactivo de criminales más buscados, integrando la API del FBI en tiempo real, Google Trends y datos manuales por país.",
+    "fullDescription": "MapCriminals es una aplicación web de inteligencia visual que muestra en un mapa interactivo los criminales más buscados a nivel mundial. Consume la API pública del FBI en tiempo real (paginada con caché de 1 hora), enriquece cada perfil con un Trend Score de Google Trends (caché 6 horas) y complementa con datos manuales de países no cubiertos como Ecuador. La interfaz estilo 'sala de operaciones' incluye filtros avanzados, panel de detalle por país y soporte bilingüe ES/EN.",
+    "category": "P3",
+    "tags": ["Node.js", "Leaflet", "FBI API", "Mapas", "Visualización"],
+    "images": {
+      "thumbnail": "/images/projects/mapcriminals/thumbnail.svg",
+      "gallery": [
+        "/images/projects/mapcriminals/thumbnail.svg"
+      ]
+    },
+    "links": {
+      "github": "https://github.com/DavidAucancela/MapCriminalsCode",
+      "demo": "https://mapcriminalscode-production.up.railway.app/"
+    },
+    "featured": false,
+    "date": {
+      "start": "2025-10-01",
+      "end": "2025-12-01"
+    },
+    "techStack": {
+      "frontend": ["HTML", "CSS", "JavaScript", "Leaflet.js"],
+      "backend": ["Node.js", "Express"],
+      "tools": ["FBI API", "Google Trends API", "Railway", "caché en memoria"]
+    },
+    "highlights": [
+      "Mapa interactivo Leaflet con overlay de grilla estilo sala de operaciones",
+      "Integración con FBI API: hasta 5 páginas paginadas con caché de 1 hora",
+      "Trend Score por criminal consultando Google Trends API (caché 6 horas)",
+      "Panel de detalle por país al clic: muestra todos los buscados de esa nación",
+      "Búsqueda y filtros por nombre, tipo de crimen, nacionalidad y fuente (FBI/manual)",
+      "Soporte bilingüe ES/EN con toggle en navbar y reloj en tiempo real"
+    ],
+    "process": {
+      "overview": "Aplicación de visualización de datos criminales iniciada para el contexto ecuatoriano (ESPOCH) y extendida a escala mundial usando la FBI API como fuente principal. El backend actúa como proxy inteligente: agrega datos de múltiples fuentes, aplica caché por niveles y expone una API unificada al frontend.",
+      "pasos": [
+        {
+          "id": "problema",
+          "resumen": "No existía una herramienta visual accesible que centralizara información de criminales más buscados a nivel mundial en un mapa interactivo, con datos en tiempo real y relevancia de tendencias. La información del FBI y de otros países estaba dispersa y sin visualización geográfica unificada.",
+          "puntos": [
+            "Datos del FBI disponibles en API pública pero sin visualización geográfica",
+            "Ausencia de herramienta que cruce datos de buscados con su relevancia actual (tendencias)",
+            "Sin cobertura de países no incluidos en la FBI API (Ecuador, Latinoamérica)",
+            "Información presentada en listas sin contexto espacial ni filtros cruzados",
+            "Sin soporte bilingüe para audiencias hispanohablantes"
+          ]
+        },
+        {
+          "id": "analisis",
+          "resumen": "Se diseñó una arquitectura de backend proxy con dos capas de caché: una para la FBI API (1 hora) y otra para Google Trends (6 horas), reduciendo la latencia y el número de llamadas externas. El frontend recibe datos normalizados independientemente de la fuente original.",
+          "puntos": [
+            "Backend Express como proxy agregador: unifica FBI API + data/manual.json",
+            "Caché en memoria por niveles: FBI API (1h) y Google Trends API (6h)",
+            "Normalización de datos: esquema único de criminal independiente de la fuente",
+            "Leaflet.js con capa de markers agrupados por país para evitar solapamiento",
+            "Sistema de filtros server-side: nombre, crimen, nacionalidad y fuente",
+            "i18n client-side: objetos de traducción ES/EN sin dependencia de librería"
+          ]
+        },
+        {
+          "id": "desarrollo",
+          "resumen": "Backend Node.js con dos endpoints: /api/wanted para datos paginados con filtros y /api/trends para scores de Google Trends. Frontend JavaScript vanilla con Leaflet, panel lateral dinámico por país y sistema de filtros que refresca el mapa en tiempo real.",
+          "puntos": [
+            "GET /api/wanted: lista paginada con filtros por nombre, crimen, nacionalidad y fuente",
+            "GET /api/trends?names=...: scores de Google Trends con caché de 6 horas por nombre",
+            "Leaflet markers con popups personalizados: foto, nombre, crímenes y Trend Score",
+            "Panel lateral por país: se actualiza al clic en bandera o marker del mapa",
+            "Reloj en tiempo real con setInterval sincronizado a la zona horaria del usuario",
+            "Toggle ES/EN que reemplaza todos los textos de la UI sin recargar la página"
+          ]
+        },
+        {
+          "id": "despliegue",
+          "resumen": "Aplicación desplegada en Railway como servicio Node.js único que sirve tanto el backend Express como los archivos estáticos del frontend. Sin Dockerfile: Railway detecta el package.json y construye automáticamente.",
+          "puntos": [
+            "Railway: despliegue automático desde GitHub en cada push a main",
+            "Express sirve el frontend estático desde la carpeta /public en producción",
+            "Variables de entorno en Railway: PORT y configuración de APIs externas",
+            "HTTPS automático provisto por Railway sin configuración adicional",
+            "data/manual.json como fuente de datos estática para países sin API oficial"
+          ]
+        },
+        {
+          "id": "seguridad",
+          "resumen": "El backend actúa como intermediario entre el cliente y las APIs externas, evitando exponer claves o endpoints directamente al navegador. Caché en memoria reduce la exposición a rate limiting de terceros y protege contra abuso de las APIs externas.",
+          "puntos": [
+            "Backend proxy: el cliente nunca llama directamente a FBI API ni Google Trends",
+            "Caché en memoria previene rate limiting y abuso de las APIs externas",
+            "Sin almacenamiento de datos de usuarios: aplicación de solo lectura sin auth",
+            "CORS configurado para permitir únicamente el dominio propio del frontend",
+            "Sanitización de parámetros de filtro antes de usarlos en queries a las APIs",
+            "HTTPS forzado por Railway en el dominio de producción"
+          ]
+        }
+      ],
+      "resultado": "Aplicación en producción en Railway que integra datos del FBI en tiempo real con Google Trends para más de 100 criminales buscados, visualizados en un mapa interactivo mundial con filtros avanzados y soporte bilingüe.",
+      "metricas": [
+        { "label": "Fuentes de datos", "value": "2 (FBI + Manual)" },
+        { "label": "Caché FBI API", "value": "1h" },
+        { "label": "Caché Trends", "value": "6h" },
+        { "label": "Idiomas", "value": "ES / EN" }
       ]
     }
   }

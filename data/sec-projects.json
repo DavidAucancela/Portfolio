@@ -16,6 +16,48 @@
       "rating": "4.6",
       "status": "Pwned",
       "techniques": ["Telnet", "Default Credentials", "Reconnaissance"]
+    },
+    "process": {
+      "overview": "Starting Point — primera máquina del learning path de HackTheBox. Objetivo: comprender el flujo básico de reconocimiento y explotación de credenciales por defecto en servicios de red.",
+      "pasos": [
+        {
+          "id": "analisis",
+          "resumen": "Reconocimiento con nmap para identificar puertos abiertos y versiones de servicios. Target Linux con puerto 23 (Telnet) expuesto.",
+          "puntos": [
+            "nmap -sV -sC -p- <target_ip> para enumeración completa",
+            "Puerto 23/TCP abierto: Telnet service activo",
+            "Telnet en 2025 = misconfiguration crítica por falta de hardening",
+            "Sin autenticación o credenciales por defecto probable"
+          ]
+        },
+        {
+          "id": "desarrollo",
+          "resumen": "Intento de conexión Telnet con credenciales por defecto estándar. Usuario 'root' sin contraseña — acceso root directo al sistema.",
+          "puntos": [
+            "telnet <target_ip> — conexión sin cifrado al servicio",
+            "Username: root / Password: (enter) — credencial por defecto",
+            "Acceso root obtenido directamente sin escalada de privilegios",
+            "cat /root/flag.txt — flag capturada"
+          ]
+        },
+        {
+          "id": "seguridad",
+          "resumen": "Flag root.txt obtenida. Lección: Telnet sin autenticación o con credenciales por defecto = compromiso total garantizado.",
+          "puntos": [
+            "Root flag capturada: HTB{...}",
+            "Mitigación: deshabilitar Telnet, usar SSH con autenticación por clave",
+            "CIS Control aplicable: inventario y control de activos de software",
+            "Telnet transmite en texto plano — interceptable con sniffing de red"
+          ]
+        }
+      ],
+      "resultado": "Máquina pwneada. Root flag obtenida mediante credenciales por defecto en Telnet.",
+      "metricas": [
+        { "label": "Plataforma", "value": "HackTheBox" },
+        { "label": "Dificultad", "value": "Very Easy" },
+        { "label": "Técnica", "value": "Default Creds" },
+        { "label": "Rating", "value": "★ 4.6" }
+      ]
     }
   },
   {
@@ -35,6 +77,49 @@
       "rating": "4.7",
       "status": "Pwned",
       "techniques": ["FTP", "Anonymous Login", "File Enumeration"]
+    },
+    "process": {
+      "overview": "Starting Point — explotación de FTP con autenticación anónima habilitada. Demuestra el riesgo de servicios FTP mal configurados que exponen archivos del sistema.",
+      "pasos": [
+        {
+          "id": "analisis",
+          "resumen": "nmap revela puerto 21 (FTP) abierto con versión vsftpd. El script nmap ftp-anon confirma que el login anónimo está habilitado.",
+          "puntos": [
+            "nmap -sV -sC -p 21 <target_ip>",
+            "Puerto 21/TCP: vsftpd 3.0.3 activo",
+            "Script ftp-anon: Anonymous FTP login allowed",
+            "Listado de archivos accesible sin credenciales"
+          ]
+        },
+        {
+          "id": "desarrollo",
+          "resumen": "Conexión FTP con usuario anonymous. Enumeración del directorio root y descarga de flag.txt con el comando get.",
+          "puntos": [
+            "ftp <target_ip> — conectar al servicio",
+            "Username: anonymous / Password: (cualquier email)",
+            "ls -la para listar archivos accesibles",
+            "get flag.txt — descarga del archivo de flag",
+            "cat flag.txt — flag obtenida"
+          ]
+        },
+        {
+          "id": "seguridad",
+          "resumen": "Flag obtenida. Lección: FTP anónimo habilitado en producción expone todos los archivos accesibles al usuario FTP.",
+          "puntos": [
+            "Flag capturada: HTB{...}",
+            "Mitigación: deshabilitar autenticación anónima en vsftpd.conf",
+            "FTP transmite en texto plano — usar SFTP o FTPS en su lugar",
+            "Principio de mínimo privilegio: el usuario FTP no debería acceder a /root"
+          ]
+        }
+      ],
+      "resultado": "Máquina pwneada. Flag obtenida vía FTP con autenticación anónima sin necesidad de exploit.",
+      "metricas": [
+        { "label": "Plataforma", "value": "HackTheBox" },
+        { "label": "Dificultad", "value": "Very Easy" },
+        { "label": "Técnica", "value": "Anon FTP" },
+        { "label": "Rating", "value": "★ 4.7" }
+      ]
     }
   },
   {
@@ -54,6 +139,49 @@
       "rating": "4.7",
       "status": "Pwned",
       "techniques": ["SMB", "Anonymous Shares", "Enumeration"]
+    },
+    "process": {
+      "overview": "Starting Point — Windows con SMB shares accesibles sin autenticación. Ejercicio de enumeración SMB con smbclient para descubrir y acceder a shares expuestos.",
+      "pasos": [
+        {
+          "id": "analisis",
+          "resumen": "nmap identifica puerto 445 (SMB) abierto en Windows. smbclient con sesión null lista los shares disponibles sin autenticación.",
+          "puntos": [
+            "nmap -sV -p 445 <target_ip>",
+            "Puerto 445/TCP: Microsoft SMB activo en Windows",
+            "smbclient -L <target_ip> -N — null session para listar shares",
+            "Shares encontrados: WorkShares accesible sin contraseña"
+          ]
+        },
+        {
+          "id": "desarrollo",
+          "resumen": "Conexión al share WorkShares con null session. Enumeración de directorios y extracción de la flag.",
+          "puntos": [
+            "smbclient //<target_ip>/WorkShares -N — acceso sin contraseña",
+            "smb: ls — listado de archivos y directorios",
+            "Navegación a subdirectorio con flag.txt",
+            "get flag.txt — descarga del archivo",
+            "Archivo obtenido: flag.txt con HTB{...}"
+          ]
+        },
+        {
+          "id": "seguridad",
+          "resumen": "Flag obtenida. Lección: null sessions SMB en Windows exponen shares internos a cualquier usuario de red sin credenciales.",
+          "puntos": [
+            "Flag capturada: HTB{...}",
+            "Mitigación: deshabilitar null sessions con RestrictAnonymous=2 en registry",
+            "Revisar permisos de cada share — principio de mínimo privilegio",
+            "SMB signing para prevenir relay attacks en la misma red"
+          ]
+        }
+      ],
+      "resultado": "Máquina Windows pwneada. Flag obtenida vía SMB share accesible con null session.",
+      "metricas": [
+        { "label": "Plataforma", "value": "HackTheBox" },
+        { "label": "OS", "value": "Windows" },
+        { "label": "Técnica", "value": "SMB Null Session" },
+        { "label": "Rating", "value": "★ 4.7" }
+      ]
     }
   },
   {
@@ -73,6 +201,49 @@
       "rating": "4.6",
       "status": "Pwned",
       "techniques": ["Redis", "Unauthenticated Access", "DB Dump"]
+    },
+    "process": {
+      "overview": "Starting Point — Redis expuesto en puerto no estándar sin autenticación. Ejercicio de enumeración de servicios en puertos altos y explotación de Redis sin requirepass configurado.",
+      "pasos": [
+        {
+          "id": "analisis",
+          "resumen": "nmap full port scan revela Redis en puerto 6379 accesible desde internet sin autenticación. INFO server confirma versión y configuración.",
+          "puntos": [
+            "nmap -p- --min-rate 5000 <target_ip> — scan de todos los puertos",
+            "Puerto 6379/TCP: Redis 5.0.7 expuesto",
+            "redis-cli -h <target_ip> — conexión directa sin password",
+            "INFO server — dump de configuración del servidor Redis"
+          ]
+        },
+        {
+          "id": "desarrollo",
+          "resumen": "redis-cli conecta sin autenticación. KEYS * lista todas las claves. GET sobre la clave de flag retorna el valor directamente.",
+          "puntos": [
+            "redis-cli -h <target_ip> -p 6379 — sin -a password",
+            "KEYS * — listado de todas las claves en la DB 0",
+            "SELECT 0 — cambiar a la base de datos donde está la flag",
+            "GET flag — valor de la clave flag: HTB{...}"
+          ]
+        },
+        {
+          "id": "seguridad",
+          "resumen": "Flag obtenida directamente de Redis. Lección: Redis expuesto sin auth en internet = acceso total a todos los datos en memoria.",
+          "puntos": [
+            "Flag capturada: HTB{...}",
+            "Mitigación: requirepass en redis.conf con contraseña fuerte",
+            "bind 127.0.0.1 — Redis solo accesible desde localhost",
+            "Firewall: puerto 6379 nunca expuesto a internet directamente",
+            "Usar stunnel o SSH tunnel para acceso remoto a Redis"
+          ]
+        }
+      ],
+      "resultado": "Máquina pwneada. Flag extraída directamente de Redis expuesto sin autenticación.",
+      "metricas": [
+        { "label": "Plataforma", "value": "HackTheBox" },
+        { "label": "Servicio", "value": "Redis 5.0.7" },
+        { "label": "Técnica", "value": "No Auth DB" },
+        { "label": "Rating", "value": "★ 4.6" }
+      ]
     }
   }
 ]

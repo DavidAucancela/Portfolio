@@ -1,0 +1,668 @@
+/* ============================================================
+   PROJECT DETAIL MODAL — Vista gamificada del proceso
+   Panel lateral con XP bar, Quest Log, Achievements, Tech Arsenal
+   Soporta modos: dev | ia | sec via [data-theme]
+   ============================================================ */
+
+/* ─── Overlay container ─── */
+.pdm {
+  position: fixed;
+  inset: 0;
+  z-index: 9985;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.pdm.is-open {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* ─── Backdrop ─── */
+.pdm__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.pdm.is-open .pdm__backdrop {
+  opacity: 1;
+}
+
+/* ─── Slide panel ─── */
+.pdm__panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(600px, 100vw);
+  background: var(--bg-primary);
+  border-left: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateX(100%);
+  transition: transform 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
+  will-change: transform;
+}
+
+.pdm.is-open .pdm__panel {
+  transform: translateX(0);
+}
+
+/* ─── Scrollable area ─── */
+.pdm__scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-accent) transparent;
+}
+
+.pdm__scroll::-webkit-scrollbar { width: 4px; }
+.pdm__scroll::-webkit-scrollbar-track { background: transparent; }
+.pdm__scroll::-webkit-scrollbar-thumb {
+  background: var(--color-accent);
+  border-radius: 4px;
+  opacity: 0.5;
+}
+
+/* ─── Header ─── */
+.pdm__header {
+  padding: 1.25rem 1.5rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-card);
+  flex-shrink: 0;
+}
+
+.pdm__header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.65rem;
+}
+
+.pdm__mode-pill {
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 0.18rem 0.6rem;
+  border-radius: 100px;
+  background: var(--tag-bg);
+  border: 1px solid var(--tag-border);
+  color: var(--color-accent);
+  text-transform: uppercase;
+}
+
+.pdm__close {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.pdm__close:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: var(--tag-bg);
+}
+
+.pdm__title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.3;
+  margin-bottom: 0.35rem;
+}
+
+.pdm__desc {
+  font-size: 0.83rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin-bottom: 0.9rem;
+}
+
+/* ─── XP / Level row ─── */
+.pdm__level-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.pdm__level-badge {
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.22rem 0.6rem;
+  border-radius: 6px;
+  background: var(--gradient-accent);
+  color: #fff;
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: 0.03em;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.25);
+}
+
+.pdm__xp-wrap { flex: 1; }
+
+.pdm__xp-label {
+  font-family: var(--font-display);
+  font-size: 0.66rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.22rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.pdm__xp-track {
+  height: 6px;
+  background: var(--bg-primary);
+  border-radius: 100px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.pdm__xp-fill {
+  height: 100%;
+  background: var(--gradient-accent);
+  border-radius: 100px;
+  width: 0%;
+  transition: width 0.9s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+
+/* ─── Body content area ─── */
+.pdm__body {
+  padding: 1.25rem 1.5rem 2.5rem;
+}
+
+/* ─── Section labels ─── */
+.pdm__slabel {
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 0.65rem;
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pdm__slabel:first-child {
+  margin-top: 0;
+}
+
+/* ─── Overview card ─── */
+.pdm__overview {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-left: 3px solid var(--color-accent);
+  border-radius: var(--border-radius-sm);
+  padding: 0.9rem 1rem;
+  font-size: 0.83rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  position: relative;
+}
+
+.pdm__overview-result {
+  margin-top: 0.7rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+/* ─── Quest phases ─── */
+.pdm-phase {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.pdm-phase:hover {
+  border-color: rgba(var(--color-accent-rgb, 59, 130, 246), 0.45);
+}
+
+.pdm-phase__header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.8rem 0.9rem;
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+
+.pdm-phase__header:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
+.pdm-phase__num {
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  color: var(--text-secondary);
+  min-width: 18px;
+  opacity: 0.5;
+}
+
+.pdm-phase__icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--tag-bg);
+  border-radius: 8px;
+  border: 1px solid var(--tag-border);
+}
+
+.pdm-phase__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.pdm-phase__name {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.pdm-phase__verb {
+  font-size: 0.7rem;
+  color: var(--color-accent);
+  font-family: var(--font-display);
+  margin-top: 0.08rem;
+  opacity: 0.85;
+}
+
+.pdm-phase__xp {
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.12rem 0.45rem;
+  background: var(--tag-bg);
+  border: 1px solid var(--tag-border);
+  border-radius: 100px;
+  color: var(--color-accent);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pdm-phase__chevron {
+  width: 14px;
+  height: 14px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  transition: transform 0.25s ease;
+  opacity: 0.6;
+}
+
+.pdm-phase.is-expanded .pdm-phase__chevron {
+  transform: rotate(180deg);
+}
+
+/* Collapsible body */
+.pdm-phase__body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pdm-phase.is-expanded .pdm-phase__body {
+  grid-template-rows: 1fr;
+}
+
+.pdm-phase__body-inner {
+  overflow: hidden;
+}
+
+.pdm-phase__content {
+  padding: 0.75rem 0.9rem 0.9rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.pdm-phase__summary {
+  font-size: 0.81rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 0.65rem;
+}
+
+.pdm-phase__points {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.pdm-phase__point {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  padding-left: 1rem;
+  position: relative;
+  line-height: 1.5;
+}
+
+.pdm-phase__point::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: var(--color-accent);
+  font-size: 0.65rem;
+  top: 0.18em;
+}
+
+/* ─── Achievements ─── */
+.pdm-achievements {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+.pdm-achievement {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  padding: 0.7rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.pdm-achievement:hover {
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+}
+
+.pdm-achievement__icon {
+  font-size: 1rem;
+  line-height: 1;
+  margin-bottom: 0.05rem;
+}
+
+.pdm-achievement__value {
+  font-family: var(--font-display);
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  line-height: 1.2;
+}
+
+.pdm-achievement__label {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  line-height: 1.3;
+}
+
+/* ─── Highlights list ─── */
+.pdm-highlights {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.pdm-highlight {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  padding-left: 1.1rem;
+  position: relative;
+  line-height: 1.5;
+}
+
+.pdm-highlight::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: var(--color-accent);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+/* ─── Tech Arsenal ─── */
+.pdm-tech-group {
+  margin-bottom: 0.7rem;
+}
+
+.pdm-tech-group__label {
+  font-family: var(--font-display);
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 0.35rem;
+  opacity: 0.7;
+}
+
+.pdm-tech-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.pdm-tech-chip {
+  padding: 0.18rem 0.5rem;
+  background: var(--tag-bg);
+  border: 1px solid var(--tag-border);
+  border-radius: 100px;
+  font-size: 0.72rem;
+  font-family: var(--font-display);
+  color: var(--tag-text);
+  line-height: 1.4;
+}
+
+/* ─── CTA ─── */
+.pdm__cta {
+  display: flex;
+  gap: 0.65rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border-color);
+  flex-wrap: wrap;
+}
+
+.pdm__cta-btn {
+  flex: 1;
+  min-width: 120px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.6rem 1rem;
+  border-radius: var(--border-radius-sm);
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.pdm__cta-btn--primary {
+  background: var(--color-accent);
+  color: #fff;
+  border-color: var(--color-accent);
+}
+
+.pdm__cta-btn--primary:hover {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+}
+
+.pdm__cta-btn--outline {
+  background: transparent;
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.pdm__cta-btn--outline:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: var(--tag-bg);
+}
+
+/* ─── Lab / CTF pwned banner ─── */
+.pdm__pwned-banner {
+  background: rgba(159, 239, 0, 0.05);
+  border: 1px solid rgba(159, 239, 0, 0.22);
+  border-left: 3px solid #9fef00;
+  border-radius: var(--border-radius-sm);
+  padding: 0.75rem 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.75rem;
+}
+
+.pdm__pwned-icon { font-size: 1.4rem; }
+
+.pdm__pwned-title {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #9fef00;
+  letter-spacing: 0.04em;
+}
+
+.pdm__pwned-sub {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  margin-top: 0.1rem;
+  font-family: var(--font-display);
+}
+
+/* ─── "Ver Proceso" button on cards ─── */
+.card-btn--process {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--border-radius-sm);
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.card-btn--process:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: var(--tag-bg);
+}
+
+/* ─── Mode-specific overrides ─── */
+
+/* .ia — glow + glassmorphism */
+[data-theme="ia"] .pdm__panel {
+  background: rgba(10, 10, 26, 0.96);
+}
+
+[data-theme="ia"] .pdm__header {
+  background: rgba(18, 18, 42, 0.92);
+}
+
+[data-theme="ia"] .pdm-phase__icon {
+  box-shadow: 0 0 10px rgba(6, 255, 165, 0.12);
+}
+
+[data-theme="ia"] .pdm__xp-fill {
+  box-shadow: 0 0 8px rgba(6, 255, 165, 0.4);
+}
+
+[data-theme="ia"] .pdm__level-badge {
+  box-shadow: 0 0 10px rgba(6, 255, 165, 0.3);
+}
+
+[data-theme="ia"] .pdm-achievement:hover {
+  box-shadow: 0 0 12px rgba(6, 255, 165, 0.12);
+}
+
+/* .sec — terminal aesthetic */
+[data-theme="sec"] .pdm__title::before {
+  content: '> ';
+  color: var(--color-accent);
+  opacity: 0.9;
+}
+
+[data-theme="sec"] .pdm__slabel::before {
+  content: '// ';
+  opacity: 0.6;
+}
+
+[data-theme="sec"] .pdm-phase__point::before {
+  content: '$';
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+}
+
+[data-theme="sec"] .card-btn--process {
+  font-family: var(--font-display);
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 640px) {
+  .pdm__panel { width: 100vw; }
+
+  .pdm__header,
+  .pdm__body {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .pdm-achievements {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .pdm__title { font-size: 1.1rem; }
+}
+
+@media (max-width: 380px) {
+  .pdm-achievements { grid-template-columns: 1fr; }
+  .pdm__cta { flex-direction: column; }
+  .pdm__cta-btn { min-width: unset; }
+}

@@ -9,7 +9,65 @@
     "liveUrl": "https://llm-web-production.up.railway.app/settings",
     "repoUrl": "https://github.com/DavidAucancela/llm-observatory",
     "featured": true,
-    "date": "2026-03"
+    "date": "2026-03",
+    "techStack": {
+      "sdk": ["@anthropic-ai/sdk wrapper", "Async interceptor"],
+      "backend": ["Node.js", "Express", "Socket.io", "PostgreSQL"],
+      "frontend": ["React", "Chart.js", "WebSocket client"]
+    },
+    "process": {
+      "overview": "Herramienta de MLOps para observabilidad de LLMs en producción. El SDK wrapper intercepta cada llamada a la API de Claude de forma asíncrona — sin modificar una sola línea del código cliente — y envía métricas al dashboard por WebSocket.",
+      "pasos": [
+        {
+          "id": "problema",
+          "resumen": "Los equipos que usan Claude en producción no tienen visibilidad de tokens consumidos, costos reales ni latencia por modelo. El dashboard de Anthropic solo muestra datos agregados con delay.",
+          "puntos": [
+            "Sin observabilidad granular por request a la API de Claude",
+            "Imposible detectar prompt bloat o llamadas ineficientes en tiempo real",
+            "Sin alertas automáticas ante picos de costo o latencia",
+            "Comparar modelos Claude (Haiku/Sonnet/Opus) requería experimentos manuales"
+          ]
+        },
+        {
+          "id": "diseño",
+          "resumen": "Patrón Proxy/Decorator sobre el SDK oficial de Anthropic. El interceptor registra métricas de forma async (fire & forget) para no añadir latencia perceptible al modelo.",
+          "puntos": [
+            "SDK wrapper con patrón Proxy sobre @anthropic-ai/sdk — drop-in sin cambiar código",
+            "Fire & forget async: métricas enviadas sin bloquear el stream de respuesta",
+            "Event bus interno para desacoplar captura de métricas de la lógica de negocio",
+            "WebSocket sobre Socket.io para push de métricas al dashboard sin polling"
+          ]
+        },
+        {
+          "id": "desarrollo",
+          "resumen": "Interceptor async que captura tokens de entrada/salida, latencia TTFT (time to first token) y costo calculado por modelo. Todo persistido en PostgreSQL y emitido en tiempo real.",
+          "puntos": [
+            "Intercept de completion API y streaming API con métricas unificadas",
+            "Cálculo de TTFT (time to first token) para modelos con streaming",
+            "Costo estimado por request con precios por modelo actualizables en config",
+            "Dashboard React con comparativa multi-modelo y detección de anomalías",
+            "Exportación CSV del histórico para análisis en herramientas externas"
+          ]
+        },
+        {
+          "id": "despliegue",
+          "resumen": "Publicado como paquete npm drop-in. Backend y dashboard desplegados en Railway con PostgreSQL persistente y WebSocket en tiempo real.",
+          "puntos": [
+            "npm publish como paquete @llm-observatory/sdk reemplazable directamente",
+            "Railway: 3 servicios (backend, frontend, DB) con deploy automático",
+            "PostgreSQL para histórico de llamadas con índices por modelo y fecha",
+            "Documentación de integración en 3 pasos: install → replace import → done"
+          ]
+        }
+      ],
+      "resultado": "SDK drop-in con 0ms de overhead sobre Claude. Dashboard live con tracking de tokens, costos y latencia. Comparativa multi-modelo en tiempo real.",
+      "metricas": [
+        { "label": "Overhead del SDK", "value": "0ms" },
+        { "label": "TTFT tracking", "value": "✓ Streaming" },
+        { "label": "Modelos comparados", "value": "5+" },
+        { "label": "Latencia WebSocket", "value": "< 50ms" }
+      ]
+    }
   },
   {
     "id": "project-001",
@@ -21,7 +79,66 @@
     "liveUrl": "https://ubapp-frontend.onrender.com",
     "repoUrl": "https://github.com/DavidAucancela/UBAppV2",
     "featured": true,
-    "date": "2026-01"
+    "date": "2026-01",
+    "techStack": {
+      "ai": ["OpenAI text-embedding-ada-002", "pgvector", "Cosine similarity"],
+      "backend": ["Python", "Django", "Django REST Framework"],
+      "frontend": ["Angular", "TypeScript", "Leaflet"],
+      "tools": ["PostgreSQL + pgvector", "Docker", "Redis", "Nginx"]
+    },
+    "process": {
+      "overview": "Integración de búsqueda semántica con OpenAI embeddings + pgvector en un sistema de gestión de envíos. El pipeline de IA convierte texto de búsqueda en vectores y compara por similitud coseno contra 5.000+ envíos en PostgreSQL.",
+      "pasos": [
+        {
+          "id": "problema",
+          "resumen": "Universal Box gestionaba +5.000 envíos anuales con hojas de cálculo. Localizar un envío tardaba hasta 4 minutos con búsqueda manual. La búsqueda por keywords fallaba con errores tipográficos o descripciones en lenguaje natural.",
+          "puntos": [
+            "Búsqueda manual en Excel de +5.000 registros: hasta 4 minutos por consulta",
+            "Búsqueda por keywords fallaba con errores tipográficos o paráfrasis",
+            "Sin visibilidad geográfica del estado y ubicación de los paquetes",
+            "Generación manual de recibos sin automatización"
+          ]
+        },
+        {
+          "id": "analisis",
+          "resumen": "Se seleccionó el modelo text-embedding-ada-002 de OpenAI para generar embeddings de 1536 dimensiones. pgvector como extensión de PostgreSQL permite búsqueda por similitud coseno directamente en SQL, sin infraestructura adicional.",
+          "puntos": [
+            "text-embedding-ada-002: 1536 dimensiones, baja latencia, costo bajo por token",
+            "pgvector: extensión nativa PostgreSQL — sin vector DB adicional",
+            "Pipeline CRISP-DM para el proceso de embedding y validación semántica",
+            "Búsqueda híbrida: keyword (ILIKE) + semántica (coseno) en paralelo"
+          ]
+        },
+        {
+          "id": "desarrollo",
+          "resumen": "Al crear/actualizar un envío, Django genera el embedding con OpenAI API y lo almacena en pgvector. En búsqueda, el query del usuario se embeds y se compara por similitud coseno contra todos los registros.",
+          "puntos": [
+            "Signal post_save en Django genera embedding async al crear/actualizar envío",
+            "Vector stored en columna pgvector con índice IVFFLAT para búsqueda rápida",
+            "Búsqueda: embed del query → SELECT con <=> (coseno) ORDER BY similitud",
+            "Búsqueda híbrida retorna union de resultados semánticos + keyword con deduplicación",
+            "Visualización geográfica con Leaflet y markers por estado de envío en tiempo real"
+          ]
+        },
+        {
+          "id": "despliegue",
+          "resumen": "Docker Compose con 4 servicios: Nginx, Gunicorn, PostgreSQL+pgvector, Redis. Los embeddings se generan en background para no bloquear la respuesta HTTP.",
+          "puntos": [
+            "Docker Compose: Nginx, Gunicorn, PostgreSQL+pgvector, Redis",
+            "Generación de embeddings en celery worker async — no bloquea la API",
+            "Redis para caché de embeddings frecuentes y cola de tareas asíncronas",
+            "pgvector index IVFFLAT: búsqueda vectorial en < 100ms sobre 5.000+ registros"
+          ]
+        }
+      ],
+      "resultado": "Búsqueda semántica en producción: tiempo de localización de envíos reducido de 4 minutos a menos de 20 segundos. Mejora del 92% en eficiencia operativa.",
+      "metricas": [
+        { "label": "Tiempo de búsqueda", "value": "< 20s" },
+        { "label": "Mejora eficiencia", "value": "92%" },
+        { "label": "Modelo embeddings", "value": "ada-002" },
+        { "label": "Dimensiones vector", "value": "1536" }
+      ]
+    }
   },
   {
     "id": "project-003",
@@ -33,6 +150,64 @@
     "liveUrl": "https://frontend-production-cc73.up.railway.app/",
     "repoUrl": "https://github.com/DavidAucancela/AnaOS",
     "featured": true,
-    "date": "2025-11"
+    "date": "2025-11",
+    "techStack": {
+      "frontend": ["React", "TypeScript", "Vite"],
+      "backend": ["ASP.NET Core (C#)", "Entity Framework Core"],
+      "tools": ["PostgreSQL", "Docker", "Railway", "JWT"]
+    },
+    "process": {
+      "overview": "SaaS multi-tenant con aislamiento estricto de datos por tenant. Backend C# con EF Core, frontend React con rutas protegidas por rol y plan.",
+      "pasos": [
+        {
+          "id": "analisis",
+          "resumen": "Cooperativas y agencias necesitaban gestión digital con datos completamente aislados entre tenants y planes diferenciados.",
+          "puntos": [
+            "Multi-tenant: datos 100% aislados entre cooperativas y agencias",
+            "Tres planes con features diferenciadas (Basic/Pro/Enterprise)",
+            "Dashboards distintos por rol de usuario",
+            "Verificación de email y recuperación de contraseña integradas"
+          ]
+        },
+        {
+          "id": "diseño",
+          "resumen": "7 modelos de dominio con EF Core. JWT con claims de tenantId para isolación automática en cada query.",
+          "puntos": [
+            "Modelos: Cooperativa, Agencia, Usuario, Cuenta, PlanSuscripcion, Suscripcion, HistorialSuscripcion",
+            "JWT con claims de tenantId — cada query filtra automáticamente",
+            "React Router con guards por plan y rol",
+            "Docker Compose para orquestación local y producción"
+          ]
+        },
+        {
+          "id": "desarrollo",
+          "resumen": "API REST C# con migraciones automáticas. React con TypeScript strict y lazy loading. Middleware de verificación de plan antes de features premium.",
+          "puntos": [
+            "ASP.NET Core con EF Core y migraciones automáticas al startup",
+            "JWT con tenantId — isolación de datos sin filtros manuales en cada handler",
+            "React + TypeScript + Vite con lazy loading de rutas protegidas",
+            "Middleware de verificación de plan para acceso a features premium",
+            "Verificación de email con tokens firmados y TTL de 24h"
+          ]
+        },
+        {
+          "id": "despliegue",
+          "resumen": "Docker Compose con backend, frontend y PostgreSQL. Railway con CI/CD automático y HTTPS sin configuración.",
+          "puntos": [
+            "Imágenes Docker para backend C# y frontend React/Nginx",
+            "Railway con deploy automático desde GitHub",
+            "HTTPS con certificados automáticos",
+            "Variables de entorno separadas por ambiente"
+          ]
+        }
+      ],
+      "resultado": "Plataforma SaaS multi-tenant en producción con 3 planes activos y flujos de verificación operativos.",
+      "metricas": [
+        { "label": "Modelos de dominio", "value": "7" },
+        { "label": "Planes de suscripción", "value": "3" },
+        { "label": "Servicios Docker", "value": "3" },
+        { "label": "Roles de usuario", "value": "4" }
+      ]
+    }
   }
 ]

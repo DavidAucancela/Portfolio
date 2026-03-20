@@ -6,68 +6,70 @@ Portfolio personal de **Jonathan David Aucancela** — Software Engineer, IA Dev
 
 ## Stack Tecnológico
 
-- **Framework:** Next.js 14 (App Router)
-- **Lenguaje:** TypeScript (strict)
-- **Estilos:** Tailwind CSS
-- **Animaciones:** Framer Motion
-- **Iconos:** Lucide React + Devicons CDN
-- **Analytics:** Vercel Analytics & Speed Insights
-- **Deployment:** GitHub Pages / Vercel
+- **HTML5 + CSS3 + JavaScript vanilla** — sin framework, sin build step
+- **Deploy:** Vercel (`@vercel/static`)
+- **Fuentes e íconos:** Google Fonts + SVG personalizados
 
-## Levantar el servidor
+## Ver el proyecto
+
+Abrir `index.html` directamente en el navegador, o usar un servidor estático:
 
 ```bash
-# Instalar dependencias
-npm install
-
-# Servidor de desarrollo (http://localhost:3000)
-npm run dev
+npx serve .
+# o
+python -m http.server 8080
 ```
 
-## Scripts disponibles
-
-```bash
-npm run dev        # Servidor de desarrollo
-npm run build      # Build de producción
-npm run start      # Servidor de producción
-npm run lint       # ESLint
-npm run type-check # TypeScript check
-```
-
-## Estructura del proyecto
+## Estructura
 
 ```
-app/                    # Next.js App Router
-  layout.tsx            # Layout raíz
-  page.tsx              # Home (Hero, Proyectos destacados, Habilidades)
-  projects/page.tsx     # Listado de proyectos con filtros
-  projects/[slug]/      # Detalle de proyecto
-  about/page.tsx
-  contact/page.tsx
-components/             # Componentes reutilizables
-  Navigation.tsx
-  CommandPalette.tsx    # Paleta de comandos (Ctrl+K / ⌘K)
-  ScrollProgress.tsx
-  sections/             # Hero, Projects, Skills
-  ui/                   # Button, Card, Container
+index.html            # Página principal (única)
+404.html              # Página de error
+css/
+  main.css            # Variables, reset, layout base, tipografía
+  sections.css        # Estilos por sección (hero, about, projects, skills, contact)
+  animations.css      # Keyframes y clases de animación
+  polish.css          # Detalles visuales, jonathan-panel, trayectoria interactiva
+  themes/             # Overrides por modo (dev, ia, sec)
+js/
+  main.js             # Init global, jonathan-panel, formulario de contacto
+  sections.js         # Renderizadores por sección (EXPERIENCE_DATA, ABOUT_DATA, etc.)
+  projects.js         # Renderizado de tarjetas de proyectos
+  animations.js       # Scroll observer, animaciones de entrada
+  effects.js          # Efectos visuales, parallax, partículas
+  theme-switcher.js   # Cambio entre modos dev / ia / sec
+  lang.js             # Internacionalización ES/EN
+  section-nav.js      # Navegación lateral por secciones
+  ia-assistant.js     # Asistente IA (solo modo .ia)
 data/
-  projects.json         # Proyectos (ubapp, ideancestral, anaos, etc.)
-  personal.json         # Datos personales y redes sociales
-  skills.json           # 35+ habilidades en 6 categorías
-lib/
-  api.ts                # Acceso a datos (getAllProjects, getProjectBySlug…)
-  utils.ts              # Utilidades (cn, formatDate…)
-types/index.ts          # Interfaces TypeScript
-public/images/projects/ # Capturas de proyectos
+  projects.json       # 6 proyectos con proceso, métricas, links
+  personal.json       # Nombre, bio, email, redes, timeline
+  skills.json         # Skills por categoría
+  hero.json           # Contenido del hero por modo
+assets/               # Fuentes, íconos SVG
+public/               # Imágenes (foto, screenshots de proyectos)
+vercel.json           # Config deploy estático
 ```
 
-## Categorías de proyectos
+## Modos del portfolio
 
-| Categoría | Descripción |
-|-----------|-------------|
-| `P1` | Principal / Destacado |
-| `P2` | Proyecto secundario |
-| `P3` | Práctica / Aprendizaje |
+El portfolio tiene tres modos que cambian contenido, colores y secciones visibles:
+
+| Modo | Foco |
+|------|------|
+| `dev` | Software Engineer — proyectos y stack técnico |
+| `ia` | IA Developer — asistente integrado y proyectos de ML/LLM |
+| `sec` | Security Researcher — proyectos y habilidades de ciberseguridad |
+
+## Secciones
+
+- **Hero** — presentación dinámica según modo activo
+- **About** — bio, stats, focus card
+- **Projects** — grid de proyectos renderizado desde `data/projects.json`
+- **Skills** — grid de habilidades técnicas
+- **IA Assistant** — chat integrado (solo modo `ia`)
+- **Contact** — formulario y redes sociales
+- **Jonathan Panel** — drawer lateral con Trayectoria Interactiva (línea de tiempo)
 
 ## Licencia
 

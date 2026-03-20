@@ -1,0 +1,39 @@
+{
+  "name": "portfolio",
+  "version": "1.0.0",
+  "description": "Portfolio personal de Jonathan David Aucancela — Software Engineer, IA Developer y Security Researcher.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DavidAucancela/Portfolio.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/DavidAucancela/Portfolio/issues"
+  },
+  "homepage": "https://github.com/DavidAucancela/Portfolio#readme",
+  "devDependencies": {
+    "vite": "^8.0.0"
+  },
+  "main": "vite.config.js",
+  "dependencies": {
+    "detect-libc": "^2.1.2",
+    "fdir": "^6.5.0",
+    "lightningcss": "^1.32.0",
+    "lightningcss-win32-x64-msvc": "^1.32.0",
+    "nanoid": "^3.3.11",
+    "picocolors": "^1.1.1",
+    "picomatch": "^4.0.3",
+    "postcss": "^8.5.8",
+    "rolldown": "^1.0.0-rc.9",
+    "source-map-js": "^1.2.1",
+    "tinyglobby": "^0.2.15"
+  }
+}

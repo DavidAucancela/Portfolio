@@ -950,9 +950,9 @@ const StatCounters = (() => {
 })();
 
 /* ════════════════════════════════════════════════════════════
-   INICIALIZACIÓN GLOBAL
+   EXPORT — función de init global
 ════════════════════════════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded', () => {
+export function initEffects() {
   CustomCursor.init();
   CursorTrail.init();
   MagneticButtons.init();
@@ -969,10 +969,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window.dispatchEvent(new CustomEvent('portfolio:modeChange', {
       detail: {
         mode:   initMode,
-        config: typeof ThemeSwitcher !== 'undefined'
-          ? ThemeSwitcher.getModeConfig(initMode)
-          : {},
+        config: {},
       },
     }));
   }, 100);
-});
+}

@@ -46,10 +46,7 @@
   }
   </script>
 
-  <!-- Estilos — orden importa -->
-  <link rel="stylesheet" href="css/main.css" />
-  <link rel="stylesheet" href="css/sections.css" />
-  <link rel="stylesheet" href="css/polish.css" />
+  <!-- Estilos — cargados por Vite desde js/main.js -->
 </head>
 
 <body data-theme="dev">
@@ -689,18 +686,8 @@
     </svg>
   </button>
 
-  <!-- ════════════════════════════════════════════════════
-       SCRIPTS — orden de carga importa
-  ════════════════════════════════════════════════════ -->
-  <script src="js/animations.js"></script>
-  <script src="js/theme-switcher.js"></script>
-  <script src="js/sections.js"></script>
-  <script src="js/projects.js"></script>
-  <script src="js/effects.js"></script>
-  <script src="js/main.js"></script>
-  <script src="js/ia-assistant.js"></script>
-  <script src="js/lang.js"></script>
-  <script src="js/section-nav.js"></script>
+  <!-- Script único — Vite bundlea todo -->
+  <script type="module" src="/js/main.js"></script>
 
 </body>
 </html>

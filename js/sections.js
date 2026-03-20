@@ -10,7 +10,7 @@
  *  - sec → Ciberseguridad / Pentesting
  */
 
-const Sections = (() => {
+import { navigateToProject } from './app.js';
 
   /* ════════════════════════════════════════════════════════════
      DATOS: ABOUT
@@ -746,8 +746,8 @@ const Sections = (() => {
     });
     slide.querySelector('.story-goto')?.addEventListener('click', e => {
       const slug = e.currentTarget.dataset.slug;
-      if (slug && window.App?.navigateToProject) {
-        window.App.navigateToProject(slug);
+      if (slug) {
+        navigateToProject(slug);
       }
     });
 
@@ -1058,22 +1058,14 @@ const Sections = (() => {
     render(e.detail.mode);
   });
 
-  /* ════════════════════════════════════════════════════════════
-     API PÚBLICA
-  ════════════════════════════════════════════════════════════ */
-  return {
-    init,
-    render,
-    renderAbout,
-    renderSkills,
-    renderExperience,
-    renderContact,
-  };
-
-})();
-
-// Auto-inicializar cuando el DOM esté listo
-document.addEventListener('DOMContentLoaded', () => {
-  const mode = localStorage.getItem('portfolio-mode') || 'dev';
-  Sections.init(mode);
-});
+/* ════════════════════════════════════════════════════════════
+   EXPORT
+════════════════════════════════════════════════════════════ */
+export const Sections = {
+  init,
+  render,
+  renderAbout,
+  renderSkills,
+  renderExperience,
+  renderContact,
+};

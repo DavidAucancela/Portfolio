@@ -435,9 +435,22 @@ window.addEventListener('portfolio:modeChange', e => {
 });
 
 /* Abrir detalle desde la trayectoria (Jonathan Panel) */
-window.addEventListener('portfolio:openProjectDetail', e => {
+window.addEventListener('portfolio:openProjectDetail', async e => {
   const { slug } = e.detail;
-  const project = _allProjects.find(p => p.slug === slug);
+  let project = _allProjects.find(p => p.slug === slug);
+
+  /* Fallback: si no está en el modo actual, buscar en dev-projects.json */
+  if (!project) {
+    try {
+      const res = await fetch('data/dev-projects.json');
+      if (res.ok) {
+        const devProjects = await res.json();
+        devProjects.forEach(p => { if (!p.slug && p.id) p.slug = SLUG_MAP[p.id] || null; });
+        project = devProjects.find(p => p.slug === slug);
+      }
+    } catch (_) {}
+  }
+
   if (project) ProjectDetail.open(project, currentMode);
 });
 

@@ -206,6 +206,13 @@ export function initApp() {
 
   jonathanClose?.addEventListener('click', _closeJonathanPanel);
 
+  /* Abrir trayectoria al ver detalle de un proyecto */
+  window.addEventListener('portfolio:syncTrayectoria', () => {
+    if (!jonathanPanel?.classList.contains('open')) {
+      _openJonathanPanel();
+    }
+  });
+
   jonathanPanel?.querySelector('.jonathan-panel__backdrop')
     ?.addEventListener('click', _closeJonathanPanel);
 

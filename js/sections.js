@@ -747,7 +747,7 @@ import { navigateToProject } from './app.js';
     slide.querySelector('.story-goto')?.addEventListener('click', e => {
       const slug = e.currentTarget.dataset.slug;
       if (slug) {
-        navigateToProject(slug);
+        window.dispatchEvent(new CustomEvent('portfolio:openProjectDetail', { detail: { slug } }));
       }
     });
 
@@ -1056,6 +1056,13 @@ import { navigateToProject } from './app.js';
   /* ─── Escuchar cambios de modo ──────────────────────────── */
   window.addEventListener('portfolio:modeChange', (e) => {
     render(e.detail.mode);
+  });
+
+  /* ─── Sincronizar trayectoria cuando se abre un proyecto ── */
+  window.addEventListener('portfolio:syncTrayectoria', (e) => {
+    const { slug } = e.detail;
+    const idx = COMPLETED_DATA.findIndex(item => item.slug === slug);
+    if (idx >= 0) _goToIndex(idx, true);
   });
 
 /* ════════════════════════════════════════════════════════════

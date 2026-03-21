@@ -37,6 +37,7 @@ const COMING_SOON = {
 
 let currentMode     = 'dev';
 let isLoading       = false;
+let _allProjects    = [];
 
 /* ────────────────────────────────────────────────────
    CARGA DE PROYECTOS
@@ -56,6 +57,7 @@ async function loadProjects(mode) {
     const res      = await fetch(`data/${mode}-projects.json`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const projects = await res.json();
+    if (Array.isArray(projects)) _allProjects = projects;
 
     // Pequeño delay para que el skeleton sea perceptible
     await new Promise(r => setTimeout(r, 300));
@@ -425,6 +427,13 @@ function _addTiltEffect(card) {
 ──────────────────────────────────────────────────── */
 window.addEventListener('portfolio:modeChange', e => {
   loadProjects(e.detail.mode);
+});
+
+/* Abrir detalle desde la trayectoria (Jonathan Panel) */
+window.addEventListener('portfolio:openProjectDetail', e => {
+  const { slug } = e.detail;
+  const project = _allProjects.find(p => p.slug === slug);
+  if (project) ProjectDetail.open(project, currentMode);
 });
 
 /* ────────────────────────────────────────────────────

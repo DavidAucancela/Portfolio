@@ -471,6 +471,11 @@ function _open(p, mode) {
   _el.classList.add('is-open');
   document.body.style.overflow = 'hidden';
 
+  /* Sincronizar trayectoria */
+  if (p.slug) {
+    window.dispatchEvent(new CustomEvent('portfolio:syncTrayectoria', { detail: { slug: p.slug } }));
+  }
+
   /* Scroll to top */
   const scroll = _el.querySelector('.pdm__scroll');
   if (scroll) scroll.scrollTop = 0;

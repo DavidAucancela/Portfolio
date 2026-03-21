@@ -39,6 +39,17 @@ let currentMode     = 'dev';
 let isLoading       = false;
 let _allProjects    = [];
 
+const SLUG_MAP = {
+  'project-001': 'ubapp',
+  'project-002': 'ideancestral',
+  'project-003': 'anaos',
+  'project-004': 'equity',
+  'project-005': 'securabank',
+  'project-006': 'conquito-fundaciones',
+  'project-007': 'mapcriminals',
+  'project-008': 'llm-observatory',
+};
+
 /* ────────────────────────────────────────────────────
    CARGA DE PROYECTOS
 ──────────────────────────────────────────────────── */
@@ -57,7 +68,10 @@ async function loadProjects(mode) {
     const res      = await fetch(`data/${mode}-projects.json`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const projects = await res.json();
-    if (Array.isArray(projects)) _allProjects = projects;
+    if (Array.isArray(projects)) {
+      projects.forEach(p => { if (!p.slug && p.id) p.slug = SLUG_MAP[p.id] || null; });
+      _allProjects = projects;
+    }
 
     // Pequeño delay para que el skeleton sea perceptible
     await new Promise(r => setTimeout(r, 300));
@@ -138,16 +152,7 @@ function _buildCard(p, mode) {
   card.className = `project-card${p.featured ? ' project-card--featured' : ''}`;
   card.setAttribute('aria-label', p.title);
 
-  // Derive slug from id for project highlight navigation
-  const slugMap = {
-    'project-002': 'ideancestral',
-    'project-004': 'equity',
-    'project-005': 'securabank',
-    'project-006': 'conquito-fundaciones',
-    'project-001': 'ubapp',
-    'project-003': 'anaos',
-  };
-  if (p.id && slugMap[p.id]) card.dataset.slug = slugMap[p.id];
+  if (p.id && SLUG_MAP[p.id]) card.dataset.slug = SLUG_MAP[p.id];
 
   // Imagen o placeholder
   const imgHTML = p.image

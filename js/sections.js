@@ -563,11 +563,8 @@ import { navigateToProject } from './app.js';
     return { dev: 'Software Engineering', ia: 'IA & ML', sec: 'Cybersecurity' }[mode] || mode;
   }
 
-  /* ─── EXPERIENCE — Story + Timeline animado ─────────────── */
-  let _expIndex   = 0;
-  let _expTimer   = null;
-  let _expPaused  = false;
-  const EXP_DURATION = 4000;
+  /* ─── EXPERIENCE — Layout dos columnas ─────────────────── */
+  let _expIndex  = 0;
 
   const COMPLETED_DATA = EXPERIENCE_DATA.filter(e => e.completed !== false);
 
@@ -575,9 +572,7 @@ import { navigateToProject } from './app.js';
     const container = document.getElementById('timeline-container');
     if (!container) return;
     container.dataset.mode = mode;
-    _expIndex  = 0;
-    _expPaused = false;
-    _clearExpTimer();
+    _expIndex = 0;
     _buildStoryLayout(container);
   }
 
@@ -588,78 +583,44 @@ import { navigateToProject } from './app.js';
     const layout = document.createElement('div');
     layout.className = 'story-layout';
 
-    /* ── Progress strips ── */
-    const strips = document.createElement('div');
-    strips.className = 'story-strips';
-    strips.setAttribute('aria-hidden', 'true');
-    data.forEach((_, i) => {
-      const strip = document.createElement('div');
-      strip.className = 'story-strip';
-      strip.dataset.index = i;
-      const fill = document.createElement('div');
-      fill.className = 'story-strip__fill';
-      strip.appendChild(fill);
-      strips.appendChild(strip);
-    });
-    layout.appendChild(strips);
+    /* ── Columna izquierda: lista cronológica ── */
+    const trayList = document.createElement('nav');
+    trayList.className = 'tray-list';
+    trayList.setAttribute('aria-label', 'Trayectoria cronológica');
 
-    /* ── Timeline track ── */
-    const track = document.createElement('div');
-    track.className = 'story-track';
-    track.setAttribute('aria-label', 'Línea de tiempo');
-
-    const trackLine = document.createElement('div');
-    trackLine.className = 'story-track__line';
-    track.appendChild(trackLine);
-
-    const trackProgress = document.createElement('div');
-    trackProgress.className = 'story-track__progress';
-    trackProgress.id = 'story-track-progress';
-    track.appendChild(trackProgress);
+    const trayLine = document.createElement('div');
+    trayLine.className = 'tray-line';
+    trayList.appendChild(trayLine);
 
     data.forEach((item, i) => {
-      const node = document.createElement('button');
-      node.className = 'story-node' + (i === 0 ? ' active' : '') + (i < 0 ? ' visited' : '');
-      node.dataset.index = i;
-      node.setAttribute('aria-label', `Ver ${item.title}`);
-      node.innerHTML = `
-        <div class="story-node__dot">
-          <span class="story-node__icon">${item.icon}</span>
-          <span class="story-node__pulse" aria-hidden="true"></span>
-        </div>
-        <div class="story-node__info">
-          <span class="story-node__name">${item.title.split(' — ')[0].split(' ')[0]}</span>
-          <span class="story-node__year">${item.date.split(' — ').pop().split(' ').pop()}</span>
-        </div>
+      const btn = document.createElement('button');
+      btn.className = 'tray-item' + (i === 0 ? ' active' : '');
+      btn.dataset.index = i;
+      btn.setAttribute('aria-label', `Ver ${item.title}`);
+      btn.innerHTML = `
+        <span class="tray-item__year">${item.date.split(' — ').pop().split(' ').pop()}</span>
+        <span class="tray-item__dot">
+          <span class="tray-item__icon">${item.icon}</span>
+        </span>
+        <span class="tray-item__info">
+          <span class="tray-item__title">${item.title.split(' — ')[0]}</span>
+          <span class="tray-item__role">${item.role.split(' · ')[0]}</span>
+        </span>
       `;
-      node.addEventListener('click', () => _goToIndex(i, true));
-      track.appendChild(node);
+      btn.addEventListener('click', () => _goToIndex(i));
+      trayList.appendChild(btn);
     });
-    layout.appendChild(track);
+    layout.appendChild(trayList);
 
-    /* ── Slide area ── */
+    /* ── Columna derecha: detalle ── */
     const slideWrap = document.createElement('div');
     slideWrap.className = 'story-slide-wrap';
     slideWrap.id = 'story-slide-wrap';
     layout.appendChild(slideWrap);
 
-    /* ── Pause on hover ── */
-    layout.addEventListener('mouseenter', () => {
-      _expPaused = true;
-      _pauseStrip();
-      _clearExpTimer();
-    });
-    layout.addEventListener('mouseleave', () => {
-      _expPaused = false;
-      _resumeStrip();
-      _startExpTimer();
-    });
-
     container.appendChild(layout);
     _renderSlide(_expIndex, false);
     _updateTrack();
-    _startStrip(_expIndex);
-    _startExpTimer();
   }
 
   /* ── Slide renderer ─────────────────────────────────────── */
@@ -798,101 +759,22 @@ import { navigateToProject } from './app.js';
   }
 
   /* ── Go to index ────────────────────────────────────────── */
-  function _goToIndex(index, resetTimer) {
-    if (index === _expIndex && !resetTimer) return;
+  function _goToIndex(index) {
+    if (index === _expIndex) return;
     _expIndex = index;
-    _clearExpTimer();
-    _stopStrip();
     _renderSlide(index, true);
     _updateTrack();
-    if (!_expPaused) {
-      _startStrip(index);
-      _startExpTimer();
-    }
+    /* Scroll el item activo a la vista en la lista */
+    const active = document.querySelector(`.tray-item[data-index="${index}"]`);
+    active?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 
   /* ── Track update ───────────────────────────────────────── */
   function _updateTrack() {
-    const nodes = document.querySelectorAll('.story-node');
-    nodes.forEach((node, i) => {
-      node.classList.toggle('active',  i === _expIndex);
-      node.classList.toggle('visited', i < _expIndex);
+    document.querySelectorAll('.tray-item').forEach((item, i) => {
+      item.classList.toggle('active',  i === _expIndex);
+      item.classList.toggle('visited', i < _expIndex);
     });
-
-    /* Animate progress line */
-    const progressLine = document.getElementById('story-track-progress');
-    if (progressLine && nodes.length > 1) {
-      const pct = (_expIndex / (COMPLETED_DATA.length - 1)) * 100;
-      progressLine.style.width = pct + '%';
-    }
-  }
-
-  /* ── Progress strip (top bars) ──────────────────────────── */
-  function _startStrip(index) {
-    /* Mark previous strips as full */
-    document.querySelectorAll('.story-strip').forEach((strip, i) => {
-      const fill = strip.querySelector('.story-strip__fill');
-      if (!fill) return;
-      if (i < index) {
-        fill.style.transition = 'none';
-        fill.style.width = '100%';
-      } else if (i === index) {
-        fill.style.transition = 'none';
-        fill.style.width = '0%';
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            fill.style.transition = `width ${EXP_DURATION}ms linear`;
-            fill.style.width = '100%';
-          });
-        });
-      } else {
-        fill.style.transition = 'none';
-        fill.style.width = '0%';
-      }
-    });
-  }
-
-  function _stopStrip() {
-    const strip = document.querySelector(`.story-strip[data-index="${_expIndex}"] .story-strip__fill`);
-    if (!strip) return;
-    const computed = getComputedStyle(strip).width;
-    strip.style.transition = 'none';
-    strip.style.width = computed;
-  }
-
-  function _pauseStrip() {
-    const strip = document.querySelector(`.story-strip[data-index="${_expIndex}"] .story-strip__fill`);
-    if (!strip) return;
-    const computed = getComputedStyle(strip).width;
-    strip.style.transition = 'none';
-    strip.style.width = computed;
-  }
-
-  function _resumeStrip() {
-    const strip = document.querySelector(`.story-strip[data-index="${_expIndex}"] .story-strip__fill`);
-    if (!strip) return;
-    const currentW    = parseFloat(strip.style.width) || 0;
-    const totalW      = strip.parentElement?.offsetWidth || 100;
-    const remaining   = ((totalW - currentW) / totalW) * EXP_DURATION;
-    strip.style.transition = `width ${remaining}ms linear`;
-    strip.style.width = '100%';
-  }
-
-  /* ── Timer ──────────────────────────────────────────────── */
-  function _startExpTimer() {
-    _clearExpTimer();
-    _expTimer = setTimeout(() => {
-      if (!_expPaused) {
-        const next = (_expIndex + 1) % COMPLETED_DATA.length;
-        _goToIndex(next, false);
-        _startStrip(next);
-        _startExpTimer();
-      }
-    }, EXP_DURATION);
-  }
-
-  function _clearExpTimer() {
-    if (_expTimer) { clearTimeout(_expTimer); _expTimer = null; }
   }
 
   /* ─── CONTACT ────────────────────────────────────────────── */

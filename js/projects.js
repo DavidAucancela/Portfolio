@@ -389,7 +389,7 @@ function _addDetailClick(card, p) {
   if (!btn) return;
   btn.addEventListener('click', e => {
     e.stopPropagation();
-    ProjectDetail.open(p, currentMode, _allProjects);
+    ProjectDetail.open(p, currentMode);
   });
 }
 

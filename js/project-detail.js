@@ -371,9 +371,6 @@ function _buildContent(p, mode) {
 ───────────────────────────────────────────────────────── */
 let _el        = null;
 let _prevFocus = null;
-let _navList   = null;
-let _navIdx    = -1;
-let _curMode   = 'dev';
 
 function _inject() {
   if (document.getElementById('pdm')) {
@@ -397,24 +394,7 @@ function _inject() {
       </div>
       <header class="pdm__header">
         <div class="pdm__header-top">
-          <div class="pdm__header-left">
-            <span class="pdm__mode-pill" id="pdm-mode-pill"></span>
-            <div class="pdm__nav-btns" id="pdm-nav-btns" style="display:none;">
-              <button class="pdm__nav-btn" id="pdm-prev" aria-label="Proyecto anterior">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <polyline points="15 18 9 12 15 6"/>
-                </svg>
-              </button>
-              <span class="pdm__nav-counter" id="pdm-nav-counter"></span>
-              <button class="pdm__nav-btn" id="pdm-next" aria-label="Siguiente proyecto">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <polyline points="9 18 15 12 9 6"/>
-                </svg>
-              </button>
-            </div>
-          </div>
+          <span class="pdm__mode-pill" id="pdm-mode-pill"></span>
           <button class="pdm__close" id="pdm-close" aria-label="Cerrar detalle del proyecto">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -448,26 +428,18 @@ function _inject() {
 
   document.getElementById('pdm-close').addEventListener('click', _close);
   document.getElementById('pdm-backdrop').addEventListener('click', _close);
-  document.getElementById('pdm-prev').addEventListener('click', _prev);
-  document.getElementById('pdm-next').addEventListener('click', _next);
   document.addEventListener('keydown', e => {
-    if (!_el?.classList.contains('is-open')) return;
-    if (e.key === 'Escape')      _close();
-    if (e.key === 'ArrowLeft')   _prev();
-    if (e.key === 'ArrowRight')  _next();
+    if (e.key === 'Escape' && _el?.classList.contains('is-open')) _close();
   });
 }
 
 /* ─────────────────────────────────────────────────────────
    PUBLIC
 ───────────────────────────────────────────────────────── */
-function _open(p, mode, navList) {
+function _open(p, mode) {
   if (!_el) _inject();
 
   _prevFocus = document.activeElement;
-  _curMode   = mode;
-  _navList   = navList || null;
-  _navIdx    = _navList ? _navList.findIndex(x => (x.slug || x.id) === (p.slug || p.id)) : -1;
 
   const xp        = _calcXP(p);
   const ml        = MODE_LABELS[mode] || MODE_LABELS.dev;
@@ -485,12 +457,6 @@ function _open(p, mode, navList) {
       hero.style.backgroundImage = '';
     }
   }
-
-  /* Nav buttons */
-  const navBtns    = document.getElementById('pdm-nav-btns');
-  const navCounter = document.getElementById('pdm-nav-counter');
-  if (navBtns) navBtns.style.display = (_navList && _navList.length > 1) ? 'flex' : 'none';
-  if (navCounter && _navList) navCounter.textContent = `${_navIdx + 1} / ${_navList.length}`;
 
   /* Header */
   document.getElementById('pdm-mode-pill').textContent = ml.pill;
@@ -556,17 +522,6 @@ function _open(p, mode, navList) {
   setTimeout(() => document.getElementById('pdm-close')?.focus(), 60);
 }
 
-function _prev() {
-  if (!_navList || _navList.length < 2) return;
-  const idx = (_navIdx - 1 + _navList.length) % _navList.length;
-  _open(_navList[idx], _curMode, _navList);
-}
-
-function _next() {
-  if (!_navList || _navList.length < 2) return;
-  const idx = (_navIdx + 1) % _navList.length;
-  _open(_navList[idx], _curMode, _navList);
-}
 
 function _close() {
   if (!_el) return;
@@ -595,4 +550,4 @@ function _togglePhase(e) {
 /* ─────────────────────────────────────────────────────────
    EXPORT
 ───────────────────────────────────────────────────────── */
-export const ProjectDetail = { init: _inject, open: _open, close: _close, prev: _prev, next: _next };
+export const ProjectDetail = { init: _inject, open: _open, close: _close };

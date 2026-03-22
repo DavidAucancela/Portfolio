@@ -390,6 +390,54 @@ import { navigateToProject } from './app.js';
       ],
       github: 'https://github.com/DavidAucancela/SecuraBank',
     },
+    {
+      date:      'Dic 2025',
+      title:     'MapCriminals',
+      role:      'Desarrollador Full Stack · Personal',
+      org:       'Proyecto personal · Remoto',
+      slug:      'mapcriminals',
+      completed: true,
+      type:      'project',
+      typeLabel: 'Personal',
+      desc:      'Mapa mundial interactivo de criminales más buscados integrando la FBI API en tiempo real, Google Trends y Leaflet.js.',
+      tags:      ['Node.js', 'Leaflet', 'FBI API', 'Google Trends'],
+      icon:      '🗺️',
+      highlights: [
+        'Integración en tiempo real con FBI Most Wanted API',
+        'Visualización geoespacial con Leaflet.js y markers dinámicos',
+        'Correlación con tendencias de búsqueda Google Trends',
+      ],
+      metricas: [
+        { label: 'APIs integradas', value: '2' },
+        { label: 'Cobertura', value: 'Global' },
+        { label: 'Tiempo real', value: '✓' },
+      ],
+      github: 'https://github.com/DavidAucancela/MapCriminals',
+    },
+    {
+      date:      'Mar 2026',
+      title:     'LLM Observatory',
+      role:      'Desarrollador Full Stack · Open Source',
+      org:       'Proyecto open source · Remoto',
+      slug:      'llm-observatory',
+      completed: true,
+      type:      'project',
+      typeLabel: 'Open Source',
+      desc:      'Dashboard open-source de observabilidad para la API de Claude. Monitorea tokens, latencia, costos y calidad de respuestas en tiempo real con Socket.io.',
+      tags:      ['React', 'Node.js', 'PostgreSQL', 'Socket.io'],
+      icon:      '🔭',
+      highlights: [
+        'Monitoreo en tiempo real de tokens, latencia y costos vía Socket.io',
+        'Dashboard con métricas históricas y comparativas de modelos',
+        'Open source — contribuciones de la comunidad bienvenidas',
+      ],
+      metricas: [
+        { label: 'Tiempo real', value: '✓' },
+        { label: 'Stack', value: 'React + Node' },
+        { label: 'Open Source', value: '✓' },
+      ],
+      github: 'https://github.com/DavidAucancela/LLM-Observatory',
+    },
   ];
 
   /* ════════════════════════════════════════════════════════════
@@ -563,336 +611,57 @@ import { navigateToProject } from './app.js';
     return { dev: 'Software Engineering', ia: 'IA & ML', sec: 'Cybersecurity' }[mode] || mode;
   }
 
-  /* ─── EXPERIENCE — Story + Timeline animado ─────────────── */
-  let _expIndex   = 0;
-  let _expTimer   = null;
-  let _expPaused  = false;
-  const EXP_DURATION = 4000;
-
+  /* ─── EXPERIENCE — Timeline horizontal ──────────────────── */
   const COMPLETED_DATA = EXPERIENCE_DATA.filter(e => e.completed !== false);
 
   function renderExperience(mode) {
     const container = document.getElementById('timeline-container');
     if (!container) return;
     container.dataset.mode = mode;
-    _expIndex  = 0;
-    _expPaused = false;
-    _clearExpTimer();
-    _buildStoryLayout(container);
+    _buildTimeline(container);
   }
 
-  function _buildStoryLayout(container) {
+  function _buildTimeline(container) {
     container.innerHTML = '';
     const data = COMPLETED_DATA;
 
-    const layout = document.createElement('div');
-    layout.className = 'story-layout';
+    const wrap = document.createElement('div');
+    wrap.className = 'traj-wrap';
 
-    /* ── Progress strips ── */
-    const strips = document.createElement('div');
-    strips.className = 'story-strips';
-    strips.setAttribute('aria-hidden', 'true');
-    data.forEach((_, i) => {
-      const strip = document.createElement('div');
-      strip.className = 'story-strip';
-      strip.dataset.index = i;
-      const fill = document.createElement('div');
-      fill.className = 'story-strip__fill';
-      strip.appendChild(fill);
-      strips.appendChild(strip);
-    });
-    layout.appendChild(strips);
+    const scroll = document.createElement('div');
+    scroll.className = 'traj-scroll';
+    scroll.setAttribute('aria-label', 'Trayectoria de proyectos');
 
-    /* ── Timeline track ── */
-    const track = document.createElement('div');
-    track.className = 'story-track';
-    track.setAttribute('aria-label', 'Línea de tiempo');
+    const line = document.createElement('div');
+    line.className = 'traj-line';
+    scroll.appendChild(line);
 
-    const trackLine = document.createElement('div');
-    trackLine.className = 'story-track__line';
-    track.appendChild(trackLine);
+    data.forEach((item) => {
+      const year = item.date.split(' — ').pop().split(' ').pop();
+      const shortTitle = item.title.split(' — ')[0];
 
-    const trackProgress = document.createElement('div');
-    trackProgress.className = 'story-track__progress';
-    trackProgress.id = 'story-track-progress';
-    track.appendChild(trackProgress);
-
-    data.forEach((item, i) => {
-      const node = document.createElement('button');
-      node.className = 'story-node' + (i === 0 ? ' active' : '') + (i < 0 ? ' visited' : '');
-      node.dataset.index = i;
-      node.setAttribute('aria-label', `Ver ${item.title}`);
-      node.innerHTML = `
-        <div class="story-node__dot">
-          <span class="story-node__icon">${item.icon}</span>
-          <span class="story-node__pulse" aria-hidden="true"></span>
-        </div>
-        <div class="story-node__info">
-          <span class="story-node__name">${item.title.split(' — ')[0].split(' ')[0]}</span>
-          <span class="story-node__year">${item.date.split(' — ').pop().split(' ').pop()}</span>
-        </div>
+      const btn = document.createElement('button');
+      btn.className = 'traj-item';
+      btn.dataset.slug = item.slug || '';
+      btn.setAttribute('aria-label', `Ver ${item.title}`);
+      btn.innerHTML = `
+        <span class="traj-item__year">${year}</span>
+        <span class="traj-item__dot">${item.icon}</span>
+        <span class="traj-item__title">${shortTitle}</span>
+        <span class="traj-item__badge">${item.typeLabel}</span>
       `;
-      node.addEventListener('click', () => _goToIndex(i, true));
-      track.appendChild(node);
-    });
-    layout.appendChild(track);
-
-    /* ── Slide area ── */
-    const slideWrap = document.createElement('div');
-    slideWrap.className = 'story-slide-wrap';
-    slideWrap.id = 'story-slide-wrap';
-    layout.appendChild(slideWrap);
-
-    /* ── Pause on hover ── */
-    layout.addEventListener('mouseenter', () => {
-      _expPaused = true;
-      _pauseStrip();
-      _clearExpTimer();
-    });
-    layout.addEventListener('mouseleave', () => {
-      _expPaused = false;
-      _resumeStrip();
-      _startExpTimer();
-    });
-
-    container.appendChild(layout);
-    _renderSlide(_expIndex, false);
-    _updateTrack();
-    _startStrip(_expIndex);
-    _startExpTimer();
-  }
-
-  /* ── Slide renderer ─────────────────────────────────────── */
-  function _renderSlide(index, animated) {
-    const wrap = document.getElementById('story-slide-wrap');
-    if (!wrap) return;
-    const item = COMPLETED_DATA[index];
-    if (!item) return;
-
-    const highlightsHTML = (item.highlights || []).slice(0, 3).map(h => `
-      <li class="story-highlight">
-        <span class="story-highlight__dot story-dot--${item.type}" aria-hidden="true"></span>
-        <span>${h}</span>
-      </li>`).join('');
-
-    const metricasHTML = (item.metricas || []).slice(0, 3).map(m => `
-      <div class="story-metric">
-        <span class="story-metric__value">${m.value}</span>
-        <span class="story-metric__label">${m.label}</span>
-      </div>`).join('');
-
-    const tagsHTML = (item.tags || []).slice(0, 4).map(t =>
-      `<span class="story-tag">${t}</span>`).join('');
-
-    const slide = document.createElement('div');
-    slide.className = 'story-slide story-slide--' + item.type;
-    slide.innerHTML = `
-      <div class="story-slide__bg" aria-hidden="true"></div>
-      <div class="story-slide__content">
-        <div class="story-slide__top">
-          <div class="story-slide__icon-wrap" aria-hidden="true">
-            <span class="story-slide__icon">${item.icon}</span>
-            <span class="story-slide__icon-glow" aria-hidden="true"></span>
-          </div>
-          <div class="story-slide__header">
-            <span class="story-badge story-badge--${item.type}">${item.typeLabel}</span>
-            <h3 class="story-slide__title">${item.title}</h3>
-            <p class="story-slide__role">${item.role.split(' · ')[0]}</p>
-          </div>
-        </div>
-
-        ${tagsHTML ? `<div class="story-slide__tags">${tagsHTML}</div>` : ''}
-
-        ${highlightsHTML ? `<ul class="story-slide__highlights">${highlightsHTML}</ul>` : ''}
-
-        ${metricasHTML ? `<div class="story-slide__metrics">${metricasHTML}</div>` : ''}
-
-        <div class="story-slide__footer">
-          <button class="story-nav story-nav--prev" id="story-prev" aria-label="Proyecto anterior">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <polyline points="15 18 9 12 15 6"/>
-            </svg>
-          </button>
-
-          ${item.slug ? `
-          <button class="story-goto" data-slug="${item.slug}" aria-label="Ir al proyecto ${item.title}">
-            <span>Ver proyecto</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <line x1="5" y1="12" x2="19" y2="12"/>
-              <polyline points="12 5 19 12 12 19"/>
-            </svg>
-          </button>` : '<span></span>'}
-
-          <button class="story-nav story-nav--next" id="story-next" aria-label="Siguiente proyecto">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-    `;
-
-    /* Wire navigation */
-    slide.querySelector('#story-prev')?.addEventListener('click', () => {
-      const prev = (_expIndex - 1 + COMPLETED_DATA.length) % COMPLETED_DATA.length;
-      _goToIndex(prev, true);
-    });
-    slide.querySelector('#story-next')?.addEventListener('click', () => {
-      const next = (_expIndex + 1) % COMPLETED_DATA.length;
-      _goToIndex(next, true);
-    });
-    slide.querySelector('.story-goto')?.addEventListener('click', e => {
-      const slug = e.currentTarget.dataset.slug;
-      if (slug) {
-        window.dispatchEvent(new CustomEvent('portfolio:openProjectDetail', { detail: { slug } }));
-      }
-    });
-
-    if (animated) {
-      /* Fade out old → fade in new */
-      const old = wrap.querySelector('.story-slide');
-      if (old) {
-        old.style.transition = 'opacity 0.18s ease, transform 0.18s ease';
-        old.style.opacity    = '0';
-        old.style.transform  = 'translateY(8px) scale(0.98)';
-        setTimeout(() => {
-          wrap.innerHTML = '';
-          _enterSlide(slide, wrap);
-        }, 190);
-      } else {
-        _enterSlide(slide, wrap);
-      }
-    } else {
-      _enterSlide(slide, wrap);
-    }
-  }
-
-  function _enterSlide(slide, wrap) {
-    slide.style.opacity   = '0';
-    slide.style.transform = 'translateY(12px) scale(0.98)';
-    wrap.appendChild(slide);
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        slide.style.transition = 'opacity 0.3s ease, transform 0.3s cubic-bezier(0.34,1.2,0.64,1)';
-        slide.style.opacity    = '1';
-        slide.style.transform  = 'translateY(0) scale(1)';
+      btn.addEventListener('click', () => {
+        container.querySelectorAll('.traj-item').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (item.slug) {
+          window.dispatchEvent(new CustomEvent('portfolio:openProjectDetail', { detail: { slug: item.slug } }));
+        }
       });
+      scroll.appendChild(btn);
     });
 
-    /* Stagger children */
-    const children = slide.querySelectorAll(
-      '.story-slide__top, .story-slide__tags, .story-slide__highlights, .story-slide__metrics, .story-slide__footer'
-    );
-    children.forEach((el, i) => {
-      el.style.opacity   = '0';
-      el.style.transform = 'translateY(10px)';
-      setTimeout(() => {
-        el.style.transition = `opacity 0.3s ease ${i * 60}ms, transform 0.3s ease ${i * 60}ms`;
-        el.style.opacity    = '1';
-        el.style.transform  = 'translateY(0)';
-      }, 80 + i * 60);
-    });
-  }
-
-  /* ── Go to index ────────────────────────────────────────── */
-  function _goToIndex(index, resetTimer) {
-    if (index === _expIndex && !resetTimer) return;
-    _expIndex = index;
-    _clearExpTimer();
-    _stopStrip();
-    _renderSlide(index, true);
-    _updateTrack();
-    if (!_expPaused) {
-      _startStrip(index);
-      _startExpTimer();
-    }
-  }
-
-  /* ── Track update ───────────────────────────────────────── */
-  function _updateTrack() {
-    const nodes = document.querySelectorAll('.story-node');
-    nodes.forEach((node, i) => {
-      node.classList.toggle('active',  i === _expIndex);
-      node.classList.toggle('visited', i < _expIndex);
-    });
-
-    /* Animate progress line */
-    const progressLine = document.getElementById('story-track-progress');
-    if (progressLine && nodes.length > 1) {
-      const pct = (_expIndex / (COMPLETED_DATA.length - 1)) * 100;
-      progressLine.style.width = pct + '%';
-    }
-  }
-
-  /* ── Progress strip (top bars) ──────────────────────────── */
-  function _startStrip(index) {
-    /* Mark previous strips as full */
-    document.querySelectorAll('.story-strip').forEach((strip, i) => {
-      const fill = strip.querySelector('.story-strip__fill');
-      if (!fill) return;
-      if (i < index) {
-        fill.style.transition = 'none';
-        fill.style.width = '100%';
-      } else if (i === index) {
-        fill.style.transition = 'none';
-        fill.style.width = '0%';
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            fill.style.transition = `width ${EXP_DURATION}ms linear`;
-            fill.style.width = '100%';
-          });
-        });
-      } else {
-        fill.style.transition = 'none';
-        fill.style.width = '0%';
-      }
-    });
-  }
-
-  function _stopStrip() {
-    const strip = document.querySelector(`.story-strip[data-index="${_expIndex}"] .story-strip__fill`);
-    if (!strip) return;
-    const computed = getComputedStyle(strip).width;
-    strip.style.transition = 'none';
-    strip.style.width = computed;
-  }
-
-  function _pauseStrip() {
-    const strip = document.querySelector(`.story-strip[data-index="${_expIndex}"] .story-strip__fill`);
-    if (!strip) return;
-    const computed = getComputedStyle(strip).width;
-    strip.style.transition = 'none';
-    strip.style.width = computed;
-  }
-
-  function _resumeStrip() {
-    const strip = document.querySelector(`.story-strip[data-index="${_expIndex}"] .story-strip__fill`);
-    if (!strip) return;
-    const currentW    = parseFloat(strip.style.width) || 0;
-    const totalW      = strip.parentElement?.offsetWidth || 100;
-    const remaining   = ((totalW - currentW) / totalW) * EXP_DURATION;
-    strip.style.transition = `width ${remaining}ms linear`;
-    strip.style.width = '100%';
-  }
-
-  /* ── Timer ──────────────────────────────────────────────── */
-  function _startExpTimer() {
-    _clearExpTimer();
-    _expTimer = setTimeout(() => {
-      if (!_expPaused) {
-        const next = (_expIndex + 1) % COMPLETED_DATA.length;
-        _goToIndex(next, false);
-        _startStrip(next);
-        _startExpTimer();
-      }
-    }, EXP_DURATION);
-  }
-
-  function _clearExpTimer() {
-    if (_expTimer) { clearTimeout(_expTimer); _expTimer = null; }
+    wrap.appendChild(scroll);
+    container.appendChild(wrap);
   }
 
   /* ─── CONTACT ────────────────────────────────────────────── */
@@ -1061,8 +830,13 @@ import { navigateToProject } from './app.js';
   /* ─── Sincronizar trayectoria cuando se abre un proyecto ── */
   window.addEventListener('portfolio:syncTrayectoria', (e) => {
     const { slug } = e.detail;
-    const idx = COMPLETED_DATA.findIndex(item => item.slug === slug);
-    if (idx >= 0) _goToIndex(idx, true);
+    const container = document.getElementById('timeline-container');
+    if (!container) return;
+    container.querySelectorAll('.traj-item').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.slug === slug);
+    });
+    const active = container.querySelector(`.traj-item[data-slug="${slug}"]`);
+    active?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   });
 
 /* ════════════════════════════════════════════════════════════

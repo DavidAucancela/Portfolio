@@ -389,7 +389,7 @@ function _addDetailClick(card, p) {
   if (!btn) return;
   btn.addEventListener('click', e => {
     e.stopPropagation();
-    ProjectDetail.open(p, currentMode);
+    ProjectDetail.open(p, currentMode, _allProjects);
   });
 }
 
@@ -451,7 +451,7 @@ window.addEventListener('portfolio:openProjectDetail', async e => {
     } catch (_) {}
   }
 
-  if (project) ProjectDetail.open(project, currentMode);
+  if (project) ProjectDetail.open(project, currentMode, _allProjects);
 });
 
 /* ────────────────────────────────────────────────────

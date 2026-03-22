@@ -31,40 +31,46 @@ const MODE_LABELS = {
   sec: { pill: '🔒 .sec',  unit: 'CVE Points'   },
 };
 
-/* Metadata por fase: icon, label y verbo según modo, XP base */
+/* Metadata por fase: icon, color, label y verbo según modo, XP base */
 const PHASE_META = {
   problema: {
     icon:   '🎯',
+    color:  '#f59e0b',
     labels: { dev: 'Problem Statement', ia: 'Caso de Uso',      sec: 'Scope & Target'  },
     verbs:  { dev: 'Issue Opened',      ia: 'Prompt Defined',   sec: 'Target Locked'   },
     xp: 150,
   },
   analisis: {
     icon:   '🔍',
+    color:  '#8b5cf6',
     labels: { dev: 'Análisis Técnico',  ia: 'Data Analysis',    sec: 'Reconnaissance'  },
     verbs:  { dev: 'Research Done',     ia: 'Epoch 0',          sec: 'OSINT Complete'  },
     xp: 200,
   },
   diseño: {
     icon:   '📐',
+    color:  '#06b6d4',
     labels: { dev: 'Arquitectura',      ia: 'Model Design',     sec: 'Attack Vector'   },
     verbs:  { dev: 'Blueprint Ready',   ia: 'Architecture Set', sec: 'Vector Found'    },
     xp: 250,
   },
   desarrollo: {
     icon:   '⚙️',
+    color:  '#10b981',
     labels: { dev: 'Desarrollo',        ia: 'Implementación',   sec: 'Exploitation'    },
     verbs:  { dev: 'PR Merged',         ia: 'Training Done',    sec: 'Root Obtained'   },
     xp: 400,
   },
   despliegue: {
     icon:   '🚀',
+    color:  '#3b82f6',
     labels: { dev: 'Despliegue',        ia: 'Inference Deploy', sec: 'Post-Exploit'    },
     verbs:  { dev: 'Shipped!',          ia: 'Model Live',       sec: 'Pivoted'         },
     xp: 300,
   },
   seguridad: {
     icon:   '🛡️',
+    color:  '#ef4444',
     labels: { dev: 'Seguridad',         ia: 'AI Safety',        sec: 'Loot & Report'   },
     verbs:  { dev: 'Hardened',          ia: 'Aligned',          sec: 'Flag Captured'   },
     xp: 200,
@@ -131,6 +137,7 @@ function _phaseHTML(paso, idx, mode, unit) {
   const label = meta.labels[mode] || paso.id;
   const verb  = meta.verbs[mode]  || 'Complete';
   const xp    = meta.xp;
+  const color = meta.color || 'var(--color-accent)';
 
   const pointsHTML = (paso.puntos || [])
     .map(pt => `<li class="pdm-phase__point">${_esc(pt)}</li>`)
@@ -141,7 +148,8 @@ function _phaseHTML(paso, idx, mode, unit) {
       <button class="pdm-phase__header" type="button"
               aria-expanded="false" aria-label="Expandir fase ${_esc(label)}">
         <span class="pdm-phase__num">0${idx + 1}</span>
-        <span class="pdm-phase__icon" aria-hidden="true">${meta.icon}</span>
+        <span class="pdm-phase__icon" aria-hidden="true"
+              style="background:${color}18;border-color:${color}40;">${meta.icon}</span>
         <div class="pdm-phase__info">
           <div class="pdm-phase__name">${_esc(label)}</div>
           <div class="pdm-phase__verb">✓ ${_esc(verb)}</div>
@@ -268,7 +276,6 @@ function _buildContent(p, mode) {
     <div class="pdm-achievements">
       ${metricas.map(m => `
         <div class="pdm-achievement">
-          <span class="pdm-achievement__icon" aria-hidden="true">${_achievementIcon(m.label)}</span>
           <span class="pdm-achievement__value">${_esc(m.value)}</span>
           <span class="pdm-achievement__label">${_esc(m.label)}</span>
         </div>`).join('')}
@@ -362,8 +369,11 @@ function _buildContent(p, mode) {
 /* ─────────────────────────────────────────────────────────
    MODAL DOM
 ───────────────────────────────────────────────────────── */
-let _el       = null;
+let _el        = null;
 let _prevFocus = null;
+let _navList   = null;
+let _navIdx    = -1;
+let _curMode   = 'dev';
 
 function _inject() {
   if (document.getElementById('pdm')) {
@@ -382,9 +392,29 @@ function _inject() {
   _el.innerHTML = `
     <div class="pdm__backdrop" id="pdm-backdrop"></div>
     <div class="pdm__panel">
+      <div class="pdm__hero" id="pdm-hero" aria-hidden="true">
+        <div class="pdm__hero-overlay"></div>
+      </div>
       <header class="pdm__header">
         <div class="pdm__header-top">
-          <span class="pdm__mode-pill" id="pdm-mode-pill"></span>
+          <div class="pdm__header-left">
+            <span class="pdm__mode-pill" id="pdm-mode-pill"></span>
+            <div class="pdm__nav-btns" id="pdm-nav-btns" style="display:none;">
+              <button class="pdm__nav-btn" id="pdm-prev" aria-label="Proyecto anterior">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="15 18 9 12 15 6"/>
+                </svg>
+              </button>
+              <span class="pdm__nav-counter" id="pdm-nav-counter"></span>
+              <button class="pdm__nav-btn" id="pdm-next" aria-label="Siguiente proyecto">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="9 18 15 12 9 6"/>
+                </svg>
+              </button>
+            </div>
+          </div>
           <button class="pdm__close" id="pdm-close" aria-label="Cerrar detalle del proyecto">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -418,23 +448,49 @@ function _inject() {
 
   document.getElementById('pdm-close').addEventListener('click', _close);
   document.getElementById('pdm-backdrop').addEventListener('click', _close);
+  document.getElementById('pdm-prev').addEventListener('click', _prev);
+  document.getElementById('pdm-next').addEventListener('click', _next);
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && _el?.classList.contains('is-open')) _close();
+    if (!_el?.classList.contains('is-open')) return;
+    if (e.key === 'Escape')      _close();
+    if (e.key === 'ArrowLeft')   _prev();
+    if (e.key === 'ArrowRight')  _next();
   });
 }
 
 /* ─────────────────────────────────────────────────────────
    PUBLIC
 ───────────────────────────────────────────────────────── */
-function _open(p, mode) {
+function _open(p, mode, navList) {
   if (!_el) _inject();
 
   _prevFocus = document.activeElement;
+  _curMode   = mode;
+  _navList   = navList || null;
+  _navIdx    = _navList ? _navList.findIndex(x => (x.slug || x.id) === (p.slug || p.id)) : -1;
 
   const xp        = _calcXP(p);
   const ml        = MODE_LABELS[mode] || MODE_LABELS.dev;
   const levels    = LEVEL_NAMES[mode] || LEVEL_NAMES.dev;
   const levelName = levels[xp.levelIdx] ?? levels[0];
+
+  /* Hero image */
+  const hero = document.getElementById('pdm-hero');
+  if (hero) {
+    if (p.image) {
+      hero.style.backgroundImage = `url(${p.image})`;
+      hero.classList.add('pdm__hero--visible');
+    } else {
+      hero.classList.remove('pdm__hero--visible');
+      hero.style.backgroundImage = '';
+    }
+  }
+
+  /* Nav buttons */
+  const navBtns    = document.getElementById('pdm-nav-btns');
+  const navCounter = document.getElementById('pdm-nav-counter');
+  if (navBtns) navBtns.style.display = (_navList && _navList.length > 1) ? 'flex' : 'none';
+  if (navCounter && _navList) navCounter.textContent = `${_navIdx + 1} / ${_navList.length}`;
 
   /* Header */
   document.getElementById('pdm-mode-pill').textContent = ml.pill;
@@ -480,13 +536,36 @@ function _open(p, mode) {
   const scroll = _el.querySelector('.pdm__scroll');
   if (scroll) scroll.scrollTop = 0;
 
-  /* Animate XP bar after paint */
+  /* Animate XP bar */
   requestAnimationFrame(() => requestAnimationFrame(() => {
     const fill = document.getElementById('pdm-xp-fill');
     if (fill) fill.style.width = `${xp.percent}%`;
   }));
 
+  /* Stagger entrada de secciones del body */
+  Array.from(body.children).forEach((el, i) => {
+    el.style.opacity   = '0';
+    el.style.transform = 'translateY(14px)';
+    setTimeout(() => {
+      el.style.transition = `opacity 0.3s ease ${i * 55}ms, transform 0.3s ease ${i * 55}ms`;
+      el.style.opacity    = '1';
+      el.style.transform  = 'translateY(0)';
+    }, 80 + i * 55);
+  });
+
   setTimeout(() => document.getElementById('pdm-close')?.focus(), 60);
+}
+
+function _prev() {
+  if (!_navList || _navList.length < 2) return;
+  const idx = (_navIdx - 1 + _navList.length) % _navList.length;
+  _open(_navList[idx], _curMode, _navList);
+}
+
+function _next() {
+  if (!_navList || _navList.length < 2) return;
+  const idx = (_navIdx + 1) % _navList.length;
+  _open(_navList[idx], _curMode, _navList);
 }
 
 function _close() {
@@ -516,4 +595,4 @@ function _togglePhase(e) {
 /* ─────────────────────────────────────────────────────────
    EXPORT
 ───────────────────────────────────────────────────────── */
-export const ProjectDetail = { init: _inject, open: _open, close: _close };
+export const ProjectDetail = { init: _inject, open: _open, close: _close, prev: _prev, next: _next };

@@ -11,6 +11,7 @@
  */
 
 import { navigateToProject } from './app.js';
+import { Trajectory } from './trajectory.js';
 
   /* ════════════════════════════════════════════════════════════
      DATOS: ABOUT
@@ -622,46 +623,7 @@ import { navigateToProject } from './app.js';
   }
 
   function _buildTimeline(container) {
-    container.innerHTML = '';
-    const data = COMPLETED_DATA;
-
-    const wrap = document.createElement('div');
-    wrap.className = 'traj-wrap';
-
-    const scroll = document.createElement('div');
-    scroll.className = 'traj-scroll';
-    scroll.setAttribute('aria-label', 'Trayectoria de proyectos');
-
-    const line = document.createElement('div');
-    line.className = 'traj-line';
-    scroll.appendChild(line);
-
-    data.forEach((item) => {
-      const year = item.date.split(' — ').pop().split(' ').pop();
-      const shortTitle = item.title.split(' — ')[0];
-
-      const btn = document.createElement('button');
-      btn.className = 'traj-item';
-      btn.dataset.slug = item.slug || '';
-      btn.setAttribute('aria-label', `Ver ${item.title}`);
-      btn.innerHTML = `
-        <span class="traj-item__year">${year}</span>
-        <span class="traj-item__dot">${item.icon}</span>
-        <span class="traj-item__title">${shortTitle}</span>
-        <span class="traj-item__badge">${item.typeLabel}</span>
-      `;
-      btn.addEventListener('click', () => {
-        container.querySelectorAll('.traj-item').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        if (item.slug) {
-          window.dispatchEvent(new CustomEvent('portfolio:openProjectDetail', { detail: { slug: item.slug } }));
-        }
-      });
-      scroll.appendChild(btn);
-    });
-
-    wrap.appendChild(scroll);
-    container.appendChild(wrap);
+    Trajectory.render(container, COMPLETED_DATA);
   }
 
   /* ─── CONTACT ────────────────────────────────────────────── */
@@ -827,17 +789,7 @@ import { navigateToProject } from './app.js';
     render(e.detail.mode);
   });
 
-  /* ─── Sincronizar trayectoria cuando se abre un proyecto ── */
-  window.addEventListener('portfolio:syncTrayectoria', (e) => {
-    const { slug } = e.detail;
-    const container = document.getElementById('timeline-container');
-    if (!container) return;
-    container.querySelectorAll('.traj-item').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.slug === slug);
-    });
-    const active = container.querySelector(`.traj-item[data-slug="${slug}"]`);
-    active?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-  });
+  /* syncTrayectoria lo gestiona trajectory.js (Trajectory.init) */
 
 /* ════════════════════════════════════════════════════════════
    EXPORT

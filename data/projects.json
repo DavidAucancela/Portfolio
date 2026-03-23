@@ -231,9 +231,9 @@
     "category": "P1",
     "tags": ["ASP.NET Core", "React", "TypeScript", "SaaS", "Railway"],
     "images": {
-      "thumbnail": "/images/projects/anaos/thumbnail.svg",
+      "thumbnail": "/images/projects/anaos/mainAnaOS.png",
       "gallery": [
-        "/images/projects/anaos/thumbnail.svg"
+        "/images/projects/anaos/mainAnaOS.png"
       ]
     },
     "links": {

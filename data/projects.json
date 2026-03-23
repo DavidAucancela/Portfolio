@@ -763,9 +763,9 @@
     "category": "P3",
     "tags": ["Node.js", "Leaflet", "FBI API", "Mapas", "Visualización"],
     "images": {
-      "thumbnail": "/images/projects/mapcriminals/thumbnail.svg",
+      "thumbnail": "/images/projects/mapcriminals/main1.png",
       "gallery": [
-        "/images/projects/mapcriminals/thumbnail.svg"
+        "/images/projects/mapcriminals/main1.png"
       ]
     },
     "links": {

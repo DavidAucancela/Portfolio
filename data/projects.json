@@ -655,9 +655,9 @@
     "category": "P1",
     "tags": ["Claude API", "Observabilidad", "React", "Node.js", "Open Source"],
     "images": {
-      "thumbnail": "/images/projects/llm-observatory/thumbnail.svg",
+      "thumbnail": "/images/projects/llm-tokens-managment/bashboard1.png",
       "gallery": [
-        "/images/projects/llm-observatory/thumbnail.svg"
+        "/images/projects/llm-tokens-managment/bashboard1.png"
       ]
     },
     "links": {

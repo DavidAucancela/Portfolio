@@ -1,300 +1,5 @@
 [
   {
-    "id": "project-001",
-    "title": "UBApp — Universal Box",
-    "description": "Sistema de gestión de envíos con búsqueda semántica impulsada por IA, visualización geográfica en tiempo real y generación automática de documentos. Proyecto de titulación.",
-    "longDescription": "Proyecto de titulación de Ingeniería en Informática. Sistema fullstack que reemplazó la gestión manual en hojas de cálculo de Universal Box. Búsqueda semántica con OpenAI embeddings + pgvector, rastreo geográfico con Leaflet, carga masiva desde Excel, generación de PDFs y panel multi-rol. Redujo el tiempo de búsqueda de 4 minutos a menos de 20 segundos.",
-    "tags": ["Django", "Angular", "OpenAI", "PostgreSQL", "Docker"],
-    "image": "public/images/projects/ubapp/index.png",
-    "liveUrl": "https://ubapp-frontend.onrender.com",
-    "repoUrl": "https://github.com/DavidAucancela/UBAppV2",
-    "featured": true,
-    "date": "2026-01",
-    "techStack": {
-      "frontend": ["Angular", "TypeScript", "Leaflet", "Chart.js", "jsPDF", "xlsx"],
-      "backend": ["Python", "Django", "Django REST Framework"],
-      "tools": ["PostgreSQL + pgvector", "OpenAI API", "Docker", "Redis", "Gunicorn", "Nginx"]
-    },
-    "highlights": [
-      "CRUD completo de envíos, productos y tarifas",
-      "Búsqueda tradicional y semántica con embeddings de OpenAI y pgvector",
-      "Carga masiva desde Excel y generación de recibos en PDF",
-      "Control de acceso basado en roles (RBAC)",
-      "Sistema de notificaciones para usuarios",
-      "Panel de rendimiento y actividad del sistema"
-    ],
-    "process": {
-      "overview": "Proyecto de titulación desarrollado con metodología Scrum y CRISP-DM para el pipeline semántico. Abarca desde el levantamiento de requerimientos con el cliente hasta el despliegue en contenedores Docker orquestados con Nginx como reverse proxy.",
-      "pasos": [
-        {
-          "id": "problema",
-          "resumen": "Universal Box gestionaba +5.000 envíos anuales con hojas de cálculo. Localizar un envío podía tomar hasta 4 minutos. Sin visibilidad geográfica, sin control de roles y con generación manual de recibos por cada operación.",
-          "puntos": [
-            "Búsqueda manual en archivos Excel con +5.000 registros — hasta 4 min por búsqueda",
-            "Sin visibilidad geográfica del estado y ubicación de los paquetes",
-            "Proceso de importación de datos completamente manual y propenso a errores",
-            "Sin control de roles ni historial de acciones de los operadores",
-            "Generación manual de recibos y reportes por cada envío"
-          ]
-        },
-        {
-          "id": "analisis",
-          "resumen": "Levantamiento de requerimientos con el cliente. Arquitectura REST desacoplada (Angular + Django) para escalabilidad independiente. pgvector con embeddings de OpenAI para búsqueda semántica sin infraestructura adicional.",
-          "puntos": [
-            "Arquitectura SPA desacoplada: Angular + Django REST API + PostgreSQL",
-            "Búsqueda semántica con embeddings OpenAI text-embedding-ada-002 y pgvector",
-            "4 roles: Admin, Gerente, Digitador y Comprador con permisos diferenciados",
-            "8 módulos: Envíos, Productos, Tarifas, Reportes, Mapa, Notificaciones, Admin, Dashboard",
-            "Docker Compose para orquestación y consistencia entre entornos dev/prod"
-          ]
-        },
-        {
-          "id": "desarrollo",
-          "resumen": "API REST con DRF, frontend Angular con lazy loading, integración OpenAI para embeddings, Leaflet para visualización geográfica y módulos de carga masiva desde Excel y generación de PDFs.",
-          "puntos": [
-            "API REST con DRF: serializers, viewsets y permissions por módulo",
-            "Embeddings OpenAI text-embedding-ada-002 almacenados como vectores en pgvector",
-            "Búsqueda híbrida: ILIKE (keyword) + similitud coseno (semántica) en paralelo",
-            "Frontend Angular con lazy loading, guards de ruta y módulos independientes",
-            "Carga masiva desde Excel (xlsx) y generación de recibos PDF con jsPDF",
-            "Visualización geográfica Leaflet con markers dinámicos por estado del envío"
-          ]
-        },
-        {
-          "id": "despliegue",
-          "resumen": "Docker Compose con 4 servicios: Nginx como reverse proxy, Gunicorn, PostgreSQL+pgvector y Redis. Migraciones y generación de embeddings iniciales automáticos al startup.",
-          "puntos": [
-            "Docker Compose: Nginx, Gunicorn, PostgreSQL + pgvector, Redis",
-            "Nginx: reverse proxy /api/ → Gunicorn, / → Angular build compilado",
-            "Variables de entorno en .env separadas para desarrollo y producción",
-            "Scripts de migración y seed automatizados al inicio del contenedor",
-            "Redis para caché de sesiones JWT y cola de tareas asíncronas",
-            "Volúmenes Docker para persistencia de BD y archivos estáticos"
-          ]
-        },
-        {
-          "id": "seguridad",
-          "resumen": "Múltiples capas de seguridad siguiendo OWASP: RBAC con JWT stateless, HTTPS forzado en Nginx, validación estricta en serializers DRF y rate limiting en endpoints de autenticación.",
-          "puntos": [
-            "JWT con access y refresh token — autenticación stateless",
-            "RBAC: cada rol accede solo a sus rutas y datos mediante DRF permissions",
-            "Validación y sanitización en serializers DRF (previene injection)",
-            "CORS restrictivo: solo el dominio del frontend consume la API",
-            "HTTPS forzado en Nginx con redirección automática de HTTP",
-            "ORM Django previene SQL injection en todas las queries",
-            "Rate limiting en Nginx para endpoints críticos de autenticación"
-          ]
-        }
-      ],
-      "resultado": "Sistema en producción validado con +300 envíos gestionados. La búsqueda semántica redujo el tiempo de localización de 4 minutos a menos de 20 segundos — 92% de mejora en eficiencia operativa.",
-      "metricas": [
-        { "label": "Tiempo de búsqueda", "value": "< 20s" },
-        { "label": "Mejora eficiencia", "value": "92%" },
-        { "label": "Módulos funcionales", "value": "8" },
-        { "label": "Servicios Docker", "value": "4" }
-      ]
-    }
-  },
-  {
-    "id": "project-008",
-    "title": "LLM Observatory",
-    "description": "Dashboard open-source de observabilidad para la API de Claude. Monitorea tokens, costo y latencia en tiempo real con un SDK wrapper drop-in de cero overhead.",
-    "longDescription": "Monorepo con SDK wrapper para @anthropic-ai/sdk, backend Express + Socket.io y dashboard React. El SDK intercepta métricas async (fire & forget) sin impacto en latencia. WebSocket para live updates, alertas de presupuesto, comparación de modelos y exportación CSV.",
-    "tags": ["React", "Node.js", "PostgreSQL", "Socket.io", "Claude API"],
-    "image": "public/images/projects/llm-tokens-managment/bashboard1.png",
-    "liveUrl": "https://llm-web-production.up.railway.app/settings",
-    "repoUrl": "https://github.com/DavidAucancela/llm-observatory",
-    "featured": true,
-    "date": "2026-03",
-    "techStack": {
-      "frontend": ["React", "Chart.js", "Socket.io-client"],
-      "backend": ["Node.js", "Express", "Socket.io"],
-      "tools": ["PostgreSQL", "Anthropic SDK", "Railway"]
-    },
-    "process": {
-      "overview": "Monorepo diseñado para resolver el gap de observabilidad en producción con la API de Claude. Arquitectura event-driven: el SDK intercepta métricas de forma asíncrona (fire & forget) sin bloquear la respuesta del modelo.",
-      "pasos": [
-        {
-          "id": "problema",
-          "resumen": "La API de Claude no expone métricas de uso en tiempo real. Los equipos debían revisar manualmente el dashboard de Anthropic sin tener visibilidad instant de tokens, costos o latencia por llamada.",
-          "puntos": [
-            "Sin visibilidad en tiempo real de tokens consumidos por request",
-            "Sin alertas de presupuesto ante picos de uso inesperados",
-            "Sin comparativa de latencia y costo entre modelos Claude",
-            "Modificar el código del cliente para agregar tracking es invasivo"
-          ]
-        },
-        {
-          "id": "diseño",
-          "resumen": "Arquitectura monorepo en 3 capas: SDK wrapper drop-in, backend Express con WebSocket, dashboard React. La clave: el SDK registra métricas async sin modificar el flujo del llamador.",
-          "puntos": [
-            "SDK wrapper sobre @anthropic-ai/sdk con interceptor async fire & forget",
-            "Backend Express como hub de métricas con PostgreSQL para histórico",
-            "Socket.io para push en tiempo real al dashboard sin polling",
-            "React + Chart.js para visualización de tokens, costos y latencia"
-          ]
-        },
-        {
-          "id": "desarrollo",
-          "resumen": "El SDK intercepta cada llamada a Claude de forma asíncrona. Calcula tokens reales, costo estimado y latencia, los persiste en PostgreSQL y los emite por WebSocket al dashboard — todo sin impacto en el tiempo de respuesta del modelo.",
-          "puntos": [
-            "Interceptor async que no bloquea el stream de respuesta de Claude",
-            "Cálculo de costo en tiempo real por modelo con precios actualizables",
-            "WebSocket bidireccional para alertas de presupuesto en tiempo real",
-            "Dashboard comparativo multi-modelo con exportación CSV",
-            "Drop-in: reemplazar import sin cambiar ninguna línea del código cliente"
-          ]
-        },
-        {
-          "id": "despliegue",
-          "resumen": "Deploy en Railway con 3 servicios independientes: SDK publicado como paquete npm, backend Express con PostgreSQL y dashboard React. CI/CD automático desde GitHub.",
-          "puntos": [
-            "Railway: backend + frontend como servicios independientes con health checks",
-            "PostgreSQL persistente para histórico de llamadas y métricas",
-            "npm publish del SDK como paquete drop-in reutilizable",
-            "CI/CD automático con cada push a main"
-          ]
-        }
-      ],
-      "resultado": "Dashboard live con tracking de tokens, costos y latencia en tiempo real. SDK wrapper con overhead de 0ms sobre la respuesta de Claude.",
-      "metricas": [
-        { "label": "Overhead del SDK", "value": "0ms" },
-        { "label": "Latencia WebSocket", "value": "< 50ms" },
-        { "label": "Servicios Railway", "value": "3" },
-        { "label": "Modelos soportados", "value": "5+" }
-      ]
-    }
-  },
-  {
-    "id": "project-003",
-    "title": "AnaOS — SaaS de Cooperativas",
-    "description": "Plataforma SaaS multi-tenant para gestión de cooperativas y agencias con planes de suscripción, auth completo y deploy en Railway.",
-    "longDescription": "Backend ASP.NET Core (C#) + Entity Framework con 7 modelos (Cooperativa, Agencia, Usuario, Cuenta, PlanSuscripcion, Suscripcion, HistorialSuscripcion). Frontend React + TypeScript + Vite con dashboards por rol, tres planes de suscripción (Basic, Professional, Enterprise) y flujos de pago independientes.",
-    "tags": ["ASP.NET Core", "React", "TypeScript", "Railway", "Docker"],
-    "image": "public/images/projects/anaos/mainAnaOS.png",
-    "liveUrl": "https://frontend-production-cc73.up.railway.app/",
-    "repoUrl": "https://github.com/DavidAucancela/AnaOS",
-    "featured": true,
-    "date": "2025-11",
-    "techStack": {
-      "frontend": ["React", "TypeScript", "Vite", "React Router"],
-      "backend": ["ASP.NET Core (C#)", "Entity Framework Core"],
-      "tools": ["PostgreSQL", "Docker", "Railway", "JWT"]
-    },
-    "process": {
-      "overview": "SaaS multi-tenant diseñado con separación estricta de dominios: cooperativas y agencias comparten la plataforma con datos completamente aislados por tenantId en cada query. Backend C# con EF Core, frontend React con rutas protegidas por rol y plan.",
-      "pasos": [
-        {
-          "id": "analisis",
-          "resumen": "Cooperativas y agencias necesitaban un sistema compartido que mantuviese los datos completamente aislados entre tenants, con planes diferenciados y dashboards por rol de usuario.",
-          "puntos": [
-            "Multi-tenant: datos 100% aislados entre cooperativas y agencias",
-            "Tres planes de suscripción con features diferenciadas (Basic/Pro/Enterprise)",
-            "Dashboards distintos para Admin, Cooperativa y Agencia",
-            "Verificación de email y recuperación de contraseña integradas"
-          ]
-        },
-        {
-          "id": "diseño",
-          "resumen": "7 modelos de dominio con EF Core. JWT con claims de tenantId para isolación automática. Frontend React + TypeScript con rutas protegidas por rol y plan de suscripción.",
-          "puntos": [
-            "Modelos: Cooperativa, Agencia, Usuario, Cuenta, PlanSuscripcion, Suscripcion, HistorialSuscripcion",
-            "JWT con claims de rol y tenantId para isolación de datos",
-            "React Router con guards por plan de suscripción y rol",
-            "Docker Compose para orquestación de backend, frontend y DB"
-          ]
-        },
-        {
-          "id": "desarrollo",
-          "resumen": "API REST en C# con migraciones automáticas EF Core. Frontend React con TypeScript strict mode y lazy loading de rutas. Tres planes con middleware de verificación de acceso por feature.",
-          "puntos": [
-            "ASP.NET Core con EF Core y migraciones automáticas al startup",
-            "JWT con claims de tenantId — cada query filtra automáticamente por tenant",
-            "React + TypeScript + Vite con lazy loading de rutas protegidas",
-            "Middleware de verificación de plan antes de acceder a features premium",
-            "Verificación de email con tokens firmados y TTL de 24h"
-          ]
-        },
-        {
-          "id": "despliegue",
-          "resumen": "Docker Compose con backend C#, frontend React/Nginx y PostgreSQL. Deploy en Railway con CI/CD automático y HTTPS sin configuración manual.",
-          "puntos": [
-            "Imagen Docker para backend C# y frontend React/Nginx",
-            "Railway con deploy automático desde GitHub a cada push",
-            "HTTPS con certificados automáticos en Railway",
-            "Variables de entorno separadas por ambiente (dev/prod)"
-          ]
-        }
-      ],
-      "resultado": "Plataforma SaaS multi-tenant en producción con tres planes de suscripción activos y flujos de pago y verificación operativos.",
-      "metricas": [
-        { "label": "Modelos de dominio", "value": "7" },
-        { "label": "Planes de suscripción", "value": "3" },
-        { "label": "Servicios Docker", "value": "3" },
-        { "label": "Roles de usuario", "value": "4" }
-      ]
-    }
-  },
-  {
-    "id": "project-007",
-    "title": "MapCriminals — Más Buscados del Mundo",
-    "description": "Mapa mundial interactivo de criminales más buscados integrando la FBI API en tiempo real, Google Trends y datos manuales por país.",
-    "longDescription": "Backend Express como proxy agregador con caché por niveles (FBI 1h, Google Trends 6h). Leaflet.js con overlay estilo sala de operaciones, panel por país, filtros cruzados (nombre, crimen, nacionalidad, fuente) y soporte bilingüe ES/EN.",
-    "tags": ["Node.js", "Leaflet", "FBI API", "Google Trends", "Railway"],
-    "image": "public/images/projects/mapcriminals/main1.png",
-    "liveUrl": "https://mapcriminalscode-production.up.railway.app/",
-    "repoUrl": "https://github.com/DavidAucancela/MapCriminalsCode",
-    "featured": false,
-    "date": "2025-12",
-    "techStack": {
-      "frontend": ["Leaflet.js", "Vanilla JS", "Chart.js"],
-      "backend": ["Node.js", "Express"],
-      "tools": ["FBI API", "Google Trends API", "Railway", "In-memory cache"]
-    },
-    "process": {
-      "overview": "Proxy backend para agregar datos de la FBI API, Google Trends y datasets manuales en un mapa Leaflet con estética de sala de operaciones. Caché por niveles para respetar rate limits de cada fuente.",
-      "pasos": [
-        {
-          "id": "analisis",
-          "resumen": "La FBI API no tiene soporte CORS ni coordenadas geográficas. Google Trends tiene rate limiting agresivo. Se necesitaba un proxy que agregara, cacheara y geocodificara los resultados.",
-          "puntos": [
-            "FBI API sin soporte CORS — acceso directo desde el browser imposible",
-            "Datos de países no cubiertos por FBI deben complementarse manualmente",
-            "Google Trends con rate limiting estricto (máx. 1 req/min por IP)",
-            "Interfaz mapa con estética dramática de sala de operaciones"
-          ]
-        },
-        {
-          "id": "desarrollo",
-          "resumen": "Backend Express como proxy agregador con caché en memoria por endpoint (FBI 1h, Google Trends 6h). Leaflet con marcadores custom, panel por país y filtros cruzados.",
-          "puntos": [
-            "Express proxy con caché en memoria con TTL diferenciado por fuente",
-            "Leaflet.js con overlay estilo operaciones militares y marcadores custom",
-            "Panel lateral con stats por país y lista de criminales más buscados",
-            "Filtros cruzados: nombre, crimen, nacionalidad y fuente de datos",
-            "Soporte bilingüe ES/EN con detección automática de idioma del browser"
-          ]
-        },
-        {
-          "id": "despliegue",
-          "resumen": "Deploy en Railway con Express sirviendo tanto la API proxy como el frontend estático. Un único servicio, cero complejidad de infra.",
-          "puntos": [
-            "Railway monorepo: Express sirve API + frontend estático desde /public",
-            "HTTPS automático con Railway sin configuración de certificados",
-            "Variables de entorno para API keys y configuración de caché"
-          ]
-        }
-      ],
-      "resultado": "Mapa mundial con datos en tiempo real de criminales más buscados de FBI API + Google Trends + datasets manuales para 20+ países.",
-      "metricas": [
-        { "label": "Fuentes de datos", "value": "3" },
-        { "label": "Países cubiertos", "value": "20+" },
-        { "label": "Cache TTL FBI", "value": "1h" },
-        { "label": "Idiomas", "value": "ES/EN" }
-      ]
-    }
-  },
-  {
     "id": "project-002",
     "title": "Ideancestral",
     "description": "Plataforma de catálogo digital multiidioma para artesanos ecuatorianos con carrito de compras vía WhatsApp.",
@@ -366,6 +71,65 @@
     }
   },
   {
+    "id": "project-007",
+    "title": "MapCriminals — Más Buscados del Mundo",
+    "description": "Mapa mundial interactivo de criminales más buscados integrando la FBI API en tiempo real, Google Trends y datos manuales por país.",
+    "longDescription": "Backend Express como proxy agregador con caché por niveles (FBI 1h, Google Trends 6h). Leaflet.js con overlay estilo sala de operaciones, panel por país, filtros cruzados (nombre, crimen, nacionalidad, fuente) y soporte bilingüe ES/EN.",
+    "tags": ["Node.js", "Leaflet", "FBI API", "Google Trends", "Railway"],
+    "image": "public/images/projects/mapcriminals/main1.png",
+    "liveUrl": "https://mapcriminalscode-production.up.railway.app/",
+    "repoUrl": "https://github.com/DavidAucancela/MapCriminalsCode",
+    "featured": false,
+    "date": "2025-12",
+    "techStack": {
+      "frontend": ["Leaflet.js", "Vanilla JS", "Chart.js"],
+      "backend": ["Node.js", "Express"],
+      "tools": ["FBI API", "Google Trends API", "Railway", "In-memory cache"]
+    },
+    "process": {
+      "overview": "Proxy backend para agregar datos de la FBI API, Google Trends y datasets manuales en un mapa Leaflet con estética de sala de operaciones. Caché por niveles para respetar rate limits de cada fuente.",
+      "pasos": [
+        {
+          "id": "analisis",
+          "resumen": "La FBI API no tiene soporte CORS ni coordenadas geográficas. Google Trends tiene rate limiting agresivo. Se necesitaba un proxy que agregara, cacheara y geocodificara los resultados.",
+          "puntos": [
+            "FBI API sin soporte CORS — acceso directo desde el browser imposible",
+            "Datos de países no cubiertos por FBI deben complementarse manualmente",
+            "Google Trends con rate limiting estricto (máx. 1 req/min por IP)",
+            "Interfaz mapa con estética dramática de sala de operaciones"
+          ]
+        },
+        {
+          "id": "desarrollo",
+          "resumen": "Backend Express como proxy agregador con caché en memoria por endpoint (FBI 1h, Google Trends 6h). Leaflet con marcadores custom, panel por país y filtros cruzados.",
+          "puntos": [
+            "Express proxy con caché en memoria con TTL diferenciado por fuente",
+            "Leaflet.js con overlay estilo operaciones militares y marcadores custom",
+            "Panel lateral con stats por país y lista de criminales más buscados",
+            "Filtros cruzados: nombre, crimen, nacionalidad y fuente de datos",
+            "Soporte bilingüe ES/EN con detección automática de idioma del browser"
+          ]
+        },
+        {
+          "id": "despliegue",
+          "resumen": "Deploy en Railway con Express sirviendo tanto la API proxy como el frontend estático. Un único servicio, cero complejidad de infra.",
+          "puntos": [
+            "Railway monorepo: Express sirve API + frontend estático desde /public",
+            "HTTPS automático con Railway sin configuración de certificados",
+            "Variables de entorno para API keys y configuración de caché"
+          ]
+        }
+      ],
+      "resultado": "Mapa mundial con datos en tiempo real de criminales más buscados de FBI API + Google Trends + datasets manuales para 20+ países.",
+      "metricas": [
+        { "label": "Fuentes de datos", "value": "3" },
+        { "label": "Países cubiertos", "value": "20+" },
+        { "label": "Cache TTL FBI", "value": "1h" },
+        { "label": "Idiomas", "value": "ES/EN" }
+      ]
+    }
+  },
+  {
     "id": "project-004",
     "title": "Equity — Gestor de Datos ETL",
     "description": "Pipeline automatizado de limpieza y carga de datos desde JSON a PostgreSQL con validación de schema y modo dry-run.",
@@ -421,68 +185,6 @@
         { "label": "Validaciones", "value": "Schema + tipos" },
         { "label": "Modo dry-run", "value": "✓" },
         { "label": "Transacciones", "value": "Atómicas" }
-      ]
-    }
-  },
-  {
-    "id": "project-005",
-    "title": "SecuraBank",
-    "description": "Sistema bancario demostrativo con 6 categorías del OWASP Top 10 mitigadas, JWT con rotación y auditoría completa.",
-    "longDescription": "Sistema de transacciones bancarias que implementa security by design. Threat modeling aplicado antes del desarrollo, Helmet.js, CSRF tokens, queries parametrizadas al 100%, rate limiting y auditoría inmutable.",
-    "tags": ["Node.js", "OWASP", "JWT", "Helmet.js", "bcrypt"],
-    "image": "public/images/projects/securabank/thumbnail.svg",
-    "liveUrl": null,
-    "repoUrl": "https://github.com/DavidAucancela/SecuraBank",
-    "featured": false,
-    "date": "2025-02",
-    "techStack": {
-      "backend": ["Node.js", "Express", "Helmet.js", "bcrypt", "JWT"],
-      "tools": ["PostgreSQL", "CSRF tokens", "Rate limiting", "Threat modeling"]
-    },
-    "process": {
-      "overview": "Sistema bancario construido con security by design. El threat modeling con STRIDE se aplicó antes del primer commit para identificar y mitigar vectores de ataque en el diseño, no como parche posterior.",
-      "pasos": [
-        {
-          "id": "analisis",
-          "resumen": "Diseñar un sistema bancario que sirva como referencia de security by design. Threat modeling con STRIDE aplicado para identificar vectores antes de escribir código.",
-          "puntos": [
-            "Threat modeling STRIDE: Spoofing, Tampering, Repudiation, Info Disclosure, DoS, Elevation",
-            "6 categorías OWASP Top 10 identificadas y priorizadas por impacto",
-            "JWT con rotación de refresh tokens para sesiones seguras sin estado",
-            "Auditoría inmutable como requisito no negociable desde el inicio"
-          ]
-        },
-        {
-          "id": "desarrollo",
-          "resumen": "Implementación con controles de seguridad como primera ciudadana: Helmet.js, CSRF tokens, queries 100% parametrizadas, rate limiting por IP y bcrypt con salt rounds elevados.",
-          "puntos": [
-            "Helmet.js con CSP estricto, X-Frame-Options, HSTS y X-Content-Type-Options",
-            "CSRF tokens sincronizados en todos los endpoints de mutación",
-            "Queries 100% parametrizadas — cero interpolación de strings en SQL",
-            "Rate limiting por IP para login (5 intentos/min con lockout progresivo)",
-            "bcrypt con 12 salt rounds para contraseñas + comparación en tiempo constante",
-            "Auditoría inmutable con timestamps, hashes y user-agent por transacción"
-          ]
-        },
-        {
-          "id": "seguridad",
-          "resumen": "Pruebas de penetración interna contra las 6 categorías OWASP identificadas. Todos los vectores mitigados con evidencia documentada.",
-          "puntos": [
-            "SQL injection: 100% queries parametrizadas — payload de prueba neutralizado",
-            "XSS: sanitización de salida + CSP headers impiden ejecución",
-            "CSRF: tokens sincronizados + SameSite=Strict cookies",
-            "Brute force: rate limiting + lockout progresivo por IP",
-            "Session hijacking: JWT rotación + lista negra de tokens revocados",
-            "Path traversal: validación de rutas con allowlist estricta"
-          ]
-        }
-      ],
-      "resultado": "Sistema bancario con 6 categorías OWASP Top 10 mitigadas y documentadas. Diseñado como referencia de security by design aplicable a proyectos reales.",
-      "metricas": [
-        { "label": "OWASP mitigadas", "value": "6/10" },
-        { "label": "Queries inyectables", "value": "0" },
-        { "label": "JWT rotación", "value": "✓" },
-        { "label": "Auditoría", "value": "Inmutable" }
       ]
     }
   },

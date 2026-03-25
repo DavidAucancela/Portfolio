@@ -5,7 +5,7 @@
     "description": "Dashboard open-source de observabilidad para la API de Claude. Monitorea tokens, costo y latencia en tiempo real con un SDK wrapper drop-in de cero overhead.",
     "longDescription": "Monorepo con SDK wrapper para @anthropic-ai/sdk, backend Express + Socket.io y dashboard React. El SDK intercepta métricas async (fire & forget) sin impacto en latencia. WebSocket para live updates, alertas de presupuesto, comparación de modelos y exportación CSV.",
     "tags": ["React", "Node.js", "PostgreSQL", "Socket.io", "Claude API"],
-    "image": "public/images/projects/llm-tokens-managment/bashboard1.png",
+    "image": "public/images/projects/llm observatory/dashboard.png",
     "liveUrl": "https://llm-web-production.up.railway.app/settings",
     "repoUrl": "https://github.com/DavidAucancela/llm-observatory",
     "featured": true,
@@ -149,7 +149,7 @@
     "image": "public/images/projects/anaos/mainAnaOS.png",
     "liveUrl": "https://frontend-production-cc73.up.railway.app/",
     "repoUrl": "https://github.com/DavidAucancela/AnaOS",
-    "featured": true,
+    "featured": false,
     "date": "2025-11",
     "techStack": {
       "frontend": ["React", "TypeScript", "Vite"],

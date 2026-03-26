@@ -543,38 +543,6 @@ ul, ol { list-style: none; }
   animation: heroFadeUp 0.9s cubic-bezier(0.16,1,0.3,1) 0.55s both;
 }
 
-.hero-linkedin-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: var(--border-radius-sm);
-  background: transparent;
-  border: 1.5px solid var(--border-color);
-  color: var(--text-secondary);
-  font-size: 0.95rem;
-  font-family: var(--font-display);
-  font-weight: 600;
-  text-decoration: none;
-  white-space: nowrap;
-  transition:
-    border-color 0.2s ease,
-    color 0.2s ease,
-    background 0.2s ease,
-    transform 0.2s ease;
-}
-
-.hero-linkedin-btn svg {
-  color: var(--color-accent);
-  flex-shrink: 0;
-}
-
-.hero-linkedin-btn:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
-  background: var(--color-accent-glow);
-  transform: translateY(-2px);
-}
 
 /* ─────────────────────────────────────────────────────────────
    7. BOTONES
@@ -699,6 +667,9 @@ ul, ol { list-style: none; }
 
 .about-avatar-wrap {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .about-avatar {

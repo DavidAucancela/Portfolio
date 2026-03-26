@@ -15,6 +15,9 @@ import { IAAssistant } from './ia-assistant.js';
 import { initApp } from './app.js';
 import { Trajectory } from './trajectory.js';
 
+// Vercel Web Analytics
+import { inject } from '@vercel/analytics';
+
 // CSS imports — Vite los bundlea automáticamente
 import '../css/main.css';
 import '../css/sections.css';
@@ -23,6 +26,9 @@ import '../css/project-detail.css';
 import '../css/trajectory.css';
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Initialize Vercel Web Analytics
+  inject();
+  
   ThemeSwitcher.init();
   Trajectory.init();
   HeroAnimations.init();

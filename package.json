@@ -21,5 +21,8 @@
   "homepage": "https://github.com/DavidAucancela/Portfolio#readme",
   "devDependencies": {
     "vite": "^8.0.0"
+  },
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
   }
 }

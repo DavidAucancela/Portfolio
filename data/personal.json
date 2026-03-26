@@ -1,7 +1,7 @@
 {
   "name": "Jonathan Aucancela",
   "title": "Ingeniero de Software",
-  "bio": "Soy Jonathan Aucancela, Ingeniero de Software. Desde niño me fascinó lo que se puede construir mediante un par de líneas de código. Esa capacidad de transformar una idea en algo real me sigue motivando hoy.\n\nTrabajo principalmente en desarrollo full stack y DevOps, integro IA en mis proyectos, y actualmente me adentro en el mundo de la seguridad informática. He desarrollado sistemas para clientes reales y proyectos académicos: desde plataformas web hasta asistentes financieros inteligentes.\n\nMi forma de trabajar: no me ato a un lenguaje o herramienta, me ato al problema. Aprendo lo necesario, lo entiendo de raíz, y lo aplico.",
+  "bio": "Mi forma de trabajar: no me ato a un lenguaje o herramienta, me ato al problema. Aprendo lo necesario, lo entiendo de raíz, y lo aplico.\n\nSoy Jonathan Aucancela, Ingeniero de Software. Desde niño me fascinó lo que se puede construir mediante un par de líneas de código. Esa capacidad de transformar una idea en algo real me sigue motivando hoy.\n\nTrabajo principalmente en desarrollo full stack y DevOps, integro IA en mis proyectos, y actualmente me adentro en el mundo de la seguridad informática. He desarrollado sistemas para clientes reales y proyectos académicos: desde plataformas web hasta asistentes financieros inteligentes.",
   "bioShort": "Ingeniero de Software - Full stack - DevOps - IA - Seguridad \n\n No me ato a una herramienta, me ato al problema.",
   "email": "jonathan_jd@outlook.com",
   "location": "Quito, Ecuador",
@@ -57,13 +57,5 @@
       "description": "Pipeline ETL automatizado para gestión y limpieza de datos en bases de datos. Stack: Python, Django, PostgreSQL.",
       "period": "Sep 2025 — Nov 2025"
     },
-    {
-      "role": "Desarrollador + Seguridad",
-      "type": "Práctica",
-      "project": "SecuraBank",
-      "projectSlug": "securabank",
-      "description": "Sistema bancario demostrativo con implementación del OWASP Top 10 y múltiples capas de seguridad.",
-      "period": "Ene 2025 — Feb 2025"
-    }
   ]
 }

@@ -115,6 +115,18 @@
   transform: translateY(-3px);
 }
 
+.social-link--linkedin {
+  width: auto;
+  padding: 0 0.85rem;
+  gap: 0.45rem;
+  font-size: 0.78rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
 /* ─────────────────────────────────────────────────────────────
    3. SKILLS — DEVICONS Y CARDS MEJORADAS
    ───────────────────────────────────────────────────────────── */

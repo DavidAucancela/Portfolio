@@ -318,6 +318,7 @@ import { Trajectory } from './trajectory.js';
         { label: 'PII expuesto', value: '0' },
       ],
       github: 'https://github.com/DavidAucancela/AnaOS',
+      demo:   'https://frontend-production-cc73.up.railway.app/',
     },
     {
       date:      'Jul 2025 — Oct 2025',
@@ -368,30 +369,6 @@ import { Trajectory } from './trajectory.js';
       github: 'https://github.com/DavidAucancela/App-de-prueba-Equity',
     },
     {
-      date:      'Ene 2025 — Feb 2025',
-      title:     'SecuraBank',
-      role:      'Desarrollador + Seguridad · Práctica',
-      org:       'Proyecto educativo · OWASP',
-      slug:      'securabank',
-      completed: true,
-      type:      'project',
-      typeLabel: 'Práctica',
-      desc:      'Sistema bancario demostrativo que implementa 6 categorías del OWASP Top 10. Node.js + Helmet.js + JWT con rotación. Seguridad diseñada desde el inicio, no como añadido.',
-      tags:      ['Node.js', 'OWASP', 'JWT', 'Helmet.js', 'bcrypt', 'PostgreSQL'],
-      icon:      '🔒',
-      highlights: [
-        '6 vulnerabilidades OWASP Top 10 mitigadas: A01, A02, A03, A05, A07',
-        'JWT access (15 min) + refresh (7 días) con rotación automática',
-        'Auditoría inmutable: cada transacción registrada con timestamp e IP',
-      ],
-      metricas: [
-        { label: 'OWASP mitigados', value: '6/10' },
-        { label: 'Capas seguridad', value: '5' },
-        { label: 'Auditoría', value: '100%' },
-      ],
-      github: 'https://github.com/DavidAucancela/SecuraBank',
-    },
-    {
       date:      'Dic 2025',
       title:     'MapCriminals',
       role:      'Desarrollador Full Stack · Personal',
@@ -413,7 +390,8 @@ import { Trajectory } from './trajectory.js';
         { label: 'Cobertura', value: 'Global' },
         { label: 'Tiempo real', value: '✓' },
       ],
-      github: 'https://github.com/DavidAucancela/MapCriminals',
+      github: 'https://github.com/DavidAucancela/MapCriminalsCode',
+      demo:   'https://mapcriminalscode-production.up.railway.app/',
     },
     {
       date:      'Mar 2026',
@@ -437,7 +415,8 @@ import { Trajectory } from './trajectory.js';
         { label: 'Stack', value: 'React + Node' },
         { label: 'Open Source', value: '✓' },
       ],
-      github: 'https://github.com/DavidAucancela/LLM-Observatory',
+      github: 'https://github.com/DavidAucancela/llm-observatory',
+      demo:   'https://llm-web-production.up.railway.app/settings',
     },
   ];
 

@@ -355,7 +355,7 @@
   {
     "id": "cert-002",
     "title": "Curso Certificado de Ciberseguridad — IBM",
-    "description": "Programa de certificación en ciberseguridad de IBM SkillsBuild. Cubre operaciones de seguridad, análisis de amenazas y defensa de infraestructuras. En curso.",
+    "description": "Certificación completada en ciberseguridad por IBM SkillsBuild. Cubre operaciones de seguridad, análisis de amenazas y defensa de infraestructuras.",
     "tags": ["IBM", "Security Operations", "Threat Analysis", "Incident Response"],
     "image": null,
     "liveUrl": null,
@@ -363,7 +363,7 @@
     "featured": false,
     "date": "2026-03",
     "process": {
-      "overview": "Programa de certificación de IBM SkillsBuild enfocado en ciberseguridad aplicada. Cubre desde fundamentos hasta operaciones de seguridad, análisis de amenazas y respuesta a incidentes. Finalización estimada: Mayo 2026.",
+      "overview": "Certificación completada de IBM SkillsBuild en ciberseguridad aplicada. Cubre desde fundamentos hasta operaciones de seguridad, análisis de amenazas y respuesta a incidentes.",
       "pasos": [
         {
           "id": "analisis",
@@ -392,15 +392,15 @@
             "Plan de respuesta a incidentes — fases, roles y escalado",
             "Forense digital básico: recolección y preservación de evidencia",
             "Gestión de comunicaciones durante un incidente de seguridad",
-            "Certificación IBM SkillsBuild — finalización estimada Mayo 2026"
+            "Certificación IBM SkillsBuild completada"
           ]
         }
       ],
-      "resultado": "Certificación en curso. Finalización estimada Mayo 2026 con certificado oficial IBM SkillsBuild.",
+      "resultado": "Certificación obtenida. Programa de ciberseguridad completado con certificado oficial IBM SkillsBuild.",
       "metricas": [
         { "label": "Emisor", "value": "IBM" },
-        { "label": "Estado", "value": "En curso" },
-        { "label": "Fin estimado", "value": "May 2026" },
+        { "label": "Estado", "value": "Obtenida" },
+        { "label": "Año", "value": "2026" },
         { "label": "Plataforma", "value": "SkillsBuild" }
       ]
     }

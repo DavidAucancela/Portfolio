@@ -245,5 +245,164 @@
         { "label": "Rating", "value": "★ 4.6" }
       ]
     }
+  },
+  {
+    "id": "prac-001",
+    "title": "Diagnóstico de Seguridad — ESPOCH DETIC",
+    "description": "Diagnóstico de sistemas institucionales, análisis de infraestructura con herramientas de seguridad y verificación de controles ISO 27001 en el DETIC de la ESPOCH.",
+    "tags": ["ISO 27001", "Auditoría", "Análisis de Vulnerabilidades", "Hardening", "Linux"],
+    "image": null,
+    "liveUrl": null,
+    "repoUrl": null,
+    "featured": true,
+    "date": "2025-09",
+    "process": {
+      "overview": "Prácticas institucionales en el Departamento de Tecnologías de la Información y Comunicación (DETIC) de la ESPOCH. Objetivo: diagnóstico del estado de seguridad de los sistemas, identificación de activos y evaluación de controles según ISO 27001.",
+      "pasos": [
+        {
+          "id": "analisis",
+          "resumen": "Inventario y diagnóstico de sistemas activos en la red institucional. Identificación de servicios expuestos, versiones de software y configuraciones de red.",
+          "puntos": [
+            "Inventario de activos de hardware y software activos en la red",
+            "Escaneo de red para identificar servicios y puertos activos",
+            "Documentación de sistemas críticos y sus interdependencias",
+            "Identificación de versiones de software con soporte activo vs. obsoleto"
+          ]
+        },
+        {
+          "id": "desarrollo",
+          "resumen": "Análisis de vulnerabilidades con herramientas de seguridad sobre los sistemas identificados. Evaluación de configuraciones y posibles vectores de ataque internos.",
+          "puntos": [
+            "Análisis de vulnerabilidades sobre activos de la red institucional",
+            "Revisión de configuraciones de servicios críticos (web, base de datos, red)",
+            "Evaluación de controles de acceso y políticas de autenticación",
+            "Documentación de hallazgos con nivel de criticidad (alta/media/baja)"
+          ]
+        },
+        {
+          "id": "seguridad",
+          "resumen": "Verificación de cumplimiento con controles del estándar ISO 27001. Análisis de brechas entre el estado actual y los requisitos de la norma.",
+          "puntos": [
+            "Revisión de controles ISO 27001 aplicables a infraestructura TI",
+            "Gap analysis entre estado actual y controles requeridos por la norma",
+            "Generación de informe de hallazgos y recomendaciones de mitigación",
+            "Propuesta de medidas correctivas priorizadas por nivel de riesgo"
+          ]
+        }
+      ],
+      "resultado": "Diagnóstico completo de la infraestructura institucional. Informe de hallazgos con análisis de brecha ISO 27001 y recomendaciones de mitigación.",
+      "metricas": [
+        { "label": "Norma", "value": "ISO 27001" },
+        { "label": "Duración", "value": "6 meses" },
+        { "label": "Institución", "value": "ESPOCH" },
+        { "label": "Área", "value": "DETIC" }
+      ]
+    }
+  },
+  {
+    "id": "cert-001",
+    "title": "Introduction to Cybersecurity — Cisco",
+    "description": "Certificación oficial de Cisco Networking Academy sobre fundamentos de ciberseguridad: tipos de amenazas, vulnerabilidades, ataques comunes y principios de defensa.",
+    "tags": ["Cisco", "Fundamentos", "Threat Analysis", "Network Security"],
+    "image": null,
+    "liveUrl": null,
+    "repoUrl": null,
+    "featured": false,
+    "date": "2025-01",
+    "process": {
+      "overview": "Programa de certificación de Cisco Networking Academy que cubre los fundamentos esenciales de la ciberseguridad, desde tipos de amenazas hasta principios de defensa y buenas prácticas de seguridad.",
+      "pasos": [
+        {
+          "id": "analisis",
+          "resumen": "Panorama de amenazas: tipos de ataques, actores maliciosos y vectores de entrada más comunes en sistemas modernos.",
+          "puntos": [
+            "Tipos de malware: virus, ransomware, spyware, troyanos",
+            "Ingeniería social: phishing, pretexting, baiting",
+            "Ataques de red: MITM, DoS/DDoS, packet sniffing",
+            "Superficie de ataque y vectores de entrada más frecuentes"
+          ]
+        },
+        {
+          "id": "desarrollo",
+          "resumen": "Principios de protección de datos y sistemas: cifrado, gestión de identidades, seguridad en redes.",
+          "puntos": [
+            "Cifrado simétrico y asimétrico — conceptos y casos de uso",
+            "Gestión de identidad y acceso (IAM) y autenticación multifactor",
+            "Seguridad de redes: firewalls, IDS/IPS, VPN",
+            "Conceptos de seguridad en la nube y entornos híbridos"
+          ]
+        },
+        {
+          "id": "seguridad",
+          "resumen": "Respuesta a incidentes y mejores prácticas. Marco de trabajo para detección, contención y recuperación ante incidentes de seguridad.",
+          "puntos": [
+            "Ciclo de vida de respuesta a incidentes: preparación, detección, contención",
+            "Políticas de seguridad y gestión de riesgos organizacional",
+            "Mejores prácticas de higiene digital y concienciación",
+            "Certificación emitida oficialmente por Cisco Networking Academy"
+          ]
+        }
+      ],
+      "resultado": "Certificación obtenida. Fundamentos de ciberseguridad según el framework de Cisco NetAcad.",
+      "metricas": [
+        { "label": "Emisor", "value": "Cisco" },
+        { "label": "Año", "value": "2025" },
+        { "label": "Estado", "value": "Obtenida" },
+        { "label": "Plataforma", "value": "NetAcad" }
+      ]
+    }
+  },
+  {
+    "id": "cert-002",
+    "title": "Curso Certificado de Ciberseguridad — IBM",
+    "description": "Programa de certificación en ciberseguridad de IBM SkillsBuild. Cubre operaciones de seguridad, análisis de amenazas y defensa de infraestructuras. En curso.",
+    "tags": ["IBM", "Security Operations", "Threat Analysis", "Incident Response"],
+    "image": null,
+    "liveUrl": null,
+    "repoUrl": null,
+    "featured": false,
+    "date": "2026-03",
+    "process": {
+      "overview": "Programa de certificación de IBM SkillsBuild enfocado en ciberseguridad aplicada. Cubre desde fundamentos hasta operaciones de seguridad, análisis de amenazas y respuesta a incidentes. Finalización estimada: Mayo 2026.",
+      "pasos": [
+        {
+          "id": "analisis",
+          "resumen": "Fundamentos de ciberseguridad y gestión de riesgos según el marco IBM. Identificación y clasificación de activos, amenazas y vulnerabilidades.",
+          "puntos": [
+            "Conceptos esenciales de seguridad de la información",
+            "Gestión de riesgos y análisis de impacto de negocio (BIA)",
+            "Clasificación de activos y modelo de amenazas",
+            "Frameworks de referencia: NIST, ISO 27001, CIS Controls"
+          ]
+        },
+        {
+          "id": "desarrollo",
+          "resumen": "Operaciones de seguridad (SOC) y análisis de amenazas. Uso de herramientas SIEM y técnicas de detección de intrusiones.",
+          "puntos": [
+            "Operaciones en un SOC — roles, procesos y herramientas",
+            "Análisis de logs y correlación de eventos de seguridad",
+            "Uso de SIEM para detección y alerta de amenazas",
+            "Indicadores de compromiso (IOC) y análisis de malware básico"
+          ]
+        },
+        {
+          "id": "seguridad",
+          "resumen": "Respuesta a incidentes y forense digital básico. Gestión de comunicaciones y recuperación ante brechas de seguridad.",
+          "puntos": [
+            "Plan de respuesta a incidentes — fases, roles y escalado",
+            "Forense digital básico: recolección y preservación de evidencia",
+            "Gestión de comunicaciones durante un incidente de seguridad",
+            "Certificación IBM SkillsBuild — finalización estimada Mayo 2026"
+          ]
+        }
+      ],
+      "resultado": "Certificación en curso. Finalización estimada Mayo 2026 con certificado oficial IBM SkillsBuild.",
+      "metricas": [
+        { "label": "Emisor", "value": "IBM" },
+        { "label": "Estado", "value": "En curso" },
+        { "label": "Fin estimado", "value": "May 2026" },
+        { "label": "Plataforma", "value": "SkillsBuild" }
+      ]
+    }
   }
 ]

@@ -57,5 +57,29 @@
       "description": "Pipeline ETL automatizado para gestión y limpieza de datos en bases de datos. Stack: Python, Django, PostgreSQL.",
       "period": "Sep 2025 — Nov 2025"
     },
+    {
+      "role": "Practicante de Seguridad Informática",
+      "type": "Prácticas",
+      "project": "Diagnóstico de Seguridad — ESPOCH DETIC",
+      "projectSlug": null,
+      "description": "Diagnóstico de sistemas institucionales, análisis con herramientas de seguridad y verificación de cumplimiento ISO 27001 en el DETIC de la ESPOCH.",
+      "period": "Sep 2025 — Feb 2026"
+    },
+    {
+      "role": "Certificación",
+      "type": "Cisco NetAcad",
+      "project": "Introduction to Cybersecurity",
+      "projectSlug": null,
+      "description": "Certificación oficial de Cisco Networking Academy sobre fundamentos de ciberseguridad, amenazas y principios de defensa.",
+      "period": "2025"
+    },
+    {
+      "role": "Formación",
+      "type": "En Curso",
+      "project": "Curso Certificado de Ciberseguridad — IBM SkillsBuild",
+      "projectSlug": null,
+      "description": "Programa de certificación en ciberseguridad de IBM SkillsBuild. Operaciones de seguridad, análisis de amenazas y respuesta a incidentes.",
+      "period": "Mar 2026 — May 2026"
+    }
   ]
 }

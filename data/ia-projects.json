@@ -76,7 +76,7 @@
     "longDescription": "Sistema fullstack de gestión de envíos con búsqueda semántica potenciada por OpenAI + pgvector. Incluye rastreo en tiempo real, gestión de inventario, reportes analíticos y panel de administración. Redujo el tiempo de búsqueda de 4 minutos a menos de 20 segundos.",
     "tags": ["Django", "Angular", "PostgreSQL", "Docker", "OpenAI"],
     "image": "public/images/projects/ubapp/index.png",
-    "liveUrl": "https://ubapp-frontend.onrender.com",
+    "liveUrl": "https://frontend-angular-production.up.railway.app/login",
     "repoUrl": "https://github.com/DavidAucancela/UBAppV2",
     "featured": true,
     "date": "2026-01",

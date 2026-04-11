@@ -6,7 +6,7 @@
     "longDescription": "Sistema fullstack con Vue.js 3 y Node.js/Express. Soporta 3 idiomas (ES/EN/PT), modo oscuro/claro, carrito de compras con integración WhatsApp y panel administrativo para gestión de productos sin conocimiento técnico.",
     "tags": ["Vue.js", "Node.js", "PostgreSQL", "i18n", "Vercel"],
     "image": "public/images/projects/ideancestral/index.png",
-    "liveUrl": "https://ideancestral.onrender.com/",
+    "liveUrl": "https://ideancestral-production.up.railway.app/",
     "repoUrl": "https://github.com/DavidAucancela/IDEANCESTRAL",
     "featured": true,
     "date": "2026-02",

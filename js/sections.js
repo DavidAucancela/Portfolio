@@ -268,7 +268,7 @@ import { Trajectory } from './trajectory.js';
         { label: 'Tiempo búsqueda', value: '<20s' },
       ],
       github: 'https://github.com/DavidAucancela/UBAppV2',
-      demo:   'https://ubapp-frontend.onrender.com',
+      demo:   'https://frontend-angular-production.up.railway.app/login',
     },
     {
       date:      'Ene 2026 — Feb 2026',
@@ -293,7 +293,7 @@ import { Trajectory } from './trajectory.js';
         { label: 'Seguridad', value: '4 capas' },
       ],
       github: 'https://github.com/DavidAucancela/IDEANCESTRAL',
-      demo:   'https://ideancestral.onrender.com/',
+      demo:   'https://ideancestral-production.up.railway.app/',
     },
     {
       date:      'Ago 2025 — Nov 2025',

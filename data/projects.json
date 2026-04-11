@@ -21,7 +21,7 @@
     },
     "links": {
       "github": "https://github.com/DavidAucancela/UBAppV2",
-      "demo": "https://ubapp-frontend.onrender.com"
+      "demo": "https://frontend-angular-production.up.railway.app/login"
     },
     "featured": true,
     "date": {
@@ -134,7 +134,7 @@
     },
     "links": {
       "github": "https://github.com/DavidAucancela/IDEANCESTRAL",
-      "demo": "https://ideancestral.onrender.com/"
+      "demo": "https://ideancestral-production.up.railway.app/"
     },
     "featured": true,
     "date": {

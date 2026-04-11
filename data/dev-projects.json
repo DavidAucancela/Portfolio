@@ -130,6 +130,92 @@
     }
   },
   {
+    "id": "project-008",
+    "title": "Notes App",
+    "description": "Aplicación full-stack de notas con autenticación JWT, categorías, archivado y arquitectura por capas (View → Service → Repository → ORM).",
+    "longDescription": "Backend Django REST Framework con autenticación JWT (simplejwt), blacklist de refresh tokens en logout, y arquitectura estricta en capas. Frontend React 18 + Vite con contexto global de auth. Deploy con frontend en Vercel y backend en Railway.",
+    "tags": ["Django", "React", "JWT", "PostgreSQL", "Railway"],
+    "image": "public/images/projects/notes-app/main1.png",
+    "liveUrl": "https://aucancela-35ab41.vercel.app",
+    "repoUrl": null,
+    "featured": false,
+    "date": "2026-04",
+    "techStack": {
+      "frontend": ["React 18", "Vite 5", "Axios"],
+      "backend": ["Python 3.12", "Django 4.2", "Django REST Framework", "simplejwt"],
+      "tools": ["PostgreSQL 16", "Docker + docker-compose", "Vercel", "Railway"]
+    },
+    "process": {
+      "overview": "Aplicación de notas full-stack con arquitectura por capas en el backend (View → Service → Repository → ORM) y autenticación JWT con blacklist de refresh tokens. Frontend React + Vite desplegado en Vercel; backend Django en Railway con PostgreSQL.",
+      "pasos": [
+        {
+          "id": "analisis",
+          "resumen": "Se necesitaba una app de notas con autenticación robusta, soporte de categorías y archivado, manteniendo el backend desacoplado del frontend. El objetivo fue aplicar una arquitectura limpia y segura que separara responsabilidades de forma estricta.",
+          "puntos": [
+            "Autenticación JWT con access + refresh token y blacklist en logout",
+            "Notas privadas por usuario — ningún usuario accede a notas ajenas",
+            "Categorías globales compartidas asignables a notas individuales",
+            "Archivado de notas sin eliminarlas — consultas separadas por estado",
+            "Frontend SPA desacoplado que consume la API vía Axios con interceptores JWT"
+          ]
+        },
+        {
+          "id": "diseño",
+          "resumen": "Backend con arquitectura estricta en 4 capas: View (recibe request), Service (lógica de negocio), Repository (queries ORM), Serializer (validación I/O). Frontend React con AuthContext global y api/ como capa de acceso centralizada.",
+          "puntos": [
+            "View → Service → Repository → ORM: cero lógica en views ni en repositories",
+            "InputSerializer para validación de entrada, OutputSerializer para respuestas",
+            "Repository lanza NotFound en registros inexistentes — views siempre reciben datos válidos",
+            "AuthContext global en React: estado de autenticación accesible sin prop-drilling",
+            "api/: módulos separados para notesApi, categoriesApi y authApi"
+          ]
+        },
+        {
+          "id": "desarrollo",
+          "resumen": "Django REST Framework con djangorestframework-simplejwt para JWT y blacklist. React 18 con Composition API, Axios con interceptores para adjuntar el Bearer token automáticamente. Docker Compose para levantar PostgreSQL en local.",
+          "puntos": [
+            "simplejwt: /auth/login/ retorna { access, refresh, user }; /auth/logout/ hace blacklist del refresh",
+            "POST /auth/token/refresh/ renueva el access token sin re-autenticar al usuario",
+            "PATCH /notes/<id>/archive/ alterna el estado archivado sin eliminar la nota",
+            "POST/DELETE /notes/<id>/categories/<cat_id>/ gestiona la relación nota-categoría",
+            "Axios interceptors: adjunta Authorization: Bearer <token> en cada request autenticada",
+            "docker-compose.yml levanta PostgreSQL 16 para desarrollo local con un comando"
+          ]
+        },
+        {
+          "id": "despliegue",
+          "resumen": "Frontend React compilado y desplegado en Vercel con CI/CD desde GitHub. Backend Django desplegado en Railway con PostgreSQL. Script run.sh levanta el stack completo en local con un solo comando.",
+          "puntos": [
+            "run.sh: inicia PostgreSQL (Docker), crea venv, aplica migraciones, crea admin y levanta ambos servidores",
+            "Frontend en Vercel con proxy /api → backend para desarrollo local sin CORS",
+            "Backend en Railway con PostgreSQL gestionado y DATABASE_URL inyectada automáticamente",
+            "start.sh en backend: migrate + seed (admin/admin123) + gunicorn en producción",
+            "Variables de entorno documentadas en backend/.env.example"
+          ]
+        },
+        {
+          "id": "seguridad",
+          "resumen": "SECRET_KEY requerida en startup con ValueError si falta. DEBUG=False por defecto. Notas scoped al usuario autenticado — acceder a una nota ajena retorna 404. Refresh tokens invalidados server-side en logout.",
+          "puntos": [
+            "SECRET_KEY obligatoria al iniciar — ValueError explícito si no está en .env",
+            "DEBUG=False por defecto — debe activarse explícitamente en .env",
+            "ALLOWED_HOSTS y CORS_ALLOWED_ORIGINS configurados por variables de entorno",
+            "Todas las notas filtradas por request.user — 404 ante acceso a recursos ajenos",
+            "Logout hace blacklist del refresh token server-side con simplejwt TokenBlacklist",
+            "ORM de Django en todas las queries — sin SQL raw"
+          ]
+        }
+      ],
+      "resultado": "Aplicación full-stack en producción con autenticación JWT completa, CRUD de notas con categorías y archivado, y arquitectura por capas verificable. Backend en Railway, frontend en Vercel.",
+      "metricas": [
+        { "label": "Capas de arquitectura", "value": "4" },
+        { "label": "Endpoints API", "value": "13" },
+        { "label": "Auth", "value": "JWT + Blacklist" },
+        { "label": "Deploy", "value": "Vercel + Railway" }
+      ]
+    }
+  },
+  {
     "id": "project-004",
     "title": "Equity — Gestor de Datos ETL",
     "description": "Pipeline automatizado de limpieza y carga de datos desde JSON a PostgreSQL con validación de schema y modo dry-run.",

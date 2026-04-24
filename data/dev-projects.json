@@ -6,8 +6,8 @@
     "longDescription": "Sitio estático de una sola página con 8 secciones (cover, origen, joyería, textiles, cerámica, decoración, Arte Tigua y contacto). Sistema de diseño propio con CSS custom properties, grid responsive de 4 a 1 columna y fotos reales de productos. Contenerizado con Docker + nginx:alpine y desplegado en Railway.",
     "tags": ["HTML", "CSS", "JavaScript", "Docker", "nginx", "Railway"],
     "image": "public/images/projects/artecuador/main.png",
-    "liveUrl": null,
-    "repoUrl": null,
+    "liveUrl": "https://artecuador-production.up.railway.app/",
+    "repoUrl": "https://github.com/DavidAucancela/ArtEcuador",
     "featured": false,
     "date": "2026-04",
     "techStack": {

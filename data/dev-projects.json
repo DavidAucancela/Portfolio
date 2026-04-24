@@ -1,6 +1,7 @@
 [
   {
     "id": "project-009",
+    "slug": "artecuador",
     "title": "ArtEcuador — Catálogo de Artesanías",
     "description": "Catálogo web estático de artesanías ecuatorianas en un único index.html con CSS y JS inline. Sin frameworks ni dependencias de build.",
     "longDescription": "Sitio estático de una sola página con 8 secciones (cover, origen, joyería, textiles, cerámica, decoración, Arte Tigua y contacto). Sistema de diseño propio con CSS custom properties, grid responsive de 4 a 1 columna y fotos reales de productos. Contenerizado con Docker + nginx:alpine y desplegado en Railway.",
@@ -203,6 +204,7 @@
   },
   {
     "id": "project-008",
+    "slug": "notes-app",
     "title": "Notes App",
     "description": "Aplicación full-stack de notas con autenticación JWT, categorías, archivado y arquitectura por capas (View → Service → Repository → ORM).",
     "longDescription": "Backend Django REST Framework con autenticación JWT (simplejwt), blacklist de refresh tokens en logout, y arquitectura estricta en capas. Frontend React 18 + Vite con contexto global de auth. Deploy con frontend en Vercel y backend en Railway.",
@@ -343,6 +345,68 @@
         { "label": "Validaciones", "value": "Schema + tipos" },
         { "label": "Modo dry-run", "value": "✓" },
         { "label": "Transacciones", "value": "Atómicas" }
+      ]
+    }
+  },
+  {
+    "id": "project-005",
+    "slug": "securabank",
+    "title": "SecuraBank",
+    "description": "Sistema de transacciones bancarias que implementa el OWASP Top 10: JWT, bcrypt, Helmet.js, CSRF tokens y auditoría inmutable.",
+    "longDescription": "Proyecto demostrativo de seguridad bancaria con Node.js/Express. Implementa 6 categorías del OWASP Top 10: JWT con access 15min + refresh 7d, bcrypt factor 12, Helmet.js para headers, CSRF tokens en formularios y auditoría inmutable de transacciones.",
+    "tags": ["JavaScript", "Node.js", "JWT", "bcrypt", "OWASP", "PostgreSQL"],
+    "image": "public/images/projects/securabank/thumbnail.svg",
+    "liveUrl": null,
+    "repoUrl": "https://github.com/DavidAucancela/SecuraBank",
+    "featured": false,
+    "date": "2025-02",
+    "techStack": {
+      "frontend": ["HTML", "CSS", "JavaScript"],
+      "backend": ["Node.js", "Express"],
+      "tools": ["JWT", "bcrypt", "PostgreSQL", "Helmet.js"]
+    },
+    "process": {
+      "overview": "Sistema bancario demostrativo construido aplicando el OWASP Top 10 como checklist de diseño. La seguridad se trató como requisito desde el inicio, no como añadido posterior.",
+      "pasos": [
+        {
+          "id": "analisis",
+          "resumen": "Threat modeling sobre el flujo de transacciones para identificar vectores de ataque. Cada módulo fue analizado contra el OWASP Top 10 antes del desarrollo.",
+          "puntos": [
+            "OWASP Top 10 como checklist de diseño previo al desarrollo",
+            "JWT: access token 15min + refresh token 7 días para mitigar token theft",
+            "bcrypt con salt rounds 12 para almacenamiento seguro de contraseñas",
+            "Helmet.js para headers HTTP de seguridad automáticos",
+            "Rate limiting en endpoints de autenticación contra fuerza bruta"
+          ]
+        },
+        {
+          "id": "desarrollo",
+          "resumen": "Node.js con Express y Helmet.js. Queries parametrizadas en todas las operaciones de BD. CSRF tokens en formularios sensibles. Sistema de auditoría en cada transacción.",
+          "puntos": [
+            "Helmet.js: CSP, HSTS, X-Frame-Options, X-XSS-Protection configurados",
+            "JWT access 15min + refresh 7d con rotación automática",
+            "Queries parametrizadas en el 100% de operaciones SQL (previene SQLi)",
+            "CSRF tokens generados y validados en formularios de transferencia",
+            "Auditoría: cada transacción registrada con timestamp, IP y usuario"
+          ]
+        },
+        {
+          "id": "seguridad",
+          "resumen": "6 categorías del OWASP Top 10 mitigadas con 5 capas de seguridad independientes.",
+          "puntos": [
+            "A01 Broken Access Control: RBAC con middleware de autorización por ruta",
+            "A02 Cryptographic Failures: bcrypt + HTTPS + JWT firmado con HS256",
+            "A03 Injection: queries parametrizadas en el 100% de operaciones SQL",
+            "A05 Security Misconfiguration: Helmet.js con política CSP estricta",
+            "A07 Identification Failures: rate limiting + refresh tokens + expiración corta"
+          ]
+        }
+      ],
+      "resultado": "Sistema bancario demostrativo con 6 vulnerabilidades del OWASP Top 10 mitigadas y cobertura completa de autenticación, autorización y auditoría.",
+      "metricas": [
+        { "label": "OWASP mitigados", "value": "6/10" },
+        { "label": "Capas de seguridad", "value": "5" },
+        { "label": "Cobertura auditoría", "value": "100%" }
       ]
     }
   },

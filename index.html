@@ -449,50 +449,49 @@
         <div class="section-header animate-on-scroll">
           <span class="section-label">// sistemas ia</span>
           <h2 class="section-title" data-i18n="ia.title">Consulta mi experiencia</h2>
-          <p class="section-description">
-            Pregunta en lenguaje natural sobre proyectos, tecnologías, habilidades o contacto. El asistente conoce todo el portfolio de Jonathan.
-          </p>
         </div>
 
-        <div class="ia-panel animate-on-scroll">
+        <div class="ia-search-wrap animate-on-scroll">
 
-          <div class="ia-examples">
-            <span class="ia-examples-label">Prueba:</span>
-            <button class="ia-example">¿Qué proyectos tienes?</button>
-            <button class="ia-example">Háblame de LLM Observatory</button>
-            <button class="ia-example">¿Qué sabes de RAG y embeddings?</button>
-            <button class="ia-example">AnaOS SaaS cooperativas</button>
-            <button class="ia-example">Seguridad OWASP SecuraBank</button>
-            <button class="ia-example">¿Cómo contactar a Jonathan?</button>
-            <button class="ia-example">UBApp búsqueda semántica</button>
-            <button class="ia-example">Claude API Anthropic</button>
-          </div>
-
-          <div class="ia-chat" id="ia-chat" aria-live="polite" aria-label="Respuestas del asistente"></div>
-
-          <div class="ia-input-wrap">
+          <div class="ia-search-bar">
+            <svg class="ia-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
             <input
               type="text"
               id="ia-input"
               class="ia-input"
-              placeholder="Ej: ¿Qué proyectos tienes? / Háblame de AnaOS / React con TypeScript..."
+              placeholder="Busca proyectos, tecnologías, contacto..."
               autocomplete="off"
-              maxlength="120"
+              maxlength="200"
             />
-            <button id="ia-send" class="ia-send-btn" aria-label="Enviar consulta">
+            <button id="ia-send" class="ia-send-btn" aria-label="Buscar">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="22" y1="2" x2="11" y2="13"/>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
               </svg>
             </button>
           </div>
+
+          <div class="ia-suggestions">
+            <button class="ia-suggestion">¿Qué proyectos tienes?</button>
+            <button class="ia-suggestion">LLM Observatory</button>
+            <button class="ia-suggestion">RAG y embeddings</button>
+            <button class="ia-suggestion">AnaOS SaaS</button>
+            <button class="ia-suggestion">SecuraBank OWASP</button>
+            <button class="ia-suggestion">¿Cómo contactarlo?</button>
+            <button class="ia-suggestion">UBApp</button>
+            <button class="ia-suggestion">Claude API</button>
+          </div>
+
+          <div id="ia-results" class="ia-results" aria-live="polite"></div>
 
           <p class="ia-disclaimer">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
             </svg>
-            Beta — respuestas basadas en el perfil real de Jonathan. No conectado a un modelo externo.
+            Respuestas basadas en el perfil real de Jonathan · Motor NLP local
           </p>
 
         </div>

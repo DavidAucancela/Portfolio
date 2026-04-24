@@ -536,144 +536,136 @@ function _md(text) {
     .replace(/\n/g, '<br>');
 }
 
-function _typeText(el, text, done) {
-  el.innerHTML = '';
-  let i = 0;
-  const interval = setInterval(() => {
-    i++;
-    el.innerHTML = _md(text.slice(0, i));
-    if (i >= text.length) { clearInterval(interval); if (done) done(); }
-  }, 10);
+function _levelBadge(nivel) {
+  if (!nivel) return '';
+  const n = nivel.toLowerCase();
+  const cls = n.startsWith('avanzado') ? 'green'
+            : n.startsWith('intermedio') ? 'yellow'
+            : 'purple';
+  return `<span class="ia-badge ia-badge--${cls}">${nivel}</span>`;
 }
 
-function _buildBotMsg(result) {
+function _buildCard(result) {
+  const card = document.createElement('div');
+
   if (result.type === 'special') {
-    return { text: result.text, nivel: null, proyectos: [], tags: [] };
+    card.className = 'ia-result-card ia-result-card--plain';
+    card.innerHTML = `
+      <div class="ia-result-breadcrumb">jonathan.dev · Búsqueda</div>
+      <div class="ia-result-plain-text">${_md(result.text)}</div>
+    `;
+    return card;
   }
+
   if (result.type === 'project') {
     const p = result.data;
-    const linksDom = [];
-    if (p.github) linksDom.push(`<a href="https://${p.github}" target="_blank" rel="noopener" class="ia-link">GitHub ↗</a>`);
-    if (p.demo)   linksDom.push(`<a href="https://${p.demo}"   target="_blank" rel="noopener" class="ia-link">Demo ↗</a>`);
-    return {
-      text: result.data.respuesta,
-      nivel: result.data.tipo,
-      proyectos: result.data.metricas || [],
-      tags: result.data.tags || [],
-      links: linksDom,
-    };
+    card.className = 'ia-result-card';
+
+    const metricsHtml = p.metricas?.length
+      ? `<div class="ia-result-row">${p.metricas.map(m => `<span class="ia-metric">${m}</span>`).join('')}</div>`
+      : '';
+
+    const tagsHtml = p.tags?.length
+      ? `<div class="ia-result-row">${p.tags.map(t => `<span class="ia-tag-tech">${t}</span>`).join('')}</div>`
+      : '';
+
+    const linksHtml = (p.github || p.demo)
+      ? `<div class="ia-result-actions">
+          ${p.github ? `<a href="https://${p.github}" target="_blank" rel="noopener" class="ia-result-link">GitHub ↗</a>` : ''}
+          ${p.demo   ? `<a href="https://${p.demo}"   target="_blank" rel="noopener" class="ia-result-link">Demo en vivo ↗</a>` : ''}
+        </div>`
+      : '';
+
+    card.innerHTML = `
+      <div class="ia-result-breadcrumb">jonathan.dev › Proyectos › ${p.title}</div>
+      <h3 class="ia-result-title">${p.title}</h3>
+      <div class="ia-result-meta">${p.role} · ${p.period}</div>
+      <p class="ia-result-desc">${_md(p.respuesta)}</p>
+      ${metricsHtml}
+      ${tagsHtml}
+      ${linksHtml}
+    `;
+    return card;
   }
+
   if (result.type === 'tech') {
-    return {
-      text: result.data.respuesta,
-      nivel: result.data.nivel,
-      proyectos: result.data.proyectos || [],
-      tags: result.data.tags || [],
-    };
+    const t = result.data;
+    card.className = 'ia-result-card';
+
+    const proyectosHtml = t.proyectos?.length
+      ? `<div class="ia-result-row">${t.proyectos.map(p => `<span class="ia-metric">${p}</span>`).join('')}</div>`
+      : '';
+
+    const tagsHtml = t.tags?.length
+      ? `<div class="ia-result-row">${t.tags.map(tg => `<span class="ia-tag-tech">${tg}</span>`).join('')}</div>`
+      : '';
+
+    card.innerHTML = `
+      <div class="ia-result-breadcrumb">jonathan.dev › Skills › ${t.name}</div>
+      <h3 class="ia-result-title">${t.name} ${_levelBadge(t.nivel)}</h3>
+      <p class="ia-result-desc">${_md(t.respuesta)}</p>
+      ${proyectosHtml}
+      ${tagsHtml}
+    `;
+    return card;
   }
-  return { text: '', nivel: null, proyectos: [], tags: [] };
+
+  return card;
 }
 
-function _addMessage(container, role, payload, result) {
-  const msg = document.createElement('div');
-  msg.className = `ia-msg ia-msg--${role}`;
+function _showResults(container, result) {
+  container.innerHTML = '';
 
-  if (role === 'user') {
-    msg.innerHTML = `<span class="ia-msg-text">${payload}</span>`;
-    container.appendChild(msg);
-    container.scrollTop = container.scrollHeight;
-    return msg;
+  if (!result) {
+    container.innerHTML = `
+      <div class="ia-no-results">
+        No encontré resultados. Prueba con un proyecto (UBApp, AnaOS, LLM Observatory…)
+        o una tecnología (Django, React, Docker, OpenAI, Claude API…).
+      </div>`;
+    return;
   }
 
-  const bot = result ? _buildBotMsg(result) : null;
-  const text = bot ? bot.text : payload;
-
-  const nivelHtml = bot?.nivel
-    ? `<span class="ia-nivel">${bot.nivel}</span>`
-    : '';
-
-  const proyectosHtml = bot?.proyectos?.length
-    ? `<div class="ia-proyectos"><span>${result?.type === 'project' ? 'Métricas:' : 'Proyectos:'}</span> ${bot.proyectos.map(p => `<span class="ia-tag">${p}</span>`).join('')}</div>`
-    : '';
-
-  const tagsHtml = bot?.tags?.length
-    ? `<div class="ia-tags">${bot.tags.slice(0, 6).map(t => `<span class="ia-tag ia-tag--tech">${t}</span>`).join('')}</div>`
-    : '';
-
-  const linksHtml = bot?.links?.length
-    ? `<div class="ia-links">${bot.links.join(' ')}</div>`
-    : '';
-
-  msg.innerHTML = `
-    <div class="ia-msg-header">
-      <span class="ia-avatar">🧠</span>
-      ${nivelHtml}
-    </div>
-    <div class="ia-msg-text"></div>
-    ${proyectosHtml}
-    ${tagsHtml}
-    ${linksHtml}
-  `;
-
-  container.appendChild(msg);
-  container.scrollTop = container.scrollHeight;
-
-  const textEl = msg.querySelector('.ia-msg-text');
-  _typeText(textEl, text, () => { container.scrollTop = container.scrollHeight; });
-  return msg;
+  container.appendChild(_buildCard(result));
 }
 
 // ── INIT ─────────────────────────────────────────────────────────────────────
 
-const FALLBACK = `No encontré información específica sobre eso en el perfil de Jonathan. Prueba preguntando por un **proyecto** (UBApp, AnaOS, LLM Observatory, MapCriminals, Ideancestral, SecuraBank, Equity, Notes App) o una **tecnología** (Angular, Vue, React, Django, Node.js, PostgreSQL, Docker, OpenAI, Claude API, TypeScript...).`;
-
 function _render() {
-  const section = document.getElementById('ia-assistant-section');
+  const section   = document.getElementById('ia-assistant-section');
   if (!section) return;
 
-  const container = section.querySelector('#ia-chat');
+  const results   = section.querySelector('#ia-results');
   const input     = section.querySelector('#ia-input');
   const sendBtn   = section.querySelector('#ia-send');
-  const examples  = section.querySelectorAll('.ia-example');
-
-  _addMessage(container, 'bot',
-    'Hola. Pregúntame cualquier cosa sobre Jonathan: proyectos, tecnologías, habilidades, contacto. Puedes usar lenguaje natural.',
-    null
-  );
+  const suggestions = section.querySelectorAll('.ia-suggestion');
 
   function send() {
     const val = input.value.trim();
     if (!val) return;
 
-    _addMessage(container, 'user', val, null);
     input.value = '';
     sendBtn.disabled = true;
 
-    const thinking = document.createElement('div');
-    thinking.className = 'ia-msg ia-msg--bot ia-thinking';
-    thinking.innerHTML = `<span class="ia-avatar">🧠</span><span class="ia-dots"><span></span><span></span><span></span></span>`;
-    container.appendChild(thinking);
-    container.scrollTop = container.scrollHeight;
+    // loading
+    results.innerHTML = `
+      <div class="ia-loading">
+        <div class="ia-dots"><span></span><span></span><span></span></div>
+        Buscando…
+      </div>`;
 
     setTimeout(() => {
-      thinking.remove();
-      const result = _query(val);
-      if (result) {
-        _addMessage(container, 'bot', null, result);
-      } else {
-        _addMessage(container, 'bot', FALLBACK, null);
-      }
+      _showResults(results, _query(val));
       sendBtn.disabled = false;
       input.focus();
-    }, 600 + Math.random() * 500);
+    }, 400 + Math.random() * 350);
   }
 
   sendBtn.addEventListener('click', send);
   input.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
   });
-  examples.forEach(btn => {
-    btn.addEventListener('click', () => { input.value = btn.textContent; send(); });
+  suggestions.forEach(btn => {
+    btn.addEventListener('click', () => { input.value = btn.textContent.trim(); send(); });
   });
 }
 

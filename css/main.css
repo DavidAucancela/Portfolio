@@ -1614,6 +1614,31 @@ ul, ol { list-style: none; }
   color: #b14eff;
 }
 
+.ia-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.4rem;
+}
+
+.ia-link {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-family: var(--font-display);
+  background: rgba(6,255,165,0.08);
+  border: 1px solid rgba(6,255,165,0.3);
+  color: #06ffa5;
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.ia-link:hover {
+  background: rgba(6,255,165,0.15);
+  border-color: rgba(6,255,165,0.5);
+}
+
 .ia-thinking {
   flex-direction: row !important;
   align-items: center;

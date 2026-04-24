@@ -1,5 +1,77 @@
 [
   {
+    "id": "project-009",
+    "title": "ArtEcuador — Catálogo de Artesanías",
+    "description": "Catálogo web estático de artesanías ecuatorianas en un único index.html con CSS y JS inline. Sin frameworks ni dependencias de build.",
+    "longDescription": "Sitio estático de una sola página con 8 secciones (cover, origen, joyería, textiles, cerámica, decoración, Arte Tigua y contacto). Sistema de diseño propio con CSS custom properties, grid responsive de 4 a 1 columna y fotos reales de productos. Contenerizado con Docker + nginx:alpine y desplegado en Railway.",
+    "tags": ["HTML", "CSS", "JavaScript", "Docker", "nginx", "Railway"],
+    "image": "public/images/projects/artecuador/main.png",
+    "liveUrl": null,
+    "repoUrl": null,
+    "featured": false,
+    "date": "2026-04",
+    "techStack": {
+      "frontend": ["HTML5", "CSS3", "JavaScript Vanilla"],
+      "tools": ["Docker", "nginx:alpine", "Railway", "Google Fonts"]
+    },
+    "process": {
+      "overview": "Catálogo estático de artesanías ecuatorianas sin frameworks ni build step. Todo el proyecto vive en un único index.html con CSS y JS inline. Contenerizado con Docker + nginx:alpine para Railway.",
+      "pasos": [
+        {
+          "id": "analisis",
+          "resumen": "Se necesitaba un catálogo web simple, sin dependencias ni servidor de aplicaciones, que pudiera desplegarse fácilmente y mostrara fotos reales de los productos con un diseño que evocara la identidad ecuatoriana.",
+          "puntos": [
+            "Catálogo sin backend — solo HTML, CSS y JS en un único archivo",
+            "Fotos reales de productos en media/products/ servidas directamente",
+            "Diseño con identidad ecuatoriana: rojo, amarillo y verde como tokens de color",
+            "Tipografía Playfair Display para precios y títulos, Montserrat para cuerpo",
+            "Responsive de 4 columnas a 1 para móvil"
+          ]
+        },
+        {
+          "id": "diseño",
+          "resumen": "Sistema de diseño con CSS custom properties para colores, tipografía y espaciados. Grid de productos responsive con breakpoints a 1100px, 900px, 640px y 560px. Cada tarjeta incluye badge de categoría, botón de añadir y enlace de detalle.",
+          "puntos": [
+            "--red #D7262E (botones CTA), --yellow #F4C430 (acentos), --green (Nuevo), --blue (Destacado), --purple (Limitado)",
+            "Grid CSS: 4 columnas → 3 (≤1100px) → 2 (≤900px) → 1 (≤560px)",
+            "Fotos reales con class product-img-real y lazy loading nativo",
+            "Modal de detalle responsive adaptado en 1 columna (≤640px)",
+            "Navbar con hamburger en móvil y logo cuadrado iconoFinal.png"
+          ]
+        },
+        {
+          "id": "desarrollo",
+          "resumen": "Todo el JavaScript está inline en el index.html: navegación suave, hamburger menu, carrito básico y comportamiento del modal. Sin dependencias externas salvo Google Fonts cargadas desde CDN.",
+          "puntos": [
+            "Navegación suave (scroll-behavior: smooth) entre las 8 secciones",
+            "Hamburger menu en mobile con toggle de clase CSS",
+            "Google Fonts (Playfair Display + Montserrat) como única dependencia externa CDN",
+            "Backup del MVP original preservado en index.backup.html sin modificar",
+            "Patrón de tarjeta reutilizable para agregar nuevos productos con foto real"
+          ]
+        },
+        {
+          "id": "despliegue",
+          "resumen": "Docker con imagen nginx:alpine que sirve el index.html estático en el puerto 8080 requerido por Railway. nginx.conf redirige todas las rutas al index.html para evitar 404 en navegación directa.",
+          "puntos": [
+            "Imagen Docker nginx:alpine — mínima y segura para producción",
+            "Puerto 8080 expuesto (requerido por Railway)",
+            "nginx.conf con try_files $uri /index.html para SPA routing",
+            "docker build -t artecuador . && docker run -p 8080:8080 artecuador para local",
+            "Railway detecta el Dockerfile automáticamente y despliega en cada push a main"
+          ]
+        }
+      ],
+      "resultado": "Catálogo estático en producción con 8 secciones, fotos reales de 5 productos artesanales y diseño mobile-first. Deploy en Railway con Docker + nginx sin servidor de aplicaciones.",
+      "metricas": [
+        { "label": "Archivos del proyecto", "value": "1 HTML" },
+        { "label": "Dependencias npm", "value": "0" },
+        { "label": "Secciones del catálogo", "value": "8" },
+        { "label": "Deploy", "value": "Railway + Docker" }
+      ]
+    }
+  },
+  {
     "id": "project-002",
     "title": "Ideancestral",
     "description": "Plataforma de catálogo digital multiidioma para artesanos ecuatorianos con carrito de compras vía WhatsApp.",

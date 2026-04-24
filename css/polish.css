@@ -503,18 +503,24 @@ body::after {
 }
 
 /* .ia — border con gradiente animado */
+@property --avatar-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
 [data-theme="ia"] .about-avatar-wrap::before {
   content: '';
   position: absolute;
   inset: -3px;
   border-radius: calc(var(--border-radius-lg) + 4px);
-  background: conic-gradient(from 0deg, #06ffa5, #b14eff, #06ffa5);
+  background: conic-gradient(from var(--avatar-angle), #06ffa5, #b14eff, #06ffa5);
   animation: rotateGradient 4s linear infinite;
   z-index: -1;
 }
 
 @keyframes rotateGradient {
-  to { transform: rotate(360deg); }
+  to { --avatar-angle: 360deg; }
 }
 
 [data-theme="ia"] .about-avatar {

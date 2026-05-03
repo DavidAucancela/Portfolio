@@ -6,7 +6,7 @@
     "description": "App móvil fullstack con diario personal e IA conversacional. Expo React Native + FastAPI async + PostgreSQL. Streaming SSE real, RAG con embeddings y perfil acumulativo de usuario.",
     "longDescription": "Primera app móvil del portfolio. Stack: Expo SDK 54 con Expo Router (file-based), Zustand y TanStack Query v5 en el cliente; FastAPI async con SQLAlchemy asyncpg y Alembic en el backend; PostgreSQL en Supabase. Streaming SSE implementado vía XHR (workaround para Expo). Claude Haiku detecta el mood de cada entrada, Sonnet chatea con contexto semántico del historial. Modo demo/preview sin backend incluido.",
     "tags": ["React Native", "Expo", "FastAPI", "Python", "PostgreSQL"],
-    "image": "public/images/projects/mindlog/thumbnail.svg",
+    "image": "public/images/projects/mindlog/login.jpeg",
     "repoUrl": "https://github.com/DavidAucancela/MindLog",
     "featured": true,
     "date": "2026-05",

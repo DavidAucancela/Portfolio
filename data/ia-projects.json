@@ -147,7 +147,7 @@
     "description": "App móvil de diario personal con IA conversacional. Claude Haiku detecta el mood, Sonnet responde con contexto del historial vía RAG con embeddings y streaming SSE real en React Native.",
     "longDescription": "Primera app móvil del portfolio. El usuario escribe entradas libres y puede conversar con ellas: Claude recupera entradas relevantes por similitud coseno y responde con contexto acumulado del usuario. Haiku para detección de mood y actualización del perfil, Sonnet para chat y resumen diario. Streaming SSE implementado vía XHR en Expo (sin EventSource nativo).",
     "tags": ["Claude API", "React Native", "Expo", "FastAPI", "Streaming SSE"],
-    "image": "public/images/projects/mindlog/thumbnail.svg",
+    "image": "public/images/projects/mindlog/chat IA.jpeg",
     "repoUrl": "https://github.com/DavidAucancela/MindLog",
     "featured": true,
     "date": "2026-05",

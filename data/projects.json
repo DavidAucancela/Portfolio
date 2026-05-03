@@ -870,9 +870,11 @@
     "category": "P1",
     "tags": ["React Native", "Expo", "FastAPI", "Claude API", "Mobile"],
     "images": {
-      "thumbnail": "/images/projects/mindlog/thumbnail.svg",
+      "thumbnail": "/public/images/projects/mindlog/login.jpeg",
       "gallery": [
-        "/images/projects/mindlog/thumbnail.svg"
+        "/public/images/projects/mindlog/login.jpeg",
+        "/public/images/projects/mindlog/notas.jpeg",
+        "/public/images/projects/mindlog/chat IA.jpeg"
       ]
     },
     "links": {

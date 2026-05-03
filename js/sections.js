@@ -28,7 +28,7 @@ import { Trajectory } from './trajectory.js';
         tags:  ['Fullstack', 'REST API', 'Docker', 'PostgreSQL', 'CI/CD'],
       },
       stats: [
-        { target: 6, suffix: '+', label: 'Proyectos' },
+        { target: 8, suffix: '+', label: 'Proyectos' },
         { target: 3, suffix: '',  label: 'Especialidades' },
         { target: 2, suffix: '+', label: 'Años exp.' },
       ],
@@ -44,7 +44,7 @@ import { Trajectory } from './trajectory.js';
         tags:  ['OpenAI API', 'RAG', 'Embeddings', 'pgvector', 'Prompt Eng.'],
       },
       stats: [
-        { target: 3, suffix: '',  label: 'Proyectos IA' },
+        { target: 4, suffix: '',  label: 'Proyectos IA' },
         { target: 2, suffix: '',  label: 'LLMs integrados' },
         { target: 0, suffix: ' PII', label: 'Expuesto a APIs' },
       ],

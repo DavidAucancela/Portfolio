@@ -860,5 +860,112 @@
         { "label": "Idiomas", "value": "ES / EN" }
       ]
     }
+  },
+  {
+    "id": "9",
+    "slug": "mindlog",
+    "title": "MindLog — Diario Personal con IA",
+    "description": "App móvil de diario personal donde el usuario escribe entradas libres y puede conversar con ellas mediante streaming de Claude API. FastAPI + Expo React Native.",
+    "fullDescription": "MindLog es una aplicación móvil que transforma el diario personal con inteligencia artificial. El usuario escribe entradas de texto libre, la IA detecta automáticamente el estado de ánimo (Haiku), y puede luego abrir una conversación donde Claude recupera entradas relevantes por embeddings semánticos y responde con contexto acumulado del usuario. Incluye resumen diario generado por Sonnet, perfil acumulativo, infinite scroll de entradas y modo demo sin backend.",
+    "category": "P1",
+    "tags": ["React Native", "Expo", "FastAPI", "Claude API", "Mobile"],
+    "images": {
+      "thumbnail": "/images/projects/mindlog/thumbnail.svg",
+      "gallery": [
+        "/images/projects/mindlog/thumbnail.svg"
+      ]
+    },
+    "links": {
+      "github": "https://github.com/DavidAucancela/MindLog"
+    },
+    "featured": true,
+    "date": {
+      "start": "2026-03-01",
+      "end": "2026-05-02"
+    },
+    "techStack": {
+      "frontend": ["Expo SDK 54", "React Native", "Expo Router", "TypeScript", "Zustand", "TanStack Query v5"],
+      "backend": ["Python", "FastAPI", "SQLAlchemy async", "Alembic", "PostgreSQL (Supabase)"],
+      "tools": ["Claude API (Sonnet + Haiku)", "OpenAI Embeddings", "JWT", "expo-secure-store", "Railway"]
+    },
+    "highlights": [
+      "Chat IA con streaming SSE en tiempo real vía XHR, historial en memoria y contexto acumulado por usuario",
+      "Detección automática de mood (6 emociones) mediante Claude Haiku al guardar cada entrada",
+      "Búsqueda semántica de entradas relevantes con embeddings OpenAI + similitud coseno (fallback a recencia)",
+      "Perfil acumulativo: users.context actualizado por Haiku al cerrar conversación e inyectado en system prompt",
+      "Resumen diario generado por Sonnet, disponible después de las 18 hs en tarjeta de perfil",
+      "Modo demo/preview con entradas mock sin backend, limpiado correctamente al hacer login real"
+    ],
+    "process": {
+      "overview": "Primera app móvil del portfolio. Stack full-stack con Expo SDK 54 (React Native + TypeScript) en el cliente y FastAPI async en el backend. El diferencial técnico está en la capa de IA: dos modelos Claude con roles distintos (Haiku para detección + contexto, Sonnet para chat y resumen), streaming SSE real vía XHR en mobile, y recuperación semántica de entradas con embeddings.",
+      "pasos": [
+        {
+          "id": "problema",
+          "resumen": "Los diarios digitales tradicionales son pasivos: el usuario escribe pero no puede interactuar con su propio historial. Con cientos de entradas acumuladas, es imposible recordar qué escribió hace 3 meses sobre un tema específico. Se necesitaba un sistema que convirtiera el diario en un interlocutor que conoce al usuario.",
+          "puntos": [
+            "Diarios digitales sin posibilidad de conversación ni recuperación contextual",
+            "Historial de entradas inaccessible para búsqueda semántica o análisis de patrones",
+            "Sin detección automática de estado de ánimo para visualizar evolución emocional",
+            "Sin resumen ni síntesis del día para usuarios con muchas entradas",
+            "Contexto del usuario perdido entre sesiones de chat (sin memoria acumulada)"
+          ]
+        },
+        {
+          "id": "analisis",
+          "resumen": "Se diseñó una arquitectura de dos capas de IA: Claude Haiku para tareas rápidas y de bajo costo (detección de mood, actualización de contexto del usuario) y Claude Sonnet para el chat principal y el resumen diario. Los embeddings de OpenAI permiten recuperar entradas semánticamente relevantes para cada mensaje del chat.",
+          "puntos": [
+            "Haiku para mood detection (6 emociones) y actualización del users.context al cerrar chat",
+            "Sonnet para chat conversacional con streaming SSE y para generar resumen diario",
+            "Embeddings OpenAI text-embedding-3-small con similitud coseno para RAG sobre entradas",
+            "Fallback a recencia si OPENAI_API_KEY no configurada — app funcional sin embeddings",
+            "users.context (Text) como perfil acumulativo inyectado en cada system prompt de chat",
+            "Expo Router (file-based) + Zustand + TanStack Query para estado y cache client-side"
+          ]
+        },
+        {
+          "id": "desarrollo",
+          "resumen": "Backend FastAPI async con SQLAlchemy asyncpg y PostgreSQL en Supabase. Streaming SSE implementado como XHR en React Native (Expo no soporta EventSource nativo). Alembic para migraciones versionadas. Frontend con Expo Router, infinite scroll paginado (20/página), SecureStore para tokens JWT y modo preview con datos mock.",
+          "puntos": [
+            "FastAPI con async/await completo: asyncpg, SQLAlchemy async engine, Alembic asyncio.run",
+            "POST /chat/stream: SSE via StreamingResponse con recuperación de entradas relevantes por embeddings",
+            "POST /chat/close: cierra la sesión y actualiza users.context con Haiku",
+            "XHR streaming en Expo: solución a la ausencia de EventSource nativo en React Native",
+            "Infinite scroll con TanStack Query useInfiniteQuery: páginas de 20 entradas paginadas",
+            "Modo demo/preview: previewStore con flag isPreview, entradas mock, limpieza al login real"
+          ]
+        },
+        {
+          "id": "despliegue",
+          "resumen": "Backend desplegado en Railway. Mobile distribuido mediante Expo EAS Preview build (sin Play Store ni App Store): genera un APK/IPA descargable y un QR escaneable con Expo Go. Expo Go en dispositivo físico requiere el backend en 0.0.0.0 para ser alcanzable por IP local.",
+          "puntos": [
+            "Railway: backend FastAPI con uvicorn, DATABASE_URL de Supabase y variables de entorno",
+            "Expo EAS: eas build --profile preview genera build compartible sin tiendas de apps",
+            "EXPO_PUBLIC_API_URL configurable: IP local (desarrollo) o URL Railway (preview/producción)",
+            "Supabase PostgreSQL como base de datos gestionada con pool de conexiones asyncpg",
+            "Alembic migrations: 001_initial_schema + 002_add_user_context ejecutadas en Railway al deploy",
+            "Distribución alternativa: QR code de Expo Go para prueba directa en dispositivo físico"
+          ]
+        },
+        {
+          "id": "seguridad",
+          "resumen": "Autenticación JWT con python-jose y bcrypt. Tokens almacenados en expo-secure-store (hardware-backed keychain en iOS/Android) en lugar de AsyncStorage. Cada endpoint protegido valida el token antes de acceder a datos del usuario. La API key de Anthropic permanece exclusivamente en el backend.",
+          "puntos": [
+            "JWT con python-jose (HS256) + passlib[bcrypt] para hashing de contraseñas",
+            "expo-secure-store: almacenamiento cifrado del token en keychain del dispositivo",
+            "Todos los endpoints de entries, chat, stats y summary requieren Bearer token válido",
+            "Aislamiento de datos por usuario: todas las queries filtran por user_id del token",
+            "ANTHROPIC_API_KEY y OPENAI_API_KEY solo en el backend; nunca expuestas al cliente",
+            "CORS configurado para permitir únicamente el origen del frontend Expo en Railway"
+          ]
+        }
+      ],
+      "resultado": "Primera app móvil fullstack con IA conversacional sobre diario personal. Streaming en tiempo real, RAG sobre entradas propias del usuario, perfil acumulativo entre sesiones y detección automática de mood. Backend en Railway, distribución via Expo EAS Preview.",
+      "metricas": [
+        { "label": "Modelos Claude", "value": "2 (Haiku + Sonnet)" },
+        { "label": "Streaming", "value": "SSE en tiempo real" },
+        { "label": "Almacenamiento token", "value": "SecureStore" },
+        { "label": "Distribución", "value": "Expo EAS Preview" }
+      ]
+    }
   }
 ]

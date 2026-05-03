@@ -1,5 +1,86 @@
 [
   {
+    "id": "project-010",
+    "slug": "mindlog",
+    "title": "MindLog — Diario Personal con IA",
+    "description": "App móvil fullstack con diario personal e IA conversacional. Expo React Native + FastAPI async + PostgreSQL. Streaming SSE real, RAG con embeddings y perfil acumulativo de usuario.",
+    "longDescription": "Primera app móvil del portfolio. Stack: Expo SDK 54 con Expo Router (file-based), Zustand y TanStack Query v5 en el cliente; FastAPI async con SQLAlchemy asyncpg y Alembic en el backend; PostgreSQL en Supabase. Streaming SSE implementado vía XHR (workaround para Expo). Claude Haiku detecta el mood de cada entrada, Sonnet chatea con contexto semántico del historial. Modo demo/preview sin backend incluido.",
+    "tags": ["React Native", "Expo", "FastAPI", "Python", "PostgreSQL"],
+    "image": "public/images/projects/mindlog/thumbnail.svg",
+    "repoUrl": "https://github.com/DavidAucancela/MindLog",
+    "featured": true,
+    "date": "2026-05",
+    "techStack": {
+      "mobile": ["Expo SDK 54", "React Native", "Expo Router", "TypeScript", "Zustand", "TanStack Query v5"],
+      "backend": ["Python", "FastAPI", "SQLAlchemy async", "Alembic", "PostgreSQL (Supabase)"],
+      "ia": ["Claude API (Haiku + Sonnet)", "OpenAI Embeddings", "Railway"]
+    },
+    "highlights": [
+      "Primera app móvil del portfolio: Expo SDK 54 + Expo Router file-based + TypeScript",
+      "Streaming SSE real vía XHR en React Native (workaround para ausencia de EventSource nativo)",
+      "FastAPI async completo: asyncpg, SQLAlchemy async engine, Alembic con asyncio.run",
+      "Infinite scroll paginado (20/página) con TanStack Query useInfiniteQuery",
+      "Modo demo/preview con entradas mock sin backend, limpiado correctamente al login real",
+      "expo-secure-store para tokens JWT en keychain del dispositivo"
+    ],
+    "process": {
+      "overview": "Primera app móvil del portfolio. Stack full-stack con Expo SDK 54 (React Native + TypeScript) en el cliente y FastAPI async en el backend. El diferencial técnico está en el streaming SSE implementado vía XHR en mobile y en la capa de IA con Claude y RAG semántico sobre entradas del usuario.",
+      "pasos": [
+        {
+          "id": "problema",
+          "resumen": "Los diarios digitales son pasivos: el usuario escribe pero no puede interactuar con su propio historial. Con cientos de entradas acumuladas, es imposible recordar qué escribió hace meses sobre un tema específico. Se necesitaba una app móvil que convirtiera el diario en un interlocutor inteligente.",
+          "puntos": [
+            "Diarios digitales sin posibilidad de conversación ni recuperación contextual",
+            "Sin detección automática de estado de ánimo para visualizar evolución emocional",
+            "Contexto del usuario perdido entre sesiones de chat (sin memoria acumulada)",
+            "Sin experiencia mobile nativa para un diario personal de uso diario"
+          ]
+        },
+        {
+          "id": "diseño",
+          "resumen": "Expo Router con navegación file-based para estructura de rutas declarativa. Zustand para estado global (auth, preview mode). TanStack Query v5 para cache de entradas con infinite scroll. FastAPI async como backend para máximo rendimiento con I/O asíncrono.",
+          "puntos": [
+            "Expo Router (file-based): tabs + stack anidados para navegación nativa",
+            "Zustand stores: authStore (token, user), previewStore (isPreview, mock entries)",
+            "TanStack Query v5 con useInfiniteQuery para paginación de 20 entradas por página",
+            "FastAPI async: asyncpg + SQLAlchemy async engine para máxima eficiencia I/O",
+            "Alembic con asyncio.run para migraciones versionadas en entorno async"
+          ]
+        },
+        {
+          "id": "desarrollo",
+          "resumen": "Streaming SSE implementado como XHR en React Native (Expo no soporta EventSource nativo). FastAPI StreamingResponse con Claude API streaming. expo-secure-store para persistencia segura de JWT. Modo preview con datos mock sin conexión a backend.",
+          "puntos": [
+            "XHR streaming: solución al problema de EventSource en React Native/Expo",
+            "FastAPI StreamingResponse: yield de chunks SSE desde Claude API streaming",
+            "POST /chat/close: Haiku actualiza users.context al cerrar cada conversación",
+            "expo-secure-store: tokens JWT en keychain cifrado del dispositivo (iOS/Android)",
+            "Modo demo: previewStore con flag isPreview, mock entries, limpieza al login real",
+            "Infinite scroll: cursor-based pagination con TanStack Query useInfiniteQuery"
+          ]
+        },
+        {
+          "id": "despliegue",
+          "resumen": "Backend en Railway con uvicorn. Mobile distribuido mediante Expo EAS Preview build: genera APK/IPA descargable y QR para Expo Go sin necesidad de Play Store ni App Store.",
+          "puntos": [
+            "Railway: FastAPI con uvicorn en puerto 8000, DATABASE_URL de Supabase",
+            "Expo EAS: eas build --profile preview genera build compartible sin tiendas de apps",
+            "EXPO_PUBLIC_API_URL: IP local en desarrollo, URL Railway en preview/producción",
+            "Supabase PostgreSQL gestionada con pool asyncpg para concurrencia",
+            "Alembic: 001_initial_schema + 002_add_user_context ejecutadas al deploy en Railway"
+          ]
+        }
+      ],
+      "resultado": "Primera app móvil fullstack con IA conversacional sobre diario personal. Streaming en tiempo real, RAG sobre entradas del usuario, perfil acumulativo entre sesiones y detección de mood. Backend en Railway, distribución via Expo EAS Preview.",
+      "metricas": [
+        { "label": "Plataforma", "value": "iOS + Android" },
+        { "label": "Streaming", "value": "SSE en tiempo real" },
+        { "label": "Almacenamiento token", "value": "SecureStore" },
+        { "label": "Distribución", "value": "Expo EAS Preview" }
+      ]
+    }
+  },
+  {
     "id": "project-009",
     "slug": "artecuador",
     "title": "ArtEcuador — Catálogo de Artesanías",

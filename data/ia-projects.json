@@ -141,6 +141,87 @@
     }
   },
   {
+    "id": "project-010",
+    "slug": "mindlog",
+    "title": "MindLog — Diario Personal con IA",
+    "description": "App móvil de diario personal con IA conversacional. Claude Haiku detecta el mood, Sonnet responde con contexto del historial vía RAG con embeddings y streaming SSE real en React Native.",
+    "longDescription": "Primera app móvil del portfolio. El usuario escribe entradas libres y puede conversar con ellas: Claude recupera entradas relevantes por similitud coseno y responde con contexto acumulado del usuario. Haiku para detección de mood y actualización del perfil, Sonnet para chat y resumen diario. Streaming SSE implementado vía XHR en Expo (sin EventSource nativo).",
+    "tags": ["Claude API", "React Native", "Expo", "FastAPI", "Streaming SSE"],
+    "image": "public/images/projects/mindlog/thumbnail.svg",
+    "repoUrl": "https://github.com/DavidAucancela/MindLog",
+    "featured": true,
+    "date": "2026-05",
+    "techStack": {
+      "ia": ["Claude Haiku (mood + contexto)", "Claude Sonnet (chat + resumen)", "OpenAI Embeddings", "RAG semántico"],
+      "mobile": ["Expo SDK 54", "React Native", "Expo Router", "TypeScript", "Zustand", "TanStack Query v5"],
+      "backend": ["Python", "FastAPI async", "SQLAlchemy async", "Alembic", "PostgreSQL (Supabase)"]
+    },
+    "highlights": [
+      "Streaming SSE en tiempo real vía XHR (workaround para ausencia de EventSource en React Native)",
+      "RAG sobre entradas del usuario: embeddings OpenAI + similitud coseno para contexto relevante",
+      "Perfil acumulativo: users.context actualizado por Haiku e inyectado en cada system prompt",
+      "Detección automática de mood (6 emociones) con Claude Haiku al guardar cada entrada",
+      "Resumen diario generado por Sonnet disponible después de las 18 hs",
+      "Modo demo/preview con datos mock sin backend, limpiado al hacer login real"
+    ],
+    "process": {
+      "overview": "Primera app móvil del portfolio. Stack full-stack con Expo SDK 54 (React Native + TypeScript) y FastAPI async. El diferencial técnico: dos modelos Claude con roles distintos (Haiku para tareas rápidas y de bajo costo, Sonnet para chat y resumen), streaming SSE real vía XHR en mobile y recuperación semántica de entradas con embeddings.",
+      "pasos": [
+        {
+          "id": "problema",
+          "resumen": "Los diarios digitales son pasivos: el usuario escribe pero no puede interactuar con su propio historial. Con cientos de entradas, es imposible recordar qué escribió hace meses sobre un tema. Se necesitaba un sistema que convirtiera el diario en un interlocutor que conoce al usuario.",
+          "puntos": [
+            "Diarios digitales sin posibilidad de conversación ni recuperación contextual",
+            "Historial de entradas inaccesible para búsqueda semántica o análisis de patrones",
+            "Sin detección automática de estado de ánimo para visualizar evolución emocional",
+            "Contexto del usuario perdido entre sesiones de chat (sin memoria acumulada)"
+          ]
+        },
+        {
+          "id": "diseño",
+          "resumen": "Dos capas de IA con roles distintos: Claude Haiku para tareas rápidas y de bajo costo (mood detection, actualización de contexto), y Claude Sonnet para el chat principal y el resumen diario. Los embeddings de OpenAI permiten RAG sobre las propias entradas del usuario.",
+          "puntos": [
+            "Haiku para mood detection (6 emociones) y actualización de users.context al cerrar chat",
+            "Sonnet para chat conversacional con streaming SSE y para generar resumen diario",
+            "Embeddings OpenAI text-embedding-3-small + similitud coseno para RAG sobre entradas",
+            "Fallback a recencia si OPENAI_API_KEY no configurada — app funcional sin embeddings",
+            "users.context (Text) como perfil acumulativo inyectado en cada system prompt de chat"
+          ]
+        },
+        {
+          "id": "desarrollo",
+          "resumen": "Backend FastAPI async con SQLAlchemy asyncpg. Streaming SSE implementado como XHR en React Native (Expo no soporta EventSource nativo). Frontend con Expo Router, infinite scroll paginado (20/página), SecureStore para tokens JWT y modo preview con datos mock.",
+          "puntos": [
+            "FastAPI con async/await completo: asyncpg, SQLAlchemy async engine, Alembic asyncio.run",
+            "POST /chat/stream: SSE via StreamingResponse con recuperación de entradas relevantes por embeddings",
+            "POST /chat/close: cierra la sesión y actualiza users.context con Claude Haiku",
+            "XHR streaming en Expo: solución a la ausencia de EventSource nativo en React Native",
+            "Infinite scroll con TanStack Query useInfiniteQuery: páginas de 20 entradas paginadas",
+            "Modo demo/preview: previewStore con flag isPreview, entradas mock, limpieza al login real"
+          ]
+        },
+        {
+          "id": "despliegue",
+          "resumen": "Backend en Railway. Mobile distribuido mediante Expo EAS Preview build (sin Play Store ni App Store): genera un APK/IPA descargable y un QR escaneable con Expo Go.",
+          "puntos": [
+            "Railway: backend FastAPI con uvicorn, DATABASE_URL de Supabase y variables de entorno",
+            "Expo EAS: eas build --profile preview genera build compartible sin tiendas de apps",
+            "EXPO_PUBLIC_API_URL configurable: IP local (desarrollo) o URL Railway (preview/producción)",
+            "Supabase PostgreSQL como base de datos gestionada con pool de conexiones asyncpg",
+            "Alembic migrations: 001_initial_schema + 002_add_user_context ejecutadas en Railway al deploy"
+          ]
+        }
+      ],
+      "resultado": "Primera app móvil fullstack con IA conversacional sobre diario personal. Streaming en tiempo real, RAG sobre entradas propias del usuario, perfil acumulativo entre sesiones y detección automática de mood. Backend en Railway, distribución via Expo EAS Preview.",
+      "metricas": [
+        { "label": "Modelos Claude", "value": "2 (Haiku + Sonnet)" },
+        { "label": "Streaming", "value": "SSE en tiempo real" },
+        { "label": "Almacenamiento token", "value": "SecureStore" },
+        { "label": "Distribución", "value": "Expo EAS Preview" }
+      ]
+    }
+  },
+  {
     "id": "project-003",
     "title": "AnaOS — SaaS de Cooperativas",
     "description": "Plataforma SaaS multi-tenant para gestión de cooperativas y agencias con planes de suscripción, auth completo y deploy en Railway.",

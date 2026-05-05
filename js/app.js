@@ -347,6 +347,12 @@ export function initApp() {
   window.addEventListener('portfolio:modeChange', e => {
     const { mode } = e.detail;
 
+    // Restaurar navbar al cambiar de modo (evita que quede oculto por scroll previo)
+    if (navbar) {
+      navbar.style.transform = '';
+      lastY = window.scrollY;
+    }
+
     // Subtítulo de proyectos
     const subtitle = document.getElementById('projects-subtitle');
     if (subtitle) subtitle.textContent = PROJECTS_SUBTITLE[mode] || '';

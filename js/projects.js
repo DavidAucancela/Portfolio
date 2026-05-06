@@ -38,6 +38,7 @@ const COMING_SOON = {
 let currentMode     = 'dev';
 let isLoading       = false;
 let _allProjects    = [];
+const _cache        = {};
 
 const SLUG_MAP = {
   'project-001': 'ubapp',
@@ -66,21 +67,27 @@ async function loadProjects(mode) {
   _renderSkeleton(grid);
 
   try {
-    const res      = await fetch(`data/${mode}-projects.json`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const projects = await res.json();
-    if (Array.isArray(projects)) {
-      projects.forEach(p => { if (!p.slug && p.id) p.slug = SLUG_MAP[p.id] || null; });
-      _allProjects = projects;
+    let projects;
+    if (_cache[mode]) {
+      projects = _cache[mode];
+    } else {
+      const res = await fetch(`data/${mode}-projects.json`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      projects = await res.json();
+      if (Array.isArray(projects)) {
+        projects.forEach(p => { if (!p.slug && p.id) p.slug = SLUG_MAP[p.id] || null; });
+        _cache[mode] = projects;
+      }
+      // Pequeño delay solo en la primera carga para que el skeleton sea perceptible
+      await new Promise(r => setTimeout(r, 300));
     }
 
-    // Pequeño delay para que el skeleton sea perceptible
-    await new Promise(r => setTimeout(r, 300));
+    _allProjects = Array.isArray(projects) ? projects : [];
 
-    if (!Array.isArray(projects) || projects.length === 0) {
+    if (_allProjects.length === 0) {
       _renderComingSoon(grid, mode);
     } else {
-      _renderCards(grid, projects, mode);
+      _renderCards(grid, _allProjects, mode);
     }
 
   } catch (err) {

@@ -43,9 +43,11 @@ const reducedMotion = () =>
 const isMobile = () => window.innerWidth < MOBILE_BP;
 
 function _navH() {
-  return parseInt(
-    getComputedStyle(document.documentElement).getPropertyValue('--nav-height')
-  ) || 70;
+  const style = getComputedStyle(document.documentElement);
+  return (
+    (parseInt(style.getPropertyValue('--nav-height'))      || 70) +
+    (parseInt(style.getPropertyValue('--mode-bar-height')) || 32)
+  );
 }
 
 function _sectionEl(i) {

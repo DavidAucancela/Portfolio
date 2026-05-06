@@ -71,6 +71,7 @@ ul, ol { list-style: none; }
   --container-padding: 1.5rem;
   --section-gap: 6rem;
   --nav-height: 70px;
+  --mode-bar-height: 32px;
   --border-radius: 12px;
   --border-radius-sm: 8px;
   --border-radius-lg: 20px;
@@ -113,11 +114,83 @@ ul, ol { list-style: none; }
 }
 
 /* ─────────────────────────────────────────────────────────────
-   5. NAVBAR
+   5. MODE BAR
+   ───────────────────────────────────────────────────────────── */
+.mode-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 101;
+  height: var(--mode-bar-height);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--tag-border);
+  transition: border-color 0.4s ease;
+}
+
+.mode-bar__inner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--container-padding);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.625rem;
+}
+
+.mode-bar__label {
+  font-family: var(--font-display);
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+  user-select: none;
+}
+
+.mode-bar__chips {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.mode-bar-chip {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 0 9px;
+  height: 22px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  transition:
+    color 0.3s ease,
+    background 0.3s ease,
+    border-color 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+}
+
+.mode-bar-chip:hover {
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.mode-bar-chip.active {
+  color: var(--color-accent);
+  background: var(--tag-bg);
+  border-color: var(--color-accent);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   6. NAVBAR
    ───────────────────────────────────────────────────────────── */
 .navbar {
   position: fixed;
-  top: 0;
+  top: var(--mode-bar-height);
   left: 0;
   right: 0;
   z-index: 100;
@@ -224,22 +297,9 @@ ul, ol { list-style: none; }
   box-shadow: none;
 }
 
-/* Chevron indicator */
-.logo-pill .logo-suffix::after {
-  content: '';
-  display: inline-block;
-  width: 5px;
-  height: 5px;
-  border-right: 1.5px solid currentColor;
-  border-bottom: 1.5px solid currentColor;
-  transform: rotate(45deg) translateY(-2px);
-  opacity: 0.7;
-  transition: transform 0.2s ease;
-  flex-shrink: 0;
-}
-.logo-pill .logo-suffix.open::after {
-  transform: rotate(225deg) translateY(-2px);
-}
+/* Chevron oculto — mode-bar es el punto primario de cambio */
+.logo-pill .logo-suffix::after { display: none; }
+.logo-pill .logo-suffix { padding-right: 10px; }
 
 /* Per-mode accent colors */
 [data-theme="ia"] .logo-pill {
@@ -404,7 +464,7 @@ ul, ol { list-style: none; }
   display: none;
   flex-direction: column;
   position: fixed;
-  top: var(--nav-height);
+  top: calc(var(--mode-bar-height) + var(--nav-height));
   left: 0;
   right: 0;
   background: var(--bg-nav);
@@ -462,7 +522,7 @@ ul, ol { list-style: none; }
   min-height: 100vh;
   display: flex;
   align-items: center;
-  padding-top: var(--nav-height);
+  padding-top: calc(var(--mode-bar-height) + var(--nav-height));
   overflow: hidden;
   background: var(--gradient-hero);
   transition: background 0.5s ease;
@@ -1409,6 +1469,7 @@ ul, ol { list-style: none; }
   :root {
     --section-gap: 4rem;
     --container-padding: 1rem;
+    --mode-bar-height: 28px;
     --nav-height: 60px;
   }
 

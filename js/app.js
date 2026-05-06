@@ -48,9 +48,9 @@ export function navigateToProject(slug) {
   if (!projectsSection) return;
 
   // Scroll to projects section
-  const navH = parseInt(
-    getComputedStyle(document.documentElement).getPropertyValue('--nav-height')
-  ) || 70;
+  const style = getComputedStyle(document.documentElement);
+  const navH = (parseInt(style.getPropertyValue('--nav-height')) || 70) +
+               (parseInt(style.getPropertyValue('--mode-bar-height')) || 32);
   window.scrollTo({
     top: projectsSection.getBoundingClientRect().top + window.scrollY - navH - 16,
     behavior: 'smooth',
@@ -232,9 +232,9 @@ export function initApp() {
       const target = document.getElementById(id);
       if (!target) return;
       e.preventDefault();
-      const navH = parseInt(
-        getComputedStyle(document.documentElement).getPropertyValue('--nav-height')
-      ) || 70;
+      const s = getComputedStyle(document.documentElement);
+      const navH = (parseInt(s.getPropertyValue('--nav-height')) || 70) +
+                   (parseInt(s.getPropertyValue('--mode-bar-height')) || 32);
       window.scrollTo({
         top:      target.getBoundingClientRect().top + window.scrollY - navH - 16,
         behavior: 'smooth',

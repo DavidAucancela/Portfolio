@@ -28,7 +28,7 @@ import { Trajectory } from './trajectory.js';
         tags:  ['Fullstack', 'REST API', 'Docker', 'PostgreSQL', 'CI/CD'],
       },
       stats: [
-        { target: 8, suffix: '+', label: 'Proyectos' },
+        { target: 9, suffix: '+', label: 'Proyectos' },
         { target: 3, suffix: '',  label: 'Especialidades' },
         { target: 2, suffix: '+', label: 'Años exp.' },
       ],

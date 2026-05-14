@@ -14,6 +14,8 @@ import { initSectionNav } from './section-nav.js';
 import { IAAssistant } from './ia-assistant.js';
 import { initApp } from './app.js';
 import { Trajectory } from './trajectory.js';
+import { CommandPalette } from './command-palette.js';
+import { SecTerminal } from './sec-terminal.js';
 
 // CSS imports — Vite los bundlea automáticamente
 import '../css/main.css';
@@ -21,6 +23,8 @@ import '../css/sections.css';
 import '../css/polish.css';
 import '../css/project-detail.css';
 import '../css/trajectory.css';
+import '../css/command-palette.css';
+import '../css/sec-terminal.css';
 
 document.addEventListener('DOMContentLoaded', () => {
   ThemeSwitcher.init();
@@ -34,4 +38,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initSectionNav();
   IAAssistant.init();
   initApp();
+  CommandPalette.init();
+  SecTerminal.init();
 });

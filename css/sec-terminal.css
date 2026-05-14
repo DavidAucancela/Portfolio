@@ -1,0 +1,165 @@
+/* ============================================================
+   SEC TERMINAL — Terminal interactiva en el hero del modo .sec
+   ============================================================ */
+
+/* ─── Oculta en todos los modos excepto .sec ─── */
+.sec-terminal {
+  display: none;
+}
+
+/* ─── Layout: container pasa a grid 2 columnas en desktop ─── */
+[data-theme="sec"] #hero .container {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+/* ─── Terminal visible en modo .sec ─── */
+[data-theme="sec"] .sec-terminal {
+  display: flex;
+  flex-direction: column;
+  width: min(440px, 40vw);
+  min-height: 240px;
+  max-height: 400px;
+  background: rgba(0, 6, 0, 0.94);
+  border: 1px solid rgba(0, 255, 65, 0.22);
+  border-radius: 10px;
+  box-shadow:
+    0 0 0 1px rgba(0, 255, 65, 0.06),
+    0 24px 64px rgba(0, 0, 0, 0.85),
+    0 0 48px rgba(0, 255, 65, 0.07);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  font-family: 'Fira Code', 'Source Code Pro', 'Courier New', monospace;
+  font-size: 0.8rem;
+  overflow: hidden;
+  animation: terminalEnter 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.3s;
+  opacity: 0;
+}
+
+@keyframes terminalEnter {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+/* ─── Barra de título ─── */
+.sec-terminal__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.8rem;
+  background: rgba(0, 255, 65, 0.04);
+  border-bottom: 1px solid rgba(0, 255, 65, 0.1);
+  flex-shrink: 0;
+}
+
+.sec-terminal__dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.sec-terminal__title {
+  flex: 1;
+  text-align: center;
+  font-size: 0.67rem;
+  color: rgba(0, 255, 65, 0.35);
+  letter-spacing: 0.06em;
+  user-select: none;
+}
+
+/* ─── Área de salida ─── */
+.sec-terminal__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.7rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 255, 65, 0.18) transparent;
+  overscroll-behavior: contain;
+}
+
+.sec-terminal__body::-webkit-scrollbar       { width: 3px; }
+.sec-terminal__body::-webkit-scrollbar-track { background: transparent; }
+.sec-terminal__body::-webkit-scrollbar-thumb { background: rgba(0, 255, 65, 0.18); border-radius: 2px; }
+
+/* ─── Líneas de salida ─── */
+.sec-terminal__line {
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-all;
+  animation: termLineIn 0.06s ease both;
+}
+
+@keyframes termLineIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.sec-terminal__line--cmd    { color: #00ff41; }
+.sec-terminal__line--output { color: #4dff4d; }
+.sec-terminal__line--muted  { color: rgba(0, 255, 65, 0.45); }
+.sec-terminal__line--error  { color: #ff5555; }
+.sec-terminal__line--accent { color: #39ff14; font-weight: 600; }
+.sec-terminal__line--dim    { color: rgba(0, 255, 65, 0.28); }
+
+/* ─── Fila de prompt ─── */
+.sec-terminal__prompt-row {
+  display: flex;
+  align-items: center;
+  padding: 0.45rem 0.85rem 0.55rem;
+  border-top: 1px solid rgba(0, 255, 65, 0.1);
+  flex-shrink: 0;
+}
+
+.sec-terminal__ps1 {
+  color: #00ff41;
+  white-space: nowrap;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.sec-terminal__input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #00ff41;
+  font-family: inherit;
+  font-size: inherit;
+  caret-color: #00ff41;
+  min-width: 0;
+}
+
+.sec-terminal__input::placeholder { color: rgba(0, 255, 65, 0.2); }
+
+/* ─── Ocultar hero-bg-text ($_ ) en sec para no competir ─── */
+[data-theme="sec"] #hero-bg-text {
+  display: none;
+}
+
+/* ─── Tablet / Mobile ─── */
+@media (max-width: 960px) {
+  [data-theme="sec"] #hero .container {
+    grid-template-columns: 1fr;
+  }
+
+  [data-theme="sec"] .sec-terminal {
+    width: 100%;
+    min-height: 200px;
+    max-height: 260px;
+    font-size: 0.76rem;
+  }
+}
+
+@media (max-width: 480px) {
+  [data-theme="sec"] .sec-terminal {
+    max-height: 220px;
+    font-size: 0.72rem;
+  }
+}

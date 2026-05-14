@@ -110,10 +110,15 @@ export function initApp() {
      SCROLL PROGRESS BAR
   ──────────────────────────────────────────────────── */
   function _updateScrollProgress(y) {
-    const bar  = document.getElementById('scroll-progress');
+    const bar = document.getElementById('scroll-progress');
     if (!bar) return;
-    const max  = document.documentElement.scrollHeight - window.innerHeight;
-    const pct  = max > 0 ? (y / max) * 100 : 0;
+    if (CSS.supports('animation-timeline: scroll()')) {
+      // CSS scroll-driven animation maneja la barra — limpiar inline style si quedó
+      if (bar.style.width) bar.style.removeProperty('width');
+      return;
+    }
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = max > 0 ? (y / max) * 100 : 0;
     bar.style.width = `${Math.min(pct, 100)}%`;
   }
 

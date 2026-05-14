@@ -236,6 +236,31 @@
           </div>
 
         </div>
+
+        <!-- Terminal interactiva — solo visible en modo .sec -->
+        <div class="sec-terminal" id="sec-terminal" role="region" aria-label="Terminal interactiva">
+          <div class="sec-terminal__bar" aria-hidden="true">
+            <span class="sec-terminal__dot" style="background:#ff5f57"></span>
+            <span class="sec-terminal__dot" style="background:#ffbd2e"></span>
+            <span class="sec-terminal__dot" style="background:#28ca41"></span>
+            <span class="sec-terminal__title">bash — jonathan@sec</span>
+          </div>
+          <div class="sec-terminal__body" id="sec-terminal-body" aria-live="polite" aria-atomic="false"></div>
+          <div class="sec-terminal__prompt-row">
+            <span class="sec-terminal__ps1" aria-hidden="true">jonathan@sec:~$&nbsp;</span>
+            <input
+              type="text"
+              class="sec-terminal__input"
+              id="sec-terminal-input"
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="none"
+              spellcheck="false"
+              aria-label="Introduce un comando de terminal"
+            />
+          </div>
+        </div>
+
       </div>
 
       <div class="hero-decoration" id="hero-bg-text" aria-hidden="true" style="

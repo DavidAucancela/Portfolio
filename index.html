@@ -161,13 +161,13 @@
     <!-- Menú mobile -->
     <nav class="navbar__mobile-menu" id="mobile-menu" role="navigation"
          aria-label="Navegación móvil" aria-hidden="true">
-      <a href="#about"               class="mobile-nav-link" data-section="about">Sobre mí</a>
-      <a href="#projects"            class="mobile-nav-link" data-section="projects">Proyectos</a>
-      <a href="#skills"              class="mobile-nav-link" data-section="skills">Skills</a>
-      <a href="#ia-assistant-section" class="mobile-nav-link mobile-nav-link--ia-only" data-section="ia-assistant-section">Consulta IA</a>
-      <a href="#contact"             class="mobile-nav-link" data-section="contact">Contacto</a>
+      <a href="#about"               class="mobile-nav-link" data-section="about"               data-i18n="nav.mob.about">Sobre mí</a>
+      <a href="#projects"            class="mobile-nav-link" data-section="projects"            data-i18n="nav.mob.projects">Proyectos</a>
+      <a href="#skills"              class="mobile-nav-link" data-section="skills"              data-i18n="nav.mob.skills">Skills</a>
+      <a href="#ia-assistant-section" class="mobile-nav-link mobile-nav-link--ia-only" data-section="ia-assistant-section" data-i18n="nav.mob.ia">Consulta IA</a>
+      <a href="#contact"             class="mobile-nav-link" data-section="contact"             data-i18n="nav.mob.contact">Contacto</a>
       <div class="mobile-menu-mode">
-        <p class="mobile-menu-mode__label">MODO ACTIVO</p>
+        <p class="mobile-menu-mode__label" data-i18n="nav.mob.mode">MODO ACTIVO</p>
         <div class="mobile-menu-mode__chips">
           <button class="btn btn-sm btn-outline" data-mode-option="dev">.dev</button>
           <button class="btn btn-sm btn-outline" data-mode-option="ia">.ia</button>
@@ -213,14 +213,14 @@
                 <rect x="2" y="3" width="20" height="14" rx="2"/>
                 <path d="m7 21 5-5 5 5"/>
               </svg>
-              Ver proyectos
+              <span data-i18n="hero.cta1">Ver proyectos</span>
             </a>
             <a href="#contact" class="btn btn-outline">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
               </svg>
-              Contactar
+              <span data-i18n="hero.cta2">Contactar</span>
             </a>
             <a href="https://www.linkedin.com/in/jonathan-david-aucancela/" target="_blank" rel="noopener noreferrer"
                class="btn btn-outline" aria-label="Ver perfil de LinkedIn">
@@ -274,7 +274,7 @@
       <div class="container">
 
         <div class="section-header animate-on-scroll">
-          <span class="section-label">// sobre mí</span>
+          <span class="section-label" data-i18n="about.label">// sobre mí</span>
           <h2 class="section-title" data-i18n="about.title">Conóceme</h2>
         </div>
 
@@ -372,7 +372,7 @@
                   <polyline points="7 10 12 15 17 10"/>
                   <line x1="12" y1="15" x2="12" y2="3"/>
                 </svg>
-                Descargar CV
+                <span data-i18n="about.cv">Descargar CV</span>
               </a>
             </div>
           </div>
@@ -388,9 +388,9 @@
       <div class="container">
 
         <div class="section-header animate-on-scroll">
-          <span class="section-label">// proyectos</span>
+          <span class="section-label" data-i18n="projects.label">// proyectos</span>
           <h2 class="section-title" data-i18n="projects.title">Soluciones implementadas</h2>
-          <p class="section-description" id="projects-subtitle">
+          <p class="section-description" id="projects-subtitle" data-i18n="projects.desc">
             Sistemas y aplicaciones construidos con énfasis en calidad y arquitectura.
           </p>
         </div>
@@ -436,9 +436,9 @@
       <div class="container">
 
         <div class="section-header animate-on-scroll">
-          <span class="section-label">// habilidades</span>
+          <span class="section-label" data-i18n="skills.label">// habilidades</span>
           <h2 class="section-title" data-i18n="skills.title">Stack técnico</h2>
-          <p class="section-description" id="skills-description">
+          <p class="section-description" id="skills-description" data-i18n="skills.desc">
             Tecnologías y herramientas que uso para construir soluciones.
           </p>
         </div>
@@ -485,7 +485,7 @@
       <div class="container">
 
         <div class="section-header animate-on-scroll">
-          <span class="section-label">// sistemas ia</span>
+          <span class="section-label" data-i18n="ia.label">// sistemas ia</span>
           <h2 class="section-title" data-i18n="ia.title">Consulta mi experiencia</h2>
         </div>
 
@@ -500,6 +500,7 @@
               type="text"
               id="ia-input"
               class="ia-input"
+              data-i18n-ph="ia.placeholder"
               placeholder="Busca proyectos, tecnologías, contacto..."
               autocomplete="off"
               maxlength="200"
@@ -513,12 +514,12 @@
           </div>
 
           <div class="ia-suggestions">
-            <button class="ia-suggestion">¿Qué proyectos tienes?</button>
+            <button class="ia-suggestion" data-i18n="ia.sug1">¿Qué proyectos tienes?</button>
             <button class="ia-suggestion">LLM Observatory</button>
             <button class="ia-suggestion">RAG y embeddings</button>
             <button class="ia-suggestion">AnaOS SaaS</button>
             <button class="ia-suggestion">SecuraBank OWASP</button>
-            <button class="ia-suggestion">¿Cómo contactarlo?</button>
+            <button class="ia-suggestion" data-i18n="ia.sug2">¿Cómo contactarlo?</button>
             <button class="ia-suggestion">UBApp</button>
             <button class="ia-suggestion">Claude API</button>
           </div>
@@ -529,7 +530,7 @@
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
             </svg>
-            Respuestas basadas en el perfil real de Jonathan · Motor NLP local
+            <span data-i18n="ia.disclaimer">Respuestas basadas en el perfil real de Jonathan · Motor NLP local</span>
           </p>
 
         </div>
@@ -548,9 +549,9 @@
       <div class="container">
 
         <div class="section-header animate-on-scroll">
-          <span class="section-label">// contacto</span>
-          <h2 class="section-title">Hablemos</h2>
-          <p class="section-description">
+          <span class="section-label" data-i18n="contact.label">// contacto</span>
+          <h2 class="section-title" data-i18n="contact.title">Hablemos</h2>
+          <p class="section-description" data-i18n="contact.desc">
             ¿Tienes un proyecto, una oportunidad o quieres conversar? Escríbeme.
           </p>
         </div>
@@ -560,14 +561,14 @@
           <!-- Info -->
           <div class="contact-info animate-on-scroll from-left">
 
-            <!-- Disponibilidad 
+            <!-- Disponibilidad
             <div class="contact-availability">
               <span class="availability-dot" aria-hidden="true"></span>
               <span id="contact-availability-text">Disponible para proyectos fullstack y oportunidades remotas</span>
             </div>-->
 
-            <h3>Conecta conmigo</h3>
-            <p>Siempre abierto a nuevas oportunidades, proyectos interesantes y colaboraciones de impacto real.</p>
+            <h3 data-i18n="contact.connect">Conecta conmigo</h3>
+            <p data-i18n="contact.open">Siempre abierto a nuevas oportunidades, proyectos interesantes y colaboraciones de impacto real.</p>
 
             <div class="contact-links">
 
@@ -578,7 +579,7 @@
                   <span class="contact-link-label">Email</span>
                   <span class="contact-link-value">
                     jonathan_jd@outlook.com
-                    <button class="copy-email-btn" id="copy-email-btn" aria-label="Copiar email">
+                    <button class="copy-email-btn" id="copy-email-btn" aria-label="Copiar email" data-i18n="contact.copy">
                       Copiar
                     </button>
                   </span>
@@ -616,26 +617,30 @@
                 novalidate aria-label="Formulario de contacto">
 
             <div class="form-group">
-              <label for="contact-name" class="form-label">Nombre *</label>
+              <label for="contact-name" class="form-label" data-i18n="contact.name">Nombre *</label>
               <input type="text" id="contact-name" name="name" class="form-input"
+                     data-i18n-ph="contact.name.ph"
                      placeholder="Tu nombre completo" required autocomplete="name" />
             </div>
 
             <div class="form-group">
-              <label for="contact-email" class="form-label">Email *</label>
+              <label for="contact-email" class="form-label" data-i18n="contact.email">Email *</label>
               <input type="email" id="contact-email" name="email" class="form-input"
+                     data-i18n-ph="contact.email.ph"
                      placeholder="tu@email.com" required autocomplete="email" />
             </div>
 
             <div class="form-group">
-              <label for="contact-subject" class="form-label">Asunto</label>
+              <label for="contact-subject" class="form-label" data-i18n="contact.subject">Asunto</label>
               <input type="text" id="contact-subject" name="subject" class="form-input"
+                     data-i18n-ph="contact.subject.ph"
                      placeholder="¿De qué trata tu mensaje?" autocomplete="off" />
             </div>
 
             <div class="form-group">
-              <label for="contact-message" class="form-label">Mensaje *</label>
+              <label for="contact-message" class="form-label" data-i18n="contact.message">Mensaje *</label>
               <textarea id="contact-message" name="message" class="form-textarea" required
+                        data-i18n-ph="contact.message.ph"
                         placeholder="Cuéntame sobre tu proyecto, idea u oportunidad..."></textarea>
             </div>
 
@@ -645,7 +650,7 @@
                 <line x1="22" y1="2" x2="11" y2="13"/>
                 <polygon points="22 2 15 22 11 13 2 9 22 2"/>
               </svg>
-              Enviar mensaje
+              <span data-i18n="contact.send">Enviar mensaje</span>
             </button>
 
             <div id="form-feedback" role="alert" aria-live="polite"
@@ -668,11 +673,11 @@
     <div class="jonathan-panel__drawer">
       <div class="jonathan-panel__header">
         <div>
-          <span class="jonathan-panel__label">// trayectoria</span>
+          <span class="jonathan-panel__label" data-i18n="panel.label">// trayectoria</span>
           <h2 class="jonathan-panel__title">Jonathan Aucancela</h2>
-          <p class="jonathan-panel__sub">Proyectos reales, formación y trabajo independiente.</p>
+          <p class="jonathan-panel__sub" data-i18n="panel.sub">Proyectos reales, formación y trabajo independiente.</p>
         </div>
-        <button class="jonathan-panel__close" id="jonathan-panel-close" aria-label="Cerrar panel">
+        <button class="jonathan-panel__close" id="jonathan-panel-close" data-i18n-aria="panel.close" aria-label="Cerrar panel">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>

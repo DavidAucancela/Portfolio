@@ -202,7 +202,8 @@ ul, ol { list-style: none; }
   transition:
     background 0.4s ease,
     border-color 0.4s ease,
-    box-shadow 0.4s ease;
+    box-shadow 0.4s ease,
+    transform 0.3s ease;
 }
 
 .navbar__inner {

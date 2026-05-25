@@ -11,57 +11,79 @@
  */
 
 import { Trajectory } from './trajectory.js';
+import { LangSwitcher } from './lang.js';
 
   /* ════════════════════════════════════════════════════════════
      DATOS: ABOUT
   ════════════════════════════════════════════════════════════ */
   const ABOUT_DATA = {
     dev: {
-      headline:    'Software Engineer & Fullstack Developer',
-      text1:       'Ingeniero de software enfocado en construir sistemas robustos y aplicaciones escalables. Especializado en desarrollo fullstack con Django, Angular, Vue.js y Node.js — desde la arquitectura REST hasta el despliegue en contenedores.',
-      text2:       'Me apasiona resolver problemas complejos con soluciones elegantes. Cada proyecto es una oportunidad de aplicar buenas prácticas: código limpio, pruebas, CI/CD y seguridad desde el diseño.',
+      headline:    { es: 'Software Engineer & Fullstack Developer',        en: 'Software Engineer & Fullstack Developer' },
+      text1:       {
+        es: 'Ingeniero de software enfocado en construir sistemas robustos y aplicaciones escalables. Especializado en desarrollo fullstack con Django, Angular, Vue.js y Node.js — desde la arquitectura REST hasta el despliegue en contenedores.',
+        en: 'Software engineer focused on building robust systems and scalable applications. Specialized in fullstack development with Django, Angular, Vue.js and Node.js — from REST architecture to container deployment.',
+      },
+      text2:       {
+        es: 'Me apasiona resolver problemas complejos con soluciones elegantes. Cada proyecto es una oportunidad de aplicar buenas prácticas: código limpio, pruebas, CI/CD y seguridad desde el diseño.',
+        en: 'I am passionate about solving complex problems with elegant solutions. Every project is an opportunity to apply best practices: clean code, testing, CI/CD and security by design.',
+      },
       focusCard: {
         icon:  '🏗️',
-        title: 'Arquitectura & Sistemas',
-        desc:  'Diseño sistemas desacoplados y escalables aplicando principios SOLID y patrones de arquitectura REST.',
+        title: { es: 'Arquitectura & Sistemas',    en: 'Architecture & Systems' },
+        desc:  { es: 'Diseño sistemas desacoplados y escalables aplicando principios SOLID y patrones de arquitectura REST.',
+                 en: 'I design decoupled, scalable systems applying SOLID principles and REST architecture patterns.' },
         tags:  ['Fullstack', 'REST API', 'Docker', 'PostgreSQL', 'CI/CD'],
       },
       stats: [
-        { target: 9, suffix: '+', label: 'Proyectos' },
-        { target: 3, suffix: '',  label: 'Especialidades' },
-        { target: 2, suffix: '+', label: 'Años exp.' },
+        { target: 9, suffix: '+', label: { es: 'Proyectos',      en: 'Projects'     } },
+        { target: 3, suffix: '',  label: { es: 'Especialidades', en: 'Specialties'  } },
+        { target: 2, suffix: '+', label: { es: 'Años exp.',      en: 'Yrs exp.'     } },
       ],
     },
     ia: {
-      headline:    'IA Developer & AI Systems Builder',
-      text1:       'Exploro la frontera de la inteligencia artificial aplicada. Trabajo con LLMs, sistemas RAG, embeddings vectoriales y agentes para construir soluciones que piensan, responden y aprenden del contexto.',
-      text2:       'Mi enfoque está en la IA aplicada a problemas reales: desde asistentes conversacionales hasta búsqueda semántica con pgvector. No solo uso IA — la integro en arquitecturas de producción.',
+      headline:    { es: 'IA Developer & AI Systems Builder', en: 'IA Developer & AI Systems Builder' },
+      text1:       {
+        es: 'Exploro la frontera de la inteligencia artificial aplicada. Trabajo con LLMs, sistemas RAG, embeddings vectoriales y agentes para construir soluciones que piensan, responden y aprenden del contexto.',
+        en: 'I explore the frontier of applied artificial intelligence. I work with LLMs, RAG systems, vector embeddings and agents to build solutions that think, respond and learn from context.',
+      },
+      text2:       {
+        es: 'Mi enfoque está en la IA aplicada a problemas reales: desde asistentes conversacionales hasta búsqueda semántica con pgvector. No solo uso IA — la integro en arquitecturas de producción.',
+        en: 'My focus is on AI applied to real problems: from conversational assistants to semantic search with pgvector. I don\'t just use AI — I integrate it into production architectures.',
+      },
       focusCard: {
         icon:  '🧠',
-        title: 'IA Aplicada & LLMs',
-        desc:  'Construyo sistemas que usan IA como núcleo: RAG pipelines, embeddings, agentes y prompt engineering avanzado.',
+        title: { es: 'IA Aplicada & LLMs', en: 'Applied AI & LLMs' },
+        desc:  { es: 'Construyo sistemas que usan IA como núcleo: RAG pipelines, embeddings, agentes y prompt engineering avanzado.',
+                 en: 'I build systems that use AI as their core: RAG pipelines, embeddings, agents and advanced prompt engineering.' },
         tags:  ['OpenAI API', 'RAG', 'Embeddings', 'pgvector', 'Prompt Eng.'],
       },
       stats: [
-        { target: 4, suffix: '',  label: 'Proyectos IA' },
-        { target: 2, suffix: '',  label: 'LLMs integrados' },
-        { target: 0, suffix: '',  label: 'PII expuesto' },
+        { target: 4, suffix: '',  label: { es: 'Proyectos IA',     en: 'AI Projects'   } },
+        { target: 2, suffix: '',  label: { es: 'LLMs integrados',  en: 'LLMs integrated' } },
+        { target: 0, suffix: '',  label: { es: 'PII expuesto',     en: 'PII exposed'   } },
       ],
     },
     sec: {
-      headline:    'Security Researcher & Ethical Hacker',
-      text1:       'Especialista en ciberseguridad con mentalidad de hacker ético. Analizo, pruebo y protejo sistemas aplicando el OWASP Top 10. El primer paso para defender un sistema es saber exactamente cómo romperlo.',
-      text2:       'Diseño la seguridad desde la primera línea de código, no como un parche posterior. Threat modeling, auditorías de código y pentesting en entornos controlados forman parte de mi proceso.',
+      headline:    { es: 'Security Researcher & Ethical Hacker', en: 'Security Researcher & Ethical Hacker' },
+      text1:       {
+        es: 'Especialista en ciberseguridad con mentalidad de hacker ético. Analizo, pruebo y protejo sistemas aplicando el OWASP Top 10. El primer paso para defender un sistema es saber exactamente cómo romperlo.',
+        en: 'Cybersecurity specialist with an ethical hacker mindset. I analyze, test and protect systems applying the OWASP Top 10. The first step to defending a system is knowing exactly how to break it.',
+      },
+      text2:       {
+        es: 'Diseño la seguridad desde la primera línea de código, no como un parche posterior. Threat modeling, auditorías de código y pentesting en entornos controlados forman parte de mi proceso.',
+        en: 'I design security from the first line of code, not as an afterthought. Threat modeling, code audits and pentesting in controlled environments are part of my process.',
+      },
       focusCard: {
         icon:  '🔒',
-        title: 'Security by Design',
-        desc:  'Implemento el OWASP Top 10 desde el diseño: autenticación robusta, validación de entradas, HTTPS, CSP y auditoría completa.',
+        title: { es: 'Security by Design', en: 'Security by Design' },
+        desc:  { es: 'Implemento el OWASP Top 10 desde el diseño: autenticación robusta, validación de entradas, HTTPS, CSP y auditoría completa.',
+                 en: 'I implement OWASP Top 10 from design: robust authentication, input validation, HTTPS, CSP and full audit coverage.' },
         tags:  ['OWASP Top 10', 'Pentesting', 'JWT', 'Helmet.js', 'Auditoría'],
       },
       stats: [
-        { target: 6, suffix: '/10', label: 'OWASP cubiertos' },
-        { target: 5, suffix: '',    label: 'Capas de seguridad' },
-        { target: 100, suffix: '%', label: 'Auditoría cobertura' },
+        { target: 6,   suffix: '/10', label: { es: 'OWASP cubiertos',    en: 'OWASP covered'    } },
+        { target: 5,   suffix: '',    label: { es: 'Capas de seguridad', en: 'Security layers'  } },
+        { target: 100, suffix: '%',   label: { es: 'Auditoría cobertura', en: 'Audit coverage'  } },
       ],
     },
   };
@@ -74,12 +96,12 @@ import { Trajectory } from './trajectory.js';
   ════════════════════════════════════════════════════════════ */
   const SKILLS_DATA = {
     dev: {
-      summary: 'Stack fullstack para sistemas web y APIs robustas',
+      summary: { es: 'Stack fullstack para sistemas web y APIs robustas', en: 'Fullstack stack for web systems and robust APIs' },
       icon:    '⚡',
       categories: [
         {
           id:    'frontend',
-          title: 'Frontend',
+          title: { es: 'Frontend', en: 'Frontend' },
           skills: [
             { name: 'Angular',    type: 'devicon', icon: 'devicon-angularjs-plain colored' },
             { name: 'Vue.js',     type: 'devicon', icon: 'devicon-vuejs-plain colored' },
@@ -93,7 +115,7 @@ import { Trajectory } from './trajectory.js';
         },
         {
           id:    'backend',
-          title: 'Backend',
+          title: { es: 'Backend', en: 'Backend' },
           skills: [
             { name: 'Python',     type: 'devicon', icon: 'devicon-python-plain colored' },
             { name: 'Django',     type: 'devicon', icon: 'devicon-django-plain colored' },
@@ -111,7 +133,7 @@ import { Trajectory } from './trajectory.js';
         },
         {
           id:    'tools',
-          title: 'DevOps & Deploy',
+          title: { es: 'DevOps & Deploy', en: 'DevOps & Deploy' },
           skills: [
             { name: 'Docker',  type: 'devicon', icon: 'devicon-docker-plain colored' },
             { name: 'Git',     type: 'devicon', icon: 'devicon-git-plain colored' },
@@ -125,12 +147,12 @@ import { Trajectory } from './trajectory.js';
       ],
     },
     ia: {
-      summary: 'Stack para sistemas que integran inteligencia artificial',
+      summary: { es: 'Stack para sistemas que integran inteligencia artificial', en: 'Stack for systems integrating artificial intelligence' },
       icon:    '🧠',
       categories: [
         {
           id:    'frontend',
-          title: 'Interfaces IA',
+          title: { es: 'Interfaces IA', en: 'AI Interfaces' },
           skills: [
             { name: 'React',        type: 'devicon', icon: 'devicon-react-original colored' },
             { name: 'Vue.js',       type: 'devicon', icon: 'devicon-vuejs-plain colored' },
@@ -141,7 +163,7 @@ import { Trajectory } from './trajectory.js';
         },
         {
           id:    'backend',
-          title: 'Modelos & IA',
+          title: { es: 'Modelos & IA', en: 'Models & AI' },
           skills: [
             { name: 'OpenAI API',  type: 'svg', icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.28 9.53a5.37 5.37 0 00-.46-4.4 5.43 5.43 0 00-5.84-2.6A5.37 5.37 0 0012 .5a5.43 5.43 0 00-5.18 3.77 5.37 5.37 0 00-3.58 2.6 5.43 5.43 0 00.67 6.35 5.38 5.38 0 00.46 4.4 5.43 5.43 0 005.84 2.6A5.37 5.37 0 0012 23.5a5.43 5.43 0 005.18-3.77 5.37 5.37 0 003.58-2.6 5.43 5.43 0 00-.48-6.6z"/></svg>` },
             { name: 'Claude API',  type: 'emoji', icon: '🤖' },
@@ -153,7 +175,7 @@ import { Trajectory } from './trajectory.js';
         },
         {
           id:    'tools',
-          title: 'Infraestructura',
+          title: { es: 'Infraestructura', en: 'Infrastructure' },
           skills: [
             { name: 'Python',     type: 'devicon', icon: 'devicon-python-plain colored' },
             { name: 'FastAPI',    type: 'devicon', icon: 'devicon-fastapi-plain colored' },
@@ -168,12 +190,12 @@ import { Trajectory } from './trajectory.js';
       ],
     },
     sec: {
-      summary: 'Arsenal de seguridad ofensiva y defensiva',
+      summary: { es: 'Arsenal de seguridad ofensiva y defensiva', en: 'Offensive and defensive security arsenal' },
       icon:    '🔐',
       categories: [
         {
           id:    'recon',
-          title: 'Reconocimiento',
+          title: { es: 'Reconocimiento', en: 'Reconnaissance' },
           skills: [
             { name: 'OSINT',       type: 'emoji', icon: '🔍' },
             { name: 'Nmap',        type: 'emoji', icon: '🌐' },
@@ -184,7 +206,7 @@ import { Trajectory } from './trajectory.js';
         },
         {
           id:    'offensive',
-          title: 'Seguridad Web',
+          title: { es: 'Seguridad Web', en: 'Web Security' },
           skills: [
             { name: 'OWASP Top 10', type: 'emoji', icon: '🛡️' },
             {
@@ -201,7 +223,7 @@ import { Trajectory } from './trajectory.js';
         },
         {
           id:    'defensive',
-          title: 'Defensa & Hardening',
+          title: { es: 'Defensa & Hardening', en: 'Defense & Hardening' },
           skills: [
             { name: 'Node.js',     type: 'devicon', icon: 'devicon-nodejs-plain colored' },
             { name: 'Helmet.js',   type: 'emoji', icon: '⛑️' },
@@ -593,24 +615,29 @@ import { Trajectory } from './trajectory.js';
   /* ─── ABOUT ──────────────────────────────────────────────── */
   function renderAbout(mode) {
     const data = ABOUT_DATA[mode] || ABOUT_DATA.dev;
+    const lang = LangSwitcher.getLang();
+
+    const headline = typeof data.headline === 'object' ? (data.headline[lang] || data.headline.es) : data.headline;
+    const text1    = typeof data.text1    === 'object' ? (data.text1[lang]    || data.text1.es)    : data.text1;
+    const text2    = typeof data.text2    === 'object' ? (data.text2[lang]    || data.text2.es)    : data.text2;
 
     // Actualizar headline
     const headlineEl = document.getElementById('about-headline');
-    if (headlineEl) _fadeSwap(headlineEl, data.headline);
+    if (headlineEl) _fadeSwap(headlineEl, headline);
 
     // Texto 1 — con efecto decode en modo sec
     const text1El = document.getElementById('about-mode-text');
     if (text1El) {
       if (mode === 'sec') {
-        _decodeText(text1El, data.text1);
+        _decodeText(text1El, text1);
       } else {
-        _fadeSwap(text1El, data.text1);
+        _fadeSwap(text1El, text1);
       }
     }
 
     // Texto 2
     const text2El = document.getElementById('about-text2');
-    if (text2El) _fadeSwap(text2El, data.text2);
+    if (text2El) _fadeSwap(text2El, text2);
 
     // Focus card
     const cardEl = document.getElementById('about-focus-card');
@@ -618,7 +645,7 @@ import { Trajectory } from './trajectory.js';
       cardEl.style.opacity = '0';
       cardEl.style.transform = 'translateY(8px)';
       setTimeout(() => {
-        cardEl.innerHTML = _buildFocusCard(data.focusCard);
+        cardEl.innerHTML = _buildFocusCard(data.focusCard, lang);
         cardEl.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
         cardEl.style.opacity = '1';
         cardEl.style.transform = 'translateY(0)';
@@ -626,10 +653,13 @@ import { Trajectory } from './trajectory.js';
     }
 
     // Stats con animación de contador
-    _animateStats(data.stats);
+    _animateStats(data.stats, lang);
   }
 
-  function _buildFocusCard(card) {
+  function _buildFocusCard(card, lang) {
+    const l      = lang || LangSwitcher.getLang();
+    const title  = typeof card.title === 'object' ? (card.title[l] || card.title.es) : card.title;
+    const desc   = typeof card.desc  === 'object' ? (card.desc[l]  || card.desc.es)  : card.desc;
     const tagsHTML = card.tags
       .map(t => `<span class="focus-card-tag">${t}</span>`)
       .join('');
@@ -637,20 +667,22 @@ import { Trajectory } from './trajectory.js';
     return `
       <div class="focus-card-icon" aria-hidden="true">${card.icon}</div>
       <div class="focus-card-body">
-        <div class="focus-card-title">${card.title}</div>
-        <p class="focus-card-desc">${card.desc}</p>
+        <div class="focus-card-title">${title}</div>
+        <p class="focus-card-desc">${desc}</p>
         <div class="focus-card-tags">${tagsHTML}</div>
       </div>
     `;
   }
 
-  function _animateStats(stats) {
+  function _animateStats(stats, lang) {
+    const l = lang || LangSwitcher.getLang();
     stats.forEach((stat, idx) => {
       const valueEl = document.getElementById(`stat-value-${idx}`);
       const labelEl = document.getElementById(`stat-label-${idx}`);
       if (!valueEl) return;
 
-      if (labelEl) labelEl.textContent = stat.label;
+      const label = typeof stat.label === 'object' ? (stat.label[l] || stat.label.es) : stat.label;
+      if (labelEl) labelEl.textContent = label;
 
       // Animar el contador solo si es un número > 0
       if (stat.target > 0) {
@@ -680,13 +712,16 @@ import { Trajectory } from './trajectory.js';
   /* ─── SKILLS ─────────────────────────────────────────────── */
   function renderSkills(mode) {
     const data = SKILLS_DATA[mode] || SKILLS_DATA.dev;
+    const lang = LangSwitcher.getLang();
+
+    const summary = typeof data.summary === 'object' ? (data.summary[lang] || data.summary.es) : data.summary;
 
     // Actualizar el summary del stack técnico
     const summaryEl = document.getElementById('skills-mode-summary');
     if (summaryEl) {
       summaryEl.innerHTML = `
         <span class="skills-mode-summary-icon" aria-hidden="true">${data.icon}</span>
-        <span><strong>${_getModeLabel(mode)}</strong> — ${data.summary}</span>
+        <span><strong>${_getModeLabel(mode)}</strong> — ${summary}</span>
       `;
     }
 
@@ -698,6 +733,7 @@ import { Trajectory } from './trajectory.js';
     gridEl.innerHTML = '';
     data.categories.forEach((cat, idx) => {
       const isOpen = idx === 0;
+      const catTitle = typeof cat.title === 'object' ? (cat.title[lang] || cat.title.es) : cat.title;
 
       const catWrap = document.createElement('div');
       catWrap.className = 'skill-category-wrap';
@@ -708,7 +744,7 @@ import { Trajectory } from './trajectory.js';
       header.setAttribute('aria-expanded', String(isOpen));
       header.setAttribute('aria-controls', `skills-cat-${cat.id}`);
       header.innerHTML = `
-        <h3 class="skill-category-title">${cat.title}</h3>
+        <h3 class="skill-category-title">${catTitle}</h3>
         <span class="skill-count-badge">${cat.skills.length}</span>
         <svg class="skill-accordion-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <polyline points="4 6 8 10 12 6"/>
@@ -785,22 +821,21 @@ import { Trajectory } from './trajectory.js';
   function renderContact(mode) {
     // Actualizar el texto de disponibilidad según el modo
     const availEl = document.getElementById('contact-availability-text');
-    const texts = {
-      dev: 'Disponible para proyectos fullstack y oportunidades remotas',
-      ia:  'Disponible para proyectos de IA y consultoría de sistemas inteligentes',
-      sec: 'Disponible para auditorías de seguridad y análisis de vulnerabilidades',
-    };
-    if (availEl) _fadeSwap(availEl, texts[mode] || texts.dev);
+    if (availEl) {
+      const key = `contact.avail.${mode}`;
+      _fadeSwap(availEl, LangSwitcher.t(key) || LangSwitcher.t('contact.avail.dev'));
+    }
 
     // Actualizar botón de copiar email (sólo si existe)
     const copyBtn = document.getElementById('copy-email-btn');
     if (copyBtn) {
+      copyBtn.textContent = LangSwitcher.t('contact.copy');
       copyBtn.onclick = () => {
         navigator.clipboard.writeText('jonathan_jd@outlook.com').then(() => {
-          copyBtn.textContent = '✓ Copiado';
+          copyBtn.textContent = LangSwitcher.t('contact.copied');
           copyBtn.classList.add('copied');
           setTimeout(() => {
-            copyBtn.textContent = 'Copiar';
+            copyBtn.textContent = LangSwitcher.t('contact.copy');
             copyBtn.classList.remove('copied');
           }, 2000);
         });
@@ -942,8 +977,16 @@ import { Trajectory } from './trajectory.js';
   }
 
   /* ─── Escuchar cambios de modo ──────────────────────────── */
+  let _currentMode = localStorage.getItem('portfolio-mode') || 'dev';
+
   window.addEventListener('portfolio:modeChange', (e) => {
-    render(e.detail.mode);
+    _currentMode = e.detail.mode;
+    render(_currentMode);
+  });
+
+  /* ─── Re-renderizar al cambiar idioma ───────────────────── */
+  window.addEventListener('portfolio:langChange', () => {
+    render(_currentMode);
   });
 
   /* syncTrayectoria lo gestiona trajectory.js (Trajectory.init) */

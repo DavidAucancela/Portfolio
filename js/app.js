@@ -18,6 +18,7 @@
  */
 
 import { ThemeSwitcher } from './theme-switcher.js';
+import { LangSwitcher } from './lang.js';
 
 /* ────────────────────────────────────────────────────
    CONSTANTES
@@ -35,9 +36,9 @@ const AVATAR_SRC = {
 };
 
 const PROJECTS_SUBTITLE = {
-  dev: 'Sistemas y aplicaciones construidos con énfasis en calidad y arquitectura.',
-  ia:  'Proyectos que integran inteligencia artificial para resolver problemas reales.',
-  sec: 'Auditorías, herramientas y sistemas enfocados en seguridad y protección.',
+  dev: { es: 'Sistemas y aplicaciones construidos con énfasis en calidad y arquitectura.',    en: 'Systems and applications built with emphasis on quality and architecture.' },
+  ia:  { es: 'Proyectos que integran inteligencia artificial para resolver problemas reales.', en: 'Projects integrating artificial intelligence to solve real problems.' },
+  sec: { es: 'Auditorías, herramientas y sistemas enfocados en seguridad y protección.',      en: 'Audits, tools and systems focused on security and protection.' },
 };
 
 /* ────────────────────────────────────────────────────
@@ -79,13 +80,19 @@ export function initApp() {
   let   lastY    = window.scrollY;
   let   ticking  = false;
 
+  // translateY para ocultar el navbar completamente por encima del viewport,
+  // no sólo hasta el borde del mode-bar (evita que box-shadow o backdrop-filter
+  // queden visibles, especialmente en Safari).
+  const NAVBAR_HIDE_Y = 'translateY(calc(-100% - var(--mode-bar-height, 32px)))';
+
   // Restaurar transform del navbar en caso de HMR o scroll-restore
   if (navbar) {
     const hidden = window.scrollY > 120;
+    // Deshabilitar temporalmente la transición CSS para el restore inicial
     navbar.style.transition = 'none';
-    navbar.style.transform  = hidden ? 'translateY(-100%)' : 'translateY(0)';
+    navbar.style.transform  = hidden ? NAVBAR_HIDE_Y : '';
     document.body.classList.toggle('navbar-hidden', hidden);
-    requestAnimationFrame(() => { navbar.style.transition = ''; });
+    requestAnimationFrame(() => { if (navbar) navbar.style.transition = ''; });
   }
 
   window.addEventListener('scroll', () => {
@@ -96,14 +103,13 @@ export function initApp() {
         // Toggle clase para sombra reforzada
         if (navbar) navbar.classList.toggle('scrolled', y > 10);
 
-        // Ocultar al bajar, mostrar al subir
+        // Ocultar al bajar, mostrar al subir (transition gestionada por CSS)
         if (navbar) {
           if (y > 120 && y > lastY + 6) {
-            navbar.style.transform  = 'translateY(-100%)';
-            navbar.style.transition = 'transform 0.3s ease';
+            navbar.style.transform = NAVBAR_HIDE_Y;
             document.body.classList.add('navbar-hidden');
           } else if (y < lastY - 6 || y < 120) {
-            navbar.style.transform = 'translateY(0)';
+            navbar.style.transform = '';
             document.body.classList.remove('navbar-hidden');
           }
         }
@@ -287,12 +293,12 @@ export function initApp() {
       const message = document.getElementById('contact-message')?.value.trim() || '';
 
       if (!name || !email || !message) {
-        _showFeedback('⚠️ Por favor completa los campos obligatorios (nombre, email y mensaje).', 'error');
+        _showFeedback(LangSwitcher.t('form.error.fields'), 'error');
         return;
       }
 
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        _showFeedback('⚠️ Ingresa un email válido.', 'error');
+        _showFeedback(LangSwitcher.t('form.error.email'), 'error');
         return;
       }
 
@@ -306,7 +312,7 @@ export function initApp() {
           <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/>
           <path d="M21 3v5h-5"/>
         </svg>
-        Enviando...
+        ${LangSwitcher.t('form.sending')}
       `;
 
       try {
@@ -319,17 +325,16 @@ export function initApp() {
         const data = await res.json();
 
         if (data.success) {
-          _showFeedback('✅ ¡Mensaje enviado! Te responderé pronto.', 'success');
+          _showFeedback(LangSwitcher.t('form.success'), 'success');
           contactForm.reset();
         } else {
           throw new Error(data.message || 'Error al enviar');
         }
       } catch (err) {
-        // Fallback: abrir cliente de correo
         const body   = `Nombre: ${name}\nEmail: ${email}\n\nMensaje:\n${message}`;
         const mailto = `mailto:jonathan_jd@outlook.com?subject=${encodeURIComponent('Contacto desde portfolio')}&body=${encodeURIComponent(body)}`;
         window.location.href = mailto;
-        _showFeedback('⚠️ Redirigiendo a tu cliente de email como alternativa.', 'error');
+        _showFeedback(LangSwitcher.t('form.error.mailto'), 'error');
       } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = origHTML;
@@ -365,7 +370,11 @@ export function initApp() {
 
     // Subtítulo de proyectos
     const subtitle = document.getElementById('projects-subtitle');
-    if (subtitle) subtitle.textContent = PROJECTS_SUBTITLE[mode] || '';
+    if (subtitle) {
+      const sub = PROJECTS_SUBTITLE[mode];
+      const lang = LangSwitcher.getLang();
+      subtitle.textContent = sub ? (sub[lang] || sub.es) : '';
+    }
 
     // Texto decorativo del hero
     const heroBg = document.getElementById('hero-bg-text');
@@ -407,5 +416,16 @@ export function initApp() {
   // El setTimeout actúa como fallback si ThemeSwitcher tarda o falla
   window.addEventListener('portfolio:modeChange', _syncInitialMode, { once: true });
   setTimeout(_syncInitialMode, 500);
+
+  // Re-renderizar subtítulo de proyectos al cambiar idioma
+  window.addEventListener('portfolio:langChange', () => {
+    const mode = ThemeSwitcher.getCurrentMode() || document.body.dataset.theme || 'dev';
+    const subtitle = document.getElementById('projects-subtitle');
+    if (subtitle) {
+      const sub  = PROJECTS_SUBTITLE[mode];
+      const lang = LangSwitcher.getLang();
+      if (sub) subtitle.textContent = sub[lang] || sub.es;
+    }
+  });
 
 } // end initApp

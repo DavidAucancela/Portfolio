@@ -10,6 +10,7 @@
  */
 
 import { ProjectDetail } from './project-detail.js';
+import { LangSwitcher } from './lang.js';
 
 /* ────────────────────────────────────────────────────
    MENSAJES "COMING SOON" POR MODO
@@ -17,21 +18,21 @@ import { ProjectDetail } from './project-detail.js';
 const COMING_SOON = {
   dev: {
     icon:    '🚧',
-    title:   'Más proyectos próximamente',
-    message: 'Nuevos sistemas en construcción. Stay tuned.',
-    badge:   'En desarrollo',
+    title:   { es: 'Más proyectos próximamente',    en: 'More projects coming soon' },
+    message: { es: 'Nuevos sistemas en construcción. Stay tuned.', en: 'New systems under construction. Stay tuned.' },
+    badge:   { es: 'En desarrollo',                 en: 'In development' },
   },
   ia: {
     icon:    '🤖',
-    title:   'Proyectos IA en construcción',
-    message: 'Sistemas con LLMs, RAG y agentes inteligentes próximamente.',
-    badge:   'Entrenando modelos...',
+    title:   { es: 'Proyectos IA en construcción',  en: 'AI Projects under construction' },
+    message: { es: 'Sistemas con LLMs, RAG y agentes inteligentes próximamente.', en: 'Systems with LLMs, RAG and intelligent agents coming soon.' },
+    badge:   { es: 'Entrenando modelos...',          en: 'Training models...' },
   },
   sec: {
     icon:    '🔒',
-    title:   'Proyectos de seguridad próximamente',
-    message: 'Reportes de pentest, herramientas y writeups CTF en construcción.',
-    badge:   '> scanning for projects...',
+    title:   { es: 'Proyectos de seguridad próximamente', en: 'Security projects coming soon' },
+    message: { es: 'Reportes de pentest, herramientas y writeups CTF en construcción.', en: 'Pentest reports, tools and CTF writeups under construction.' },
+    badge:   { es: '> escaneando proyectos...', en: '> scanning for projects...' },
   },
 };
 
@@ -195,11 +196,11 @@ function _renderPagination(totalPages, projects, mode) {
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
         <polyline points="15 18 9 12 15 6"/>
       </svg>
-      Anterior
+      ${LangSwitcher.t('projects.prev')}
     </button>
     <div class="pag-dots" role="group" aria-label="Páginas">${dots}</div>
     <button class="pag-btn pag-btn--next" ${nextDisabled} aria-label="Página siguiente">
-      Siguiente
+      ${LangSwitcher.t('projects.next')}
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
         <polyline points="9 18 15 12 9 6"/>
       </svg>
@@ -268,7 +269,7 @@ function _buildCard(p, mode) {
          <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
          </svg>
-         Destacado
+         ${LangSwitcher.t('projects.featured')}
        </span>`
     : '';
 
@@ -286,7 +287,7 @@ function _buildCard(p, mode) {
            <polyline points="15 3 21 3 21 9"/>
            <line x1="10" y1="14" x2="21" y2="3"/>
          </svg>
-         Ver demo
+         ${LangSwitcher.t('projects.demo')}
        </a>`
     : '';
 
@@ -296,7 +297,7 @@ function _buildCard(p, mode) {
          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
            <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/>
          </svg>
-         Código
+         ${LangSwitcher.t('projects.code')}
        </a>`
     : '';
 
@@ -306,7 +307,7 @@ function _buildCard(p, mode) {
            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
          </svg>
-         Repositorio privado
+         ${LangSwitcher.t('projects.private')}
        </span>`
     : '';
 
@@ -334,7 +335,7 @@ function _buildCard(p, mode) {
           <circle cx="12" cy="12" r="10"/>
           <polyline points="12 8 12 12 14 14"/>
         </svg>
-        Proceso
+        ${LangSwitcher.t('projects.process')}
       </button>
     </div>
   `;
@@ -404,7 +405,7 @@ function _buildLabCard(p) {
       <p class="card-description">${p.description}</p>
 
       <div class="lab-techniques">
-        <span class="lab-techniques-label">Técnicas:</span>
+        <span class="lab-techniques-label">${LangSwitcher.t('projects.techniques')}</span>
         ${techniquesHTML}
       </div>
     </div>
@@ -414,7 +415,7 @@ function _buildLabCard(p) {
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
           <polyline points="20 6 9 17 4 12"/>
         </svg>
-        Machine Pwned
+        ${LangSwitcher.t('projects.pwned')}
       </span>
       <button class="card-btn card-btn--process" aria-label="Ver writeup de ${p.title}" type="button">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -422,7 +423,7 @@ function _buildLabCard(p) {
           <circle cx="12" cy="12" r="10"/>
           <polyline points="12 8 12 12 14 14"/>
         </svg>
-        Writeup
+        ${LangSwitcher.t('projects.writeup')}
       </button>
     </div>
   `;
@@ -440,17 +441,22 @@ function _getModeEmoji(mode) {
    COMING SOON
 ──────────────────────────────────────────────────── */
 function _renderComingSoon(grid, mode) {
-  const cs   = COMING_SOON[mode] || COMING_SOON.dev;
+  const cs    = COMING_SOON[mode] || COMING_SOON.dev;
+  const lang  = LangSwitcher.getLang();
   const isSec = mode === 'sec';
+
+  const title   = typeof cs.title   === 'object' ? (cs.title[lang]   || cs.title.es)   : cs.title;
+  const message = typeof cs.message === 'object' ? (cs.message[lang] || cs.message.es) : cs.message;
+  const badge   = typeof cs.badge   === 'object' ? (cs.badge[lang]   || cs.badge.es)   : cs.badge;
 
   grid.className = 'projects-grid';
   grid.innerHTML = `
     <div class="coming-soon" style="grid-column: 1 / -1;" role="status" aria-live="polite">
       <div class="coming-soon-icon" aria-hidden="true">${cs.icon}</div>
-      <h3 class="coming-soon-title">${cs.title}</h3>
-      <p class="coming-soon-text">${cs.message}</p>
+      <h3 class="coming-soon-title">${title}</h3>
+      <p class="coming-soon-text">${message}</p>
       <div class="coming-soon-badge${isSec ? ' coming-soon-badge--terminal' : ''}">
-        ${isSec ? '' : '🔄 '} ${cs.badge}
+        ${isSec ? '' : '🔄 '} ${badge}
       </div>
       ${isSec ? `
       <div style="
@@ -518,6 +524,15 @@ function _addTiltEffect(card) {
 ──────────────────────────────────────────────────── */
 window.addEventListener('portfolio:modeChange', e => {
   loadProjects(e.detail.mode);
+});
+
+window.addEventListener('portfolio:langChange', () => {
+  const grid = document.getElementById('projects-grid');
+  if (grid && _allProjects.length > 0) {
+    _renderPage(grid, _allProjects, currentMode);
+  } else if (grid) {
+    _renderComingSoon(grid, currentMode);
+  }
 });
 
 /* Abrir detalle desde la trayectoria (Jonathan Panel) */

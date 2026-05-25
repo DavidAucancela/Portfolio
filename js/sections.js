@@ -121,7 +121,7 @@ import { LangSwitcher } from './lang.js';
             { name: 'Django',     type: 'devicon', icon: 'devicon-django-plain colored' },
             { name: 'FastAPI',    type: 'devicon', icon: 'devicon-fastapi-plain colored' },
             { name: 'Node.js',    type: 'devicon', icon: 'devicon-nodejs-plain colored' },
-            { name: 'Express',    type: 'devicon', icon: 'devicon-express-original colored' },
+            { name: 'Express',    type: 'devicon', icon: 'devicon-express-original colored', invertDark: true },
             { name: 'PostgreSQL', type: 'devicon', icon: 'devicon-postgresql-plain colored' },
             {
               name: 'REST API', type: 'svg', icon: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -137,10 +137,10 @@ import { LangSwitcher } from './lang.js';
           skills: [
             { name: 'Docker',  type: 'devicon', icon: 'devicon-docker-plain colored' },
             { name: 'Git',     type: 'devicon', icon: 'devicon-git-plain colored' },
-            { name: 'GitHub',  type: 'devicon', icon: 'devicon-github-original colored' },
+            { name: 'GitHub',  type: 'devicon', icon: 'devicon-github-original colored', invertDark: true },
             { name: 'Nginx',   type: 'devicon', icon: 'devicon-nginx-plain colored' },
-            { name: 'Linux',   type: 'devicon', icon: 'devicon-linux-plain colored' },
-            { name: 'Vercel',  type: 'devicon', icon: 'devicon-vercel-original colored' },
+            { name: 'Linux',   type: 'devicon', icon: 'devicon-linux-plain colored',   invertDark: true },
+            { name: 'Vercel',  type: 'devicon', icon: 'devicon-vercel-original colored', invertDark: true },
             { name: 'Railway', type: 'emoji',   icon: '🚂' },
           ],
         },
@@ -201,7 +201,7 @@ import { LangSwitcher } from './lang.js';
             { name: 'Nmap',        type: 'emoji', icon: '🌐' },
             { name: 'Burp Suite',  type: 'emoji', icon: '🕷️' },
             { name: 'Wireshark',   type: 'emoji', icon: '🦈' },
-            { name: 'Kali Linux',  type: 'devicon', icon: 'devicon-linux-plain colored' },
+            { name: 'Kali Linux',  type: 'devicon', icon: 'devicon-linux-plain colored', invertDark: true },
           ],
         },
         {
@@ -759,8 +759,8 @@ import { LangSwitcher } from './lang.js';
       const inner = document.createElement('div');
       inner.className = 'skill-accordion-inner';
 
-      const catGrid = document.createElement('div');
-      catGrid.className = 'skills-grid';
+      const pillsWrap = document.createElement('div');
+      pillsWrap.className = 'skill-pills-wrap';
 
       // Toggle handler
       header.addEventListener('click', () => {
@@ -769,16 +769,15 @@ import { LangSwitcher } from './lang.js';
         body.classList.toggle('open', !expanded);
       });
 
-      // Skill cards
+      // Skill pills
       cat.skills.forEach(skill => {
-        const card = document.createElement('div');
-        card.className = 'skill-card';
-        card.setAttribute('title', skill.name);
-        card.innerHTML = _buildSkillIcon(skill) + `<span class="skill-name">${skill.name}</span>`;
-        catGrid.appendChild(card);
+        const pill = document.createElement('span');
+        pill.className = 'skill-pill';
+        pill.innerHTML = _buildPillIcon(skill) + `<span>${skill.name}</span>`;
+        pillsWrap.appendChild(pill);
       });
 
-      inner.appendChild(catGrid);
+      inner.appendChild(pillsWrap);
       body.appendChild(inner);
       catWrap.appendChild(header);
       catWrap.appendChild(body);
@@ -788,15 +787,16 @@ import { LangSwitcher } from './lang.js';
     _refreshObservers();
   }
 
-  function _buildSkillIcon(skill) {
+  function _buildPillIcon(skill) {
     if (skill.type === 'devicon') {
-      return `<div class="skill-icon-wrap"><i class="${skill.icon}" aria-hidden="true"></i></div>`;
+      const inv = skill.invertDark ? ' skill-icon--invert' : '';
+      return `<i class="${skill.icon}${inv}" aria-hidden="true"></i>`;
     }
     if (skill.type === 'svg') {
-      return `<div class="skill-icon-fallback" aria-hidden="true">${skill.icon}</div>`;
+      return `<span class="skill-pill-svg" aria-hidden="true">${skill.icon}</span>`;
     }
     // emoji
-    return `<div class="skill-icon-fallback" aria-hidden="true" style="font-size:1.5rem; background:transparent;">${skill.icon}</div>`;
+    return `<span class="skill-pill-emoji" aria-hidden="true">${skill.icon}</span>`;
   }
 
   function _getModeLabel(mode) {

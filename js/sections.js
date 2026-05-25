@@ -731,45 +731,22 @@ import { LangSwitcher } from './lang.js';
 
     // Limpiar y reconstruir categorías como acordeón
     gridEl.innerHTML = '';
-    data.categories.forEach((cat, idx) => {
-      const isOpen = idx === 0;
+    data.categories.forEach((cat) => {
       const catTitle = typeof cat.title === 'object' ? (cat.title[lang] || cat.title.es) : cat.title;
 
       const catWrap = document.createElement('div');
       catWrap.className = 'skill-category-wrap';
 
-      // Header clickable (button para a11y)
-      const header = document.createElement('button');
+      const header = document.createElement('div');
       header.className = 'skill-category-header';
-      header.setAttribute('aria-expanded', String(isOpen));
-      header.setAttribute('aria-controls', `skills-cat-${cat.id}`);
       header.innerHTML = `
         <h3 class="skill-category-title">${catTitle}</h3>
         <span class="skill-count-badge">${cat.skills.length}</span>
-        <svg class="skill-accordion-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <polyline points="4 6 8 10 12 6"/>
-        </svg>
       `;
-
-      // Body colapsable
-      const body = document.createElement('div');
-      body.className = 'skill-accordion-body' + (isOpen ? ' open' : '');
-      body.id = `skills-cat-${cat.id}`;
-
-      const inner = document.createElement('div');
-      inner.className = 'skill-accordion-inner';
 
       const pillsWrap = document.createElement('div');
       pillsWrap.className = 'skill-pills-wrap';
 
-      // Toggle handler
-      header.addEventListener('click', () => {
-        const expanded = header.getAttribute('aria-expanded') === 'true';
-        header.setAttribute('aria-expanded', String(!expanded));
-        body.classList.toggle('open', !expanded);
-      });
-
-      // Skill pills
       cat.skills.forEach(skill => {
         const pill = document.createElement('span');
         pill.className = 'skill-pill';
@@ -777,10 +754,8 @@ import { LangSwitcher } from './lang.js';
         pillsWrap.appendChild(pill);
       });
 
-      inner.appendChild(pillsWrap);
-      body.appendChild(inner);
       catWrap.appendChild(header);
-      catWrap.appendChild(body);
+      catWrap.appendChild(pillsWrap);
       gridEl.appendChild(catWrap);
     });
 

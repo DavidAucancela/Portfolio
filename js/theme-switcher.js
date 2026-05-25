@@ -178,7 +178,7 @@ function _runTransitionAnimation(config, prevMode, onDone) {
 
     // 3. Cambiar el tema CSS (después de que el sufijo termine de borrarse)
     document.body.classList.add('theme-transitioning');
-    document.body.dataset.theme = config.mode || currentMode;
+    document.body.dataset.theme = currentMode;
 
     // 4. Actualizar favicon y title
     _updateFavicon(config.favicon);
@@ -341,6 +341,12 @@ function _bindEvents() {
   const logoSuffix = document.getElementById('logo-suffix');
   if (logoSuffix) {
     logoSuffix.addEventListener('click', _toggleDropdown);
+    logoSuffix.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        _toggleDropdown();
+      }
+    });
   }
 
   // Click en cada opción del dropdown

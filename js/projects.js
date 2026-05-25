@@ -35,10 +35,12 @@ const COMING_SOON = {
   },
 };
 
-let currentMode     = 'dev';
-let isLoading       = false;
-let _allProjects    = [];
-const _cache        = {};
+let currentMode      = 'dev';
+let isLoading        = false;
+let _allProjects     = [];
+let _currentPage     = 1;
+const PROJECTS_PER_PAGE = 6;
+const _cache         = {};
 
 const SLUG_MAP = {
   'project-001': 'ubapp',
@@ -123,33 +125,109 @@ function _renderSkeleton(grid) {
 }
 
 /* ────────────────────────────────────────────────────
-   RENDER DE CARDS
+   SCROLL A LA SECCIÓN DE PROYECTOS (con offset navbar)
+──────────────────────────────────────────────────── */
+function _scrollToProjectsTop() {
+  const el = document.getElementById('projects');
+  if (!el) return;
+  const s    = getComputedStyle(document.documentElement);
+  const navH = (parseInt(s.getPropertyValue('--nav-height'))      || 70) +
+               (parseInt(s.getPropertyValue('--mode-bar-height')) || 32);
+  window.scrollTo({
+    top:      el.getBoundingClientRect().top + window.scrollY - navH - 16,
+    behavior: 'smooth',
+  });
+}
+
+/* ────────────────────────────────────────────────────
+   RENDER DE CARDS CON PAGINACIÓN
 ──────────────────────────────────────────────────── */
 function _renderCards(grid, projects, mode) {
-  // Separar featured de los demás
+  _currentPage = 1;
+  _renderPage(grid, projects, mode);
+}
+
+function _renderPage(grid, projects, mode) {
   const featured = projects.filter(p => p.featured);
   const rest      = projects.filter(p => !p.featured);
   const ordered   = [...featured, ...rest];
 
-  grid.innerHTML = '';
+  const totalPages  = Math.ceil(ordered.length / PROJECTS_PER_PAGE);
+  const start       = (_currentPage - 1) * PROJECTS_PER_PAGE;
+  const pageItems   = ordered.slice(start, start + PROJECTS_PER_PAGE);
 
-  // Ajustar clase del grid si hay proyectos destacados
-  grid.className = featured.length > 0
-    ? 'projects-grid projects-grid--has-featured'
-    : 'projects-grid';
+  grid.innerHTML  = '';
+  grid.className  = 'projects-grid';
 
-  ordered.forEach((project, i) => {
+  pageItems.forEach((project, i) => {
     const card = _buildCard(project, mode);
     card.style.opacity   = '0';
     card.style.transform = 'translateY(24px) scale(0.97)';
     grid.appendChild(card);
 
-    // Stagger de entrada
     setTimeout(() => {
       card.style.transition = 'opacity 0.45s ease, transform 0.45s cubic-bezier(0.34,1.56,0.64,1)';
       card.style.opacity    = '1';
       card.style.transform  = 'translateY(0) scale(1)';
     }, 60 + i * 80);
+  });
+
+  _renderPagination(totalPages, projects, mode);
+}
+
+function _renderPagination(totalPages, projects, mode) {
+  const pag = document.getElementById('projects-pagination');
+  if (!pag) return;
+
+  if (totalPages <= 1) { pag.innerHTML = ''; return; }
+
+  const prevDisabled = _currentPage === 1 ? 'disabled' : '';
+  const nextDisabled = _currentPage === totalPages ? 'disabled' : '';
+
+  const dots = Array.from({ length: totalPages }, (_, i) => `
+    <button class="pag-dot${i + 1 === _currentPage ? ' active' : ''}"
+            data-page="${i + 1}" aria-label="Página ${i + 1}"
+            ${i + 1 === _currentPage ? 'aria-current="page"' : ''}></button>
+  `).join('');
+
+  pag.innerHTML = `
+    <button class="pag-btn pag-btn--prev" ${prevDisabled} aria-label="Página anterior">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Anterior
+    </button>
+    <div class="pag-dots" role="group" aria-label="Páginas">${dots}</div>
+    <button class="pag-btn pag-btn--next" ${nextDisabled} aria-label="Página siguiente">
+      Siguiente
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </button>
+  `;
+
+  pag.querySelector('.pag-btn--prev')?.addEventListener('click', () => {
+    if (_currentPage > 1) {
+      _currentPage--;
+      _renderPage(document.getElementById('projects-grid'), projects, mode);
+      _scrollToProjectsTop();
+    }
+  });
+
+  pag.querySelector('.pag-btn--next')?.addEventListener('click', () => {
+    if (_currentPage < totalPages) {
+      _currentPage++;
+      _renderPage(document.getElementById('projects-grid'), projects, mode);
+      _scrollToProjectsTop();
+    }
+  });
+
+  pag.querySelectorAll('.pag-dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+      _currentPage = parseInt(dot.dataset.page, 10);
+      _renderPage(document.getElementById('projects-grid'), projects, mode);
+      _scrollToProjectsTop();
+    });
   });
 }
 

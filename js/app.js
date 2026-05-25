@@ -76,8 +76,17 @@ export function initApp() {
      NAVBAR — HIDE ON SCROLL DOWN, SHOW ON SCROLL UP
   ──────────────────────────────────────────────────── */
   const navbar   = document.getElementById('navbar');
-  let   lastY    = 0;
+  let   lastY    = window.scrollY;
   let   ticking  = false;
+
+  // Restaurar transform del navbar en caso de HMR o scroll-restore
+  if (navbar) {
+    const hidden = window.scrollY > 120;
+    navbar.style.transition = 'none';
+    navbar.style.transform  = hidden ? 'translateY(-100%)' : 'translateY(0)';
+    document.body.classList.toggle('navbar-hidden', hidden);
+    requestAnimationFrame(() => { navbar.style.transition = ''; });
+  }
 
   window.addEventListener('scroll', () => {
     if (!ticking) {
@@ -92,8 +101,10 @@ export function initApp() {
           if (y > 120 && y > lastY + 6) {
             navbar.style.transform  = 'translateY(-100%)';
             navbar.style.transition = 'transform 0.3s ease';
+            document.body.classList.add('navbar-hidden');
           } else if (y < lastY - 6 || y < 120) {
             navbar.style.transform = 'translateY(0)';
+            document.body.classList.remove('navbar-hidden');
           }
         }
 
@@ -261,12 +272,6 @@ export function initApp() {
     accessInput.name  = 'access_key';
     accessInput.value = 'd15ed95c-e7ba-4f74-8a64-cd78c8571033';
     contactForm.appendChild(accessInput);
-
-    const subjectInput = document.createElement('input');
-    subjectInput.type  = 'hidden';
-    subjectInput.name  = 'subject';
-    subjectInput.value = 'Nuevo mensaje desde Jonathan.dev';
-    contactForm.appendChild(subjectInput);
 
     const fromInput = document.createElement('input');
     fromInput.type  = 'hidden';

@@ -10,7 +10,6 @@
  *  - sec → Ciberseguridad / Pentesting
  */
 
-import { navigateToProject } from './app.js';
 import { Trajectory } from './trajectory.js';
 
   /* ════════════════════════════════════════════════════════════
@@ -46,7 +45,7 @@ import { Trajectory } from './trajectory.js';
       stats: [
         { target: 4, suffix: '',  label: 'Proyectos IA' },
         { target: 2, suffix: '',  label: 'LLMs integrados' },
-        { target: 0, suffix: ' PII', label: 'Expuesto a APIs' },
+        { target: 0, suffix: '',  label: 'PII expuesto' },
       ],
     },
     sec: {
@@ -82,17 +81,14 @@ import { Trajectory } from './trajectory.js';
           id:    'frontend',
           title: 'Frontend',
           skills: [
-            { name: 'Angular',     type: 'devicon', icon: 'devicon-angularjs-plain colored' },
-            { name: 'Vue.js',      type: 'devicon', icon: 'devicon-vuejs-plain colored' },
-            { name: 'React',       type: 'devicon', icon: 'devicon-react-original colored' },
-            { name: 'Next.js',     type: 'devicon', icon: 'devicon-nextjs-plain colored' },
-            { name: 'TypeScript',  type: 'devicon', icon: 'devicon-typescript-plain colored' },
-            { name: 'JavaScript',  type: 'devicon', icon: 'devicon-javascript-plain colored' },
-            { name: 'HTML5',       type: 'devicon', icon: 'devicon-html5-plain colored' },
-            { name: 'CSS3',        type: 'devicon', icon: 'devicon-css3-plain colored' },
-            { name: 'Tailwind',    type: 'devicon', icon: 'devicon-tailwindcss-plain colored' },
-            { name: 'Bootstrap',   type: 'devicon', icon: 'devicon-bootstrap-plain colored' },
-            { name: 'Vite',        type: 'devicon', icon: 'devicon-vitejs-plain colored' },
+            { name: 'Angular',    type: 'devicon', icon: 'devicon-angularjs-plain colored' },
+            { name: 'Vue.js',     type: 'devicon', icon: 'devicon-vuejs-plain colored' },
+            { name: 'React',      type: 'devicon', icon: 'devicon-react-original colored' },
+            { name: 'TypeScript', type: 'devicon', icon: 'devicon-typescript-plain colored' },
+            { name: 'JavaScript', type: 'devicon', icon: 'devicon-javascript-plain colored' },
+            { name: 'HTML5',      type: 'devicon', icon: 'devicon-html5-plain colored' },
+            { name: 'CSS3',       type: 'devicon', icon: 'devicon-css3-plain colored' },
+            { name: 'Vite',       type: 'devicon', icon: 'devicon-vitejs-plain colored' },
           ],
         },
         {
@@ -102,17 +98,9 @@ import { Trajectory } from './trajectory.js';
             { name: 'Python',     type: 'devicon', icon: 'devicon-python-plain colored' },
             { name: 'Django',     type: 'devicon', icon: 'devicon-django-plain colored' },
             { name: 'FastAPI',    type: 'devicon', icon: 'devicon-fastapi-plain colored' },
-            { name: 'Java',       type: 'devicon', icon: 'devicon-java-plain colored' },
-            { name: 'Spring Boot',type: 'devicon', icon: 'devicon-spring-plain colored' },
             { name: 'Node.js',    type: 'devicon', icon: 'devicon-nodejs-plain colored' },
             { name: 'Express',    type: 'devicon', icon: 'devicon-express-original colored' },
-            { name: 'NestJS',     type: 'devicon', icon: 'devicon-nestjs-plain colored' },
             { name: 'PostgreSQL', type: 'devicon', icon: 'devicon-postgresql-plain colored' },
-            { name: 'MySQL',      type: 'devicon', icon: 'devicon-mysql-plain colored' },
-            { name: 'MongoDB',    type: 'devicon', icon: 'devicon-mongodb-plain colored' },
-            { name: 'Redis',      type: 'devicon', icon: 'devicon-redis-plain colored' },
-            { name: 'Prisma',     type: 'devicon', icon: 'devicon-prisma-original colored' },
-            { name: 'GraphQL',    type: 'devicon', icon: 'devicon-graphql-plain colored' },
             {
               name: 'REST API', type: 'svg', icon: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
@@ -123,17 +111,15 @@ import { Trajectory } from './trajectory.js';
         },
         {
           id:    'tools',
-          title: 'DevOps & Tools',
+          title: 'DevOps & Deploy',
           skills: [
-            { name: 'Docker',          type: 'devicon', icon: 'devicon-docker-plain colored' },
-            { name: 'Git',             type: 'devicon', icon: 'devicon-git-plain colored' },
-            { name: 'GitHub',          type: 'devicon', icon: 'devicon-github-original colored' },
-            { name: 'GitHub Actions',  type: 'devicon', icon: 'devicon-githubactions-plain colored' },
-            { name: 'Nginx',           type: 'devicon', icon: 'devicon-nginx-plain colored' },
-            { name: 'Linux',           type: 'devicon', icon: 'devicon-linux-plain colored' },
-            { name: 'Postman',         type: 'devicon', icon: 'devicon-postman-plain colored' },
-            { name: 'Vercel',          type: 'devicon', icon: 'devicon-vercel-original colored' },
-            { name: 'Render',          type: 'emoji',   icon: '☁️' },
+            { name: 'Docker',  type: 'devicon', icon: 'devicon-docker-plain colored' },
+            { name: 'Git',     type: 'devicon', icon: 'devicon-git-plain colored' },
+            { name: 'GitHub',  type: 'devicon', icon: 'devicon-github-original colored' },
+            { name: 'Nginx',   type: 'devicon', icon: 'devicon-nginx-plain colored' },
+            { name: 'Linux',   type: 'devicon', icon: 'devicon-linux-plain colored' },
+            { name: 'Vercel',  type: 'devicon', icon: 'devicon-vercel-original colored' },
+            { name: 'Railway', type: 'emoji',   icon: '🚂' },
           ],
         },
       ],
@@ -146,49 +132,37 @@ import { Trajectory } from './trajectory.js';
           id:    'frontend',
           title: 'Interfaces IA',
           skills: [
-            { name: 'React',         type: 'devicon', icon: 'devicon-react-original colored' },
-            { name: 'Vue.js',        type: 'devicon', icon: 'devicon-vuejs-plain colored' },
-            { name: 'Next.js',       type: 'devicon', icon: 'devicon-nextjs-plain colored' },
-            { name: 'TypeScript',    type: 'devicon', icon: 'devicon-typescript-plain colored' },
-            { name: 'TailwindCSS',   type: 'devicon', icon: 'devicon-tailwindcss-plain colored' },
-            { name: 'Streaming UI',  type: 'svg', icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>` },
-            { name: 'Chat UI',       type: 'emoji', icon: '💬' },
+            { name: 'React',        type: 'devicon', icon: 'devicon-react-original colored' },
+            { name: 'Vue.js',       type: 'devicon', icon: 'devicon-vuejs-plain colored' },
+            { name: 'TypeScript',   type: 'devicon', icon: 'devicon-typescript-plain colored' },
+            { name: 'Streaming UI', type: 'svg', icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>` },
+            { name: 'Chat UI',      type: 'emoji', icon: '💬' },
           ],
         },
         {
           id:    'backend',
-          title: 'Core IA / ML',
+          title: 'Modelos & IA',
           skills: [
-            { name: 'Python',        type: 'devicon', icon: 'devicon-python-plain colored' },
-            { name: 'OpenAI API',    type: 'svg', icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.28 9.53a5.37 5.37 0 00-.46-4.4 5.43 5.43 0 00-5.84-2.6A5.37 5.37 0 0012 .5a5.43 5.43 0 00-5.18 3.77 5.37 5.37 0 00-3.58 2.6 5.43 5.43 0 00.67 6.35 5.38 5.38 0 00.46 4.4 5.43 5.43 0 005.84 2.6A5.37 5.37 0 0012 23.5a5.43 5.43 0 005.18-3.77 5.37 5.37 0 003.58-2.6 5.43 5.43 0 00-.48-6.6z"/></svg>` },
-            { name: 'LangChain',     type: 'emoji', icon: '🔗' },
-            { name: 'Hugging Face',  type: 'emoji', icon: '🤗' },
-            { name: 'Embeddings',    type: 'emoji', icon: '🔢' },
-            { name: 'pgvector',      type: 'devicon', icon: 'devicon-postgresql-plain colored' },
-            { name: 'RAG',           type: 'emoji', icon: '📚' },
-            { name: 'Prompt Eng.',   type: 'emoji', icon: '✍️' },
-            { name: 'NLP',           type: 'emoji', icon: '🔤' },
+            { name: 'OpenAI API',  type: 'svg', icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.28 9.53a5.37 5.37 0 00-.46-4.4 5.43 5.43 0 00-5.84-2.6A5.37 5.37 0 0012 .5a5.43 5.43 0 00-5.18 3.77 5.37 5.37 0 00-3.58 2.6 5.43 5.43 0 00.67 6.35 5.38 5.38 0 00.46 4.4 5.43 5.43 0 005.84 2.6A5.37 5.37 0 0012 23.5a5.43 5.43 0 005.18-3.77 5.37 5.37 0 003.58-2.6 5.43 5.43 0 00-.48-6.6z"/></svg>` },
+            { name: 'Claude API',  type: 'emoji', icon: '🤖' },
+            { name: 'RAG',         type: 'emoji', icon: '📚' },
+            { name: 'Embeddings',  type: 'emoji', icon: '🔢' },
+            { name: 'pgvector',    type: 'devicon', icon: 'devicon-postgresql-plain colored' },
+            { name: 'Prompt Eng.', type: 'emoji', icon: '✍️' },
           ],
         },
         {
           id:    'tools',
-          title: 'Infraestructura & Código',
+          title: 'Infraestructura',
           skills: [
-            { name: 'PostgreSQL',    type: 'devicon', icon: 'devicon-postgresql-plain colored' },
-            { name: 'Docker',        type: 'devicon', icon: 'devicon-docker-plain colored' },
-            { name: 'Node.js',       type: 'devicon', icon: 'devicon-nodejs-plain colored' },
-            { name: 'FastAPI',       type: 'devicon', icon: 'devicon-fastapi-plain colored' },
-            { name: 'Django',        type: 'devicon', icon: 'devicon-django-plain colored' },
-            { name: 'Redis',         type: 'devicon', icon: 'devicon-redis-plain colored' },
-            { name: 'GitHub Actions',type: 'devicon', icon: 'devicon-githubactions-plain colored' },
-            { name: 'Linux',         type: 'devicon', icon: 'devicon-linux-plain colored' },
-            { name: 'Nginx',         type: 'devicon', icon: 'devicon-nginx-plain colored' },
-            { name: 'REST API',      type: 'svg', icon: `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>` },
-            { name: 'JWT',           type: 'emoji', icon: '🔑' },
-            { name: 'Git',           type: 'devicon', icon: 'devicon-git-plain colored' },
-            { name: 'CRISP-DM',      type: 'emoji', icon: '📊' },
-            { name: 'Vector DB',     type: 'emoji', icon: '🗄️' },
-            { name: 'TypeScript',    type: 'devicon', icon: 'devicon-typescript-plain colored' },
+            { name: 'Python',     type: 'devicon', icon: 'devicon-python-plain colored' },
+            { name: 'FastAPI',    type: 'devicon', icon: 'devicon-fastapi-plain colored' },
+            { name: 'Node.js',    type: 'devicon', icon: 'devicon-nodejs-plain colored' },
+            { name: 'Django',     type: 'devicon', icon: 'devicon-django-plain colored' },
+            { name: 'PostgreSQL', type: 'devicon', icon: 'devicon-postgresql-plain colored' },
+            { name: 'Docker',     type: 'devicon', icon: 'devicon-docker-plain colored' },
+            { name: 'Socket.io',  type: 'emoji',   icon: '⚡' },
+            { name: 'Git',        type: 'devicon', icon: 'devicon-git-plain colored' },
           ],
         },
       ],
@@ -538,7 +512,7 @@ import { Trajectory } from './trajectory.js';
       ],
     },
     {
-      date:      '2025',
+      date:      'May 2024',
       title:     'Introduction to Cybersecurity — Cisco',
       role:      'Certificación · Cisco Networking Academy',
       org:       'Cisco Networking Academy',
@@ -555,30 +529,59 @@ import { Trajectory } from './trajectory.js';
       ],
       metricas: [
         { label: 'Emisor', value: 'Cisco' },
-        { label: 'Año', value: '2025' },
+        { label: 'Año', value: '2024' },
         { label: 'Estado', value: 'Obtenida' },
       ],
     },
     {
-      date:      'Mar 2026 — May 2026',
+      date:      'Abr 2026 — May 2026',
       title:     'Curso Certificado de Ciberseguridad — IBM',
       role:      'Estudiante · IBM SkillsBuild',
       org:       'IBM SkillsBuild',
       completed: true,
       type:      'cert',
       typeLabel: 'Certificación',
-      desc:      'Certificación completada de IBM SkillsBuild en ciberseguridad. Operaciones de seguridad (SOC), análisis de amenazas, SIEM, respuesta a incidentes y forense digital básico.',
-      tags:      ['IBM', 'Security Operations', 'Threat Analysis', 'Incident Response'],
+      desc:      'Programa completo de ciberseguridad de IBM SkillsBuild con 8 módulos certificados: fundamentos, GRC, gestión de vulnerabilidades, seguridad de redes y sistemas, operaciones SOC, respuesta a incidentes, forense digital y seguridad en la nube.',
+      tags:      ['IBM', 'SOC', 'GRC', 'Cloud Security', 'Incident Response', 'Forensics', 'Vulnerability Management'],
       icon:      '📚',
       highlights: [
-        'Operaciones SOC: análisis de logs, correlación de eventos y alertas SIEM',
-        'Indicadores de compromiso (IOC) y análisis básico de malware',
-        'Respuesta a incidentes y forense digital básico — certificado IBM SkillsBuild',
+        'Cybersecurity Fundamentals — IBM SkillsBuild (29 abr 2026)',
+        'Governance, Risk, Compliance & Data Privacy — IBM SkillsBuild (29 abr 2026)',
+        'Vulnerability Management — IBM SkillsBuild (1 may 2026)',
+        'System and Network Security — IBM SkillsBuild (23 may 2026)',
+        'Security Operations and Management — IBM SkillsBuild (24 may 2026)',
+        'Incident Response and Systems Forensics — IBM SkillsBuild (24 may 2026)',
+        'Cloud Security — IBM SkillsBuild (24 may 2026)',
+        'IBM SkillsBuild Cybersecurity Certificate — Certificado principal (24 may 2026)',
       ],
       metricas: [
+        { label: 'Módulos', value: '8' },
         { label: 'Emisor', value: 'IBM' },
         { label: 'Estado', value: 'Obtenida' },
-        { label: 'Año', value: '2026' },
+      ],
+    },
+    {
+      date:      '2024 — 2026',
+      title:     'HackTheBox — Starting Point & Labs',
+      role:      'Hacker Ético · Plataforma CTF',
+      org:       'HackTheBox',
+      completed: true,
+      type:      'lab',
+      typeLabel: 'Laboratorio HTB',
+      desc:      'Máquinas resueltas en HackTheBox: explotación de servicios FTP, SMB, Redis y captura de paquetes con Wireshark. Práctica de enumeración, escalación de privilegios y análisis de tráfico en entornos reales.',
+      tags:      ['HackTheBox', 'Pentesting', 'Linux', 'Windows', 'Nmap', 'FTP', 'SMB', 'Redis'],
+      icon:      '⚔️',
+      highlights: [
+        'Meow — Very Easy · Linux · Telnet no autenticado → root (100% owned)',
+        'Fawn — Very Easy · Linux · FTP anonymous login → exfiltración de flag (100% owned)',
+        'Dancing — Very Easy · Windows · SMB null session → acceso a share sin credenciales (100% owned)',
+        'Redeemer — Very Easy · Linux · Redis sin auth → dump de claves en memoria (100% owned)',
+        'Cap — Easy · Linux (Staff Pick) · IDOR en PCAP + SUID python → root',
+      ],
+      metricas: [
+        { label: 'Máquinas', value: '5' },
+        { label: 'Dificultad', value: 'Easy–Very Easy' },
+        { label: 'Owned', value: '100%' },
       ],
     },
   ];
@@ -691,52 +694,62 @@ import { Trajectory } from './trajectory.js';
     const gridEl = document.getElementById('skills-grid');
     if (!gridEl) return;
 
-    // Limpiar y reconstruir categorías
+    // Limpiar y reconstruir categorías como acordeón
     gridEl.innerHTML = '';
-    data.categories.forEach(cat => {
-      const catWrap = document.createElement('div');
-      catWrap.className = 'skill-category-wrap animate-on-scroll';
-      catWrap.innerHTML = `
-        <div class="skill-category-header">
-          <h3 class="skill-category-title">${cat.title}</h3>
-          <div class="skill-category-line" aria-hidden="true"></div>
-          <span class="skill-count-badge">${cat.skills.length}</span>
-        </div>
-        <div class="skills-grid" id="skills-cat-${cat.id}"></div>
-      `;
-      gridEl.appendChild(catWrap);
+    data.categories.forEach((cat, idx) => {
+      const isOpen = idx === 0;
 
-      // Renderizar las skill cards dentro de esta categoría
-      const catGrid = catWrap.querySelector(`#skills-cat-${cat.id}`);
-      cat.skills.forEach((skill, i) => {
+      const catWrap = document.createElement('div');
+      catWrap.className = 'skill-category-wrap';
+
+      // Header clickable (button para a11y)
+      const header = document.createElement('button');
+      header.className = 'skill-category-header';
+      header.setAttribute('aria-expanded', String(isOpen));
+      header.setAttribute('aria-controls', `skills-cat-${cat.id}`);
+      header.innerHTML = `
+        <h3 class="skill-category-title">${cat.title}</h3>
+        <span class="skill-count-badge">${cat.skills.length}</span>
+        <svg class="skill-accordion-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <polyline points="4 6 8 10 12 6"/>
+        </svg>
+      `;
+
+      // Body colapsable
+      const body = document.createElement('div');
+      body.className = 'skill-accordion-body' + (isOpen ? ' open' : '');
+      body.id = `skills-cat-${cat.id}`;
+
+      const inner = document.createElement('div');
+      inner.className = 'skill-accordion-inner';
+
+      const catGrid = document.createElement('div');
+      catGrid.className = 'skills-grid';
+
+      // Toggle handler
+      header.addEventListener('click', () => {
+        const expanded = header.getAttribute('aria-expanded') === 'true';
+        header.setAttribute('aria-expanded', String(!expanded));
+        body.classList.toggle('open', !expanded);
+      });
+
+      // Skill cards
+      cat.skills.forEach(skill => {
         const card = document.createElement('div');
         card.className = 'skill-card';
         card.setAttribute('title', skill.name);
-        card.style.animationDelay = `${i * 0.04}s`;
-        card.innerHTML = _buildSkillIcon(skill) + `
-          <span class="skill-name">${skill.name}</span>
-        `;
+        card.innerHTML = _buildSkillIcon(skill) + `<span class="skill-name">${skill.name}</span>`;
         catGrid.appendChild(card);
       });
+
+      inner.appendChild(catGrid);
+      body.appendChild(inner);
+      catWrap.appendChild(header);
+      catWrap.appendChild(body);
+      gridEl.appendChild(catWrap);
     });
 
-    // Re-registrar observador para los nuevos elementos
     _refreshObservers();
-
-    // Animar aparición de cards con stagger
-    setTimeout(() => {
-      document.querySelectorAll('.skill-card').forEach((card, i) => {
-        setTimeout(() => {
-          card.style.opacity = '0';
-          card.style.transform = 'translateY(16px) scale(0.95)';
-          card.style.transition = 'opacity 0.35s ease, transform 0.35s cubic-bezier(0.34,1.56,0.64,1)';
-          requestAnimationFrame(() => {
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0) scale(1)';
-          });
-        }, i * 35);
-      });
-    }, 80);
   }
 
   function _buildSkillIcon(skill) {
@@ -813,45 +826,46 @@ import { Trajectory } from './trajectory.js';
    * Efecto decode: el texto parece "descifrarse" de izquierda a derecha.
    * Cada caracter comienza siendo un símbolo aleatorio y luego
    * se "resuelve" al caracter final.
+   * Usa _decodeAnimId para cancelar animaciones previas al cambiar de modo.
    */
   function _decodeText(el, finalText) {
-    // Si el usuario prefiere movimiento reducido, usar fade simple
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      _fadeText(el, finalText);
+      _fadeSwap(el, finalText);
       return;
     }
 
+    const animId  = ++_decodeAnimId;
     const chars   = '!@#$%^&*<>[]{}|\\/01アイウエオカキ';
-    const steps   = 2;         // cuántas veces cambia el caracter antes de resolverse
-    const delay   = 12;        // ms entre cada caracter (era 30 — ~9s → ~2.5s)
-    const stepMs  = 40;        // ms entre cada "scramble step"
+    const steps   = 2;
+    const delay   = 12;
+    const stepMs  = 40;
     let output    = '';
 
-    // Ocultar brevemente
     el.style.opacity = '0';
     setTimeout(() => {
+      if (animId !== _decodeAnimId) return;
       el.style.opacity = '1';
 
       finalText.split('').forEach((char, i) => {
         if (char === ' ' || char === '\n') {
           setTimeout(() => {
+            if (animId !== _decodeAnimId) return;
             output += char;
             el.textContent = output + finalText.slice(output.length);
           }, i * delay);
           return;
         }
 
-        // Scramble steps
         for (let s = 0; s < steps; s++) {
           setTimeout(() => {
+            if (animId !== _decodeAnimId) return;
             const randomChar = chars[Math.floor(Math.random() * chars.length)];
-            const current    = output + randomChar + finalText.slice(output.length + 1);
-            el.textContent   = current;
+            el.textContent   = output + randomChar + finalText.slice(output.length + 1);
           }, i * delay + s * stepMs);
         }
 
-        // Resolver al caracter final
         setTimeout(() => {
+          if (animId !== _decodeAnimId) return;
           output += char;
           el.textContent = output + finalText.slice(output.length);
         }, i * delay + steps * stepMs);
@@ -862,6 +876,7 @@ import { Trajectory } from './trajectory.js';
   /* ════════════════════════════════════════════════════════════
      INTERSECTION OBSERVER (re-registrar tras renderizado dinámico)
   ════════════════════════════════════════════════════════════ */
+  let _decodeAnimId   = 0;
   let _scrollObserver = null;
 
   function _setupObserver() {

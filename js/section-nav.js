@@ -135,53 +135,7 @@ function _resetBar() {
   container.classList.remove('sn-active');
 }
 
-/* ══════════════════════════════════════════════════════════
-   WHEEL
-══════════════════════════════════════════════════════════ */
-
-window.addEventListener('wheel', (e) => {
-  if (!enabled || isMobile() || reducedMotion()) return;
-  if (locked) { e.preventDefault(); return; }
-
-  const real = _detectCurrentFromScroll();
-  if (real !== currentIndex) {
-    currentIndex = real;
-    _resetBar();
-  }
-
-  if (_isScrollable(e.target)) return;
-
-  const dir = e.deltaY > 0 ? 1 : -1;
-
-  if (!_atBoundary(dir)) {
-    _resetBar();
-    return;
-  }
-
-  e.preventDefault();
-
-  /* Si cambia dirección, reiniciar acumulación */
-  if (dir !== direction) {
-    direction = dir;
-    accumulated = 0;
-  }
-
-  accumulated += e.deltaY;
-  _updateLabels();
-  _setBarProgress(accumulated / THRESHOLD);
-
-  if (Math.abs(accumulated) >= THRESHOLD) {
-    const next = currentIndex + dir;
-    if (next >= 0 && next < SECTION_IDS.length) {
-      currentIndex = next;
-      _scrollToSection(next);
-    }
-    _resetBar();
-    _updateLabels();
-    locked = true;
-    setTimeout(() => { locked = false; }, COOLDOWN_MS);
-  }
-}, { passive: false });
+/* Wheel-snap desactivado — scroll libre sin intercepción */
 
 function _isScrollable(el) {
   while (el && el !== document.body) {

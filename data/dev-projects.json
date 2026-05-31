@@ -7,6 +7,11 @@
     "longDescription": "Primera app móvil del portfolio. Stack: Expo SDK 54 con Expo Router (file-based), Zustand y TanStack Query v5 en el cliente; FastAPI async con SQLAlchemy asyncpg y Alembic en el backend; PostgreSQL en Supabase. Streaming SSE implementado vía XHR (workaround para Expo). Claude Haiku detecta el mood de cada entrada, Sonnet chatea con contexto semántico del historial. Modo demo/preview sin backend incluido.",
     "tags": ["React Native", "Expo", "FastAPI", "Python", "PostgreSQL"],
     "image": "public/images/projects/mindlog/login.jpeg",
+    "images": [
+      "public/images/projects/mindlog/login.jpeg",
+      "public/images/projects/mindlog/chat IA.jpeg",
+      "public/images/projects/mindlog/notas.jpeg"
+    ],
     "repoUrl": "https://github.com/DavidAucancela/MindLog",
     "featured": true,
     "date": "2026-05",
@@ -88,6 +93,9 @@
     "longDescription": "Sitio estático de una sola página con 8 secciones (cover, origen, joyería, textiles, cerámica, decoración, Arte Tigua y contacto). Sistema de diseño propio con CSS custom properties, grid responsive de 4 a 1 columna y fotos reales de productos. Contenerizado con Docker + nginx:alpine y desplegado en Railway.",
     "tags": ["HTML", "CSS", "JavaScript", "Docker", "nginx", "Railway"],
     "image": "public/images/projects/artecuador/main.png",
+    "images": [
+      "public/images/projects/artecuador/main.png"
+    ],
     "liveUrl": "https://artecuador-production.up.railway.app/",
     "repoUrl": "https://github.com/DavidAucancela/ArtEcuador",
     "featured": false,
@@ -160,6 +168,15 @@
     "longDescription": "Sistema fullstack con Vue.js 3 y Node.js/Express. Soporta 3 idiomas (ES/EN/PT), modo oscuro/claro, carrito de compras con integración WhatsApp y panel administrativo para gestión de productos sin conocimiento técnico.",
     "tags": ["Vue.js", "Node.js", "PostgreSQL", "i18n", "Vercel"],
     "image": "public/images/projects/ideancestral/index.png",
+    "images": [
+      "public/images/projects/ideancestral/index.png",
+      "public/images/projects/ideancestral/admin panel.png",
+      "public/images/projects/ideancestral/admin.png",
+      "public/images/projects/ideancestral/categorias-index.png",
+      "public/images/projects/ideancestral/categorias-productos.png",
+      "public/images/projects/ideancestral/encuéntranos.png",
+      "public/images/projects/ideancestral/productos.png"
+    ],
     "liveUrl": "https://ideancestral-production.up.railway.app/",
     "repoUrl": "https://github.com/DavidAucancela/IDEANCESTRAL",
     "featured": true,
@@ -231,6 +248,9 @@
     "longDescription": "Backend Express como proxy agregador con caché por niveles (FBI 1h, Google Trends 6h). Leaflet.js con overlay estilo sala de operaciones, panel por país, filtros cruzados (nombre, crimen, nacionalidad, fuente) y soporte bilingüe ES/EN.",
     "tags": ["Node.js", "Leaflet", "FBI API", "Google Trends", "Railway"],
     "image": "public/images/projects/mapcriminals/main1.png",
+    "images": [
+      "public/images/projects/mapcriminals/main1.png"
+    ],
     "liveUrl": "https://mapcriminalscode-production.up.railway.app/",
     "repoUrl": "https://github.com/DavidAucancela/MapCriminalsCode",
     "featured": false,
@@ -291,6 +311,9 @@
     "longDescription": "Backend Django REST Framework con autenticación JWT (simplejwt), blacklist de refresh tokens en logout, y arquitectura estricta en capas. Frontend React 18 + Vite con contexto global de auth. Deploy con frontend en Vercel y backend en Railway.",
     "tags": ["Django", "React", "JWT", "PostgreSQL", "Railway"],
     "image": "public/images/projects/notes-app/main1.png",
+    "images": [
+      "public/images/projects/notes-app/main1.png"
+    ],
     "liveUrl": "https://aucancela-35ab41.vercel.app",
     "repoUrl": null,
     "featured": false,
@@ -376,7 +399,8 @@
     "description": "Pipeline automatizado de limpieza y carga de datos desde JSON a PostgreSQL con validación de schema y modo dry-run.",
     "longDescription": "Herramienta ETL construida con Python/Django que automatiza Extract→Transform→Load desde archivos JSON. Incluye validación de schemas, transacciones atómicas, logs de auditoría y modo dry-run para validar sin insertar.",
     "tags": ["Python", "Django", "PostgreSQL", "ETL"],
-    "image": "public/images/projects/equity/thumbnail.svg",
+    "image": null,
+    "images": [],
     "liveUrl": null,
     "repoUrl": "https://github.com/DavidAucancela/App-de-prueba-Equity",
     "featured": false,
@@ -436,7 +460,8 @@
     "description": "Sistema de transacciones bancarias que implementa el OWASP Top 10: JWT, bcrypt, Helmet.js, CSRF tokens y auditoría inmutable.",
     "longDescription": "Proyecto demostrativo de seguridad bancaria con Node.js/Express. Implementa 6 categorías del OWASP Top 10: JWT con access 15min + refresh 7d, bcrypt factor 12, Helmet.js para headers, CSRF tokens en formularios y auditoría inmutable de transacciones.",
     "tags": ["JavaScript", "Node.js", "JWT", "bcrypt", "OWASP", "PostgreSQL"],
-    "image": "public/images/projects/securabank/thumbnail.svg",
+    "image": null,
+    "images": [],
     "liveUrl": null,
     "repoUrl": "https://github.com/DavidAucancela/SecuraBank",
     "featured": false,
@@ -497,7 +522,8 @@
     "description": "Visualización interactiva de fundaciones de Quito para ConQuito con mapas Leaflet y estadísticas de impacto social.",
     "longDescription": "Aplicación de datos abiertos con JavaScript vanilla y Leaflet. Filtros por tipo y zona geográfica, markers personalizados, popups informativos y gráficos Chart.js. Entregada a ConQuito como herramienta de decisiones.",
     "tags": ["JavaScript", "Leaflet", "Chart.js", "Datos Abiertos"],
-    "image": "public/images/projects/conquito-fundaciones/thumbnail.svg",
+    "image": null,
+    "images": [],
     "liveUrl": null,
     "repoUrl": "https://github.com/DavidAucancela/Proyect_OpenLab",
     "featured": false,

@@ -1,0 +1,266 @@
+/* ──────────────────────────────────────────────────────
+   PROJECT GALLERY — Fullscreen lightbox (2-col layout)
+────────────────────────────────────────────────────── */
+#pgal {
+  position: fixed;
+  inset: 0;
+  z-index: 9990;
+  display: flex;
+  flex-direction: column;
+  background: #08080e;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+  overscroll-behavior: contain;
+}
+
+#pgal.is-open {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* ── Header (full width) ── */
+.pgal__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 1.25rem;
+  height: 52px;
+  border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.08));
+  flex-shrink: 0;
+  background: rgba(8,8,14,0.97);
+  backdrop-filter: blur(8px);
+}
+
+.pgal__title {
+  flex: 1;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary, #f0f0f0);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pgal__counter {
+  font-size: 0.72rem;
+  color: var(--text-muted, #888);
+  font-variant-numeric: tabular-nums;
+  min-width: 2.5rem;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.pgal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color, rgba(255,255,255,0.12));
+  background: transparent;
+  color: var(--text-muted, #888);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+
+.pgal__close:hover {
+  color: var(--text-primary, #f0f0f0);
+  background: var(--bg-card, rgba(255,255,255,0.06));
+  border-color: var(--color-accent, #6366f1);
+}
+
+/* ── Body: 2-column row (image-left + info-right) ── */
+.pgal__body {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── Left column: image viewer + filmstrip ── */
+.pgal__left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+/* ── Main image area ── */
+.pgal__main {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  min-height: 0;
+  position: relative;
+  background: #04040a;
+}
+
+.pgal__img-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 1rem 3.75rem;
+}
+
+.pgal__img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+  user-select: none;
+  -webkit-user-drag: none;
+  display: block;
+}
+
+.pgal__placeholder {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+  width: 100%;
+  height: 100%;
+  color: var(--text-muted, #555);
+}
+
+/* ── Navigation arrows ── */
+.pgal__arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 60px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+  background: rgba(8,8,14,0.75);
+  color: var(--text-primary, #d0d0d0);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, opacity 0.15s, border-color 0.15s;
+  z-index: 2;
+  backdrop-filter: blur(6px);
+}
+
+.pgal__arrow:hover:not(:disabled) {
+  background: var(--bg-card, rgba(255,255,255,0.08));
+  color: #fff;
+  border-color: var(--color-accent, rgba(99,102,241,0.5));
+}
+
+.pgal__arrow:disabled {
+  opacity: 0.2;
+  cursor: default;
+  pointer-events: none;
+}
+
+.pgal__arrow--prev { left: 0.5rem; }
+.pgal__arrow--next { right: 0.5rem; }
+
+/* ── Filmstrip ── */
+.pgal__filmstrip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 1rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  height: 76px;
+  flex-shrink: 0;
+  border-top: 1px solid var(--border-color, rgba(255,255,255,0.06));
+  background: rgba(8,8,14,0.92);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color, rgba(255,255,255,0.15)) transparent;
+}
+
+.pgal__filmstrip::-webkit-scrollbar { height: 3px; }
+.pgal__filmstrip::-webkit-scrollbar-track { background: transparent; }
+.pgal__filmstrip::-webkit-scrollbar-thumb {
+  background: var(--border-color, rgba(255,255,255,0.2));
+  border-radius: 100px;
+}
+
+.pgal__thumb {
+  flex-shrink: 0;
+  width: 90px;
+  height: 56px;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  cursor: pointer;
+  background: var(--bg-card, rgba(255,255,255,0.05));
+  transition: border-color 0.15s, transform 0.15s, opacity 0.15s;
+  padding: 0;
+}
+
+.pgal__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+
+.pgal__thumb:hover { transform: translateY(-2px); }
+.pgal__thumb:hover:not(.is-active) { border-color: rgba(255,255,255,0.2); }
+.pgal__thumb.is-active { border-color: var(--color-accent, #6366f1); }
+.pgal__thumb--error { opacity: 0.4; }
+
+/* ── Info panel (right column) ── */
+.pgal__info {
+  width: clamp(320px, 38vw, 480px);
+  overflow-y: auto;
+  padding: 1.25rem 1.5rem 2rem;
+  border-left: 1px solid var(--border-color, rgba(255,255,255,0.06));
+  flex-shrink: 0;
+  background: var(--bg-secondary, #0e0e18);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color, rgba(255,255,255,0.15)) transparent;
+}
+
+.pgal__info::-webkit-scrollbar { width: 4px; }
+.pgal__info::-webkit-scrollbar-track { background: transparent; }
+.pgal__info::-webkit-scrollbar-thumb {
+  background: var(--border-color, rgba(255,255,255,0.2));
+  border-radius: 100px;
+}
+
+/* ── 0 or 1 images: hide arrows and filmstrip ── */
+#pgal[data-count="0"] .pgal__arrow,
+#pgal[data-count="0"] .pgal__filmstrip,
+#pgal[data-count="1"] .pgal__arrow,
+#pgal[data-count="1"] .pgal__filmstrip {
+  display: none;
+}
+
+#pgal[data-count="0"] .pgal__img-wrap,
+#pgal[data-count="1"] .pgal__img-wrap {
+  padding: 1rem;
+}
+
+/* ── Mobile: stack vertically ── */
+@media (max-width: 768px) {
+  .pgal__body { flex-direction: column; }
+
+  .pgal__info {
+    width: auto;
+    max-height: 32vh;
+    border-left: none;
+    border-top: 1px solid var(--border-color, rgba(255,255,255,0.06));
+    padding: 1rem 1rem 1.5rem;
+  }
+
+  .pgal__header { height: 48px; padding: 0 0.75rem; }
+  .pgal__title { font-size: 0.8rem; }
+  .pgal__img-wrap { padding: 0.5rem 3rem; }
+  .pgal__arrow { width: 34px; height: 48px; }
+  .pgal__filmstrip { height: 66px; padding: 6px 0.75rem; }
+  .pgal__thumb { width: 72px; height: 46px; }
+}

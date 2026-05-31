@@ -6,6 +6,9 @@
     "longDescription": "Monorepo con SDK wrapper para @anthropic-ai/sdk, backend Express + Socket.io y dashboard React. El SDK intercepta métricas async (fire & forget) sin impacto en latencia. WebSocket para live updates, alertas de presupuesto, comparación de modelos y exportación CSV.",
     "tags": ["React", "Node.js", "PostgreSQL", "Socket.io", "Claude API"],
     "image": "public/images/projects/llm observatory/dashboard.png",
+    "images": [
+      "public/images/projects/llm observatory/dashboard.png"
+    ],
     "liveUrl": "https://llm-web-production.up.railway.app/settings",
     "repoUrl": "https://github.com/DavidAucancela/llm-observatory",
     "featured": true,
@@ -76,6 +79,18 @@
     "longDescription": "Sistema fullstack de gestión de envíos con búsqueda semántica potenciada por OpenAI + pgvector. Incluye rastreo en tiempo real, gestión de inventario, reportes analíticos y panel de administración. Redujo el tiempo de búsqueda de 4 minutos a menos de 20 segundos.",
     "tags": ["Django", "Angular", "PostgreSQL", "Docker", "OpenAI"],
     "image": "public/images/projects/ubapp/index.png",
+    "images": [
+      "public/images/projects/ubapp/index.png",
+      "public/images/projects/ubapp/dashboard.png",
+      "public/images/projects/ubapp/Login.png",
+      "public/images/projects/ubapp/búsqueda semántica.png",
+      "public/images/projects/ubapp/envío.png",
+      "public/images/projects/ubapp/importar envios.png",
+      "public/images/projects/ubapp/mapa.png",
+      "public/images/projects/ubapp/métricas semánticas.png",
+      "public/images/projects/ubapp/productos.png",
+      "public/images/projects/ubapp/resultados semántica.png"
+    ],
     "liveUrl": "https://frontend-angular-production.up.railway.app/login",
     "repoUrl": "https://github.com/DavidAucancela/UBAppV2",
     "featured": true,
@@ -148,6 +163,11 @@
     "longDescription": "Primera app móvil del portfolio. El usuario escribe entradas libres y puede conversar con ellas: Claude recupera entradas relevantes por similitud coseno y responde con contexto acumulado del usuario. Haiku para detección de mood y actualización del perfil, Sonnet para chat y resumen diario. Streaming SSE implementado vía XHR en Expo (sin EventSource nativo).",
     "tags": ["Claude API", "React Native", "Expo", "FastAPI", "Streaming SSE"],
     "image": "public/images/projects/mindlog/chat IA.jpeg",
+    "images": [
+      "public/images/projects/mindlog/chat IA.jpeg",
+      "public/images/projects/mindlog/login.jpeg",
+      "public/images/projects/mindlog/notas.jpeg"
+    ],
     "repoUrl": "https://github.com/DavidAucancela/MindLog",
     "featured": true,
     "date": "2026-05",
@@ -229,6 +249,13 @@
     "longDescription": "Sistema de aprendizaje online orientado a profesionales de la salud. Backend NestJS con módulos de cursos, evaluaciones y progreso. Frontend Next.js con SSR. Integración de OpenAI Whisper para transcribir clases en video automáticamente, generando subtítulos y contenido textual buscable.",
     "tags": ["NestJS", "Next.js", "Supabase", "Whisper", "TypeScript"],
     "image": "public/images/projects/marevitae/Screenshot 2026-05-31 at 12.09.18 AM.png",
+    "images": [
+      "public/images/projects/marevitae/Screenshot 2026-05-31 at 12.09.18 AM.png",
+      "public/images/projects/marevitae/Screenshot 2026-05-31 at 12.08.40 AM.png",
+      "public/images/projects/marevitae/Screenshot 2026-05-31 at 12.09.46 AM.png",
+      "public/images/projects/marevitae/Screenshot 2026-05-31 at 12.14.57 AM.png",
+      "public/images/projects/marevitae/Screenshot 2026-05-31 at 12.15.30 AM.png"
+    ],
     "liveUrl": "https://www.marevitaeint.com/",
     "repoUrl": "https://github.com/DavidAucancela/MareVitae",
     "featured": true,
@@ -300,6 +327,10 @@
     "longDescription": "Bot de Telegram construido sobre n8n Cloud. El agente recibe mensajes, extrae datos del prospecto con Claude Haiku (nombre, ciudad, motivo, marca), actualiza la conversación en Supabase a medida que avanza el flujo y crea/actualiza el lead en Kommo CRM con todos los campos calificados. Sin código — lógica 100% en workflows n8n visuales.",
     "tags": ["n8n", "Claude Haiku", "Supabase", "Kommo CRM", "Telegram API"],
     "image": "public/images/projects/whatsapp-ai-agent/flujo_completo_telegram_Kommo.jpeg",
+    "images": [
+      "public/images/projects/whatsapp-ai-agent/flujo_completo_telegram_Kommo.jpeg",
+      "public/images/projects/whatsapp-ai-agent/flujo_WS.jpeg"
+    ],
     "repoUrl": "https://github.com/DavidAucancela/whatsapp-ai-agent",
     "featured": false,
     "date": "2025-10",
@@ -370,6 +401,9 @@
     "longDescription": "Backend ASP.NET Core (C#) + Entity Framework con 7 modelos del dominio. Frontend React + TypeScript + Vite con dashboards por rol, tres planes de suscripción (Basic, Professional, Enterprise) y flujos de pago independientes.",
     "tags": ["ASP.NET Core", "React", "TypeScript", "Railway", "Docker"],
     "image": "public/images/projects/anaos/mainAnaOS.png",
+    "images": [
+      "public/images/projects/anaos/mainAnaOS.png"
+    ],
     "liveUrl": "https://frontend-production-cc73.up.railway.app/",
     "repoUrl": "https://github.com/DavidAucancela/AnaOS",
     "featured": false,

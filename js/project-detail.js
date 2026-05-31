@@ -126,17 +126,15 @@ function _calcXP(p) {
 /* ─────────────────────────────────────────────────────────
    HTML BUILDERS
 ───────────────────────────────────────────────────────── */
-function _phaseHTML(paso, idx, mode, unit) {
+function _phaseHTML(paso, idx, mode) {
   const fallback = {
     icon:   '📌',
     labels: { dev: paso.id, ia: paso.id, sec: paso.id },
-    verbs:  { dev: 'Complete', ia: 'Done', sec: 'Done' },
-    xp: 150,
+    verbs:  { dev: 'Completado', ia: 'Completado', sec: 'Completado' },
   };
   const meta  = PHASE_META[paso.id] || fallback;
   const label = meta.labels[mode] || paso.id;
-  const verb  = meta.verbs[mode]  || 'Complete';
-  const xp    = meta.xp;
+  const verb  = meta.verbs[mode]  || 'Completado';
   const color = meta.color || 'var(--color-accent)';
 
   const pointsHTML = (paso.puntos || [])
@@ -154,7 +152,6 @@ function _phaseHTML(paso, idx, mode, unit) {
           <div class="pdm-phase__name">${_esc(label)}</div>
           <div class="pdm-phase__verb">✓ ${_esc(verb)}</div>
         </div>
-        <span class="pdm-phase__xp">+${xp} ${unit}</span>
         <svg class="pdm-phase__chevron" viewBox="0 0 24 24" fill="none"
              stroke="currentColor" stroke-width="2.5"
              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -246,9 +243,28 @@ function _esc(str) {
     .replace(/"/g, '&quot;');
 }
 
+const PANEL_LABELS = {
+  overview:   { dev: 'Resumen del Proyecto', ia: 'Contexto',          sec: 'Objetivo'        },
+  phases:     { dev: 'Proceso',              ia: 'Pipeline',           sec: 'Metodología'     },
+  metrics:    { dev: 'Resultados',           ia: 'Métricas',           sec: 'Hallazgos'       },
+  highlights: { dev: 'Destacados',           ia: 'Aspectos Clave',     sec: 'Puntos Clave'    },
+  tech:       { dev: 'Stack Técnico',        ia: 'Stack de IA',        sec: 'Herramientas'    },
+  techFb:     { dev: 'Tecnologías',          ia: 'Tecnologías',        sec: 'Técnicas'        },
+};
+
+const PANEL_ICONS = {
+  overview:   { dev: '◈',   ia: '◈',   sec: '◈'   },
+  phases:     { dev: '⚙️',  ia: '🔬',  sec: '🔍'  },
+  metrics:    { dev: '📊',  ia: '📊',  sec: '📊'  },
+  highlights: { dev: '✦',   ia: '✦',   sec: '✦'   },
+  tech:       { dev: '🛠️', ia: '🤖',  sec: '🔧'  },
+};
+
 function _buildContent(p, mode) {
-  const unit  = MODE_LABELS[mode]?.unit || 'XP';
   const isLab = mode === 'sec' && !!p.lab;
+
+  const lbl  = m => PANEL_LABELS[m]?.[mode] || PANEL_LABELS[m]?.dev || '';
+  const icon = m => PANEL_ICONS[m]?.[mode]  || '';
 
   /* ── Phases ── */
   const pasos = p.process?.pasos?.length > 0
@@ -256,23 +272,23 @@ function _buildContent(p, mode) {
     : (isLab ? _labPhases(p) : _syntheticPhases(p));
 
   const phasesHTML = pasos
-    .map((paso, i) => _phaseHTML(paso, i, mode, unit))
+    .map((paso, i) => _phaseHTML(paso, i, mode))
     .join('');
 
   /* ── Overview ── */
   const overview  = p.process?.overview || p.longDescription || p.description || '';
   const resultado = p.process?.resultado || '';
   const overviewHTML = overview ? `
-    <p class="pdm__slabel">📋 Overview</p>
+    <p class="pdm__slabel">${icon('overview')} ${lbl('overview')}</p>
     <div class="pdm__overview">
       ${_esc(overview)}
       ${resultado ? `<div class="pdm__overview-result">✅ ${_esc(resultado)}</div>` : ''}
     </div>` : '';
 
-  /* ── Achievements from metricas ── */
+  /* ── Metrics ── */
   const metricas = p.process?.metricas || [];
-  const achievementsHTML = metricas.length > 0 ? `
-    <p class="pdm__slabel">🏆 Achievements</p>
+  const metricsHTML = metricas.length > 0 ? `
+    <p class="pdm__slabel">${icon('metrics')} ${lbl('metrics')}</p>
     <div class="pdm-achievements">
       ${metricas.map(m => `
         <div class="pdm-achievement">
@@ -281,15 +297,15 @@ function _buildContent(p, mode) {
         </div>`).join('')}
     </div>` : '';
 
-  /* ── Highlights list (for projects with highlights but no metricas) ── */
+  /* ── Highlights ── */
   const highlights = p.highlights || [];
   const highlightsHTML = (!metricas.length && highlights.length > 0) ? `
-    <p class="pdm__slabel">✨ Highlights</p>
+    <p class="pdm__slabel">${icon('highlights')} ${lbl('highlights')}</p>
     <ul class="pdm-highlights">
       ${highlights.map(h => `<li class="pdm-highlight">${_esc(h)}</li>`).join('')}
     </ul>` : '';
 
-  /* ── Tech Arsenal ── */
+  /* ── Tech Stack ── */
   let techHTML = '';
   if (p.techStack && Object.keys(p.techStack).length > 0) {
     const groups = Object.entries(p.techStack)
@@ -304,13 +320,12 @@ function _buildContent(p, mode) {
 
     if (groups) {
       techHTML = `
-        <p class="pdm__slabel">⚔️ Tech Arsenal</p>
+        <p class="pdm__slabel">${icon('tech')} ${lbl('tech')}</p>
         ${groups}`;
     }
   } else if ((p.tags || []).length > 0) {
-    // Fallback: show tags as tech chips
     techHTML = `
-      <p class="pdm__slabel">⚔️ Stack Usado</p>
+      <p class="pdm__slabel">${icon('tech')} ${lbl('techFb')}</p>
       <div class="pdm-tech-group">
         <div class="pdm-tech-chips">
           ${p.tags.map(t => `<span class="pdm-tech-chip">${_esc(t)}</span>`).join('')}
@@ -344,7 +359,7 @@ function _buildContent(p, mode) {
         </a>` : ''}
     </div>` : '';
 
-  /* ── Lab pwned banner ── */
+  /* ── Lab banner (sec mode) ── */
   const pwnedBanner = isLab ? `
     <div class="pdm__pwned-banner">
       <span class="pdm__pwned-icon">🏴‍☠️</span>
@@ -357,9 +372,9 @@ function _buildContent(p, mode) {
   return `
     ${pwnedBanner}
     ${overviewHTML}
-    <p class="pdm__slabel">⚔️ Quest Log</p>
+    <p class="pdm__slabel">${icon('phases')} ${lbl('phases')}</p>
     ${phasesHTML}
-    ${achievementsHTML}
+    ${metricsHTML}
     ${highlightsHTML}
     ${techHTML}
     ${ctaHTML}
@@ -550,4 +565,4 @@ function _togglePhase(e) {
 /* ─────────────────────────────────────────────────────────
    EXPORT
 ───────────────────────────────────────────────────────── */
-export const ProjectDetail = { init: _inject, open: _open, close: _close };
+export const ProjectDetail = { init: _inject, open: _open, close: _close, buildContent: _buildContent };

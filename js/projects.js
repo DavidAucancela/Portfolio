@@ -10,6 +10,7 @@
  */
 
 import { ProjectDetail } from './project-detail.js';
+import { ProjectGallery } from './project-gallery.js';
 import { LangSwitcher } from './lang.js';
 
 /* ────────────────────────────────────────────────────
@@ -480,11 +481,18 @@ function _renderComingSoon(grid, mode) {
 ──────────────────────────────────────────────────── */
 function _addDetailClick(card, p) {
   const btn = card.querySelector('.card-btn--process');
-  if (!btn) return;
-  btn.addEventListener('click', e => {
-    e.stopPropagation();
-    ProjectDetail.open(p, currentMode);
-  });
+  if (btn) {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      ProjectGallery.open(p, currentMode);
+    });
+  }
+
+  const imgWrap = card.querySelector('.card-image-wrap');
+  if (imgWrap) {
+    imgWrap.style.cursor = 'pointer';
+    imgWrap.addEventListener('click', () => ProjectGallery.open(p, currentMode));
+  }
 }
 
 /* ────────────────────────────────────────────────────
@@ -554,7 +562,7 @@ window.addEventListener('portfolio:openProjectDetail', async e => {
     } catch (_) {}
   }
 
-  if (project) ProjectDetail.open(project, currentMode, _allProjects);
+  if (project) ProjectGallery.open(project, currentMode);
 });
 
 /* ────────────────────────────────────────────────────

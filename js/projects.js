@@ -52,7 +52,9 @@ const SLUG_MAP = {
   'project-006': 'conquito-fundaciones',
   'project-007': 'mapcriminals',
   'project-008': 'llm-observatory',
+  'project-009': 'marevitae',
   'project-010': 'mindlog',
+  'project-011': 'whatsapp-ai-agent',
 };
 
 /* ────────────────────────────────────────────────────

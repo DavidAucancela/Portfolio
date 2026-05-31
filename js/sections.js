@@ -106,8 +106,10 @@ import { LangSwitcher } from './lang.js';
             { name: 'Angular',    type: 'devicon', icon: 'devicon-angularjs-plain colored' },
             { name: 'Vue.js',     type: 'devicon', icon: 'devicon-vuejs-plain colored' },
             { name: 'React',      type: 'devicon', icon: 'devicon-react-original colored' },
+            { name: 'Next.js',    type: 'devicon', icon: 'devicon-nextjs-original colored', invertDark: true },
             { name: 'TypeScript', type: 'devicon', icon: 'devicon-typescript-plain colored' },
             { name: 'JavaScript', type: 'devicon', icon: 'devicon-javascript-plain colored' },
+            { name: 'Tailwind',   type: 'devicon', icon: 'devicon-tailwindcss-original colored' },
             { name: 'HTML5',      type: 'devicon', icon: 'devicon-html5-plain colored' },
             { name: 'CSS3',       type: 'devicon', icon: 'devicon-css3-plain colored' },
             { name: 'Vite',       type: 'devicon', icon: 'devicon-vitejs-plain colored' },
@@ -155,6 +157,7 @@ import { LangSwitcher } from './lang.js';
           title: { es: 'Interfaces IA', en: 'AI Interfaces' },
           skills: [
             { name: 'React',        type: 'devicon', icon: 'devicon-react-original colored' },
+            { name: 'Next.js',      type: 'devicon', icon: 'devicon-nextjs-original colored', invertDark: true },
             { name: 'Vue.js',       type: 'devicon', icon: 'devicon-vuejs-plain colored' },
             { name: 'TypeScript',   type: 'devicon', icon: 'devicon-typescript-plain colored' },
             { name: 'Streaming UI', type: 'svg', icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>` },
@@ -171,6 +174,8 @@ import { LangSwitcher } from './lang.js';
             { name: 'Embeddings',  type: 'emoji', icon: '🔢' },
             { name: 'pgvector',    type: 'devicon', icon: 'devicon-postgresql-plain colored' },
             { name: 'Prompt Eng.', type: 'emoji', icon: '✍️' },
+            { name: 'n8n',         type: 'emoji', icon: '⚙️' },
+            { name: 'Ollama',      type: 'emoji', icon: '🦙' },
           ],
         },
         {

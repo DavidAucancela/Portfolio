@@ -3,6 +3,8 @@
  * Importa todos los módulos y los inicializa cuando el DOM está listo.
  */
 
+import { inject as injectAnalytics } from '@vercel/analytics';
+import { injectSpeedInsights } from '@vercel/speed-insights';
 import { ThemeSwitcher } from './theme-switcher.js';
 import { HeroAnimations } from './animations.js';
 import { Sections } from './sections.js';
@@ -25,6 +27,10 @@ import '../css/project-detail.css';
 import '../css/trajectory.css';
 import '../css/command-palette.css';
 import '../css/sec-terminal.css';
+
+// Vercel Analytics y Speed Insights — solo activos en producción
+injectAnalytics();
+injectSpeedInsights();
 
 document.addEventListener('DOMContentLoaded', () => {
   ThemeSwitcher.init();

@@ -1,4 +1,4 @@
-name: CI — Lint, Type-check, Test, Build
+name: CI — Build & Lighthouse
 
 on:
   push:
@@ -6,148 +6,61 @@ on:
   pull_request:
     branches: [main]
 
-# Cancela runs anteriores del mismo PR/branch para ahorrar minutos
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 1: Lint + Type-check (rápido, falla rápido)
-  # ─────────────────────────────────────────────────────────────────────────────
-  lint:
-    name: 🔍 Lint & Type-check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Instalar dependencias
-        run: npm ci
-
-      - name: ESLint
-        run: npm run lint
-
-      - name: TypeScript strict check
-        run: npm run type-check
-
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Job 2: Unit Tests con Vitest
-  # ─────────────────────────────────────────────────────────────────────────────
-  unit-tests:
-    name: 🧪 Unit Tests (Vitest)
-    runs-on: ubuntu-latest
-    needs: lint
-    steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Instalar dependencias
-        run: npm ci
-
-      - name: Correr tests unitarios
-        run: npm run test
-
-      - name: Generar coverage report
-        run: npm run test:coverage
-        continue-on-error: true  # Coverage no bloquea el CI
-
-      - name: Upload coverage artifact
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: coverage-report
-          path: coverage/
-          retention-days: 7
-
-  # ─────────────────────────────────────────────────────────────────────────────
-  # Job 3: Build de producción
+  # Job 1: Build de producción con Vite
   # ─────────────────────────────────────────────────────────────────────────────
   build:
-    name: 🏗️ Build producción
+    name: Build Vite
     runs-on: ubuntu-latest
-    needs: [lint, unit-tests]
     steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js 20
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      - name: Instalar dependencias
-        run: npm ci
+      - run: npm ci
 
-      - name: Build Next.js
-        run: npm run build
-        env:
-          NEXT_TELEMETRY_DISABLED: 1
+      - run: npm run build
 
-      - name: Verificar que .next/standalone existe (para Docker)
-        run: test -d .next/standalone
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: nextjs-build
-          path: |
-            .next/
-            public/
+          name: dist
+          path: dist/
           retention-days: 1
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # Job 4: E2E Tests con Playwright (solo en PRs a main)
+  # Job 2: Lighthouse CI — auditoría de performance, accesibilidad y SEO
   # ─────────────────────────────────────────────────────────────────────────────
-  e2e:
-    name: 🎭 E2E Tests (Playwright)
+  lighthouse:
+    name: Lighthouse CI
     runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'pull_request'
     steps:
-      - name: Checkout código
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js 20
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      - name: Instalar dependencias
-        run: npm ci
+      - run: npm ci
 
-      - name: Instalar browsers de Playwright
-        run: npx playwright install --with-deps chromium
-
-      - name: Descargar build artifact
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
-          name: nextjs-build
+          name: dist
+          path: dist/
 
-      - name: Correr E2E tests
-        run: npm run test:e2e
+      - name: Instalar serve y lhci
+        run: npm install -g @lhci/cli@0.14.x serve
+
+      - name: Correr Lighthouse CI
+        run: lhci autorun
         env:
-          BASE_URL: http://localhost:3000
-          CI: true
-
-      - name: Upload Playwright report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 7
+          LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}

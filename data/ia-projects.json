@@ -4,7 +4,13 @@
     "title": "LLM Observatory",
     "description": "Dashboard open-source de observabilidad para la API de Claude. Monitorea tokens, costo y latencia en tiempo real con un SDK wrapper drop-in de cero overhead.",
     "longDescription": "Monorepo con SDK wrapper para @anthropic-ai/sdk, backend Express + Socket.io y dashboard React. El SDK intercepta métricas async (fire & forget) sin impacto en latencia. WebSocket para live updates, alertas de presupuesto, comparación de modelos y exportación CSV.",
-    "tags": ["React", "Node.js", "PostgreSQL", "Socket.io", "Claude API"],
+    "tags": [
+      "React",
+      "Node.js",
+      "PostgreSQL",
+      "Socket.io",
+      "Claude API"
+    ],
     "image": "public/images/projects/llm observatory/dashboard.png",
     "images": [
       "public/images/projects/llm observatory/dashboard.png"
@@ -14,9 +20,21 @@
     "featured": true,
     "date": "2026-03",
     "techStack": {
-      "sdk": ["@anthropic-ai/sdk wrapper", "Async interceptor"],
-      "backend": ["Node.js", "Express", "Socket.io", "PostgreSQL"],
-      "frontend": ["React", "Chart.js", "WebSocket client"]
+      "sdk": [
+        "@anthropic-ai/sdk wrapper",
+        "Async interceptor"
+      ],
+      "backend": [
+        "Node.js",
+        "Express",
+        "Socket.io",
+        "PostgreSQL"
+      ],
+      "frontend": [
+        "React",
+        "Chart.js",
+        "WebSocket client"
+      ]
     },
     "process": {
       "overview": "Herramienta de MLOps para observabilidad de LLMs en producción. El SDK wrapper intercepta cada llamada a la API de Claude de forma asíncrona — sin modificar una sola línea del código cliente — y envía métricas al dashboard por WebSocket.",
@@ -65,19 +83,37 @@
       ],
       "resultado": "SDK drop-in con 0ms de overhead sobre Claude. Dashboard live con tracking de tokens, costos y latencia. Comparativa multi-modelo en tiempo real.",
       "metricas": [
-        { "label": "Overhead del SDK", "value": "0ms" },
-        { "label": "TTFT tracking", "value": "✓ Streaming" },
-        { "label": "Modelos comparados", "value": "5+" },
-        { "label": "Latencia WebSocket", "value": "< 50ms" }
+        {
+          "label": "Overhead del SDK",
+          "value": "0ms"
+        },
+        {
+          "label": "TTFT tracking",
+          "value": "✓ Streaming"
+        },
+        {
+          "label": "Modelos comparados",
+          "value": "5+"
+        },
+        {
+          "label": "Latencia WebSocket",
+          "value": "< 50ms"
+        }
       ]
     }
   },
   {
     "id": "project-001",
-    "title": "UBApp — Universal Box",
+    "title": "UBApp",
     "description": "Sistema de almacenamiento de envíos con búsqueda semántica impulsada por IA, visualización geográfica y generación de documentos.",
     "longDescription": "Sistema fullstack de gestión de envíos con búsqueda semántica potenciada por OpenAI + pgvector. Incluye rastreo en tiempo real, gestión de inventario, reportes analíticos y panel de administración. Redujo el tiempo de búsqueda de 4 minutos a menos de 20 segundos.",
-    "tags": ["Django", "Angular", "PostgreSQL", "Docker", "OpenAI"],
+    "tags": [
+      "Django",
+      "Angular",
+      "PostgreSQL",
+      "Docker",
+      "OpenAI"
+    ],
     "image": "public/images/projects/ubapp/index.png",
     "images": [
       "public/images/projects/ubapp/index.png",
@@ -96,10 +132,27 @@
     "featured": true,
     "date": "2026-01",
     "techStack": {
-      "ai": ["OpenAI text-embedding-ada-002", "pgvector", "Cosine similarity"],
-      "backend": ["Python", "Django", "Django REST Framework"],
-      "frontend": ["Angular", "TypeScript", "Leaflet"],
-      "tools": ["PostgreSQL + pgvector", "Docker", "Redis", "Nginx"]
+      "ai": [
+        "OpenAI text-embedding-ada-002",
+        "pgvector",
+        "Cosine similarity"
+      ],
+      "backend": [
+        "Python",
+        "Django",
+        "Django REST Framework"
+      ],
+      "frontend": [
+        "Angular",
+        "TypeScript",
+        "Leaflet"
+      ],
+      "tools": [
+        "PostgreSQL + pgvector",
+        "Docker",
+        "Redis",
+        "Nginx"
+      ]
     },
     "process": {
       "overview": "Integración de búsqueda semántica con OpenAI embeddings + pgvector en un sistema de gestión de envíos. El pipeline de IA convierte texto de búsqueda en vectores y compara por similitud coseno contra 5.000+ envíos en PostgreSQL.",
@@ -148,20 +201,38 @@
       ],
       "resultado": "Búsqueda semántica en producción: tiempo de localización de envíos reducido de 4 minutos a menos de 20 segundos. Mejora del 92% en eficiencia operativa.",
       "metricas": [
-        { "label": "Tiempo de búsqueda", "value": "< 20s" },
-        { "label": "Mejora eficiencia", "value": "92%" },
-        { "label": "Modelo embeddings", "value": "ada-002" },
-        { "label": "Dimensiones vector", "value": "1536" }
+        {
+          "label": "Tiempo de búsqueda",
+          "value": "< 20s"
+        },
+        {
+          "label": "Mejora eficiencia",
+          "value": "92%"
+        },
+        {
+          "label": "Modelo embeddings",
+          "value": "ada-002"
+        },
+        {
+          "label": "Dimensiones vector",
+          "value": "1536"
+        }
       ]
     }
   },
   {
     "id": "project-010",
     "slug": "mindlog",
-    "title": "MindLog — Diario Personal con IA",
+    "title": "MindLog",
     "description": "App móvil de diario personal con IA conversacional. Claude Haiku detecta el mood, Sonnet responde con contexto del historial vía RAG con embeddings y streaming SSE real en React Native.",
     "longDescription": "Primera app móvil del portfolio. El usuario escribe entradas libres y puede conversar con ellas: Claude recupera entradas relevantes por similitud coseno y responde con contexto acumulado del usuario. Haiku para detección de mood y actualización del perfil, Sonnet para chat y resumen diario. Streaming SSE implementado vía XHR en Expo (sin EventSource nativo).",
-    "tags": ["Claude API", "React Native", "Expo", "FastAPI", "Streaming SSE"],
+    "tags": [
+      "Claude API",
+      "React Native",
+      "Expo",
+      "FastAPI",
+      "Streaming SSE"
+    ],
     "image": "public/images/projects/mindlog/chat IA.jpeg",
     "images": [
       "public/images/projects/mindlog/chat IA.jpeg",
@@ -172,9 +243,27 @@
     "featured": true,
     "date": "2026-05",
     "techStack": {
-      "ia": ["Claude Haiku (mood + contexto)", "Claude Sonnet (chat + resumen)", "OpenAI Embeddings", "RAG semántico"],
-      "mobile": ["Expo SDK 54", "React Native", "Expo Router", "TypeScript", "Zustand", "TanStack Query v5"],
-      "backend": ["Python", "FastAPI async", "SQLAlchemy async", "Alembic", "PostgreSQL (Supabase)"]
+      "ia": [
+        "Claude Haiku (mood + contexto)",
+        "Claude Sonnet (chat + resumen)",
+        "OpenAI Embeddings",
+        "RAG semántico"
+      ],
+      "mobile": [
+        "Expo SDK 54",
+        "React Native",
+        "Expo Router",
+        "TypeScript",
+        "Zustand",
+        "TanStack Query v5"
+      ],
+      "backend": [
+        "Python",
+        "FastAPI async",
+        "SQLAlchemy async",
+        "Alembic",
+        "PostgreSQL (Supabase)"
+      ]
     },
     "highlights": [
       "Streaming SSE en tiempo real vía XHR (workaround para ausencia de EventSource en React Native)",
@@ -234,20 +323,38 @@
       ],
       "resultado": "Primera app móvil fullstack con IA conversacional sobre diario personal. Streaming en tiempo real, RAG sobre entradas propias del usuario, perfil acumulativo entre sesiones y detección automática de mood. Backend en Railway, distribución via Expo EAS Preview.",
       "metricas": [
-        { "label": "Modelos Claude", "value": "2 (Haiku + Sonnet)" },
-        { "label": "Streaming", "value": "SSE en tiempo real" },
-        { "label": "Almacenamiento token", "value": "SecureStore" },
-        { "label": "Distribución", "value": "Expo EAS Preview" }
+        {
+          "label": "Modelos Claude",
+          "value": "2 (Haiku + Sonnet)"
+        },
+        {
+          "label": "Streaming",
+          "value": "SSE en tiempo real"
+        },
+        {
+          "label": "Almacenamiento token",
+          "value": "SecureStore"
+        },
+        {
+          "label": "Distribución",
+          "value": "Expo EAS Preview"
+        }
       ]
     }
   },
   {
     "id": "project-009",
     "slug": "marevitae",
-    "title": "Mare Vitae — LMS Médico con IA",
+    "title": "Mare Vitae",
     "description": "Plataforma LMS para educación médica con transcripción automática de video mediante Whisper y gestión de contenido multirole.",
     "longDescription": "Sistema de aprendizaje online orientado a profesionales de la salud. Backend NestJS con módulos de cursos, evaluaciones y progreso. Frontend Next.js con SSR. Integración de OpenAI Whisper para transcribir clases en video automáticamente, generando subtítulos y contenido textual buscable.",
-    "tags": ["NestJS", "Next.js", "Supabase", "Whisper", "TypeScript"],
+    "tags": [
+      "NestJS",
+      "Next.js",
+      "Supabase",
+      "Whisper",
+      "TypeScript"
+    ],
     "image": "public/images/projects/marevitae/Screenshot 2026-05-31 at 12.09.18 AM.png",
     "images": [
       "public/images/projects/marevitae/Screenshot 2026-05-31 at 12.09.18 AM.png",
@@ -261,9 +368,22 @@
     "featured": true,
     "date": "2025-09",
     "techStack": {
-      "ia": ["OpenAI Whisper (transcripción)", "Subtítulos automáticos", "Búsqueda en transcripciones"],
-      "frontend": ["Next.js", "TypeScript", "SSR"],
-      "backend": ["NestJS", "TypeScript", "Supabase", "PostgreSQL"]
+      "ia": [
+        "OpenAI Whisper (transcripción)",
+        "Subtítulos automáticos",
+        "Búsqueda en transcripciones"
+      ],
+      "frontend": [
+        "Next.js",
+        "TypeScript",
+        "SSR"
+      ],
+      "backend": [
+        "NestJS",
+        "TypeScript",
+        "Supabase",
+        "PostgreSQL"
+      ]
     },
     "process": {
       "overview": "LMS médico con transcripción automática de clases. Whisper convierte el audio de los videos en texto estructurado, generando subtítulos y haciendo el contenido buscable por palabras clave. Multi-rol: instructor, alumno y administrador con flujos diferenciados.",
@@ -312,20 +432,38 @@
       ],
       "resultado": "LMS médico con transcripción automática en producción. Clases en video con subtítulos generados por Whisper y contenido completamente buscable.",
       "metricas": [
-        { "label": "Transcripción", "value": "Whisper AI" },
-        { "label": "Roles", "value": "3 (admin/instructor/alumno)" },
-        { "label": "SSR", "value": "Next.js" },
-        { "label": "Storage", "value": "Supabase" }
+        {
+          "label": "Transcripción",
+          "value": "Whisper AI"
+        },
+        {
+          "label": "Roles",
+          "value": "3 (admin/instructor/alumno)"
+        },
+        {
+          "label": "SSR",
+          "value": "Next.js"
+        },
+        {
+          "label": "Storage",
+          "value": "Supabase"
+        }
       ]
     }
   },
   {
     "id": "project-011",
     "slug": "whatsapp-ai-agent",
-    "title": "Social Media AI Agent — Leads con Kommo CRM",
+    "title": "Social Media AI Agent",
     "description": "Agente conversacional en redes sociales que califica leads automáticamente con Claude Haiku, los registra en Supabase y los sincroniza con Kommo CRM usando n8n Cloud.",
     "longDescription": "Bot de Telegram construido sobre n8n Cloud. El agente recibe mensajes, extrae datos del prospecto con Claude Haiku (nombre, ciudad, motivo, marca), actualiza la conversación en Supabase a medida que avanza el flujo y crea/actualiza el lead en Kommo CRM con todos los campos calificados. Sin código — lógica 100% en workflows n8n visuales.",
-    "tags": ["n8n", "Claude Haiku", "Supabase", "Kommo CRM", "Telegram API"],
+    "tags": [
+      "n8n",
+      "Claude Haiku",
+      "Supabase",
+      "Kommo CRM",
+      "Telegram API"
+    ],
     "image": "public/images/projects/whatsapp-ai-agent/flujo_completo_telegram_Kommo.jpeg",
     "images": [
       "public/images/projects/whatsapp-ai-agent/flujo_completo_telegram_Kommo.jpeg",
@@ -335,9 +473,20 @@
     "featured": false,
     "date": "2025-10",
     "techStack": {
-      "ia": ["Claude Haiku (extracción + confirmación + preguntas)", "Prompt engineering estructurado", "Extracción de datos en JSON"],
-      "automatizacion": ["n8n Cloud workflows", "Telegram Bot API", "Kommo CRM API"],
-      "tools": ["Supabase (PostgreSQL)", "n8n Cloud"]
+      "ia": [
+        "Claude Haiku (extracción + confirmación + preguntas)",
+        "Prompt engineering estructurado",
+        "Extracción de datos en JSON"
+      ],
+      "automatizacion": [
+        "n8n Cloud workflows",
+        "Telegram Bot API",
+        "Kommo CRM API"
+      ],
+      "tools": [
+        "Supabase (PostgreSQL)",
+        "n8n Cloud"
+      ]
     },
     "process": {
       "overview": "Agente conversacional en Telegram que reemplaza la captación manual de leads. El flujo n8n: Telegram Trigger → verificar usuario → extraer datos con Claude Haiku → actualizar conversación en Supabase → generar preguntas → confirmar datos → guardar lead en Supabase + Kommo CRM. Todo sin código.",
@@ -387,19 +536,37 @@
       ],
       "resultado": "Agente en producción. Leads calificados automáticamente con Claude Haiku, registrados en Supabase y sincronizados con Kommo CRM en tiempo real. Respuesta instantánea 24/7.",
       "metricas": [
-        { "label": "Modelo IA", "value": "Claude Haiku" },
-        { "label": "Motor", "value": "n8n Cloud" },
-        { "label": "CRM", "value": "Kommo" },
-        { "label": "Canal", "value": "Telegram Bot" }
+        {
+          "label": "Modelo IA",
+          "value": "Claude Haiku"
+        },
+        {
+          "label": "Motor",
+          "value": "n8n Cloud"
+        },
+        {
+          "label": "CRM",
+          "value": "Kommo"
+        },
+        {
+          "label": "Canal",
+          "value": "Telegram Bot"
+        }
       ]
     }
   },
   {
     "id": "project-003",
-    "title": "AnaOS — SaaS de Cooperativas",
+    "title": "AnaOS",
     "description": "Plataforma SaaS multi-tenant para gestión de cooperativas y agencias con planes de suscripción, auth completo y deploy en Railway.",
     "longDescription": "Backend ASP.NET Core (C#) + Entity Framework con 7 modelos del dominio. Frontend React + TypeScript + Vite con dashboards por rol, tres planes de suscripción (Basic, Professional, Enterprise) y flujos de pago independientes.",
-    "tags": ["ASP.NET Core", "React", "TypeScript", "Railway", "Docker"],
+    "tags": [
+      "ASP.NET Core",
+      "React",
+      "TypeScript",
+      "Railway",
+      "Docker"
+    ],
     "image": "public/images/projects/anaos/mainAnaOS.png",
     "images": [
       "public/images/projects/anaos/mainAnaOS.png"
@@ -409,9 +576,21 @@
     "featured": false,
     "date": "2025-11",
     "techStack": {
-      "frontend": ["React", "TypeScript", "Vite"],
-      "backend": ["ASP.NET Core (C#)", "Entity Framework Core"],
-      "tools": ["PostgreSQL", "Docker", "Railway", "JWT"]
+      "frontend": [
+        "React",
+        "TypeScript",
+        "Vite"
+      ],
+      "backend": [
+        "ASP.NET Core (C#)",
+        "Entity Framework Core"
+      ],
+      "tools": [
+        "PostgreSQL",
+        "Docker",
+        "Railway",
+        "JWT"
+      ]
     },
     "process": {
       "overview": "SaaS multi-tenant con aislamiento estricto de datos por tenant. Backend C# con EF Core, frontend React con rutas protegidas por rol y plan.",
@@ -460,10 +639,22 @@
       ],
       "resultado": "Plataforma SaaS multi-tenant en producción con 3 planes activos y flujos de verificación operativos.",
       "metricas": [
-        { "label": "Modelos de dominio", "value": "7" },
-        { "label": "Planes de suscripción", "value": "3" },
-        { "label": "Servicios Docker", "value": "3" },
-        { "label": "Roles de usuario", "value": "4" }
+        {
+          "label": "Modelos de dominio",
+          "value": "7"
+        },
+        {
+          "label": "Planes de suscripción",
+          "value": "3"
+        },
+        {
+          "label": "Servicios Docker",
+          "value": "3"
+        },
+        {
+          "label": "Roles de usuario",
+          "value": "4"
+        }
       ]
     }
   }

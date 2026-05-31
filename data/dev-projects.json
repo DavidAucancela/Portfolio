@@ -1,97 +1,18 @@
 [
   {
-    "id": "project-010",
-    "slug": "mindlog",
-    "title": "MindLog — Diario Personal con IA",
-    "description": "App móvil fullstack con diario personal e IA conversacional. Expo React Native + FastAPI async + PostgreSQL. Streaming SSE real, RAG con embeddings y perfil acumulativo de usuario.",
-    "longDescription": "Primera app móvil del portfolio. Stack: Expo SDK 54 con Expo Router (file-based), Zustand y TanStack Query v5 en el cliente; FastAPI async con SQLAlchemy asyncpg y Alembic en el backend; PostgreSQL en Supabase. Streaming SSE implementado vía XHR (workaround para Expo). Claude Haiku detecta el mood de cada entrada, Sonnet chatea con contexto semántico del historial. Modo demo/preview sin backend incluido.",
-    "tags": ["React Native", "Expo", "FastAPI", "Python", "PostgreSQL"],
-    "image": "public/images/projects/mindlog/login.jpeg",
-    "images": [
-      "public/images/projects/mindlog/login.jpeg",
-      "public/images/projects/mindlog/chat IA.jpeg",
-      "public/images/projects/mindlog/notas.jpeg"
-    ],
-    "repoUrl": "https://github.com/DavidAucancela/MindLog",
-    "featured": true,
-    "date": "2026-05",
-    "techStack": {
-      "mobile": ["Expo SDK 54", "React Native", "Expo Router", "TypeScript", "Zustand", "TanStack Query v5"],
-      "backend": ["Python", "FastAPI", "SQLAlchemy async", "Alembic", "PostgreSQL (Supabase)"],
-      "ia": ["Claude API (Haiku + Sonnet)", "OpenAI Embeddings", "Railway"]
-    },
-    "highlights": [
-      "Primera app móvil del portfolio: Expo SDK 54 + Expo Router file-based + TypeScript",
-      "Streaming SSE real vía XHR en React Native (workaround para ausencia de EventSource nativo)",
-      "FastAPI async completo: asyncpg, SQLAlchemy async engine, Alembic con asyncio.run",
-      "Infinite scroll paginado (20/página) con TanStack Query useInfiniteQuery",
-      "Modo demo/preview con entradas mock sin backend, limpiado correctamente al login real",
-      "expo-secure-store para tokens JWT en keychain del dispositivo"
-    ],
-    "process": {
-      "overview": "Primera app móvil del portfolio. Stack full-stack con Expo SDK 54 (React Native + TypeScript) en el cliente y FastAPI async en el backend. El diferencial técnico está en el streaming SSE implementado vía XHR en mobile y en la capa de IA con Claude y RAG semántico sobre entradas del usuario.",
-      "pasos": [
-        {
-          "id": "problema",
-          "resumen": "Los diarios digitales son pasivos: el usuario escribe pero no puede interactuar con su propio historial. Con cientos de entradas acumuladas, es imposible recordar qué escribió hace meses sobre un tema específico. Se necesitaba una app móvil que convirtiera el diario en un interlocutor inteligente.",
-          "puntos": [
-            "Diarios digitales sin posibilidad de conversación ni recuperación contextual",
-            "Sin detección automática de estado de ánimo para visualizar evolución emocional",
-            "Contexto del usuario perdido entre sesiones de chat (sin memoria acumulada)",
-            "Sin experiencia mobile nativa para un diario personal de uso diario"
-          ]
-        },
-        {
-          "id": "diseño",
-          "resumen": "Expo Router con navegación file-based para estructura de rutas declarativa. Zustand para estado global (auth, preview mode). TanStack Query v5 para cache de entradas con infinite scroll. FastAPI async como backend para máximo rendimiento con I/O asíncrono.",
-          "puntos": [
-            "Expo Router (file-based): tabs + stack anidados para navegación nativa",
-            "Zustand stores: authStore (token, user), previewStore (isPreview, mock entries)",
-            "TanStack Query v5 con useInfiniteQuery para paginación de 20 entradas por página",
-            "FastAPI async: asyncpg + SQLAlchemy async engine para máxima eficiencia I/O",
-            "Alembic con asyncio.run para migraciones versionadas en entorno async"
-          ]
-        },
-        {
-          "id": "desarrollo",
-          "resumen": "Streaming SSE implementado como XHR en React Native (Expo no soporta EventSource nativo). FastAPI StreamingResponse con Claude API streaming. expo-secure-store para persistencia segura de JWT. Modo preview con datos mock sin conexión a backend.",
-          "puntos": [
-            "XHR streaming: solución al problema de EventSource en React Native/Expo",
-            "FastAPI StreamingResponse: yield de chunks SSE desde Claude API streaming",
-            "POST /chat/close: Haiku actualiza users.context al cerrar cada conversación",
-            "expo-secure-store: tokens JWT en keychain cifrado del dispositivo (iOS/Android)",
-            "Modo demo: previewStore con flag isPreview, mock entries, limpieza al login real",
-            "Infinite scroll: cursor-based pagination con TanStack Query useInfiniteQuery"
-          ]
-        },
-        {
-          "id": "despliegue",
-          "resumen": "Backend en Railway con uvicorn. Mobile distribuido mediante Expo EAS Preview build: genera APK/IPA descargable y QR para Expo Go sin necesidad de Play Store ni App Store.",
-          "puntos": [
-            "Railway: FastAPI con uvicorn en puerto 8000, DATABASE_URL de Supabase",
-            "Expo EAS: eas build --profile preview genera build compartible sin tiendas de apps",
-            "EXPO_PUBLIC_API_URL: IP local en desarrollo, URL Railway en preview/producción",
-            "Supabase PostgreSQL gestionada con pool asyncpg para concurrencia",
-            "Alembic: 001_initial_schema + 002_add_user_context ejecutadas al deploy en Railway"
-          ]
-        }
-      ],
-      "resultado": "Primera app móvil fullstack con IA conversacional sobre diario personal. Streaming en tiempo real, RAG sobre entradas del usuario, perfil acumulativo entre sesiones y detección de mood. Backend en Railway, distribución via Expo EAS Preview.",
-      "metricas": [
-        { "label": "Plataforma", "value": "iOS + Android" },
-        { "label": "Streaming", "value": "SSE en tiempo real" },
-        { "label": "Almacenamiento token", "value": "SecureStore" },
-        { "label": "Distribución", "value": "Expo EAS Preview" }
-      ]
-    }
-  },
-  {
     "id": "project-009",
     "slug": "artecuador",
-    "title": "ArtEcuador — Catálogo de Artesanías",
+    "title": "ArtEcuador",
     "description": "Catálogo web estático de artesanías ecuatorianas en un único index.html con CSS y JS inline. Sin frameworks ni dependencias de build.",
     "longDescription": "Sitio estático de una sola página con 8 secciones (cover, origen, joyería, textiles, cerámica, decoración, Arte Tigua y contacto). Sistema de diseño propio con CSS custom properties, grid responsive de 4 a 1 columna y fotos reales de productos. Contenerizado con Docker + nginx:alpine y desplegado en Railway.",
-    "tags": ["HTML", "CSS", "JavaScript", "Docker", "nginx", "Railway"],
+    "tags": [
+      "HTML",
+      "CSS",
+      "JavaScript",
+      "Docker",
+      "nginx",
+      "Railway"
+    ],
     "image": "public/images/projects/artecuador/main.png",
     "images": [
       "public/images/projects/artecuador/main.png"
@@ -101,8 +22,17 @@
     "featured": false,
     "date": "2026-04",
     "techStack": {
-      "frontend": ["HTML5", "CSS3", "JavaScript Vanilla"],
-      "tools": ["Docker", "nginx:alpine", "Railway", "Google Fonts"]
+      "frontend": [
+        "HTML5",
+        "CSS3",
+        "JavaScript Vanilla"
+      ],
+      "tools": [
+        "Docker",
+        "nginx:alpine",
+        "Railway",
+        "Google Fonts"
+      ]
     },
     "process": {
       "overview": "Catálogo estático de artesanías ecuatorianas sin frameworks ni build step. Todo el proyecto vive en un único index.html con CSS y JS inline. Contenerizado con Docker + nginx:alpine para Railway.",
@@ -154,10 +84,22 @@
       ],
       "resultado": "Catálogo estático en producción con 8 secciones, fotos reales de 5 productos artesanales y diseño mobile-first. Deploy en Railway con Docker + nginx sin servidor de aplicaciones.",
       "metricas": [
-        { "label": "Archivos del proyecto", "value": "1 HTML" },
-        { "label": "Dependencias npm", "value": "0" },
-        { "label": "Secciones del catálogo", "value": "8" },
-        { "label": "Deploy", "value": "Railway + Docker" }
+        {
+          "label": "Archivos del proyecto",
+          "value": "1 HTML"
+        },
+        {
+          "label": "Dependencias npm",
+          "value": "0"
+        },
+        {
+          "label": "Secciones del catálogo",
+          "value": "8"
+        },
+        {
+          "label": "Deploy",
+          "value": "Railway + Docker"
+        }
       ]
     }
   },
@@ -166,7 +108,13 @@
     "title": "Ideancestral",
     "description": "Plataforma de catálogo digital multiidioma para artesanos ecuatorianos con carrito de compras vía WhatsApp.",
     "longDescription": "Sistema fullstack con Vue.js 3 y Node.js/Express. Soporta 3 idiomas (ES/EN/PT), modo oscuro/claro, carrito de compras con integración WhatsApp y panel administrativo para gestión de productos sin conocimiento técnico.",
-    "tags": ["Vue.js", "Node.js", "PostgreSQL", "i18n", "Vercel"],
+    "tags": [
+      "Vue.js",
+      "Node.js",
+      "PostgreSQL",
+      "i18n",
+      "Vercel"
+    ],
     "image": "public/images/projects/ideancestral/index.png",
     "images": [
       "public/images/projects/ideancestral/index.png",
@@ -182,9 +130,23 @@
     "featured": true,
     "date": "2026-02",
     "techStack": {
-      "frontend": ["Vue.js 3", "Vue Router", "Vue i18n", "Composition API"],
-      "backend": ["Node.js", "Express", "JWT"],
-      "tools": ["PostgreSQL", "Vercel", "Render", "WhatsApp API"]
+      "frontend": [
+        "Vue.js 3",
+        "Vue Router",
+        "Vue i18n",
+        "Composition API"
+      ],
+      "backend": [
+        "Node.js",
+        "Express",
+        "JWT"
+      ],
+      "tools": [
+        "PostgreSQL",
+        "Vercel",
+        "Render",
+        "WhatsApp API"
+      ]
     },
     "process": {
       "overview": "Plataforma multiidioma para que artesanos ecuatorianos tengan presencia digital sin conocimiento técnico. Vue.js 3 SPA con i18n nativo, carrito con checkout vía WhatsApp y panel admin CRUD accesible.",
@@ -234,19 +196,37 @@
       ],
       "resultado": "Plataforma en producción con catálogo artesanal en 3 idiomas. Artesanos gestionan su catálogo con una interfaz sin código.",
       "metricas": [
-        { "label": "Idiomas", "value": "3 (ES/EN/PT)" },
-        { "label": "Panel admin", "value": "Sin código" },
-        { "label": "Checkout", "value": "WhatsApp" },
-        { "label": "Deploy", "value": "Vercel + Render" }
+        {
+          "label": "Idiomas",
+          "value": "3 (ES/EN/PT)"
+        },
+        {
+          "label": "Panel admin",
+          "value": "Sin código"
+        },
+        {
+          "label": "Checkout",
+          "value": "WhatsApp"
+        },
+        {
+          "label": "Deploy",
+          "value": "Vercel + Render"
+        }
       ]
     }
   },
   {
     "id": "project-007",
-    "title": "MapCriminals — Más Buscados del Mundo",
+    "title": "MapCriminals",
     "description": "Mapa mundial interactivo de criminales más buscados integrando la FBI API en tiempo real, Google Trends y datos manuales por país.",
     "longDescription": "Backend Express como proxy agregador con caché por niveles (FBI 1h, Google Trends 6h). Leaflet.js con overlay estilo sala de operaciones, panel por país, filtros cruzados (nombre, crimen, nacionalidad, fuente) y soporte bilingüe ES/EN.",
-    "tags": ["Node.js", "Leaflet", "FBI API", "Google Trends", "Railway"],
+    "tags": [
+      "Node.js",
+      "Leaflet",
+      "FBI API",
+      "Google Trends",
+      "Railway"
+    ],
     "image": "public/images/projects/mapcriminals/main1.png",
     "images": [
       "public/images/projects/mapcriminals/main1.png"
@@ -256,9 +236,21 @@
     "featured": false,
     "date": "2025-12",
     "techStack": {
-      "frontend": ["Leaflet.js", "Vanilla JS", "Chart.js"],
-      "backend": ["Node.js", "Express"],
-      "tools": ["FBI API", "Google Trends API", "Railway", "In-memory cache"]
+      "frontend": [
+        "Leaflet.js",
+        "Vanilla JS",
+        "Chart.js"
+      ],
+      "backend": [
+        "Node.js",
+        "Express"
+      ],
+      "tools": [
+        "FBI API",
+        "Google Trends API",
+        "Railway",
+        "In-memory cache"
+      ]
     },
     "process": {
       "overview": "Proxy backend para agregar datos de la FBI API, Google Trends y datasets manuales en un mapa Leaflet con estética de sala de operaciones. Caché por niveles para respetar rate limits de cada fuente.",
@@ -296,10 +288,22 @@
       ],
       "resultado": "Mapa mundial con datos en tiempo real de criminales más buscados de FBI API + Google Trends + datasets manuales para 20+ países.",
       "metricas": [
-        { "label": "Fuentes de datos", "value": "3" },
-        { "label": "Países cubiertos", "value": "20+" },
-        { "label": "Cache TTL FBI", "value": "1h" },
-        { "label": "Idiomas", "value": "ES/EN" }
+        {
+          "label": "Fuentes de datos",
+          "value": "3"
+        },
+        {
+          "label": "Países cubiertos",
+          "value": "20+"
+        },
+        {
+          "label": "Cache TTL FBI",
+          "value": "1h"
+        },
+        {
+          "label": "Idiomas",
+          "value": "ES/EN"
+        }
       ]
     }
   },
@@ -309,7 +313,13 @@
     "title": "Notes App",
     "description": "Aplicación full-stack de notas con autenticación JWT, categorías, archivado y arquitectura por capas (View → Service → Repository → ORM).",
     "longDescription": "Backend Django REST Framework con autenticación JWT (simplejwt), blacklist de refresh tokens en logout, y arquitectura estricta en capas. Frontend React 18 + Vite con contexto global de auth. Deploy con frontend en Vercel y backend en Railway.",
-    "tags": ["Django", "React", "JWT", "PostgreSQL", "Railway"],
+    "tags": [
+      "Django",
+      "React",
+      "JWT",
+      "PostgreSQL",
+      "Railway"
+    ],
     "image": "public/images/projects/notes-app/main1.png",
     "images": [
       "public/images/projects/notes-app/main1.png"
@@ -319,9 +329,23 @@
     "featured": false,
     "date": "2026-04",
     "techStack": {
-      "frontend": ["React 18", "Vite 5", "Axios"],
-      "backend": ["Python 3.12", "Django 4.2", "Django REST Framework", "simplejwt"],
-      "tools": ["PostgreSQL 16", "Docker + docker-compose", "Vercel", "Railway"]
+      "frontend": [
+        "React 18",
+        "Vite 5",
+        "Axios"
+      ],
+      "backend": [
+        "Python 3.12",
+        "Django 4.2",
+        "Django REST Framework",
+        "simplejwt"
+      ],
+      "tools": [
+        "PostgreSQL 16",
+        "Docker + docker-compose",
+        "Vercel",
+        "Railway"
+      ]
     },
     "process": {
       "overview": "Aplicación de notas full-stack con arquitectura por capas en el backend (View → Service → Repository → ORM) y autenticación JWT con blacklist de refresh tokens. Frontend React + Vite desplegado en Vercel; backend Django en Railway con PostgreSQL.",
@@ -386,19 +410,36 @@
       ],
       "resultado": "Aplicación full-stack en producción con autenticación JWT completa, CRUD de notas con categorías y archivado, y arquitectura por capas verificable. Backend en Railway, frontend en Vercel.",
       "metricas": [
-        { "label": "Capas de arquitectura", "value": "4" },
-        { "label": "Endpoints API", "value": "13" },
-        { "label": "Auth", "value": "JWT + Blacklist" },
-        { "label": "Deploy", "value": "Vercel + Railway" }
+        {
+          "label": "Capas de arquitectura",
+          "value": "4"
+        },
+        {
+          "label": "Endpoints API",
+          "value": "13"
+        },
+        {
+          "label": "Auth",
+          "value": "JWT + Blacklist"
+        },
+        {
+          "label": "Deploy",
+          "value": "Vercel + Railway"
+        }
       ]
     }
   },
   {
     "id": "project-004",
-    "title": "Equity — Gestor de Datos ETL",
+    "title": "Equity",
     "description": "Pipeline automatizado de limpieza y carga de datos desde JSON a PostgreSQL con validación de schema y modo dry-run.",
     "longDescription": "Herramienta ETL construida con Python/Django que automatiza Extract→Transform→Load desde archivos JSON. Incluye validación de schemas, transacciones atómicas, logs de auditoría y modo dry-run para validar sin insertar.",
-    "tags": ["Python", "Django", "PostgreSQL", "ETL"],
+    "tags": [
+      "Python",
+      "Django",
+      "PostgreSQL",
+      "ETL"
+    ],
     "image": null,
     "images": [],
     "liveUrl": null,
@@ -406,8 +447,16 @@
     "featured": false,
     "date": "2025-11",
     "techStack": {
-      "backend": ["Python", "Django", "Django ORM"],
-      "tools": ["PostgreSQL", "pgAdmin", "Django management commands"]
+      "backend": [
+        "Python",
+        "Django",
+        "Django ORM"
+      ],
+      "tools": [
+        "PostgreSQL",
+        "pgAdmin",
+        "Django management commands"
+      ]
     },
     "process": {
       "overview": "Pipeline ETL en Python/Django para automatizar la carga de datos financieros desde archivos JSON a PostgreSQL con validación estricta de schema y transacciones atómicas.",
@@ -446,10 +495,22 @@
       ],
       "resultado": "Pipeline ETL que redujo el tiempo de carga de datos de 2h manual a menos de 5 minutos con validación de schema y 0 errores de integridad.",
       "metricas": [
-        { "label": "Tiempo de carga", "value": "< 5 min" },
-        { "label": "Validaciones", "value": "Schema + tipos" },
-        { "label": "Modo dry-run", "value": "✓" },
-        { "label": "Transacciones", "value": "Atómicas" }
+        {
+          "label": "Tiempo de carga",
+          "value": "< 5 min"
+        },
+        {
+          "label": "Validaciones",
+          "value": "Schema + tipos"
+        },
+        {
+          "label": "Modo dry-run",
+          "value": "✓"
+        },
+        {
+          "label": "Transacciones",
+          "value": "Atómicas"
+        }
       ]
     }
   },
@@ -459,7 +520,14 @@
     "title": "SecuraBank",
     "description": "Sistema de transacciones bancarias que implementa el OWASP Top 10: JWT, bcrypt, Helmet.js, CSRF tokens y auditoría inmutable.",
     "longDescription": "Proyecto demostrativo de seguridad bancaria con Node.js/Express. Implementa 6 categorías del OWASP Top 10: JWT con access 15min + refresh 7d, bcrypt factor 12, Helmet.js para headers, CSRF tokens en formularios y auditoría inmutable de transacciones.",
-    "tags": ["JavaScript", "Node.js", "JWT", "bcrypt", "OWASP", "PostgreSQL"],
+    "tags": [
+      "JavaScript",
+      "Node.js",
+      "JWT",
+      "bcrypt",
+      "OWASP",
+      "PostgreSQL"
+    ],
     "image": null,
     "images": [],
     "liveUrl": null,
@@ -467,9 +535,21 @@
     "featured": false,
     "date": "2025-02",
     "techStack": {
-      "frontend": ["HTML", "CSS", "JavaScript"],
-      "backend": ["Node.js", "Express"],
-      "tools": ["JWT", "bcrypt", "PostgreSQL", "Helmet.js"]
+      "frontend": [
+        "HTML",
+        "CSS",
+        "JavaScript"
+      ],
+      "backend": [
+        "Node.js",
+        "Express"
+      ],
+      "tools": [
+        "JWT",
+        "bcrypt",
+        "PostgreSQL",
+        "Helmet.js"
+      ]
     },
     "process": {
       "overview": "Sistema bancario demostrativo construido aplicando el OWASP Top 10 como checklist de diseño. La seguridad se trató como requisito desde el inicio, no como añadido posterior.",
@@ -510,18 +590,32 @@
       ],
       "resultado": "Sistema bancario demostrativo con 6 vulnerabilidades del OWASP Top 10 mitigadas y cobertura completa de autenticación, autorización y auditoría.",
       "metricas": [
-        { "label": "OWASP mitigados", "value": "6/10" },
-        { "label": "Capas de seguridad", "value": "5" },
-        { "label": "Cobertura auditoría", "value": "100%" }
+        {
+          "label": "OWASP mitigados",
+          "value": "6/10"
+        },
+        {
+          "label": "Capas de seguridad",
+          "value": "5"
+        },
+        {
+          "label": "Cobertura auditoría",
+          "value": "100%"
+        }
       ]
     }
   },
   {
     "id": "project-006",
-    "title": "ConQuito — Fundaciones",
+    "title": "ConQuito",
     "description": "Visualización interactiva de fundaciones de Quito para ConQuito con mapas Leaflet y estadísticas de impacto social.",
     "longDescription": "Aplicación de datos abiertos con JavaScript vanilla y Leaflet. Filtros por tipo y zona geográfica, markers personalizados, popups informativos y gráficos Chart.js. Entregada a ConQuito como herramienta de decisiones.",
-    "tags": ["JavaScript", "Leaflet", "Chart.js", "Datos Abiertos"],
+    "tags": [
+      "JavaScript",
+      "Leaflet",
+      "Chart.js",
+      "Datos Abiertos"
+    ],
     "image": null,
     "images": [],
     "liveUrl": null,
@@ -529,8 +623,16 @@
     "featured": false,
     "date": "2025-10",
     "techStack": {
-      "frontend": ["JavaScript Vanilla", "Leaflet.js", "Chart.js"],
-      "tools": ["Datos Abiertos Quito", "GeoJSON", "CSV"]
+      "frontend": [
+        "JavaScript Vanilla",
+        "Leaflet.js",
+        "Chart.js"
+      ],
+      "tools": [
+        "Datos Abiertos Quito",
+        "GeoJSON",
+        "CSV"
+      ]
     },
     "process": {
       "overview": "Herramienta de visualización de datos abiertos para ConQuito. JavaScript vanilla sin frameworks para máxima compatibilidad y facilidad de entrega como artefacto estático.",
@@ -569,10 +671,22 @@
       ],
       "resultado": "Herramienta de decisiones entregada a ConQuito con mapa interactivo de 50+ fundaciones de Quito y estadísticas de impacto por zona.",
       "metricas": [
-        { "label": "Fundaciones mapeadas", "value": "50+" },
-        { "label": "Zonas de Quito", "value": "8" },
-        { "label": "Stack", "value": "Vanilla JS" },
-        { "label": "Cliente", "value": "ConQuito" }
+        {
+          "label": "Fundaciones mapeadas",
+          "value": "50+"
+        },
+        {
+          "label": "Zonas de Quito",
+          "value": "8"
+        },
+        {
+          "label": "Stack",
+          "value": "Vanilla JS"
+        },
+        {
+          "label": "Cliente",
+          "value": "ConQuito"
+        }
       ]
     }
   }

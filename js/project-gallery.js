@@ -2,6 +2,11 @@ import { ProjectDetail } from './project-detail.js';
 
 const MODE_EMOJI = { dev: '⚙️', ia: '🤖', sec: '🔒' };
 
+/* Encode each path segment to handle spaces and accented chars (é, ú, ñ…) */
+function _src(path) {
+  return path.split('/').map(encodeURIComponent).join('/');
+}
+
 export const ProjectGallery = (() => {
   let _el        = null;
   let _images    = [];
@@ -85,7 +90,7 @@ export const ProjectGallery = (() => {
     strip.innerHTML = _images.map((src, i) => `
       <button class="pgal__thumb" role="tab" data-idx="${i}"
               aria-label="Imagen ${i + 1}" aria-selected="false" type="button">
-        <img src="${src}" alt="Miniatura ${i + 1}" loading="lazy"
+        <img src="${_src(src)}" alt="Miniatura ${i + 1}" loading="lazy"
              onerror="this.closest('.pgal__thumb').classList.add('pgal__thumb--error')" />
       </button>
     `).join('');
@@ -111,15 +116,15 @@ export const ProjectGallery = (() => {
     _idx = Math.max(0, Math.min(idx, _images.length - 1));
     const src = _images[_idx];
 
-    img.style.display = '';
-    ph.style.display  = 'none';
-    img.alt           = `${_p?.title || ''} — imagen ${_idx + 1}`;
-    img.src           = src;
-    img.onerror       = () => {
+    img.onerror = () => {
       img.style.display = 'none';
       ph.style.display  = 'flex';
       ph.textContent    = MODE_EMOJI[_mode] || '📁';
     };
+    img.style.display = '';
+    ph.style.display  = 'none';
+    img.alt           = `${_p?.title || ''} — imagen ${_idx + 1}`;
+    img.src           = _src(src);
 
     document.getElementById('pgal-counter').textContent =
       _images.length > 1 ? `${_idx + 1} / ${_images.length}` : '';

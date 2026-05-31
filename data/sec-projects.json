@@ -3,7 +3,12 @@
     "id": "lab-001",
     "title": "Meow",
     "description": "Enumeración de servicios expuestos y acceso mediante credenciales por defecto en servicio Telnet.",
-    "tags": ["Telnet", "Default Credentials", "Enumeration", "Linux"],
+    "tags": [
+      "Telnet",
+      "Default Credentials",
+      "Enumeration",
+      "Linux"
+    ],
     "image": null,
     "images": [],
     "liveUrl": null,
@@ -16,7 +21,11 @@
       "os": "Linux",
       "rating": "4.6",
       "status": "Pwned",
-      "techniques": ["Telnet", "Default Credentials", "Reconnaissance"]
+      "techniques": [
+        "Telnet",
+        "Default Credentials",
+        "Reconnaissance"
+      ]
     },
     "process": {
       "overview": "Starting Point — primera máquina del learning path de HackTheBox. Objetivo: comprender el flujo básico de reconocimiento y explotación de credenciales por defecto en servicios de red.",
@@ -54,10 +63,22 @@
       ],
       "resultado": "Máquina pwneada. Root flag obtenida mediante credenciales por defecto en Telnet.",
       "metricas": [
-        { "label": "Plataforma", "value": "HackTheBox" },
-        { "label": "Dificultad", "value": "Very Easy" },
-        { "label": "Técnica", "value": "Default Creds" },
-        { "label": "Rating", "value": "★ 4.6" }
+        {
+          "label": "Plataforma",
+          "value": "HackTheBox"
+        },
+        {
+          "label": "Dificultad",
+          "value": "Very Easy"
+        },
+        {
+          "label": "Técnica",
+          "value": "Default Creds"
+        },
+        {
+          "label": "Rating",
+          "value": "★ 4.6"
+        }
       ]
     }
   },
@@ -65,7 +86,12 @@
     "id": "lab-002",
     "title": "Fawn",
     "description": "Explotación de FTP con acceso anónimo habilitado para extracción de archivos sensibles del servidor.",
-    "tags": ["FTP", "Anonymous Login", "Enumeration", "Linux"],
+    "tags": [
+      "FTP",
+      "Anonymous Login",
+      "Enumeration",
+      "Linux"
+    ],
     "image": null,
     "images": [],
     "liveUrl": null,
@@ -78,7 +104,11 @@
       "os": "Linux",
       "rating": "4.7",
       "status": "Pwned",
-      "techniques": ["FTP", "Anonymous Login", "File Enumeration"]
+      "techniques": [
+        "FTP",
+        "Anonymous Login",
+        "File Enumeration"
+      ]
     },
     "process": {
       "overview": "Starting Point — explotación de FTP con autenticación anónima habilitada. Demuestra el riesgo de servicios FTP mal configurados que exponen archivos del sistema.",
@@ -117,10 +147,22 @@
       ],
       "resultado": "Máquina pwneada. Flag obtenida vía FTP con autenticación anónima sin necesidad de exploit.",
       "metricas": [
-        { "label": "Plataforma", "value": "HackTheBox" },
-        { "label": "Dificultad", "value": "Very Easy" },
-        { "label": "Técnica", "value": "Anon FTP" },
-        { "label": "Rating", "value": "★ 4.7" }
+        {
+          "label": "Plataforma",
+          "value": "HackTheBox"
+        },
+        {
+          "label": "Dificultad",
+          "value": "Very Easy"
+        },
+        {
+          "label": "Técnica",
+          "value": "Anon FTP"
+        },
+        {
+          "label": "Rating",
+          "value": "★ 4.7"
+        }
       ]
     }
   },
@@ -128,7 +170,12 @@
     "id": "lab-003",
     "title": "Dancing",
     "description": "Acceso a shares SMB sin autenticación para obtener credenciales y flag del sistema Windows.",
-    "tags": ["SMB", "Anonymous Share", "Enumeration", "Windows"],
+    "tags": [
+      "SMB",
+      "Anonymous Share",
+      "Enumeration",
+      "Windows"
+    ],
     "image": null,
     "images": [],
     "liveUrl": null,
@@ -141,7 +188,11 @@
       "os": "Windows",
       "rating": "4.7",
       "status": "Pwned",
-      "techniques": ["SMB", "Anonymous Shares", "Enumeration"]
+      "techniques": [
+        "SMB",
+        "Anonymous Shares",
+        "Enumeration"
+      ]
     },
     "process": {
       "overview": "Starting Point — Windows con SMB shares accesibles sin autenticación. Ejercicio de enumeración SMB con smbclient para descubrir y acceder a shares expuestos.",
@@ -180,10 +231,22 @@
       ],
       "resultado": "Máquina Windows pwneada. Flag obtenida vía SMB share accesible con null session.",
       "metricas": [
-        { "label": "Plataforma", "value": "HackTheBox" },
-        { "label": "OS", "value": "Windows" },
-        { "label": "Técnica", "value": "SMB Null Session" },
-        { "label": "Rating", "value": "★ 4.7" }
+        {
+          "label": "Plataforma",
+          "value": "HackTheBox"
+        },
+        {
+          "label": "OS",
+          "value": "Windows"
+        },
+        {
+          "label": "Técnica",
+          "value": "SMB Null Session"
+        },
+        {
+          "label": "Rating",
+          "value": "★ 4.7"
+        }
       ]
     }
   },
@@ -191,7 +254,12 @@
     "id": "lab-004",
     "title": "Redeemer",
     "description": "Explotación de instancia Redis expuesta sin autenticación para dump de base de datos en memoria.",
-    "tags": ["Redis", "Unauthenticated Access", "Enumeration", "Linux"],
+    "tags": [
+      "Redis",
+      "Unauthenticated Access",
+      "Enumeration",
+      "Linux"
+    ],
     "image": null,
     "images": [],
     "liveUrl": null,
@@ -204,7 +272,11 @@
       "os": "Linux",
       "rating": "4.6",
       "status": "Pwned",
-      "techniques": ["Redis", "Unauthenticated Access", "DB Dump"]
+      "techniques": [
+        "Redis",
+        "Unauthenticated Access",
+        "DB Dump"
+      ]
     },
     "process": {
       "overview": "Starting Point — Redis expuesto en puerto no estándar sin autenticación. Ejercicio de enumeración de servicios en puertos altos y explotación de Redis sin requirepass configurado.",
@@ -243,18 +315,36 @@
       ],
       "resultado": "Máquina pwneada. Flag extraída directamente de Redis expuesto sin autenticación.",
       "metricas": [
-        { "label": "Plataforma", "value": "HackTheBox" },
-        { "label": "Servicio", "value": "Redis 5.0.7" },
-        { "label": "Técnica", "value": "No Auth DB" },
-        { "label": "Rating", "value": "★ 4.6" }
+        {
+          "label": "Plataforma",
+          "value": "HackTheBox"
+        },
+        {
+          "label": "Servicio",
+          "value": "Redis 5.0.7"
+        },
+        {
+          "label": "Técnica",
+          "value": "No Auth DB"
+        },
+        {
+          "label": "Rating",
+          "value": "★ 4.6"
+        }
       ]
     }
   },
   {
     "id": "prac-001",
-    "title": "Diagnóstico de Seguridad — ESPOCH DETIC",
+    "title": "Diagnóstico de Seguridad ESPOCH",
     "description": "Diagnóstico de sistemas institucionales, análisis de infraestructura con herramientas de seguridad y verificación de controles ISO 27001 en el DETIC de la ESPOCH.",
-    "tags": ["ISO 27001", "Auditoría", "Análisis de Vulnerabilidades", "Hardening", "Linux"],
+    "tags": [
+      "ISO 27001",
+      "Auditoría",
+      "Análisis de Vulnerabilidades",
+      "Hardening",
+      "Linux"
+    ],
     "image": null,
     "images": [],
     "liveUrl": null,
@@ -297,18 +387,35 @@
       ],
       "resultado": "Diagnóstico completo de la infraestructura institucional. Informe de hallazgos con análisis de brecha ISO 27001 y recomendaciones de mitigación.",
       "metricas": [
-        { "label": "Norma", "value": "ISO 27001" },
-        { "label": "Duración", "value": "6 meses" },
-        { "label": "Institución", "value": "ESPOCH" },
-        { "label": "Área", "value": "DETIC" }
+        {
+          "label": "Norma",
+          "value": "ISO 27001"
+        },
+        {
+          "label": "Duración",
+          "value": "6 meses"
+        },
+        {
+          "label": "Institución",
+          "value": "ESPOCH"
+        },
+        {
+          "label": "Área",
+          "value": "DETIC"
+        }
       ]
     }
   },
   {
     "id": "cert-001",
-    "title": "Introduction to Cybersecurity — Cisco",
+    "title": "Introduction to Cybersecurity",
     "description": "Certificación oficial de Cisco Networking Academy sobre fundamentos de ciberseguridad: tipos de amenazas, vulnerabilidades, ataques comunes y principios de defensa.",
-    "tags": ["Cisco", "Fundamentos", "Threat Analysis", "Network Security"],
+    "tags": [
+      "Cisco",
+      "Fundamentos",
+      "Threat Analysis",
+      "Network Security"
+    ],
     "image": null,
     "images": [],
     "liveUrl": null,
@@ -351,18 +458,35 @@
       ],
       "resultado": "Certificación obtenida. Fundamentos de ciberseguridad según el framework de Cisco NetAcad.",
       "metricas": [
-        { "label": "Emisor", "value": "Cisco" },
-        { "label": "Año", "value": "2025" },
-        { "label": "Estado", "value": "Obtenida" },
-        { "label": "Plataforma", "value": "NetAcad" }
+        {
+          "label": "Emisor",
+          "value": "Cisco"
+        },
+        {
+          "label": "Año",
+          "value": "2025"
+        },
+        {
+          "label": "Estado",
+          "value": "Obtenida"
+        },
+        {
+          "label": "Plataforma",
+          "value": "NetAcad"
+        }
       ]
     }
   },
   {
     "id": "cert-002",
-    "title": "Curso Certificado de Ciberseguridad — IBM",
+    "title": "Ciberseguridad IBM",
     "description": "Certificación completada en ciberseguridad por IBM SkillsBuild. Cubre operaciones de seguridad, análisis de amenazas y defensa de infraestructuras.",
-    "tags": ["IBM", "Security Operations", "Threat Analysis", "Incident Response"],
+    "tags": [
+      "IBM",
+      "Security Operations",
+      "Threat Analysis",
+      "Incident Response"
+    ],
     "image": null,
     "images": [],
     "liveUrl": null,
@@ -405,10 +529,22 @@
       ],
       "resultado": "Certificación obtenida. Programa de ciberseguridad completado con certificado oficial IBM SkillsBuild.",
       "metricas": [
-        { "label": "Emisor", "value": "IBM" },
-        { "label": "Estado", "value": "Obtenida" },
-        { "label": "Año", "value": "2026" },
-        { "label": "Plataforma", "value": "SkillsBuild" }
+        {
+          "label": "Emisor",
+          "value": "IBM"
+        },
+        {
+          "label": "Estado",
+          "value": "Obtenida"
+        },
+        {
+          "label": "Año",
+          "value": "2026"
+        },
+        {
+          "label": "Plataforma",
+          "value": "SkillsBuild"
+        }
       ]
     }
   }

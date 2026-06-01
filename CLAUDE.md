@@ -28,7 +28,8 @@ css/
   sections.css                # Estilos de secciones (about, projects, skills, contact)
   animations.css              # Keyframes globales + scroll-driven animations (@supports)
   polish.css                  # jonathan-panel, trayectoria interactiva, detalles visuales
-  project-detail.css          # Modal de detalle de proyecto
+  project-detail.css          # Panel lateral de detalle (PDM) — ya no se abre desde cards
+  project-gallery.css         # Gallery fullscreen (layout 2 col: imagen izq, info der)
   trajectory.css              # Estilos del drawer de trayectoria
   command-palette.css         # Command palette (Cmd+K) — overlay, modal, items, toast
   sec-terminal.css            # Terminal interactiva del hero en modo .sec
@@ -43,7 +44,8 @@ js/
   theme-switcher.js           # Cambio de modo dev/ia/sec, persistencia en localStorage
   sections.js                 # Renderizado de secciones (ABOUT_DATA, EXPERIENCE_DATA, etc.)
   projects.js                 # Renderizado de tarjetas de proyectos por modo
-  project-detail.js           # Modal de detalle de proyecto (proceso, métricas, links)
+  project-detail.js           # buildContent(p, mode) + PDM lateral (init/open/close)
+  project-gallery.js          # ProjectGallery — gallery fullscreen (open/close)
   animations.js               # HeroAnimations: canvas de partículas/matrix/neural por modo
   effects.js                  # SectionReveal (IntersectionObserver), parallax, partículas
   lang.js                     # LangSwitcher — internacionalización ES/EN
@@ -54,9 +56,9 @@ js/
   sec-terminal.js             # SecTerminal — terminal interactiva en hero modo .sec
 
 data/
-  dev-projects.json           # 8 proyectos del modo .dev
-  ia-projects.json            # 4 proyectos del modo .ia
-  sec-projects.json           # 7 proyectos del modo .sec
+  dev-projects.json           # 7 proyectos del modo .dev (cargados con fetch en runtime)
+  ia-projects.json            # 6 proyectos del modo .ia (cargados con fetch en runtime)
+  sec-projects.json           # 7 proyectos del modo .sec (cargados con fetch en runtime)
   personal.json               # Bio, email, redes, timeline
   skills.json                 # Skills por categoría
 
@@ -65,12 +67,13 @@ assets/
     og-preview.svg            # Placeholder og:image (pendiente: reemplazar con PNG real)
   fonts/                      # Fuentes locales
 
-public/                       # Imágenes servidas con prefijo /public/
+public/                       # Servido con prefijo /public/ en Vite
   Foto principal.jpg          # Foto modo .dev
   personalIA.jpg              # Foto modo .ia
   personalSec.jpg             # Foto modo .sec
   Hoja de vida - Jonathan Aucancela.pdf
   images/projects/<slug>/     # Screenshots de proyectos por slug
+  images/certificados/        # PDFs de certificaciones y prácticas (modo .sec)
 ```
 
 ## Arquitectura & Patrones clave
@@ -129,9 +132,50 @@ Los keyframes globales son: `sd-up`, `sd-left`, `sd-right`, `sd-scale`, `sd-bar`
 - `#contact` — formulario Web3Forms + redes sociales
 - `#jonathan-panel` — drawer lateral de trayectoria (fuera del `<main>`)
 
-## Datos embebidos en JS
-Los JSON de `data/` NO se cargan con fetch en runtime. Los datos están embebidos directamente
-en los módulos JS como constantes (`ABOUT_DATA`, `EXPERIENCE_DATA`, `SKILLS_DATA`, etc.).
+## Datos de proyectos (JSON + fetch en runtime)
+Los JSON de `data/` **sí se cargan con `fetch` en runtime** desde `projects.js`:
+```js
+const res = await fetch(`data/${mode}-projects.json`);
+const projects = await res.json();
+```
+Los datos personales (`ABOUT_DATA`, `EXPERIENCE_DATA`, `SKILLS_DATA`) **sí están embebidos**
+como constantes en `sections.js`.
+
+### Campos de proyecto (estructura completa)
+```json
+{
+  "id": "project-001",
+  "slug": "ubapp",
+  "title": "UBApp",
+  "description": "...",
+  "longDescription": "...",
+  "tags": ["Django", "Angular"],
+  "image": "public/images/projects/ubapp/index.png",
+  "images": [                         ← array para el gallery (puede estar vacío [])
+    "public/images/projects/ubapp/index.png",
+    "public/images/projects/ubapp/dashboard.png"
+  ],
+  "docs": [                           ← solo en proyectos .sec con certificados/evidencia
+    { "label": "Certificado", "url": "public/images/certificados/cert.pdf" }
+  ],
+  "liveUrl": "https://...",
+  "repoUrl": "https://github.com/...",
+  "featured": true,
+  "date": "2026-01",
+  "techStack": { "backend": ["Django"], "frontend": ["Angular"] },
+  "process": {
+    "overview": "...",
+    "pasos": [{ "id": "problema", "resumen": "...", "puntos": ["..."] }],
+    "resultado": "...",
+    "metricas": [{ "label": "Tiempo", "value": "< 20s" }]
+  },
+  "lab": { ... }                      ← solo en proyectos .sec de HackTheBox
+}
+```
+
+**Nota sobre rutas de imagen:** usar `_src(path)` en `project-gallery.js` para codificar
+paths con espacios o acentos antes de asignar a `img.src`. En HTML estático (`<img src="...">`)
+el browser lo codifica solo, pero en JS hay que codificar manualmente.
 
 ## SLUG_MAP de proyectos (`projects.js`)
 ```js
@@ -143,7 +187,7 @@ en los módulos JS como constantes (`ABOUT_DATA`, `EXPERIENCE_DATA`, `SKILLS_DAT
 'project-006' → 'conquito-fundaciones'
 'project-007' → 'mapcriminals'
 'project-008' → 'llm-observatory'
-'project-010' → 'mindlog'
+'project-010' → 'mindlog'        ← solo en ia-projects.json
 ```
 
 ## Convenciones CSS
@@ -156,13 +200,41 @@ en los módulos JS como constantes (`ABOUT_DATA`, `EXPERIENCE_DATA`, `SKILLS_DAT
 
 ## Imágenes
 - Las fotos del avatar cambian por modo: `AVATAR_SRC` en `app.js`
-- Screenshots de proyectos: `public/images/projects/<slug>/thumbnail.svg` (algunos son placeholders)
+- Screenshots de proyectos en `public/images/projects/<slug>/`
+- Proyectos sin imágenes reales (Equity, SecuraBank, ConQuito): `"image": null, "images": []`
 - Ruta correcta con Vite: `"public/images/..."` → en prod se sirve desde `/public/images/...`
+- **Evitar espacios y caracteres especiales en nombres de archivo** — macOS guarda screenshots
+  con ` ` (narrow no-break space) entre la hora y AM/PM, lo que impide que Vite los sirva.
+  Renombrar a `slug-01.png`, `slug-02.png`, etc.
+
+## Gallery fullscreen (`project-gallery.js` + `project-gallery.css`)
+- **Trigger:** click en `.card-image-wrap` o en el botón "Ver proceso" de cualquier card
+- **Layout desktop:** 2 columnas — izquierda: imagen+flechas+filmstrip / derecha: panel info
+- **Layout mobile (≤768px):** columna única, info debajo
+- **z-index:** 9990 (sobre el PDM lateral en 9985 y el navbar)
+- **Navegación:** flechas ← →, contador `1/N`, filmstrip de thumbnails, swipe táctil, teclas ← → Esc
+- **1 imagen:** flechas y filmstrip ocultos (`[data-count="1"]` via CSS)
+- **0 imágenes:** muestra emoji del modo como placeholder; info panel sigue visible
+- **Panel info:** reutiliza `ProjectDetail.buildContent(p, mode)` — mismo HTML que el PDM lateral
+- **Codificación de rutas:** helper `_src(path)` codifica cada segmento con `encodeURIComponent`
+
+## Panel de detalle (`project-detail.js`)
+- `ProjectDetail.buildContent(p, mode)` exportado como API pública — usado por ProjectGallery
+- Labels de sección adaptativos por modo (`PANEL_LABELS` / `PANEL_ICONS`):
+
+| Sección    | .dev           | .ia        | .sec          |
+|------------|----------------|------------|---------------|
+| Overview   | Resumen        | Contexto   | Objetivo      |
+| Fases      | ⚙️ Proceso     | 🔬 Pipeline | 🔍 Metodología |
+| Métricas   | 📊 Resultados  | 📊 Métricas | 📊 Hallazgos  |
+| Tech       | 🛠️ Stack Técnico | 🤖 Stack de IA | 🔧 Herramientas |
+| Docs       | 📄 Documentos  | 📄 Documentos | 📄 Documentos |
+
+- **Sin XP/Credits:** eliminado el badge `+150 XP` de los headers de fase
+- **Sección Documentos:** renderiza `p.docs[]` como links a PDF con icono de archivo
 
 ## Pendientes manuales (no automatizables)
-1. **Imágenes reales** para Equity, SecuraBank, ConQuito — reemplazar `thumbnail.svg` en
-   `public/images/projects/{equity,securabank,conquito-fundaciones}/`
-2. **og:image PNG real** — screenshot 1200×630px del portfolio →
+1. **og:image PNG real** — screenshot 1200×630px del portfolio →
    `assets/images/og-preview.png` → actualizar `og:image` y `twitter:image` en `index.html`
-3. **URL canónica** — actualizar `<link rel="canonical">`, `og:url` y JSON-LD `url`
+2. **URL canónica** — actualizar `<link rel="canonical">`, `og:url` y JSON-LD `url`
    en `index.html` con el dominio Vercel real (actualmente apunta a GitHub Pages)

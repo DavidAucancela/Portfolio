@@ -29,7 +29,7 @@ css/
   animations.css              # Keyframes globales + scroll-driven animations (@supports)
   polish.css                  # jonathan-panel, trayectoria interactiva, detalles visuales
   project-detail.css          # Panel lateral de detalle (PDM) — ya no se abre desde cards
-  project-gallery.css         # Gallery fullscreen (layout 2 col: imagen izq, info der)
+  project-gallery.css         # Gallery fullscreen (2 col: imagen/PDF izq, info der; docs mode en .sec)
   trajectory.css              # Estilos del drawer de trayectoria
   command-palette.css         # Command palette (Cmd+K) — overlay, modal, items, toast
   sec-terminal.css            # Terminal interactiva del hero en modo .sec
@@ -202,6 +202,7 @@ el browser lo codifica solo, pero en JS hay que codificar manualmente.
 - Las fotos del avatar cambian por modo: `AVATAR_SRC` en `app.js`
 - Screenshots de proyectos en `public/images/projects/<slug>/`
 - Proyectos sin imágenes reales (Equity, SecuraBank, ConQuito): `"image": null, "images": []`
+- Certificados PDF en `public/images/certificados/` — commiteados al repo para que Vercel los sirva
 - Ruta correcta con Vite: `"public/images/..."` → en prod se sirve desde `/public/images/...`
 - **Evitar espacios y caracteres especiales en nombres de archivo** — macOS guarda screenshots
   con ` ` (narrow no-break space) entre la hora y AM/PM, lo que impide que Vite los sirva.
@@ -209,14 +210,23 @@ el browser lo codifica solo, pero en JS hay que codificar manualmente.
 
 ## Gallery fullscreen (`project-gallery.js` + `project-gallery.css`)
 - **Trigger:** click en `.card-image-wrap` o en el botón "Ver proceso" de cualquier card
-- **Layout desktop:** 2 columnas — izquierda: imagen+flechas+filmstrip / derecha: panel info
+- **Layout desktop:** 2 columnas — izquierda: imagen/PDF+flechas+filmstrip / derecha: panel info
 - **Layout mobile (≤768px):** columna única, info debajo
 - **z-index:** 9990 (sobre el PDM lateral en 9985 y el navbar)
 - **Navegación:** flechas ← →, contador `1/N`, filmstrip de thumbnails, swipe táctil, teclas ← → Esc
-- **1 imagen:** flechas y filmstrip ocultos (`[data-count="1"]` via CSS)
+- **1 imagen/doc:** flechas y filmstrip ocultos (`[data-count="1"]` via CSS)
 - **0 imágenes:** muestra emoji del modo como placeholder; info panel sigue visible
 - **Panel info:** reutiliza `ProjectDetail.buildContent(p, mode)` — mismo HTML que el PDM lateral
 - **Codificación de rutas:** helper `_src(path)` codifica cada segmento con `encodeURIComponent`
+
+### Modo docs (`.sec` con `docs[]` no vacío)
+Cuando `mode === 'sec'` y el proyecto tiene `docs[]`, la gallery entra en **docs mode**:
+- La clase `pgal--docs-mode` se agrega a `#pgal`
+- El panel izquierdo muestra un `<iframe id="pgal-pdf">` con el PDF en lugar de `<img>`
+- El filmstrip muestra **doc tabs** (`.pgal__doc-tab`) con el `label` de cada doc — chips de texto en lugar de thumbnails de imagen
+- Flechas ← → y teclas navegan entre documentos del array `docs[]`
+- Al cerrar la gallery, `iframe.src` se limpia para detener la carga
+- Si el proyecto no tiene `docs[]` o tiene array vacío, se usa el modo imagen normal
 
 ## Panel de detalle (`project-detail.js`)
 - `ProjectDetail.buildContent(p, mode)` exportado como API pública — usado por ProjectGallery

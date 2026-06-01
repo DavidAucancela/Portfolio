@@ -80,7 +80,8 @@
           "value": "★ 4.6"
         }
       ]
-    }
+    },
+    "docs": []
   },
   {
     "id": "lab-002",
@@ -164,7 +165,8 @@
           "value": "★ 4.7"
         }
       ]
-    }
+    },
+    "docs": []
   },
   {
     "id": "lab-003",
@@ -248,7 +250,8 @@
           "value": "★ 4.7"
         }
       ]
-    }
+    },
+    "docs": []
   },
   {
     "id": "lab-004",
@@ -332,7 +335,8 @@
           "value": "★ 4.6"
         }
       ]
-    }
+    },
+    "docs": []
   },
   {
     "id": "prac-001",
@@ -404,7 +408,13 @@
           "value": "DETIC"
         }
       ]
-    }
+    },
+    "docs": [
+      {
+        "label": "Constancia de Prácticas — ESPOCH DETIC",
+        "url": "public/images/certificados/practicas_DTIC_ESPOCH.pdf"
+      }
+    ]
   },
   {
     "id": "cert-001",
@@ -475,7 +485,13 @@
           "value": "NetAcad"
         }
       ]
-    }
+    },
+    "docs": [
+      {
+        "label": "Certificado — Introduction to Cybersecurity",
+        "url": "public/images/certificados/Introduction to Cybersecurity .pdf"
+      }
+    ]
   },
   {
     "id": "cert-002",
@@ -546,6 +562,40 @@
           "value": "SkillsBuild"
         }
       ]
-    }
+    },
+    "docs": [
+      {
+        "label": "Certificado Final IBM SkillsBuild",
+        "url": "public/images/certificados/IBM_final.pdf"
+      },
+      {
+        "label": "Cybersecurity Fundamentals",
+        "url": "public/images/certificados/Cybersecurity Fundamentals .pdf"
+      },
+      {
+        "label": "Cloud Security",
+        "url": "public/images/certificados/Cloud Security .pdf"
+      },
+      {
+        "label": "System and Network Security",
+        "url": "public/images/certificados/System and Network Security .pdf"
+      },
+      {
+        "label": "Security Operations and Management",
+        "url": "public/images/certificados/Security Operations and Management .pdf"
+      },
+      {
+        "label": "Incident Response and Systems Forensics",
+        "url": "public/images/certificados/Incident Response and Systems Forensics .pdf"
+      },
+      {
+        "label": "Vulnerability Management",
+        "url": "public/images/certificados/Vulnerability Management .pdf"
+      },
+      {
+        "label": "Governance, Risk, Compliance and Data Privacy",
+        "url": "public/images/certificados/Governance, Risk, Compliance, and Data Privacy .pdf"
+      }
+    ]
   }
 ]

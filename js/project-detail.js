@@ -250,6 +250,7 @@ const PANEL_LABELS = {
   highlights: { dev: 'Destacados',           ia: 'Aspectos Clave',     sec: 'Puntos Clave'    },
   tech:       { dev: 'Stack Técnico',        ia: 'Stack de IA',        sec: 'Herramientas'    },
   techFb:     { dev: 'Tecnologías',          ia: 'Tecnologías',        sec: 'Técnicas'        },
+  docs:       { dev: 'Documentos',           ia: 'Documentos',         sec: 'Documentos'      },
 };
 
 const PANEL_ICONS = {
@@ -258,6 +259,7 @@ const PANEL_ICONS = {
   metrics:    { dev: '📊',  ia: '📊',  sec: '📊'  },
   highlights: { dev: '✦',   ia: '✦',   sec: '✦'   },
   tech:       { dev: '🛠️', ia: '🤖',  sec: '🔧'  },
+  docs:       { dev: '📄',  ia: '📄',  sec: '📄'  },
 };
 
 function _buildContent(p, mode) {
@@ -359,6 +361,26 @@ function _buildContent(p, mode) {
         </a>` : ''}
     </div>` : '';
 
+  /* ── Documents ── */
+  const docs = p.docs || [];
+  const docsHTML = docs.length > 0 ? `
+    <p class="pdm__slabel">${icon('docs')} ${lbl('docs')}</p>
+    <div class="pdm__docs">
+      ${docs.map(d => {
+        const encodedUrl = d.url.split('/').map(encodeURIComponent).join('/');
+        return `
+        <a href="${encodedUrl}" target="_blank" rel="noopener noreferrer"
+           class="pdm__doc-link" aria-label="${_esc(d.label)}">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          ${_esc(d.label)}
+        </a>`;
+      }).join('')}
+    </div>` : '';
+
   /* ── Lab banner (sec mode) ── */
   const pwnedBanner = isLab ? `
     <div class="pdm__pwned-banner">
@@ -377,6 +399,7 @@ function _buildContent(p, mode) {
     ${metricsHTML}
     ${highlightsHTML}
     ${techHTML}
+    ${docsHTML}
     ${ctaHTML}
   `;
 }

@@ -1,0 +1,126 @@
+/* ════════════════════════════════════════════════════
+   PDF MODAL — Visor de documentos inline
+   z-index: 10500 (sobre gallery en 9990 y cmd-palette)
+════════════════════════════════════════════════════ */
+
+.pdf-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10500;
+  background: rgba(0, 0, 0, 0.88);
+  display: flex;
+  flex-direction: column;
+  transition: opacity 0.2s ease;
+}
+
+.pdf-modal[hidden] {
+  display: none;
+}
+
+/* ── Header ── */
+.pdf-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 52px;
+  padding: 0 1.25rem;
+  background: var(--bg-secondary, #0d0d1f);
+  border-bottom: 1px solid var(--border-color, rgba(255,255,255,0.08));
+  flex-shrink: 0;
+  gap: 1rem;
+}
+
+.pdf-modal__title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary, #e2e8f0);
+  font-family: var(--font-display, 'JetBrains Mono', monospace);
+  letter-spacing: 0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.pdf-modal__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.pdf-modal__download {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: var(--font-display, monospace);
+  background: var(--color-accent, #0066ff);
+  color: #fff;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.pdf-modal__download:hover {
+  background: var(--color-accent-hover, #0052cc);
+  transform: translateY(-1px);
+}
+
+.pdf-modal__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted, #64748b);
+  border: 1px solid var(--border-color, rgba(255,255,255,0.08));
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.pdf-modal__close:hover {
+  background: rgba(255,255,255,0.07);
+  color: var(--text-primary, #e2e8f0);
+}
+
+/* ── Iframe ── */
+.pdf-modal__iframe {
+  flex: 1;
+  border: none;
+  width: 100%;
+  background: #f1f1f1;
+  display: block;
+}
+
+/* ── iOS fallback (no soporta PDF en iframe) ── */
+.pdf-modal__ios-fallback {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  color: var(--text-muted, #64748b);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 2rem;
+}
+
+.pdf-modal__ios-fallback svg {
+  opacity: 0.4;
+}
+
+/* ── Mobile ── */
+@media (max-width: 768px) {
+  .pdf-modal__header { height: 48px; padding: 0 1rem; }
+  .pdf-modal__title  { font-size: 0.8rem; }
+  .pdf-modal__download span { display: none; }
+  .pdf-modal__download { padding: 0.35rem 0.6rem; }
+}

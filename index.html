@@ -367,16 +367,18 @@
 
             <!-- CTAs -->
             <div class="about-cta-group">
-              <a href="public/Hoja de vida - Jonathan Aucancela.pdf" download class="btn btn-primary"
-                 aria-label="Descargar CV">
+              <button id="cv-open-btn" class="btn btn-primary"
+                      data-pdf-url="public/Hoja%20de%20vida%20-%20Jonathan%20Aucancela.pdf"
+                      data-pdf-label="CV — Jonathan Aucancela"
+                      aria-label="Ver CV">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                      stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                  <polyline points="7 10 12 15 17 10"/>
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
                   <line x1="12" y1="15" x2="12" y2="3"/>
                 </svg>
-                <span data-i18n="about.cv">Descargar CV</span>
-              </a>
+                <span data-i18n="about.cv">Ver CV</span>
+              </button>
             </div>
           </div>
 

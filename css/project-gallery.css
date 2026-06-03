@@ -232,7 +232,7 @@
   border-radius: 100px;
 }
 
-/* ── 0 or 1 images: hide arrows and filmstrip ── */
+/* ── 0 or 1 items: hide arrows and filmstrip ── */
 #pgal[data-count="0"] .pgal__arrow,
 #pgal[data-count="0"] .pgal__filmstrip,
 #pgal[data-count="1"] .pgal__arrow,
@@ -245,13 +245,68 @@
   padding: 1rem;
 }
 
+/* ── PDF embed (sec docs mode) ── */
+.pgal__pdf {
+  display: none;
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 4px;
+  background: #fff;
+}
+
+#pgal.pgal--docs-mode .pgal__img-wrap {
+  padding: 0;
+  align-items: stretch;
+}
+
+/* ── Doc tabs (text labels in filmstrip) ── */
+.pgal__doc-tab {
+  flex-shrink: 0;
+  height: 44px;
+  max-width: 200px;
+  padding: 0 1rem;
+  border-radius: 5px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  background: var(--bg-card, rgba(255,255,255,0.05));
+  color: var(--text-muted, #888);
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-align: left;
+  transition: border-color 0.15s, transform 0.15s, color 0.15s;
+  width: auto;
+}
+
+.pgal__doc-tab span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pgal__doc-tab:hover { transform: translateY(-2px); color: var(--text-primary, #f0f0f0); }
+.pgal__doc-tab:hover:not(.is-active) { border-color: rgba(255,255,255,0.2); }
+.pgal__doc-tab.is-active {
+  border-color: var(--color-accent, #6366f1);
+  color: var(--color-accent, #6366f1);
+}
+
+/* ── Doc tabs filmstrip: taller to fit text ── */
+#pgal.pgal--docs-mode .pgal__filmstrip {
+  height: auto;
+  min-height: 62px;
+  padding: 8px 1rem;
+  align-items: center;
+}
+
 /* ── Mobile: stack vertically ── */
 @media (max-width: 768px) {
   .pgal__body { flex-direction: column; }
 
   .pgal__info {
     width: auto;
-    max-height: 32vh;
+    max-height: 42vh;
     border-left: none;
     border-top: 1px solid var(--border-color, rgba(255,255,255,0.06));
     padding: 1rem 1rem 1.5rem;
@@ -263,4 +318,7 @@
   .pgal__arrow { width: 34px; height: 48px; }
   .pgal__filmstrip { height: 66px; padding: 6px 0.75rem; }
   .pgal__thumb { width: 72px; height: 46px; }
+
+  #pgal.pgal--docs-mode .pgal__img-wrap { padding: 0; }
+  #pgal.pgal--docs-mode .pgal__filmstrip { height: auto; min-height: 58px; }
 }

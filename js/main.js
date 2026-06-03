@@ -19,6 +19,7 @@ import { initApp } from './app.js';
 import { Trajectory } from './trajectory.js';
 import { CommandPalette } from './command-palette.js';
 import { SecTerminal } from './sec-terminal.js';
+import { PDFModal } from './pdf-modal.js';
 
 // CSS imports — Vite los bundlea automáticamente
 import '../css/main.css';
@@ -29,6 +30,7 @@ import '../css/project-gallery.css';
 import '../css/trajectory.css';
 import '../css/command-palette.css';
 import '../css/sec-terminal.css';
+import '../css/pdf-modal.css';
 
 // Vercel Analytics y Speed Insights — solo activos en producción
 injectAnalytics();
@@ -48,4 +50,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initApp();
   CommandPalette.init();
   SecTerminal.init();
+  PDFModal.init();
 });

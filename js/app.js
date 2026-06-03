@@ -19,6 +19,7 @@
 
 import { ThemeSwitcher } from './theme-switcher.js';
 import { LangSwitcher } from './lang.js';
+import { PDFModal } from './pdf-modal.js';
 
 /* ────────────────────────────────────────────────────
    CONSTANTES
@@ -427,5 +428,13 @@ export function initApp() {
       if (sub) subtitle.textContent = sub[lang] || sub.es;
     }
   });
+
+  /* ── CV viewer button ── */
+  const cvBtn = document.getElementById('cv-open-btn');
+  if (cvBtn) {
+    cvBtn.addEventListener('click', () =>
+      PDFModal.open(cvBtn.dataset.pdfUrl, cvBtn.dataset.pdfLabel)
+    );
+  }
 
 } // end initApp

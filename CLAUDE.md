@@ -33,6 +33,7 @@ css/
   trajectory.css              # Estilos del drawer de trayectoria
   command-palette.css         # Command palette (Cmd+K) — overlay, modal, items, toast
   sec-terminal.css            # Terminal interactiva del hero en modo .sec
+  pdf-modal.css               # Modal fullscreen visor de PDF (CV + links externos)
   themes/
     dev.css                   # Overrides modo .dev (azul, tipografía display)
     ia.css                    # Overrides modo .ia (púrpura, gradientes)
@@ -54,6 +55,7 @@ js/
   trajectory.js               # Trajectory — drawer de trayectoria profesional
   command-palette.js          # CommandPalette — buscador global estilo Spotlight/VS Code
   sec-terminal.js             # SecTerminal — terminal interactiva en hero modo .sec
+  pdf-modal.js                # PDFModal — visor PDF inline (modal overlay con iframe)
 
 data/
   dev-projects.json           # 7 proyectos del modo .dev (cargados con fetch en runtime)
@@ -227,6 +229,9 @@ Cuando `mode === 'sec'` y el proyecto tiene `docs[]`, la gallery entra en **docs
 - Flechas ← → y teclas navegan entre documentos del array `docs[]`
 - Al cerrar la gallery, `iframe.src` se limpia para detener la carga
 - Si el proyecto no tiene `docs[]` o tiene array vacío, se usa el modo imagen normal
+- **Links de documentos en el panel info:** los `.pdm__doc-link` tienen `data-doc-index="N"`.
+  Un listener delegado en `#pgal-info` intercepta el click y llama `_goTo(N)` — el PDF
+  se muestra en el iframe izquierdo **sin abrir nueva pestaña**.
 
 ## Panel de detalle (`project-detail.js`)
 - `ProjectDetail.buildContent(p, mode)` exportado como API pública — usado por ProjectGallery
@@ -241,7 +246,31 @@ Cuando `mode === 'sec'` y el proyecto tiene `docs[]`, la gallery entra en **docs
 | Docs       | 📄 Documentos  | 📄 Documentos | 📄 Documentos |
 
 - **Sin XP/Credits:** eliminado el badge `+150 XP` de los headers de fase
-- **Sección Documentos:** renderiza `p.docs[]` como links a PDF con icono de archivo
+- **Sección Documentos:** renderiza `p.docs[]` como `<a class="pdm__doc-link" data-doc-index="N">`
+  sin `target="_blank"`. Cuando está dentro de la gallery, el click navega el iframe interno.
+  Cuando está fuera (contexto futuro), `href` sigue siendo la URL del PDF como fallback.
+
+## PDF Modal (`pdf-modal.js` + `pdf-modal.css`)
+Visor inline de PDF — modal fullscreen que renderiza el documento en un `<iframe>` sin abrir nueva pestaña.
+
+- **API pública:** `PDFModal.init()` (llamado en `main.js`) · `PDFModal.open(url, label)`
+- **Trigger actual:** botón `#cv-open-btn` en la sección `#about` → `app.js` llama `PDFModal.open(...)`
+- **Header:** título del documento · botón `⬇ Descargar` (`<a download>`) · botón `✕` cerrar
+- **Cierre:** botón ✕ · tecla Esc · clic en el overlay oscuro
+- **z-index:** 10500 (sobre gallery en 9990 y command palette)
+- **iOS Safari:** no soporta PDF en `<iframe>` — el modal muestra un mensaje de fallback
+  con instrucción de usar el botón de descarga
+- **Botón CV en `index.html`:** `<button id="cv-open-btn" data-pdf-url="..." data-pdf-label="...">` —
+  reemplaza el antiguo `<a download>`. El texto cambió de "Descargar CV" a "Ver CV".
+
+## Responsive Mobile — Projects grid
+- **≤480px:** `.projects-grid` usa `repeat(2, 1fr)` con `gap: 0.875rem` (antes era 1 columna)
+- **Card internals a ≤480px** (`main.css`): padding reducido en `.card-body`, `.card-links`;
+  `.card-description` limitada a 3 líneas con `-webkit-line-clamp`; `.card-btn--process`
+  ocupa el 100% del ancho en fila propia (`flex: 0 0 100%`) para evitar desbordamiento
+- **Texto de botones** en `projects.js` envuelto en `<span class="card-btn-text">` — permite
+  ocultar el texto con CSS en viewports muy pequeños si se necesita en el futuro
+- **Gallery mobile:** `.pgal__info` en ≤768px aumentó de `max-height: 32vh` a `42vh`
 
 ## Pendientes manuales (no automatizables)
 1. **og:image PNG real** — screenshot 1200×630px del portfolio →

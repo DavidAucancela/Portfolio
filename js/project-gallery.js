@@ -86,6 +86,15 @@ export const ProjectGallery = (() => {
     }, { passive: true });
 
     window.addEventListener('portfolio:modeChange', close);
+
+    // Intercept doc-link clicks in the info panel → navigate gallery (docs mode only)
+    document.getElementById('pgal-info').addEventListener('click', e => {
+      const link = e.target.closest('.pdm__doc-link');
+      if (!link || !_isDocsMode()) return;
+      e.preventDefault();
+      const idx = parseInt(link.dataset.docIndex, 10);
+      if (!isNaN(idx)) _goTo(idx);
+    });
   }
 
   /* ── Filmstrip (image mode) ── */

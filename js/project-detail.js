@@ -366,11 +366,12 @@ function _buildContent(p, mode) {
   const docsHTML = docs.length > 0 ? `
     <p class="pdm__slabel">${icon('docs')} ${lbl('docs')}</p>
     <div class="pdm__docs">
-      ${docs.map(d => {
+      ${docs.map((d, i) => {
         const encodedUrl = d.url.split('/').map(encodeURIComponent).join('/');
         return `
-        <a href="${encodedUrl}" target="_blank" rel="noopener noreferrer"
-           class="pdm__doc-link" aria-label="${_esc(d.label)}">
+        <a href="${encodedUrl}" class="pdm__doc-link"
+           data-doc-index="${i}" data-pdf-url="${encodedUrl}" data-pdf-label="${_esc(d.label)}"
+           aria-label="${_esc(d.label)}">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>

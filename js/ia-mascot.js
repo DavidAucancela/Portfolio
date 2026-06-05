@@ -7,6 +7,7 @@
  */
 
 import { IAAssistant } from './ia-assistant.js';
+import { IaTour }      from './ia-tour.js';
 
 /* ── CONFIGURACIÓN ────────────────────────────────────────────── */
 
@@ -217,6 +218,9 @@ export const IaMascot = (() => {
               <span id="jotai-status-text">Listo para responder</span>
             </div>
           </div>
+          <button id="jotai-tour-btn" aria-label="Iniciar tour del portfolio">
+            Tour 🗺
+          </button>
           <button id="jotai-panel-close" aria-label="Cerrar asistente">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
@@ -274,6 +278,7 @@ export const IaMascot = (() => {
     /* Listeners */
     _trigger.addEventListener('click', _togglePanel);
     widget.querySelector('#jotai-panel-close').addEventListener('click', closePanel);
+    widget.querySelector('#jotai-tour-btn').addEventListener('click', _startTour);
     _sendBtn.addEventListener('click', _handleSend);
     _input.addEventListener('keydown', e => {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); _handleSend(); }
@@ -394,6 +399,25 @@ export const IaMascot = (() => {
 
   function _removeLoadingDots() {
     document.getElementById('jotai-loading-msg')?.remove();
+  }
+
+  /* ── TOUR ───────────────────────────────────────────────────── */
+
+  function _startTour() {
+    closePanel();
+    const mode = document.body.dataset.theme || 'dev';
+    IaTour.start(mode, {
+      onState: _setState,
+      onDone:  () => {
+        _setState('idle');
+        openPanel();
+        setTimeout(() => {
+          _addBotMessage('¡Tour completado! ¿Tienes alguna pregunta sobre el portfolio?');
+          _setState('success');
+          setTimeout(() => _setState('idle'), 2000);
+        }, 300);
+      },
+    });
   }
 
   /* ── QUERY HANDLING ─────────────────────────────────────────── */

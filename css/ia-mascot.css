@@ -425,6 +425,149 @@
   }
 }
 
+/* ── TOUR BUTTON (en header del panel) ───────────────────────── */
+
+#jotai-tour-btn {
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.68rem;
+  padding: 0.2rem 0.5rem;
+  transition: color 0.2s, border-color 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+#jotai-tour-btn:hover {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+/* ── TOUR OVERLAY ─────────────────────────────────────────────── */
+
+#jotai-tour-overlay {
+  display: none;        /* JS agrega .is-active */
+  position: fixed;
+  inset: 0;
+  z-index: 9935;
+  pointer-events: none;
+}
+
+#jotai-tour-overlay.is-active {
+  display: block;
+}
+
+/* Velo semitransparente */
+#jotai-tour-veil {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.52);
+  pointer-events: all;
+  animation: jotai-msg-in 0.2s ease;
+}
+
+/* Tooltip del tour */
+#jotai-tour-tip {
+  position: fixed;
+  bottom: 6rem;               /* por encima del widget */
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(360px, 92vw);
+  background: var(--bg-secondary, #1a1a2e);
+  border: 1px solid var(--color-accent, #06ffa5);
+  border-radius: 14px;
+  padding: 1.125rem 1.25rem 0.875rem;
+  box-shadow:
+    0 0 0 1px var(--color-accent-glow, rgba(6,255,165,0.15)),
+    0 8px 40px rgba(0,0,0,0.6);
+  pointer-events: all;
+  animation: jotai-msg-in 0.22s ease;
+}
+
+.jt-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.jt-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.jt-title {
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  flex: 1;
+  font-family: var(--font-display, monospace);
+}
+
+.jt-counter {
+  font-size: 0.68rem;
+  color: var(--color-accent, #06ffa5);
+  background: var(--color-accent-glow, rgba(6,255,165,0.1));
+  padding: 0.15rem 0.5rem;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+.jt-text {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin: 0 0 1rem;
+}
+
+.jt-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.jt-btn {
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  padding: 0.4rem 0.875rem;
+  transition: opacity 0.2s, background 0.2s;
+  border: none;
+  font-family: inherit;
+}
+
+.jt-btn--primary {
+  background: var(--color-accent, #06ffa5);
+  color: var(--text-inverse, #0d0221);
+  font-weight: 600;
+}
+.jt-btn--primary:hover { opacity: 0.88; }
+
+.jt-btn--ghost {
+  background: var(--bg-card, #12042a);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+.jt-btn--ghost:hover { color: var(--text-primary); }
+
+.jt-btn--skip {
+  margin-left: auto;
+  background: none;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  padding: 0.4rem 0.5rem;
+}
+.jt-btn--skip:hover { color: var(--color-danger, #ff4d6d); }
+
+/* Sección resaltada durante el tour */
+.jotai-tour-target {
+  outline: 2px solid var(--color-accent, #06ffa5);
+  outline-offset: 6px;
+  border-radius: 4px;
+  transition: outline-color 0.3s;
+}
+
 /* ── PREFERS-REDUCED-MOTION ───────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {

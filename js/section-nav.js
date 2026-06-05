@@ -11,7 +11,7 @@
 /* ── Configuración ───────────────────────────────────────── */
 const SECTIONS_BY_MODE = {
   dev: ['hero', 'about', 'projects', 'skills', 'contact'],
-  ia:  ['hero', 'about', 'projects', 'skills', 'ia-assistant-section', 'contact'],
+  ia:  ['hero', 'about', 'projects', 'skills', 'contact'],
   sec: ['hero', 'about', 'projects', 'skills', 'contact'],
 };
 let SECTION_IDS = SECTIONS_BY_MODE.dev;
@@ -21,7 +21,6 @@ const SECTION_LABELS = {
   about:                 'Sobre mí',
   projects:              'Proyectos',
   skills:                'Habilidades',
-  'ia-assistant-section':'Consulta IA',
   contact:               'Contacto',
 };
 

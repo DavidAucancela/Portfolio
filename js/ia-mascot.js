@@ -23,89 +23,130 @@ const QUICK_CHIPS = [
 ];
 
 /* ── SVG DEL MASCOT ───────────────────────────────────────────── */
-// Personaje original: criatura tech flotante con orejas aladas,
-// ojos grandes tipo pantalla y trazos de circuito.
-// Usa currentColor → hereda var(--color-accent) del botón padre.
+// Personaje original: criatura tech con orejas expresivas, ojos enormes con párpado,
+// antena, aura, motes orbitando, think-dots, spark y signo de pregunta.
+// prefix evita IDs duplicados cuando hay dos instancias en el DOM.
 
-function _buildSVG(size = 'full') {
-  // size 'full' = vista completa; 'avatar' = versión compacta para el header
-  return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
-    <!-- Sombra flotante -->
-    <ellipse id="jotai-shadow" cx="50" cy="85" rx="19" ry="5"
-             fill="currentColor" opacity="0.12"/>
+function _buildSVG(prefix) {
+  const p = prefix || 'j';
+  return `<svg class="jotai-mascot" viewBox="0 0 200 200"
+         xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+  <defs>
+    <radialGradient id="${p}aura" cx="50%" cy="48%" r="55%">
+      <stop offset="0%"   stop-color="var(--color-accent,#06ffa5)" stop-opacity=".55"/>
+      <stop offset="60%"  stop-color="var(--color-accent,#06ffa5)" stop-opacity=".12"/>
+      <stop offset="100%" stop-color="var(--color-accent,#06ffa5)" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="${p}body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="var(--color-accent,#06ffa5)" stop-opacity=".55"/>
+      <stop offset="100%" stop-color="var(--bg-secondary,#110330)"/>
+    </linearGradient>
+    <radialGradient id="${p}eye" cx="42%" cy="38%" r="70%">
+      <stop offset="0%"   stop-color="#f1f8ff"/>
+      <stop offset="100%" stop-color="var(--color-secondary,#b14eff)" stop-opacity=".6"/>
+    </radialGradient>
+  </defs>
 
-    <!-- Orejas aladas izquierda -->
-    <g id="jotai-ear-left">
-      <path d="M32 46 C15 37 11 61 24 66 C27 60 30 53 32 49 Z"
-            fill="var(--bg-secondary,#1a1a2e)" stroke="currentColor" stroke-width="1.4"
-            stroke-linejoin="round"/>
-      <!-- Inner glow de oreja -->
-      <path d="M30 49 C18 42 17 58 25 62 C28 57 30 52 30 50 Z"
-            fill="currentColor" opacity="0.2"/>
+  <!-- Aura de fondo -->
+  <circle class="jotai-aura" cx="100" cy="104" r="74" fill="url(#${p}aura)"/>
+
+  <!-- Motes (partículas orbitando) -->
+  <g class="jotai-motes">
+    <circle cx="100" cy="26"  r="2.6" fill="var(--color-accent,#06ffa5)"         opacity=".9"/>
+    <circle cx="176" cy="120" r="2"   fill="var(--color-secondary,#b14eff)"      opacity=".8"/>
+  </g>
+  <g class="jotai-motes-2">
+    <circle cx="26"  cy="118" r="2.2" fill="var(--color-accent,#06ffa5)"         opacity=".7"/>
+  </g>
+
+  <!-- Criatura (recibe breathe) -->
+  <g class="jotai-creature">
+    <!-- Tilt (recibe poses de estado) -->
+    <g class="jotai-tilt">
+
+      <!-- Antena -->
+      <line x1="100" y1="74" x2="100" y2="56"
+            stroke="var(--color-accent,#06ffa5)" stroke-width="2.4" stroke-linecap="round" opacity=".7"/>
+      <circle cx="100" cy="53" r="3.4" fill="var(--color-accent,#06ffa5)"/>
+
+      <!-- Oreja izquierda -->
+      <path class="jotai-ear jotai-ear-l"
+            d="M83 92 C72 77 70 53 77 41 C84 49 88 73 88 91 Z"
+            fill="var(--bg-secondary,#110330)"
+            stroke="var(--color-accent,#06ffa5)" stroke-width="1.2"/>
+      <path class="jotai-ear jotai-ear-l"
+            d="M83 89 C76 78 75 60 79 50 C83 56 85 73 85 88 Z"
+            fill="var(--color-accent,#06ffa5)" opacity=".28"/>
+
+      <!-- Oreja derecha -->
+      <path class="jotai-ear jotai-ear-r"
+            d="M117 92 C128 77 130 53 123 41 C116 49 112 73 112 91 Z"
+            fill="var(--bg-secondary,#110330)"
+            stroke="var(--color-accent,#06ffa5)" stroke-width="1.2"/>
+      <path class="jotai-ear jotai-ear-r"
+            d="M117 89 C124 78 125 60 121 50 C117 56 115 73 115 88 Z"
+            fill="var(--color-accent,#06ffa5)" opacity=".28"/>
+
+      <!-- Cuerpo -->
+      <ellipse cx="100" cy="122" rx="45" ry="41" fill="url(#${p}body)"/>
+      <ellipse cx="84"  cy="100" rx="20" ry="14" fill="#fff" opacity=".08"/>
+      <ellipse cx="100" cy="122" rx="45" ry="41" fill="none"
+               stroke="var(--color-accent,#06ffa5)" stroke-width="1.4" opacity=".45"/>
+
+      <!-- Ojo izquierdo -->
+      <g>
+        <ellipse cx="82" cy="116" rx="15.5" ry="17.5" fill="url(#${p}eye)"/>
+        <g class="jotai-pupil-grp">
+          <circle cx="82"   cy="118" r="7"   fill="var(--bg-primary,#0a1430)"/>
+          <circle cx="79.5" cy="115" r="2.3" fill="#fff"/>
+          <circle cx="84.5" cy="121" r="1.2" fill="var(--color-accent,#06ffa5)"/>
+        </g>
+        <ellipse class="jotai-lid" cx="82" cy="116" rx="16.5" ry="18.5"
+                 fill="var(--bg-secondary,#110330)"/>
+      </g>
+
+      <!-- Ojo derecho -->
+      <g>
+        <ellipse cx="118" cy="116" rx="15.5" ry="17.5" fill="url(#${p}eye)"/>
+        <g class="jotai-pupil-grp">
+          <circle cx="118"   cy="118" r="7"   fill="var(--bg-primary,#0a1430)"/>
+          <circle cx="115.5" cy="115" r="2.3" fill="#fff"/>
+          <circle cx="120.5" cy="121" r="1.2" fill="var(--color-accent,#06ffa5)"/>
+        </g>
+        <ellipse class="jotai-lid" cx="118" cy="116" rx="16.5" ry="18.5"
+                 fill="var(--bg-secondary,#110330)"/>
+      </g>
+
+      <!-- Boca (d se cambia por JS según estado) -->
+      <path class="jotai-mouth-path"
+            d="M89 141 Q100 150 111 141"
+            fill="none"
+            stroke="var(--bg-primary,#0a1430)"
+            stroke-width="3.4"
+            stroke-linecap="round"/>
+
+      <!-- Think-dots (visibles en .is-thinking) -->
+      <g class="jotai-think-dots">
+        <circle cx="142" cy="74" r="3.2" fill="var(--color-accent,#06ffa5)"/>
+        <circle cx="153" cy="68" r="3.2" fill="var(--color-accent,#06ffa5)"/>
+        <circle cx="164" cy="64" r="3.2" fill="var(--color-accent,#06ffa5)"/>
+      </g>
+
+      <!-- Spark (visible en .is-success) -->
+      <path class="jotai-spark"
+            d="M150 60 l3 8 8 3 -8 3 -3 8 -3 -8 -8 -3 8 -3 z"
+            fill="var(--color-accent,#06ffa5)"/>
+
+      <!-- Signo de pregunta (visible en .is-confused) -->
+      <text class="jotai-qmark"
+            x="148" y="70"
+            font-size="22" font-weight="800"
+            fill="var(--color-accent,#06ffa5)"
+            font-family="monospace">?</text>
+
     </g>
-
-    <!-- Orejas aladas derecha -->
-    <g id="jotai-ear-right">
-      <path d="M68 46 C85 37 89 61 76 66 C73 60 70 53 68 49 Z"
-            fill="var(--bg-secondary,#1a1a2e)" stroke="currentColor" stroke-width="1.4"
-            stroke-linejoin="round"/>
-      <path d="M70 49 C82 42 83 58 75 62 C72 57 70 52 70 50 Z"
-            fill="currentColor" opacity="0.2"/>
-    </g>
-
-    <!-- Cuerpo principal (blob redondeado) -->
-    <ellipse id="jotai-body" cx="50" cy="55" rx="23" ry="21"
-             fill="var(--bg-secondary,#1a1a2e)" stroke="currentColor" stroke-width="1.4"/>
-
-    <!-- Ojo izquierdo -->
-    <g id="jotai-eye-left">
-      <!-- Cuenca -->
-      <ellipse cx="40" cy="52" rx="7" ry="8"
-               fill="var(--bg-primary,#0d0221)" stroke="currentColor" stroke-width="0.9"/>
-      <!-- Pupila con brillo -->
-      <ellipse cx="40" cy="53" rx="4.2" ry="5.2" fill="currentColor" opacity="0.95"/>
-      <!-- Reflejo -->
-      <ellipse cx="38.2" cy="50.5" rx="1.4" ry="1.4" fill="white" opacity="0.85"/>
-    </g>
-
-    <!-- Ojo derecho -->
-    <g id="jotai-eye-right">
-      <ellipse cx="60" cy="52" rx="7" ry="8"
-               fill="var(--bg-primary,#0d0221)" stroke="currentColor" stroke-width="0.9"/>
-      <ellipse cx="60" cy="53" rx="4.2" ry="5.2" fill="currentColor" opacity="0.95"/>
-      <ellipse cx="58.2" cy="50.5" rx="1.4" ry="1.4" fill="white" opacity="0.85"/>
-    </g>
-
-    <!-- Boca (múltiples estados; solo uno visible a la vez) -->
-    <g id="jotai-mouth">
-      <!-- neutral -->
-      <path class="jm-neutral" d="M43 67 Q50 72 57 67"
-            fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-      <!-- sonrisa -->
-      <path class="jm-smile" d="M40 66 Q50 75 60 66"
-            fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" opacity="0"/>
-      <!-- triste/confundido -->
-      <path class="jm-sad" d="M43 70 Q50 65 57 70"
-            fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity="0"/>
-      <!-- hablando (O) -->
-      <ellipse class="jm-open" cx="50" cy="68" rx="4" ry="3.5"
-               fill="currentColor" opacity="0" stroke="none"/>
-    </g>
-
-    <!-- Trazos de circuito (detalles tech) -->
-    <g id="jotai-circuits" opacity="0.2" stroke="currentColor" stroke-width="0.8" fill="none">
-      <line x1="34" y1="68" x2="28" y2="68"/>
-      <line x1="28" y1="68" x2="28" y2="75"/>
-      <circle cx="28" cy="75" r="1.4" fill="currentColor" stroke="none"/>
-      <line x1="66" y1="68" x2="72" y2="68"/>
-      <line x1="72" y1="68" x2="72" y2="75"/>
-      <circle cx="72" cy="75" r="1.4" fill="currentColor" stroke="none"/>
-    </g>
-
-    <!-- Brillo de vientre -->
-    <ellipse id="jotai-belly" cx="50" cy="63" rx="9" ry="5.5"
-             fill="currentColor" opacity="0.06"/>
-  </svg>`;
+  </g>
+</svg>`;
 }
 
 /* ── ESTADO INTERNO ───────────────────────────────────────────── */
@@ -212,7 +253,7 @@ export const IaMascot = (() => {
            hidden>
 
         <div id="jotai-panel-header">
-          <div class="jotai-header-avatar">${_buildSVG('avatar')}</div>
+          <div class="jotai-header-avatar">${_buildSVG('p')}</div>
           <div class="jotai-header-info">
             <div class="jotai-header-name">${MASCOT_NAME}</div>
             <div class="jotai-header-status">
@@ -265,7 +306,7 @@ export const IaMascot = (() => {
         aria-label="Abrir asistente ${MASCOT_NAME}"
         aria-expanded="false"
         aria-controls="jotai-panel">
-        ${_buildSVG('full')}
+        ${_buildSVG('b')}
       </button>
     `;
 
@@ -276,6 +317,13 @@ export const IaMascot = (() => {
     _chat    = widget.querySelector('#jotai-chat');
     _input   = widget.querySelector('#jotai-input');
     _sendBtn = widget.querySelector('#jotai-send');
+
+    /* Arranca la vida de ambos mascots */
+    const bubbleSvg = _trigger.querySelector('.jotai-mascot');
+    const panelSvg  = widget.querySelector('.jotai-header-avatar .jotai-mascot');
+    _startLife(bubbleSvg);
+    _startLife(panelSvg);
+    _initCursorTracking(panelSvg);
 
     /* Listeners */
     _trigger.addEventListener('click', _togglePanel);
@@ -516,108 +564,101 @@ export const IaMascot = (() => {
     return `<div>${_md(result.text || '')}</div>`;
   }
 
-  /* ── STATE MACHINE ──────────────────────────────────────────── */
+  /* ── VIDA DEL MASCOT ────────────────────────────────────────── */
+
+  const _ALL_STATES = ['idle','greeting','listening','thinking','talking','success','confused','pointing'];
+
+  // Mouth path por estado
+  const _MOUTH = {
+    success:  'M85 138 Q100 156 115 138',
+    confused: 'M93 144 Q100 139 107 144',
+    thinking: 'M93 143 L107 143',
+    _default: 'M89 141 Q100 150 111 141',
+  };
+
+  function _blink(el) {
+    if (_reduced || !el) return;
+    el.classList.add('is-blinking');
+    setTimeout(() => el.classList.remove('is-blinking'), 150);
+    // Doble parpadeo ocasional (22 %)
+    if (Math.random() < 0.22) {
+      setTimeout(() => {
+        el.classList.add('is-blinking');
+        setTimeout(() => el.classList.remove('is-blinking'), 150);
+      }, 260);
+    }
+  }
+
+  function _setLook(el, x, y) {
+    if (!el) return;
+    el.querySelectorAll('.jotai-pupil-grp').forEach(g => {
+      g.style.setProperty('--px', x + 'px');
+      g.style.setProperty('--py', y + 'px');
+    });
+  }
+
+  function _startLife(el) {
+    if (_reduced || !el) return;
+
+    // Parpadeo aleatorio con doble parpadeo ocasional
+    (function blinkLoop() {
+      const t = 2200 + Math.random() * 4200;
+      setTimeout(() => { _blink(el); blinkLoop(); }, t);
+    })();
+
+    // Mirada errante en reposo
+    (function lookLoop() {
+      const t = 2400 + Math.random() * 2600;
+      setTimeout(() => {
+        const widget = document.getElementById('jotai-widget');
+        const isIdle = !widget || widget.dataset.jotaiState === 'idle';
+        if (isIdle && !el._tracking) {
+          const x = +(Math.random() * 5 - 2.5).toFixed(1);
+          const y = +(Math.random() * 4 - 2).toFixed(1);
+          _setLook(el, x, y);
+          setTimeout(() => {
+            if (!widget || widget.dataset.jotaiState === 'idle') _setLook(el, 0, 0);
+          }, 1100);
+        }
+        lookLoop();
+      }, t);
+    })();
+  }
+
+  function _initCursorTracking(svgEl) {
+    if (!_panel || !svgEl) return;
+    _panel.addEventListener('pointermove', e => {
+      if (_reduced) return;
+      svgEl._tracking = true;
+      const r  = svgEl.getBoundingClientRect();
+      const cx = r.left + r.width  / 2;
+      const cy = r.top  + r.height * 0.45;
+      const dx = e.clientX - cx, dy = e.clientY - cy;
+      const dist = Math.hypot(dx, dy) || 1;
+      const max = 3.4, f = Math.min(1, dist / 130);
+      _setLook(svgEl, (dx / dist) * max * f, (dy / dist) * max * f);
+    }, { passive: true });
+    _panel.addEventListener('pointerleave', () => {
+      svgEl._tracking = false;
+      _setLook(svgEl, 0, 0);
+    });
+  }
+
+  /* ── STATE MACHINE (CSS classes) ──────────────────────────── */
 
   function _setState(state) {
     _state = state;
     const widget = document.getElementById('jotai-widget');
-    if (widget) widget.setAttribute('data-jotai-state', state);
+    if (!widget) return;
 
-    _updateMouth(state);
+    // CSS state classes → afectan ambas instancias del mascot
+    _ALL_STATES.forEach(s => widget.classList.remove('is-' + s));
+    widget.classList.add('is-' + state);
+    widget.setAttribute('data-jotai-state', state);
 
-    if (!_reduced && _gsap) _animateState(state);
-  }
-
-  function _updateMouth(state) {
-    const neutral = _trigger?.querySelectorAll('.jm-neutral');
-    const smile   = _trigger?.querySelectorAll('.jm-smile');
-    const sad     = _trigger?.querySelectorAll('.jm-sad');
-    const open    = _trigger?.querySelectorAll('.jm-open');
-    if (!neutral) return;
-
-    const set = (els, val) => els.forEach(el => { el.style.opacity = val; });
-
-    // Reset all
-    set(neutral, 0); set(smile, 0); set(sad, 0); set(open, 0);
-
-    switch (state) {
-      case 'greeting':
-      case 'success':
-        set(smile, 1); break;
-      case 'confused':
-        set(sad, 1); break;
-      case 'talking':
-        set(open, 1); break;
-      default:
-        set(neutral, 1); break;
-    }
-  }
-
-  function _animateState(state) {
-    if (!_gsap || !_trigger) return;
-
-    const earL  = _trigger.querySelector('#jotai-ear-left');
-    const earR  = _trigger.querySelector('#jotai-ear-right');
-    const eyeL  = _trigger.querySelector('#jotai-eye-left');
-    const eyeR  = _trigger.querySelector('#jotai-eye-right');
-    const body  = _trigger.querySelector('#jotai-body');
-
-    _gsap.killTweensOf([earL, earR, eyeL, eyeR, body, _trigger]);
-
-    switch (state) {
-      case 'idle':
-        _gsap.to([earL, earR], { y: 0, rotate: 0, duration: 0.5, ease: 'power2.out', svgOrigin: '50 50' });
-        _gsap.to([eyeL, eyeR], { scaleY: 1, y: 0, duration: 0.35, ease: 'power2.out', svgOrigin: '50 52' });
-        break;
-
-      case 'greeting':
-        _gsap.timeline()
-          .to(_trigger, { y: -10, duration: 0.18, ease: 'power2.out' })
-          .to(_trigger, { y: 0, duration: 0.25, ease: 'bounce.out' })
-          .to(_trigger, { y: -6, duration: 0.14, ease: 'power2.out' }, '+=0.05')
-          .to(_trigger, { y: 0, duration: 0.2, ease: 'bounce.out' });
-        _gsap.to([earL, earR], { y: -5, duration: 0.3, ease: 'back.out(2)', svgOrigin: '50 50' });
-        break;
-
-      case 'listening':
-        _gsap.to(earL, { y: -6, rotate: -6, duration: 0.35, ease: 'back.out(2)', svgOrigin: '32 55' });
-        _gsap.to(earR, { y: -6, rotate:  6, duration: 0.35, ease: 'back.out(2)', svgOrigin: '68 55' });
-        _gsap.to([eyeL, eyeR], { scaleY: 1.12, duration: 0.25, ease: 'power1.out', svgOrigin: '50 52' });
-        break;
-
-      case 'thinking':
-        _gsap.to(eyeL, { y: -2, duration: 0.3 });
-        _gsap.to(eyeR, { y: -2, duration: 0.3 });
-        _gsap.to(body, {
-          rotate: 4, duration: 1.2, ease: 'sine.inOut',
-          yoyo: true, repeat: -1, svgOrigin: '50 55',
-        });
-        break;
-
-      case 'talking':
-        _gsap.to([eyeL, eyeR], { scaleY: 1, y: 0, duration: 0.2, svgOrigin: '50 52' });
-        break;
-
-      case 'success':
-        _gsap.timeline()
-          .to(_trigger, { scale: 1.12, duration: 0.15, ease: 'power2.out' })
-          .to(_trigger, { scale: 1,    duration: 0.25, ease: 'elastic.out(1, 0.5)' });
-        _gsap.to([earL, earR], { y: -4, duration: 0.2, ease: 'back.out(2)', svgOrigin: '50 50' });
-        break;
-
-      case 'confused':
-        _gsap.timeline()
-          .to(_trigger, { rotate: -10, duration: 0.2, ease: 'power2.out' })
-          .to(_trigger, { rotate:  8,  duration: 0.18 })
-          .to(_trigger, { rotate: -5,  duration: 0.15 })
-          .to(_trigger, { rotate:  0,  duration: 0.2, ease: 'power1.out' });
-        break;
-
-      case 'pointing':
-        _gsap.to(earR, { y: -8, rotate: 12, duration: 0.4, ease: 'back.out(1.5)', svgOrigin: '68 55' });
-        _gsap.to(body,  { x: 2, duration: 0.3, ease: 'power2.out', svgOrigin: '50 55' });
-        break;
-    }
+    // Actualiza boca en todas las instancias
+    const d = _MOUTH[state] || _MOUTH._default;
+    widget.querySelectorAll('.jotai-mouth-path').forEach(m => m.setAttribute('d', d));
   }
 
   /* ── STATUS TEXT ────────────────────────────────────────────── */

@@ -53,7 +53,7 @@ js/
   lang.js                     # LangSwitcher — internacionalización ES/EN
   section-nav.js              # Navegación lateral de secciones (dots laterales)
   ia-assistant.js             # IAAssistant — KB dinámica desde JSON + motor de query (keywords)
-  ia-mascot.js                # IaMascot — widget JotAI: SVG, panel chat, 8 estados GSAP, worker
+  ia-mascot.js                # IaMascot — widget JotAI: SVG vivo (blink/mirada/cursor), CSS states, worker
   ia-worker.js                # Web Worker — embeddings MiniLM + IndexedDB cache + cosine ranking
   ia-tour.js                  # IaTour — tour guiado por secciones (4 pasos x modo dev/ia/sec)
   trajectory.js               # Trajectory — drawer de trayectoria profesional
@@ -341,20 +341,22 @@ Widget flotante `position: fixed; bottom: 1.5rem; right: 1.5rem` visible en **to
 Los colores heredan las CSS vars del tema activo (`--color-accent`, `--bg-secondary`, etc.)
 — sin CSS adicional por modo.
 
-### Arquitectura
+### Arquitectura general
 
 ```
 IaMascot.init()
-  ├─ _inject()             → DOM del widget (SVG mascot + panel de chat)
-  ├─ jotai:kb-ready event  → _initWorker(docs)  → ia-worker.js
-  └─ portfolio:modeChange  → closePanel() si estaba abierto
+  ├─ _inject()              → DOM del widget (2× SVG mascot + panel de chat)
+  ├─ _startLife(svgEl)      → timers de parpadeo + mirada errante por instancia
+  ├─ _initCursorTracking()  → pointermove en el panel → pupila sigue el cursor
+  ├─ jotai:kb-ready event   → _initWorker(docs) → ia-worker.js
+  └─ portfolio:modeChange   → closePanel() si estaba abierto
 
 IAAssistant.init()
-  └─ _loadData()           → fetch 5 JSONs → _buildKB() → dispatch jotai:kb-ready
+  └─ _loadData()            → fetch 5 JSONs → _buildKB() → dispatch jotai:kb-ready
 
 ia-worker.js (Web Worker)
-  ├─ { type:'init', docs } → loadModel + IDB cache check + embed KB
-  ├─ { type:'query',... }  → embed query → cosine ranking → { type:'result',... }
+  ├─ { type:'init', docs }  → loadModel + IDB cache check + embed KB
+  ├─ { type:'query',... }   → embed query → cosine ranking → { type:'result',... }
   └─ IndexedDB cache: key = FNV-1a hash de doc IDs + texts
 ```
 
@@ -363,19 +365,67 @@ ia-worker.js (Web Worker)
 const MASCOT_NAME = 'JotAI'; // en js/ia-mascot.js — cambiar aquí para renombrar
 ```
 
-### 8 estados del mascot
-| Estado | Cuándo | Animación GSAP |
-|--------|--------|----------------|
-| `idle` | Reposo | Float CSS, orejas/ojos neutros |
-| `greeting` | Panel abre | Bounce del trigger, orejas suben |
-| `listening` | Focus en input | Orejas se levantan, ojos se agrandan |
-| `thinking` | Procesando query | Ojos suben, cuerpo oscila |
-| `talking` | Respuesta llega | Boca abierta |
-| `success` | Resultado encontrado | Scale pulse, boca smile |
-| `confused` | Sin resultado | Rotación trigger, boca triste |
-| `pointing` | Tour activo | Oreja derecha apunta, cuerpo inclina |
+### SVG del personaje (`_buildSVG(prefix)`)
+`viewBox="0 0 200 200"`. Dos instancias en el DOM: prefix `'b'` (burbuja) y `'p'` (panel header).
+El prefix evita IDs duplicados en los `<defs>` (gradientes `${p}aura`, `${p}body`, `${p}eye`).
 
-`prefers-reduced-motion`: todas las animaciones GSAP desactivadas → solo cambio de clase.
+Capas del SVG (de abajo hacia arriba):
+1. `.jotai-aura` — círculo de fondo con radial gradient que pulsa (`auraPulse`)
+2. `.jotai-motes` / `.jotai-motes-2` — partículas que orbitan en sentidos opuestos (`spin`)
+3. `.jotai-creature` — grupo que recibe `breathe` (scale sutil 3.6s)
+   - `.jotai-tilt` — grupo interior que recibe las poses de estado vía CSS
+     - antena (line + circle)
+     - `.jotai-ear-l` / `.jotai-ear-r` — dos paths por oreja (exterior + inner glow)
+     - cuerpo (ellipse con linear gradient)
+     - ojos: sclera (radial gradient) + `.jotai-pupil-grp` (sigue `--px/--py`) + `.jotai-lid`
+     - `.jotai-mouth-path` — path único; `d` se actualiza por JS según estado
+     - `.jotai-think-dots` — visible en `is-thinking`
+     - `.jotai-spark` — visible en `is-success`
+     - `.jotai-qmark` — visible en `is-confused`
+
+### Vida continua (independiente del chat)
+Funciones invocadas por instancia de SVG desde `_startLife(el)`:
+
+| Comportamiento | Implementación |
+|---------------|----------------|
+| Float | CSS `jotai-float` en `#jotai-trigger` (translateY ±7px, 4s) |
+| Breathe | CSS `jotai-breathe` en `.jotai-creature` (scale 1.032, 3.6s) |
+| Ear sway | CSS `jotai-swayL/R` en `.jotai-ear-l/r` (±4°, 5–5.4s) |
+| Aura pulse | CSS `jotai-auraPulse` en `.jotai-aura` (scale + opacity, 3.6s) |
+| Motes orbit | CSS `jotai-spin` en `.jotai-motes/2` (view-box origin, 9–14s) |
+| Parpadeo | JS timer 2.2–6.4s → clase `.is-blinking` → `scaleY(1)` en `.jotai-lid` |
+| Doble parpadeo | 22% de probabilidad en cada parpadeo (260ms después del primero) |
+| Mirada errante | JS timer 2.4–5s (solo en idle) → `--px/--py` aleatorios → vuelve a 0,0 |
+| Cursor tracking | `pointermove` en `#jotai-panel` → `--px/--py` en `.jotai-pupil-grp` |
+
+CSS custom properties para la pupila:
+```css
+.jotai-pupil-grp { transform: translate(var(--px, 0px), var(--py, 0px)); }
+```
+Se fijan por JS con `el.style.setProperty('--px', x + 'px')` en cada pupil-grp del SVG.
+
+### 8 estados del mascot (CSS classes en `#jotai-widget`)
+Los estados se aplican como clase `is-<estado>` al `#jotai-widget` — afecta **ambas instancias** del SVG (burbuja + panel) simultáneamente. No se usa GSAP para los estados.
+
+| Estado | Cuándo | CSS que activa |
+|--------|--------|----------------|
+| `idle` | Reposo | Animaciones base (float, breathe, sway) |
+| `greeting` | Panel abre | `jotai-greet` en `.jotai-tilt` (bounce + rotación) |
+| `listening` | Focus en input | Orejas ±13°, tilt 2° hacia input |
+| `thinking` | Procesando query | Ladeo −6°, think-dots, glow-pulse en trigger |
+| `talking` | Respuesta escribiéndose | `jotai-bob` en tilt, `jotai-mouthTalk` en boca |
+| `success` | Resultado encontrado | `jotai-pop`, spark visible, orejas arriba |
+| `confused` | Sin resultado | Rotación 7°, oreja derecha 34°, qmark flotante |
+| `pointing` | Tour activo | Oreja derecha 20°, tilt 4° |
+
+Boca: un único `.jotai-mouth-path`; `d` cambia por `setAttribute` desde `_setState`:
+- `neutral` → `M89 141 Q100 150 111 141`
+- `success` → `M85 138 Q100 156 115 138`
+- `confused` → `M93 144 Q100 139 107 144`
+- `thinking` → `M93 143 L107 143`
+
+`prefers-reduced-motion`: CSS apaga `.jotai-aura`, `.jotai-motes`, `.jotai-creature`, `.jotai-ear-l/r`
+y todos los keyframes de estado. JS no inicia los timers de vida. Transiciones suspendidas.
 
 ### Motor NLP híbrido
 - **Siempre disponible:** búsqueda por keywords + intent detection (síncrona)
@@ -383,6 +433,7 @@ const MASCOT_NAME = 'JotAI'; // en js/ia-mascot.js — cambiar aquí para renomb
 - **Umbral semántico:** `score ≥ 0.32` para aceptar resultado del worker
 - **Intent detection short-circuits:** `personal`, `contact`, `list_projects`, `list_skills`
   → respuesta inmediata sin semántica
+- **Status bar:** muestra progreso real de descarga/indexado; `"Listo (caché ⚡)"` en visitas siguientes
 
 ### Knowledge Base
 La KB se construye dinámicamente en `ia-assistant.js`:
@@ -396,20 +447,21 @@ La KB se construye dinámicamente en `ia-assistant.js`:
 - Sección destacada con `outline` vía clase `.jotai-tour-target`
 - Scroll a la sección con `behavior: 'smooth'` (o `'instant'` si `prefers-reduced-motion`)
 - Navegación: botones ← Anterior / Siguiente → / ✕ Saltar + teclas ← → Esc
-- Botón "Tour 🗺" siempre visible en el header del panel
+- Botón "Tour 🗺" siempre visible en el header del panel; al finalizar el tour JotAI reabre el panel
 
 ### IndexedDB cache de embeddings
 `ia-worker.js` almacena los vectores precomputados en IDB con clave = hash FNV-1a
 de los IDs + texto de cada doc. En visitas subsiguientes la KB está lista casi al instante.
 El hash cambia automáticamente al añadir proyectos → recomputa sin intervención manual.
 
-### GSAP — CDN
+### GSAP — CDN (solo para uso futuro / animaciones opcionales)
 ```html
 <!-- en index.html <head> -->
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 ```
-Carga sincrónica antes del bundle de Vite. En `ia-mascot.js` se usa como `window.gsap`.
-Si GSAP no está disponible (bloqueador, fallo de CDN), las animaciones se omiten sin error.
+Carga sincrónica antes del bundle de Vite. Disponible como `window.gsap` si se necesita.
+Los **estados del mascot ya no usan GSAP** — son 100% CSS classes. GSAP queda como opción
+para animaciones puntuales que requieran control de timeline (ej: secuencias de onboarding futuras).
 
 ### Vite config
 `optimizeDeps.exclude: ['@huggingface/transformers']` — necesario para que los

@@ -49,7 +49,7 @@ js/
   project-detail.js           # buildContent(p, mode) + PDM lateral (init/open/close)
   project-gallery.js          # ProjectGallery — gallery fullscreen (open/close)
   animations.js               # HeroAnimations: canvas de partículas/matrix/neural por modo
-  effects.js                  # SectionReveal (IntersectionObserver), parallax, partículas
+  effects.js                  # SectionReveal, parallax, partículas, SectionCanvas (fondos dinámicos)
   lang.js                     # LangSwitcher — internacionalización ES/EN
   section-nav.js              # Navegación lateral de secciones (dots laterales)
   ia-assistant.js             # IAAssistant — KB dinámica desde JSON + motor de query (keywords)
@@ -196,6 +196,57 @@ el browser lo codifica solo, pero en JS hay que codificar manualmente.
 'project-010' → 'mindlog'        ← solo en ia-projects.json
 ```
 
+## Fondos dinámicos de sección — `SectionCanvas` (`effects.js`)
+
+Módulo #11 en `effects.js`. Crea un `<canvas class="section-bg-canvas">` como primer hijo
+de cada sección (`#about`, `#projects`, `#skills`, `#contact`). Solo activo en dispositivos
+con puntero fino (`hover: hover and pointer: fine` — no mobile/touch).
+
+### Efectos por modo
+| Modo | Partículas | Spotlight |
+|------|-----------|-----------|
+| `.dev` | Nodos azules flotantes (~35), líneas entre vecinos <115px, se repelen al acercarte | Radial `rgba(59,130,246, 0.10)` |
+| `.ia` | Nodos púrpura/teal, pulsos radiales espontáneos (prob. 0.04%/frame) | Radial `rgba(177,78,255, 0.10)` |
+| `.sec` | Columnas de chars ASCII/katakana cayendo, aceleran y brillan cerca del cursor | Radial `rgba(0,255,65, 0.10)` |
+
+### Stacking context (patrón idéntico al hero canvas)
+```
+.section              position: relative; overflow: hidden;
+  .section-bg-canvas  position: absolute; z-index: 0;   ← canvas + spotlight
+  .container          position: relative; z-index: 1;   ← contenido encima
+```
+
+### Suavizado de bordes entre secciones
+Dos mecanismos combinados para eliminar el corte duro al cruzar secciones:
+
+1. **`mask-image` en el canvas** — desvanece el canvas en el 8% superior e inferior:
+   ```css
+   mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%);
+   ```
+
+2. **Vignettes CSS** (`::before` top / `::after` bottom) en `.section` y `.section--alt` —
+   funden el color de fondo propio de la sección en 60px en cada borde:
+   ```css
+   .section::before     { background: linear-gradient(to bottom, var(--bg-primary),   transparent); }
+   .section--alt::before { background: linear-gradient(to bottom, var(--bg-secondary), transparent); }
+   .section::after      { background: linear-gradient(to bottom, transparent, var(--bg-primary));   }
+   .section--alt::after  { background: linear-gradient(to bottom, transparent, var(--bg-secondary)); }
+   ```
+   Ambos pseudo-elementos tienen `z-index: 0` (bajo el contenido) y `pointer-events: none`.
+
+### Performance
+- Loop `requestAnimationFrame` compartido entre todos los canvases
+- `ResizeObserver` por sección — reinicializa partículas al cambiar tamaño
+- Saltar secciones fuera del viewport (±80px) en cada frame
+- Al cambiar modo: `_teardown()` + `_setup()` con 80ms de delay para esperar el DOM
+
+### Colores de acento (hardcoded en `ACCENT_RGB`)
+```js
+dev: [59, 130, 246]   // azul
+ia:  [177, 78, 255]   // púrpura  +  ACCENT2: [6, 255, 165] (teal, 35% de nodos)
+sec: [0,  255,  65]   // verde terminal
+```
+
 ## Convenciones CSS
 - **Metodología:** BEM-like (`.section__element--modifier`)
 - **Variables:** `--color-accent`, `--color-accent-rgb`, `--bg-card`, `--bg-secondary`,
@@ -203,6 +254,8 @@ el browser lo codifica solo, pero en JS hay que codificar manualmente.
 - `--font-mono` no existe como variable global → usar `var(--font-mono, monospace)`
 - **IDs de sección:** kebab-case (`jonathan-panel`, `sec-terminal`, `cmd-palette`)
 - **Clases de animación:** `animate-on-scroll`, `from-left`, `from-right`, `stagger-item`
+- **`.section-bg-canvas`:** canvas de fondo dinámico — `z-index: 0`, primer hijo de cada sección
+- **`.section::before/::after`:** vignettes de transición entre secciones — no usar para otro propósito
 
 ## Imágenes
 - Las fotos del avatar cambian por modo: `AVATAR_SRC` en `app.js`

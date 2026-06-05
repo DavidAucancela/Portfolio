@@ -1,9 +1,9 @@
 /**
  * ia-mascot.js — JotAI widget flotante
- * Fase 2: SVG mascot original + chat panel + 8 estados GSAP
+ * Fase 3: motor de embeddings via Web Worker (@huggingface/transformers)
  *
- * Importa IAAssistant para delegar la lógica de KB/query.
- * Visible en los 3 modos; adapta colores vía CSS vars del tema activo.
+ * Búsqueda semántica (MiniLM) con fallback a keywords mientras el modelo carga.
+ * Importa IAAssistant para KB y query de fallback.
  */
 
 import { IAAssistant } from './ia-assistant.js';
@@ -109,7 +109,12 @@ function _buildSVG(size = 'full') {
 
 /* ── ESTADO INTERNO ───────────────────────────────────────────── */
 
+/* ── CONSTANTES ───────────────────────────────────────────────── */
+
+const SEMANTIC_THRESHOLD = 0.32; // score mínimo para aceptar resultado semántico
+
 export const IaMascot = (() => {
+  /* UI refs */
   let _panel      = null;
   let _trigger    = null;
   let _chat       = null;
@@ -121,6 +126,72 @@ export const IaMascot = (() => {
   let _reduced    = false;
   let _hasGreeted = false;
   let _prevFocus  = null;
+
+  /* Worker state */
+  let _worker       = null;
+  let _workerReady  = false;
+  let _workerInit   = false;
+  let _queryId      = 0;
+  const _pending    = new Map(); // id → { resolve, timer }
+
+  /* ── WORKER ─────────────────────────────────────────────────── */
+
+  function _initWorker(docs) {
+    if (_workerInit) return;
+    _workerInit = true;
+
+    _worker = new Worker(
+      new URL('./ia-worker.js', import.meta.url),
+      { type: 'module' }
+    );
+
+    _worker.onmessage = ({ data }) => {
+      switch (data.type) {
+        case 'progress':
+          if (data.stage === 'model') {
+            _setStatus(`Cargando modelo… ${data.pct}%`);
+          } else if (data.stage === 'indexing') {
+            _setStatus(`Indexando KB… ${data.current}/${data.total}`);
+          }
+          break;
+
+        case 'ready':
+          _workerReady = true;
+          _setStatus('Listo para responder');
+          break;
+
+        case 'result': {
+          const entry = _pending.get(data.id);
+          if (entry) {
+            clearTimeout(entry.timer);
+            _pending.delete(data.id);
+            entry.resolve(data.results);
+          }
+          break;
+        }
+
+        case 'error':
+          console.warn('[JotAI Worker]', data.message);
+          // Fallback: marca el worker como no listo para seguir con keywords
+          _workerReady = false;
+          break;
+      }
+    };
+
+    _worker.postMessage({ type: 'init', docs });
+  }
+
+  function _semanticQuery(text) {
+    return new Promise(resolve => {
+      const id    = ++_queryId;
+      const timer = setTimeout(() => {
+        _pending.delete(id);
+        resolve([]); // timeout → fallback a keywords
+      }, 10_000);
+      _pending.set(id, { resolve, timer });
+      _worker.postMessage({ type: 'query', text, id });
+    });
+  }
 
   /* ── DOM INJECTION ──────────────────────────────────────────── */
 
@@ -327,7 +398,7 @@ export const IaMascot = (() => {
 
   /* ── QUERY HANDLING ─────────────────────────────────────────── */
 
-  function _handleSend() {
+  async function _handleSend() {
     const val = _input.value.trim();
     if (!val || _sendBtn.disabled) return;
     _input.value = '';
@@ -338,25 +409,42 @@ export const IaMascot = (() => {
     _setStatus('Pensando…');
     _addLoadingDots();
 
-    const delay = 480 + Math.random() * 280;
-    setTimeout(() => {
-      _removeLoadingDots();
+    // 1. Búsqueda por keywords / intent (síncrona, siempre disponible)
+    const kwResult = IAAssistant.query(val);
 
-      const result = IAAssistant.query(val);
-      const html   = result ? _buildResultHTML(result) : null;
+    // 2. Si el intent es "especial" (listas, perfil, contacto) → respuesta inmediata
+    const isSpecial = kwResult?.type === 'special';
 
-      if (html) {
-        _addBotMessage(html, true);
-        _setState('success');
-      } else {
-        _addBotMessage('No encontré resultados. Prueba con un proyecto (UBApp, LLM Observatory…) o una tecnología (Django, React, Docker…).');
-        _setState('confused');
+    let finalResult = kwResult;
+
+    if (!isSpecial && _workerReady) {
+      // 3. Búsqueda semántica via worker
+      const semResults = await _semanticQuery(val);
+      const topSem     = semResults.find(r => r.score >= SEMANTIC_THRESHOLD);
+
+      if (topSem) {
+        // Preferir resultado semántico si supera el umbral
+        finalResult = { type: topSem.type, data: topSem.data };
       }
+      // Si semántica no supera umbral pero keyword sí matcheó → kwResult gana
+    } else if (!isSpecial && !_workerReady) {
+      // Worker aún cargando → pequeño delay para sensación de "pensando"
+      await new Promise(r => setTimeout(r, 420 + Math.random() * 250));
+    }
 
-      _setStatus('Listo para responder');
-      _sendBtn.disabled = false;
-      setTimeout(() => _setState('idle'), 2200);
-    }, delay);
+    _removeLoadingDots();
+
+    if (finalResult) {
+      _addBotMessage(_buildResultHTML(finalResult), true);
+      _setState('success');
+    } else {
+      _addBotMessage('No encontré resultados. Prueba con un proyecto (UBApp, LLM Observatory…) o una tecnología (Django, React, Docker…).');
+      _setState('confused');
+    }
+
+    _setStatus(_workerReady ? 'Listo para responder' : 'Motor semántico cargando…');
+    _sendBtn.disabled = false;
+    setTimeout(() => _setState('idle'), 2200);
   }
 
   /* ── RESULT HTML ────────────────────────────────────────────── */
@@ -542,6 +630,13 @@ export const IaMascot = (() => {
 
     // Inicializa boca en estado neutral al arrancar
     setTimeout(() => _updateMouth('idle'), 0);
+
+    // Cuando IAAssistant termina de cargar la KB → inicia el worker
+    window.addEventListener('jotai:kb-ready', ({ detail }) => {
+      if (detail.kb?.length > 0) {
+        _initWorker(detail.kb);
+      }
+    });
 
     // Cierra panel al cambiar de modo
     window.addEventListener('portfolio:modeChange', () => {

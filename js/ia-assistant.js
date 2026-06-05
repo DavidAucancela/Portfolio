@@ -136,10 +136,37 @@ function _skillProjects(skillName) {
     .map(p => p.title);
 }
 
+// ── TEXT PARA EMBEDDINGS ─────────────────────────────────────────────────────
+// Solo para docs project y skill; personal/contact se manejan por intent.
+
+function _projectEmbedText(p) {
+  const tech = p.techStack
+    ? Object.values(p.techStack).flat().join(' ')
+    : '';
+  const lab = p.lab
+    ? `${p.lab.platform} ${p.lab.difficulty} ${(p.lab.techniques || []).join(' ')}`
+    : '';
+  return [
+    p.title,
+    p.description,
+    p.longDescription,
+    (p.tags || []).join(' '),
+    tech,
+    p.process?.overview,
+    lab,
+  ].filter(Boolean).join(' ').replace(/\s+/g, ' ').slice(0, 600);
+}
+
+function _skillEmbedText(s, proyectos) {
+  return `${s.name} ${s.category} ${_skillLevel(s.level)} ${proyectos.join(' ')}`.trim();
+}
+
+// ── KB BUILDER ───────────────────────────────────────────────────────────────
+
 function _buildKB() {
   _kb = [];
 
-  // Personal profile doc
+  // Personal profile doc (no text field — no se embede)
   _kb.push({
     id: 'personal',
     type: 'personal',
@@ -148,7 +175,7 @@ function _buildKB() {
     data: _personal,
   });
 
-  // Contact doc
+  // Contact doc (no text field — no se embede)
   _kb.push({
     id: 'contact',
     type: 'contact',
@@ -157,23 +184,25 @@ function _buildKB() {
     data: _personal,
   });
 
-  // All projects
+  // All projects — con texto para embedding
   _projects.forEach(p => {
     _kb.push({
       id: `project-${p.slug || p.id}`,
       type: 'project',
       keywords: _projectKeywords(p),
+      text: _projectEmbedText(p),
       data: p,
     });
   });
 
-  // All skills
+  // All skills — con texto para embedding
   _skills.forEach(s => {
     const projs = _skillProjects(s.name);
     _kb.push({
       id: `skill-${s.name.toLowerCase().replace(/\W+/g, '-')}`,
       type: 'skill',
       keywords: _skillKeywords(s),
+      text: _skillEmbedText(s, projs),
       data: {
         name:     s.name,
         category: s.category,
@@ -286,8 +315,12 @@ function _query(input) {
 // ── PUBLIC API ───────────────────────────────────────────────────────────────
 // El rendering lo hace ia-mascot.js; aquí solo cargamos la KB.
 
-function init() {
-  _loadData(); // async — KB lista antes de la primera query del usuario
+async function init() {
+  await _loadData();
+  // Notifica al mascot widget que la KB está lista para enviar al worker
+  window.dispatchEvent(new CustomEvent('jotai:kb-ready', {
+    detail: { kb: _kb.filter(d => d.text) }, // solo docs con texto para embedding
+  }));
 }
 
 // Expone query() y getKB() para ia-mascot.js y Fase 3 (embeddings)

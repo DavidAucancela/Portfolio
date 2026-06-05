@@ -56,6 +56,148 @@
   50%       { transform: translateY(-7px); }
 }
 
+/* ── MASCOT SVG — vida continua ───────────────────────────────── */
+
+/* El SVG completo */
+.jotai-mascot { display: block; overflow: visible; }
+
+/* Aura de fondo pulsa */
+.jotai-aura {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: jotai-auraPulse 3.6s ease-in-out infinite;
+}
+@keyframes jotai-auraPulse {
+  0%, 100% { opacity: .5;  transform: scale(1); }
+  50%       { opacity: .85; transform: scale(1.07); }
+}
+
+/* Motes orbitan en sentidos opuestos */
+.jotai-motes, .jotai-motes-2 {
+  transform-box: view-box;
+  transform-origin: 50% 52%;
+}
+.jotai-motes   { animation: jotai-spin 14s linear infinite; }
+.jotai-motes-2 { animation: jotai-spin  9s linear infinite reverse; }
+@keyframes jotai-spin { to { transform: rotate(360deg); } }
+
+/* La criatura respira */
+.jotai-creature {
+  transform-box: fill-box;
+  transform-origin: 50% 70%;
+  animation: jotai-breathe 3.6s ease-in-out infinite;
+}
+@keyframes jotai-breathe {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.032); }
+}
+
+/* Tilt recibe las poses de estado (transición suave) */
+.jotai-tilt { transition: transform 0.35s cubic-bezier(.3,.8,.3,1.1); }
+
+/* Orejas balanceo en reposo */
+.jotai-ear-l, .jotai-ear-r {
+  transform-box: fill-box;
+  transform-origin: 50% 92%;
+  transition: transform 0.35s cubic-bezier(.3,.8,.3,1.2);
+}
+.jotai-ear-l { animation: jotai-swayL 5s ease-in-out infinite; }
+.jotai-ear-r { animation: jotai-swayR 5.4s ease-in-out infinite; }
+@keyframes jotai-swayL { 0%,100%{transform:rotate(0)} 50%{transform:rotate(-4deg)} }
+@keyframes jotai-swayR { 0%,100%{transform:rotate(0)} 50%{transform:rotate(4deg)} }
+
+/* Pupila sigue cursor/mirada via custom props */
+.jotai-pupil-grp {
+  transform: translate(var(--px, 0px), var(--py, 0px));
+  transition: transform 0.25s ease-out;
+}
+
+/* Párpado: cerrado = scaleY(1), abierto = scaleY(0) */
+.jotai-lid {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  transform: scaleY(0);
+  transition: transform 0.07s ease;
+}
+.is-blinking .jotai-lid { transform: scaleY(1); }
+
+/* Think-dots, spark, qmark: ocultos por defecto */
+.jotai-think-dots { opacity: 0; transition: opacity 0.2s; }
+.jotai-spark      { opacity: 0; transition: opacity 0.2s; }
+.jotai-qmark      { opacity: 0; transition: opacity 0.2s; }
+.jotai-think-dots circle { transform-box: fill-box; transform-origin: center; }
+
+/* Boca */
+.jotai-mouth-path { transform-box: fill-box; transform-origin: 50% 50%; }
+
+/* ── ESTADOS (CSS classes en #jotai-widget) ───────────────────── */
+
+/* greeting — rebote de bienvenida */
+.is-greeting .jotai-tilt {
+  animation: jotai-greet 0.9s ease;
+}
+@keyframes jotai-greet {
+  0%   { transform: translateY(0) rotate(0); }
+  25%  { transform: translateY(-5%) rotate(-6deg); }
+  55%  { transform: translateY(0) rotate(5deg); }
+  80%  { transform: translateY(-2%) rotate(-2deg); }
+  100% { transform: none; }
+}
+
+/* listening — orejas se levantan, se inclina hacia el input */
+.is-listening .jotai-ear-l { animation: none; transform: rotate(-13deg) translateY(-3px); }
+.is-listening .jotai-ear-r { animation: none; transform: rotate(13deg)  translateY(-3px); }
+.is-listening .jotai-tilt  { transform: translateY(2%) rotate(2deg); }
+
+/* thinking — ladea, orejas asimétricas, puntitos */
+.is-thinking .jotai-ear-l        { animation: none; transform: rotate(-6deg); }
+.is-thinking .jotai-ear-r        { animation: none; transform: rotate(10deg); }
+.is-thinking .jotai-tilt          { transform: rotate(-6deg); }
+.is-thinking .jotai-think-dots    { opacity: 1; }
+.is-thinking .jotai-think-dots circle { animation: jotai-tdot 1s infinite; }
+.is-thinking .jotai-think-dots circle:nth-child(2) { animation-delay: .18s; }
+.is-thinking .jotai-think-dots circle:nth-child(3) { animation-delay: .36s; }
+@keyframes jotai-tdot {
+  0%,100% { transform: translateY(0);    opacity: .4; }
+  50%      { transform: translateY(-4px); opacity: 1; }
+}
+
+/* talking — cabeceo + boca se mueve */
+.is-talking .jotai-tilt       { animation: jotai-bob .55s ease-in-out infinite; }
+.is-talking .jotai-mouth-path { animation: jotai-mouthTalk .28s ease-in-out infinite; }
+@keyframes jotai-bob      { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-1.5%)} }
+@keyframes jotai-mouthTalk{ 0%,100%{transform:scaleY(.55)}  50%{transform:scaleY(1.15)} }
+
+/* success — rebote + orejas arriba + chispa */
+.is-success .jotai-ear-l { animation: none; transform: rotate(-10deg) translateY(-2px); }
+.is-success .jotai-ear-r { animation: none; transform: rotate(10deg)  translateY(-2px); }
+.is-success .jotai-tilt  { animation: jotai-pop .6s ease; }
+.is-success .jotai-spark { opacity: 1; animation: jotai-sparkPop .6s ease; }
+@keyframes jotai-pop {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.08) translateY(-4%); }
+  100% { transform: scale(1); }
+}
+@keyframes jotai-sparkPop {
+  0%   { opacity: 0; transform: scale(.2) rotate(0); }
+  50%  { opacity: 1; transform: scale(1.1) rotate(40deg); }
+  100% { opacity: 0; transform: scale(1) rotate(60deg); }
+}
+
+/* confused — ladea, oreja caída, signo de pregunta */
+.is-confused .jotai-ear-l { animation: none; transform: rotate(-4deg); }
+.is-confused .jotai-ear-r { animation: none; transform: rotate(34deg); }
+.is-confused .jotai-tilt  { transform: rotate(7deg); }
+.is-confused .jotai-qmark { opacity: 1; animation: jotai-qFloat 1.4s ease-in-out infinite; }
+@keyframes jotai-qFloat {
+  0%,100% { transform: translateY(0);    }
+  50%      { transform: translateY(-4px); }
+}
+
+/* pointing — oreja derecha señala */
+.is-pointing .jotai-ear-r { animation: none; transform: rotate(20deg) translateY(-4px); }
+.is-pointing .jotai-tilt  { transform: rotate(4deg); }
+
 /* ── PANEL ────────────────────────────────────────────────────── */
 
 #jotai-panel {
@@ -372,34 +514,14 @@
 #jotai-send:disabled         { opacity: 0.35; cursor: not-allowed; }
 #jotai-send:focus-visible    { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 
-/* ── STATE: confused — trigger wobble ────────────────────────── */
-
-[data-jotai-state="confused"] #jotai-trigger {
+/* thinking — glow pulsante en el trigger */
+.is-thinking #jotai-trigger {
   animation: jotai-float 4s ease-in-out infinite,
-             jotai-wobble 0.5s ease forwards;
+             jotai-glowPulse 1s ease-in-out infinite;
 }
-
-@keyframes jotai-wobble {
-  0%   { rotate: 0deg; }
-  20%  { rotate: -10deg; }
-  60%  { rotate: 10deg; }
-  80%  { rotate: -5deg; }
-  100% { rotate: 0deg; }
-}
-
-/* ── STATE: thinking — slow pulse on trigger ─────────────────── */
-
-[data-jotai-state="thinking"] #jotai-trigger {
-  box-shadow:
-    0 0 0 4px var(--color-accent-glow, rgba(6,255,165,0.15)),
-    0 4px 20px rgba(0,0,0,0.4);
-  animation: jotai-float 4s ease-in-out infinite,
-             jotai-glow-pulse 1s ease-in-out infinite;
-}
-
-@keyframes jotai-glow-pulse {
-  0%, 100% { box-shadow: 0 0 0 4px var(--color-accent-glow, rgba(6,255,165,0.15)), 0 4px 20px rgba(0,0,0,0.4); }
-  50%       { box-shadow: 0 0 0 10px var(--color-accent-glow, rgba(6,255,165,0.25)), 0 4px 30px rgba(0,0,0,0.5); }
+@keyframes jotai-glowPulse {
+  0%,100% { box-shadow: 0 0 0 4px var(--color-accent-glow,rgba(6,255,165,.15)), 0 4px 20px #0006; }
+  50%      { box-shadow: 0 0 0 10px var(--color-accent-glow,rgba(6,255,165,.3)), 0 4px 30px #0008; }
 }
 
 /* ── MOBILE ───────────────────────────────────────────────────── */
@@ -575,13 +697,22 @@
 /* ── PREFERS-REDUCED-MOTION ───────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  #jotai-trigger,
-  .jotai-status-dot,
-  .jotai-dots span,
-  .jotai-msg,
-  [data-jotai-state="confused"] #jotai-trigger,
-  [data-jotai-state="thinking"] #jotai-trigger {
+  /* Vida del personaje */
+  .jotai-aura, .jotai-motes, .jotai-motes-2,
+  .jotai-creature, .jotai-ear-l, .jotai-ear-r,
+  /* Estados animados */
+  .is-greeting .jotai-tilt,
+  .is-talking .jotai-tilt, .is-talking .jotai-mouth-path,
+  .is-success .jotai-tilt, .is-success .jotai-spark,
+  .is-thinking .jotai-think-dots circle,
+  .is-confused .jotai-qmark,
+  .is-thinking #jotai-trigger,
+  /* Widget */
+  #jotai-trigger, .jotai-status-dot, .jotai-dots span, .jotai-msg {
     animation: none !important;
+  }
+  .jotai-lid, .jotai-pupil-grp, .jotai-tilt,
+  .jotai-ear-l, .jotai-ear-r {
     transition: none !important;
   }
 }

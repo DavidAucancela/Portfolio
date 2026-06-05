@@ -34,7 +34,6 @@ function copyStaticFolders() {
 export default defineConfig({
   root: '.',
   base: '/',
-  // Desactivar el publicDir de Vite para que no mueva public/ a la raíz de dist
   publicDir: false,
   build: {
     outDir: 'dist',
@@ -43,6 +42,10 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,
+  },
+  // Necesario para que @huggingface/transformers cargue sus WASM correctamente
+  optimizeDeps: {
+    exclude: ['@huggingface/transformers'],
   },
   plugins: [copyStaticFolders()],
 })

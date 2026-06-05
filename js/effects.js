@@ -950,6 +950,264 @@ const StatCounters = (() => {
 })();
 
 /* ════════════════════════════════════════════════════════════
+   11. SECTION CANVAS — spotlight + partículas por sección
+════════════════════════════════════════════════════════════ */
+const SectionCanvas = (() => {
+  if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return { init: () => {} };
+
+  const ACCENT_RGB = {
+    dev: [59,  130, 246],
+    ia:  [177,  78, 255],
+    sec: [0,   255,  65],
+  };
+  const ACCENT2_RGB = { ia: [6, 255, 165] };
+  const SEC_CHARS = '01アイウエオカキクケコサシスセソ';
+
+  let states  = [];
+  let animId  = null;
+  let mouseX  = -9999;
+  let mouseY  = -9999;
+  let curMode = 'dev';
+
+  function init() {
+    curMode = document.body.dataset.theme || localStorage.getItem('portfolio-mode') || 'dev';
+    _setup();
+    window.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+    window.addEventListener('portfolio:modeChange', e => {
+      curMode = e.detail.mode;
+      _teardown();
+      setTimeout(_setup, 80);
+    });
+  }
+
+  function _setup() {
+    const IDS = ['about', 'projects', 'skills', 'contact'];
+    if (curMode === 'ia') IDS.push('ia-assistant-section');
+
+    IDS.forEach(id => {
+      const section = document.getElementById(id);
+      if (!section) return;
+
+      const canvas = document.createElement('canvas');
+      canvas.className = 'section-bg-canvas';
+      canvas.setAttribute('aria-hidden', 'true');
+      section.insertAdjacentElement('afterbegin', canvas);
+
+      const ctx   = canvas.getContext('2d');
+      const state = { canvas, ctx, section, particles: [], resizeObs: null };
+
+      _resize(state);
+      _initParticles(state);
+
+      const ro = new ResizeObserver(() => { _resize(state); _initParticles(state); });
+      ro.observe(section);
+      state.resizeObs = ro;
+
+      states.push(state);
+    });
+
+    if (!animId) _loop();
+  }
+
+  function _teardown() {
+    if (animId) { cancelAnimationFrame(animId); animId = null; }
+    states.forEach(s => { s.canvas.remove(); s.resizeObs && s.resizeObs.disconnect(); });
+    states = [];
+  }
+
+  function _resize(state) {
+    const { canvas, section } = state;
+    canvas.width  = section.offsetWidth;
+    canvas.height = section.offsetHeight;
+  }
+
+  /* ── inicialización de partículas ── */
+  function _initParticles(state) {
+    const w = state.canvas.width;
+    const h = state.canvas.height;
+    state.particles = [];
+
+    if (curMode === 'sec') {
+      const cols = Math.max(10, Math.floor(w / 22));
+      for (let i = 0; i < cols; i++) {
+        state.particles.push({
+          x:            (i + 0.5) * (w / cols),
+          y:            Math.random() * h,
+          vy:           0.6 + Math.random() * 1.0,
+          char:         _rndChar(),
+          baseOpacity:  0.05 + Math.random() * 0.10,
+          charTimer:    0,
+          charInterval: 10 + Math.floor(Math.random() * 25),
+        });
+      }
+    } else {
+      const count = Math.min(55, Math.max(20, Math.floor((w * h) / 18000)));
+      for (let i = 0; i < count; i++) {
+        state.particles.push({
+          x:           Math.random() * w,
+          y:           Math.random() * h,
+          vx:          (Math.random() - 0.5) * 0.35,
+          vy:          (Math.random() - 0.5) * 0.35,
+          r:           1.5 + Math.random() * 1.8,
+          baseOpacity: 0.18 + Math.random() * 0.22,
+          pulseR:      0,
+          pulseAlpha:  0,
+          pulsing:     false,
+          useAccent2:  curMode === 'ia' && Math.random() < 0.35,
+        });
+      }
+    }
+  }
+
+  function _rndChar() { return SEC_CHARS[Math.floor(Math.random() * SEC_CHARS.length)]; }
+
+  /* ── loop principal ── */
+  function _loop() {
+    animId = requestAnimationFrame(_loop);
+    states.forEach(_draw);
+  }
+
+  function _draw(state) {
+    const { canvas, ctx, section, particles } = state;
+    const w = canvas.width;
+    const h = canvas.height;
+
+    // Skip secciones fuera del viewport
+    const rect = section.getBoundingClientRect();
+    if (rect.bottom < -80 || rect.top > window.innerHeight + 80) return;
+
+    ctx.clearRect(0, 0, w, h);
+
+    const mx        = mouseX - rect.left;
+    const my        = mouseY - rect.top;
+    const inSection = mx >= -10 && mx <= w + 10 && my >= -10 && my <= h + 10;
+
+    // — Spotlight (gradiente radial) —
+    if (inSection) {
+      const [r, g, b] = ACCENT_RGB[curMode] || ACCENT_RGB.dev;
+      const grd = ctx.createRadialGradient(mx, my, 0, mx, my, Math.min(w * 0.55, 420));
+      grd.addColorStop(0,    `rgba(${r},${g},${b},0.10)`);
+      grd.addColorStop(0.45, `rgba(${r},${g},${b},0.04)`);
+      grd.addColorStop(1,    `rgba(${r},${g},${b},0)`);
+      ctx.fillStyle = grd;
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    curMode === 'sec'
+      ? _drawSec(ctx, particles, w, h, mx, my, inSection)
+      : _drawNodes(ctx, particles, w, h, mx, my, inSection);
+  }
+
+  /* ── nodos flotantes (dev / ia) ── */
+  function _drawNodes(ctx, particles, w, h, mx, my, inSection) {
+    const [r,  g,  b ] = ACCENT_RGB[curMode]  || ACCENT_RGB.dev;
+    const [r2, g2, b2] = ACCENT2_RGB[curMode] || [r, g, b];
+    const CONNECT = 115;
+    const REPEL   = 130;
+    const MAX_V   = 1.1;
+
+    for (const p of particles) {
+      if (inSection) {
+        const dx = p.x - mx;
+        const dy = p.y - my;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < REPEL * REPEL && d2 > 0) {
+          const d = Math.sqrt(d2);
+          const f = (REPEL - d) / REPEL * 0.55;
+          p.vx += (dx / d) * f;
+          p.vy += (dy / d) * f;
+        }
+      }
+      p.vx *= 0.97; p.vy *= 0.97;
+      const spd = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+      if (spd > MAX_V) { p.vx = p.vx / spd * MAX_V; p.vy = p.vy / spd * MAX_V; }
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0)  { p.x = 0;  p.vx *= -1; }
+      if (p.x > w)  { p.x = w;  p.vx *= -1; }
+      if (p.y < 0)  { p.y = 0;  p.vy *= -1; }
+      if (p.y > h)  { p.y = h;  p.vy *= -1; }
+
+      if (curMode === 'ia' && !p.pulsing && Math.random() < 0.0004) {
+        p.pulsing = true; p.pulseR = p.r; p.pulseAlpha = 0.55;
+      }
+    }
+
+    // Conexiones
+    ctx.lineWidth = 0.7;
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const a = particles[i];
+        const b_ = particles[j];
+        const dx = a.x - b_.x;
+        const dy = a.y - b_.y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < CONNECT * CONNECT) {
+          const alpha = (1 - Math.sqrt(d2) / CONNECT) * 0.20;
+          ctx.strokeStyle = `rgba(${r},${g},${b},${alpha})`;
+          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b_.x, b_.y); ctx.stroke();
+        }
+      }
+    }
+
+    // Nodos
+    for (const p of particles) {
+      const pr = p.useAccent2 ? r2 : r;
+      const pg = p.useAccent2 ? g2 : g;
+      const pb = p.useAccent2 ? b2 : b;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${pr},${pg},${pb},${p.baseOpacity})`;
+      ctx.fill();
+
+      if (p.pulsing) {
+        p.pulseR += 1.0; p.pulseAlpha *= 0.93;
+        if (p.pulseAlpha < 0.01) { p.pulsing = false; }
+        else {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.pulseR, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(${pr},${pg},${pb},${p.pulseAlpha * 0.30})`;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  /* ── caracteres cayendo (sec) ── */
+  function _drawSec(ctx, particles, w, h, mx, my, inSection) {
+    const [r, g, b] = ACCENT_RGB.sec;
+    ctx.font = '11px monospace';
+    ctx.textAlign = 'center';
+
+    for (const p of particles) {
+      let speedMult    = 1;
+      let opacityBonus = 0;
+
+      if (inSection) {
+        const dx = p.x - mx;
+        const dy = p.y - my;
+        const d  = Math.sqrt(dx * dx + dy * dy);
+        if (d < 100) {
+          const t = 1 - d / 100;
+          speedMult    = 1 + t * 2.5;
+          opacityBonus = t * 0.25;
+        }
+      }
+
+      p.y += p.vy * speedMult;
+      if (++p.charTimer >= p.charInterval) { p.char = _rndChar(); p.charTimer = 0; }
+      if (p.y > h + 12) { p.y = -12; p.char = _rndChar(); }
+
+      ctx.fillStyle = `rgba(${r},${g},${b},${Math.min(p.baseOpacity + opacityBonus, 0.45)})`;
+      ctx.fillText(p.char, p.x, p.y);
+    }
+  }
+
+  return { init };
+})();
+
+/* ════════════════════════════════════════════════════════════
    EXPORT — función de init global
 ════════════════════════════════════════════════════════════ */
 export function initEffects() {
@@ -962,6 +1220,7 @@ export function initEffects() {
   SectionLabels.init();
   SectionReveal.init();
   StatCounters.init();
+  SectionCanvas.init();
 
   // Aplicar modo inicial a los labels de sección
   const initMode = localStorage.getItem('portfolio-mode') || 'dev';

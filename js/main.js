@@ -20,6 +20,7 @@ import { Trajectory } from './trajectory.js';
 import { CommandPalette } from './command-palette.js';
 import { SecTerminal } from './sec-terminal.js';
 import { PDFModal } from './pdf-modal.js';
+import { IaMascot } from './ia-mascot.js';
 
 // CSS imports — Vite los bundlea automáticamente
 import '../css/main.css';
@@ -31,6 +32,7 @@ import '../css/trajectory.css';
 import '../css/command-palette.css';
 import '../css/sec-terminal.css';
 import '../css/pdf-modal.css';
+import '../css/ia-mascot.css';
 
 // Vercel Analytics y Speed Insights — solo activos en producción
 injectAnalytics();
@@ -51,4 +53,5 @@ document.addEventListener('DOMContentLoaded', () => {
   CommandPalette.init();
   SecTerminal.init();
   PDFModal.init();
+  IaMascot.init();
 });

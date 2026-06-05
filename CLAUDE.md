@@ -33,6 +33,8 @@ css/
   trajectory.css              # Estilos del drawer de trayectoria
   command-palette.css         # Command palette (Cmd+K) — overlay, modal, items, toast
   sec-terminal.css            # Terminal interactiva del hero en modo .sec
+  pdf-modal.css               # Modal fullscreen visor de PDF (CV + links externos)
+  ia-mascot.css               # JotAI widget flotante: trigger, panel de chat, tour, estados
   themes/
     dev.css                   # Overrides modo .dev (azul, tipografía display)
     ia.css                    # Overrides modo .ia (púrpura, gradientes)
@@ -47,13 +49,17 @@ js/
   project-detail.js           # buildContent(p, mode) + PDM lateral (init/open/close)
   project-gallery.js          # ProjectGallery — gallery fullscreen (open/close)
   animations.js               # HeroAnimations: canvas de partículas/matrix/neural por modo
-  effects.js                  # SectionReveal (IntersectionObserver), parallax, partículas
+  effects.js                  # SectionReveal, parallax, partículas, SectionCanvas (fondos dinámicos)
   lang.js                     # LangSwitcher — internacionalización ES/EN
   section-nav.js              # Navegación lateral de secciones (dots laterales)
-  ia-assistant.js             # IAAssistant — chatbot solo visible en modo .ia
+  ia-assistant.js             # IAAssistant — KB dinámica desde JSON + motor de query (keywords)
+  ia-mascot.js                # IaMascot — widget JotAI: SVG, panel chat, 8 estados GSAP, worker
+  ia-worker.js                # Web Worker — embeddings MiniLM + IndexedDB cache + cosine ranking
+  ia-tour.js                  # IaTour — tour guiado por secciones (4 pasos x modo dev/ia/sec)
   trajectory.js               # Trajectory — drawer de trayectoria profesional
   command-palette.js          # CommandPalette — buscador global estilo Spotlight/VS Code
   sec-terminal.js             # SecTerminal — terminal interactiva en hero modo .sec
+  pdf-modal.js                # PDFModal — visor PDF inline (modal overlay con iframe)
 
 data/
   dev-projects.json           # 7 proyectos del modo .dev (cargados con fetch en runtime)
@@ -190,6 +196,57 @@ el browser lo codifica solo, pero en JS hay que codificar manualmente.
 'project-010' → 'mindlog'        ← solo en ia-projects.json
 ```
 
+## Fondos dinámicos de sección — `SectionCanvas` (`effects.js`)
+
+Módulo #11 en `effects.js`. Crea un `<canvas class="section-bg-canvas">` como primer hijo
+de cada sección (`#about`, `#projects`, `#skills`, `#contact`). Solo activo en dispositivos
+con puntero fino (`hover: hover and pointer: fine` — no mobile/touch).
+
+### Efectos por modo
+| Modo | Partículas | Spotlight |
+|------|-----------|-----------|
+| `.dev` | Nodos azules flotantes (~35), líneas entre vecinos <115px, se repelen al acercarte | Radial `rgba(59,130,246, 0.10)` |
+| `.ia` | Nodos púrpura/teal, pulsos radiales espontáneos (prob. 0.04%/frame) | Radial `rgba(177,78,255, 0.10)` |
+| `.sec` | Columnas de chars ASCII/katakana cayendo, aceleran y brillan cerca del cursor | Radial `rgba(0,255,65, 0.10)` |
+
+### Stacking context (patrón idéntico al hero canvas)
+```
+.section              position: relative; overflow: hidden;
+  .section-bg-canvas  position: absolute; z-index: 0;   ← canvas + spotlight
+  .container          position: relative; z-index: 1;   ← contenido encima
+```
+
+### Suavizado de bordes entre secciones
+Dos mecanismos combinados para eliminar el corte duro al cruzar secciones:
+
+1. **`mask-image` en el canvas** — desvanece el canvas en el 8% superior e inferior:
+   ```css
+   mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%);
+   ```
+
+2. **Vignettes CSS** (`::before` top / `::after` bottom) en `.section` y `.section--alt` —
+   funden el color de fondo propio de la sección en 60px en cada borde:
+   ```css
+   .section::before     { background: linear-gradient(to bottom, var(--bg-primary),   transparent); }
+   .section--alt::before { background: linear-gradient(to bottom, var(--bg-secondary), transparent); }
+   .section::after      { background: linear-gradient(to bottom, transparent, var(--bg-primary));   }
+   .section--alt::after  { background: linear-gradient(to bottom, transparent, var(--bg-secondary)); }
+   ```
+   Ambos pseudo-elementos tienen `z-index: 0` (bajo el contenido) y `pointer-events: none`.
+
+### Performance
+- Loop `requestAnimationFrame` compartido entre todos los canvases
+- `ResizeObserver` por sección — reinicializa partículas al cambiar tamaño
+- Saltar secciones fuera del viewport (±80px) en cada frame
+- Al cambiar modo: `_teardown()` + `_setup()` con 80ms de delay para esperar el DOM
+
+### Colores de acento (hardcoded en `ACCENT_RGB`)
+```js
+dev: [59, 130, 246]   // azul
+ia:  [177, 78, 255]   // púrpura  +  ACCENT2: [6, 255, 165] (teal, 35% de nodos)
+sec: [0,  255,  65]   // verde terminal
+```
+
 ## Convenciones CSS
 - **Metodología:** BEM-like (`.section__element--modifier`)
 - **Variables:** `--color-accent`, `--color-accent-rgb`, `--bg-card`, `--bg-secondary`,
@@ -197,6 +254,8 @@ el browser lo codifica solo, pero en JS hay que codificar manualmente.
 - `--font-mono` no existe como variable global → usar `var(--font-mono, monospace)`
 - **IDs de sección:** kebab-case (`jonathan-panel`, `sec-terminal`, `cmd-palette`)
 - **Clases de animación:** `animate-on-scroll`, `from-left`, `from-right`, `stagger-item`
+- **`.section-bg-canvas`:** canvas de fondo dinámico — `z-index: 0`, primer hijo de cada sección
+- **`.section::before/::after`:** vignettes de transición entre secciones — no usar para otro propósito
 
 ## Imágenes
 - Las fotos del avatar cambian por modo: `AVATAR_SRC` en `app.js`
@@ -227,6 +286,9 @@ Cuando `mode === 'sec'` y el proyecto tiene `docs[]`, la gallery entra en **docs
 - Flechas ← → y teclas navegan entre documentos del array `docs[]`
 - Al cerrar la gallery, `iframe.src` se limpia para detener la carga
 - Si el proyecto no tiene `docs[]` o tiene array vacío, se usa el modo imagen normal
+- **Links de documentos en el panel info:** los `.pdm__doc-link` tienen `data-doc-index="N"`.
+  Un listener delegado en `#pgal-info` intercepta el click y llama `_goTo(N)` — el PDF
+  se muestra en el iframe izquierdo **sin abrir nueva pestaña**.
 
 ## Panel de detalle (`project-detail.js`)
 - `ProjectDetail.buildContent(p, mode)` exportado como API pública — usado por ProjectGallery
@@ -241,10 +303,116 @@ Cuando `mode === 'sec'` y el proyecto tiene `docs[]`, la gallery entra en **docs
 | Docs       | 📄 Documentos  | 📄 Documentos | 📄 Documentos |
 
 - **Sin XP/Credits:** eliminado el badge `+150 XP` de los headers de fase
-- **Sección Documentos:** renderiza `p.docs[]` como links a PDF con icono de archivo
+- **Sección Documentos:** renderiza `p.docs[]` como `<a class="pdm__doc-link" data-doc-index="N">`
+  sin `target="_blank"`. Cuando está dentro de la gallery, el click navega el iframe interno.
+  Cuando está fuera (contexto futuro), `href` sigue siendo la URL del PDF como fallback.
+
+## PDF Modal (`pdf-modal.js` + `pdf-modal.css`)
+Visor inline de PDF — modal fullscreen que renderiza el documento en un `<iframe>` sin abrir nueva pestaña.
+
+- **API pública:** `PDFModal.init()` (llamado en `main.js`) · `PDFModal.open(url, label)`
+- **Trigger actual:** botón `#cv-open-btn` en la sección `#about` → `app.js` llama `PDFModal.open(...)`
+- **Header:** título del documento · botón `⬇ Descargar` (`<a download>`) · botón `✕` cerrar
+- **Cierre:** botón ✕ · tecla Esc · clic en el overlay oscuro
+- **z-index:** 10500 (sobre gallery en 9990 y command palette)
+- **iOS Safari:** no soporta PDF en `<iframe>` — el modal muestra un mensaje de fallback
+  con instrucción de usar el botón de descarga
+- **Botón CV en `index.html`:** `<button id="cv-open-btn" data-pdf-url="..." data-pdf-label="...">` —
+  reemplaza el antiguo `<a download>`. El texto cambió de "Descargar CV" a "Ver CV".
+
+## Responsive Mobile — Projects grid
+- **≤480px:** `.projects-grid` usa `repeat(2, 1fr)` con `gap: 0.875rem` (antes era 1 columna)
+- **Card internals a ≤480px** (`main.css`): padding reducido en `.card-body`, `.card-links`;
+  `.card-description` limitada a 3 líneas con `-webkit-line-clamp`; `.card-btn--process`
+  ocupa el 100% del ancho en fila propia (`flex: 0 0 100%`) para evitar desbordamiento
+- **Texto de botones** en `projects.js` envuelto en `<span class="card-btn-text">` — permite
+  ocultar el texto con CSS en viewports muy pequeños si se necesita en el futuro
+- **Gallery mobile:** `.pgal__info` en ≤768px aumentó de `max-height: 32vh` a `42vh`
 
 ## Pendientes manuales (no automatizables)
 1. **og:image PNG real** — screenshot 1200×630px del portfolio →
    `assets/images/og-preview.png` → actualizar `og:image` y `twitter:image` en `index.html`
 2. **URL canónica** — actualizar `<link rel="canonical">`, `og:url` y JSON-LD `url`
    en `index.html` con el dominio Vercel real (actualmente apunta a GitHub Pages)
+
+## JotAI — Mascot Widget (`ia-mascot.js` + `ia-mascot.css` + `ia-worker.js` + `ia-tour.js`)
+
+Widget flotante `position: fixed; bottom: 1.5rem; right: 1.5rem` visible en **todos los modos**.
+Los colores heredan las CSS vars del tema activo (`--color-accent`, `--bg-secondary`, etc.)
+— sin CSS adicional por modo.
+
+### Arquitectura
+
+```
+IaMascot.init()
+  ├─ _inject()             → DOM del widget (SVG mascot + panel de chat)
+  ├─ jotai:kb-ready event  → _initWorker(docs)  → ia-worker.js
+  └─ portfolio:modeChange  → closePanel() si estaba abierto
+
+IAAssistant.init()
+  └─ _loadData()           → fetch 5 JSONs → _buildKB() → dispatch jotai:kb-ready
+
+ia-worker.js (Web Worker)
+  ├─ { type:'init', docs } → loadModel + IDB cache check + embed KB
+  ├─ { type:'query',... }  → embed query → cosine ranking → { type:'result',... }
+  └─ IndexedDB cache: key = FNV-1a hash de doc IDs + texts
+```
+
+### Nombre del mascot
+```js
+const MASCOT_NAME = 'JotAI'; // en js/ia-mascot.js — cambiar aquí para renombrar
+```
+
+### 8 estados del mascot
+| Estado | Cuándo | Animación GSAP |
+|--------|--------|----------------|
+| `idle` | Reposo | Float CSS, orejas/ojos neutros |
+| `greeting` | Panel abre | Bounce del trigger, orejas suben |
+| `listening` | Focus en input | Orejas se levantan, ojos se agrandan |
+| `thinking` | Procesando query | Ojos suben, cuerpo oscila |
+| `talking` | Respuesta llega | Boca abierta |
+| `success` | Resultado encontrado | Scale pulse, boca smile |
+| `confused` | Sin resultado | Rotación trigger, boca triste |
+| `pointing` | Tour activo | Oreja derecha apunta, cuerpo inclina |
+
+`prefers-reduced-motion`: todas las animaciones GSAP desactivadas → solo cambio de clase.
+
+### Motor NLP híbrido
+- **Siempre disponible:** búsqueda por keywords + intent detection (síncrona)
+- **Cuando el worker está listo:** búsqueda semántica con `Xenova/all-MiniLM-L6-v2` (384 dims)
+- **Umbral semántico:** `score ≥ 0.32` para aceptar resultado del worker
+- **Intent detection short-circuits:** `personal`, `contact`, `list_projects`, `list_skills`
+  → respuesta inmediata sin semántica
+
+### Knowledge Base
+La KB se construye dinámicamente en `ia-assistant.js`:
+- `_buildKB()` → fetcha `personal.json`, `dev-projects.json`, `ia-projects.json`,
+  `sec-projects.json`, `skills.json` → 20 proyectos + 29 skills + 2 docs especiales
+- Docs `project` y `skill` tienen campo `text` para embedding
+- Se emite `jotai:kb-ready` con los docs embeddables cuando la carga termina
+
+### Tour guiado (`ia-tour.js`)
+- 4 pasos por modo con contenido adaptado (dev/ia/sec)
+- Sección destacada con `outline` vía clase `.jotai-tour-target`
+- Scroll a la sección con `behavior: 'smooth'` (o `'instant'` si `prefers-reduced-motion`)
+- Navegación: botones ← Anterior / Siguiente → / ✕ Saltar + teclas ← → Esc
+- Botón "Tour 🗺" siempre visible en el header del panel
+
+### IndexedDB cache de embeddings
+`ia-worker.js` almacena los vectores precomputados en IDB con clave = hash FNV-1a
+de los IDs + texto de cada doc. En visitas subsiguientes la KB está lista casi al instante.
+El hash cambia automáticamente al añadir proyectos → recomputa sin intervención manual.
+
+### GSAP — CDN
+```html
+<!-- en index.html <head> -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+```
+Carga sincrónica antes del bundle de Vite. En `ia-mascot.js` se usa como `window.gsap`.
+Si GSAP no está disponible (bloqueador, fallo de CDN), las animaciones se omiten sin error.
+
+### Vite config
+`optimizeDeps.exclude: ['@huggingface/transformers']` — necesario para que los
+archivos WASM de ONNX Runtime se resuelvan correctamente en el worker.
+Worker bundleado en `dist/assets/ia-worker-*.js` (~519KB).
+WASM del runtime en `dist/assets/ort-wasm-simd-threaded.asyncify-*.wasm` (~23MB, cacheado).

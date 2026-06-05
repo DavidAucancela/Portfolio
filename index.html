@@ -37,6 +37,9 @@
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css" />
 
+  <!-- GSAP — animaciones del mascot JotAI -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+
   <!-- Structured Data -->
   <script type="application/ld+json">
   {
@@ -143,7 +146,6 @@
         <a href="#about"               class="nav-link" data-section="about"               data-i18n="nav.about">Sobre mí</a>
         <a href="#projects"            class="nav-link" data-section="projects"            data-i18n="nav.projects">Proyectos</a>
         <a href="#skills"              class="nav-link" data-section="skills"              data-i18n="nav.skills">Skills</a>
-        <a href="#ia-assistant-section" class="nav-link nav-link--ia-only" data-section="ia-assistant-section">Consulta IA</a>
         <a href="#contact"             class="nav-link" data-section="contact"             data-i18n="nav.contact">Contacto</a>
       </nav>
 
@@ -167,7 +169,6 @@
       <a href="#about"               class="mobile-nav-link" data-section="about"               data-i18n="nav.mob.about">Sobre mí</a>
       <a href="#projects"            class="mobile-nav-link" data-section="projects"            data-i18n="nav.mob.projects">Proyectos</a>
       <a href="#skills"              class="mobile-nav-link" data-section="skills"              data-i18n="nav.mob.skills">Skills</a>
-      <a href="#ia-assistant-section" class="mobile-nav-link mobile-nav-link--ia-only" data-section="ia-assistant-section" data-i18n="nav.mob.ia">Consulta IA</a>
       <a href="#contact"             class="mobile-nav-link" data-section="contact"             data-i18n="nav.mob.contact">Contacto</a>
       <div class="mobile-menu-mode">
         <p class="mobile-menu-mode__label" data-i18n="nav.mob.mode">MODO ACTIVO</p>
@@ -483,65 +484,6 @@
       </div>
     </section>
 
-    <!-- ══════════════════════════════════════════════
-         § IA — ASISTENTE DE CONSULTA (solo modo .ia)
-    ══════════════════════════════════════════════ -->
-    <section class="section" id="ia-assistant-section" aria-label="Consulta de experiencia IA" style="display:none;">
-      <div class="container">
-
-        <div class="section-header animate-on-scroll">
-          <span class="section-label" data-i18n="ia.label">// sistemas ia</span>
-          <h2 class="section-title" data-i18n="ia.title">Consulta mi experiencia</h2>
-        </div>
-
-        <div class="ia-search-wrap animate-on-scroll">
-
-          <div class="ia-search-bar">
-            <svg class="ia-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-            <input
-              type="text"
-              id="ia-input"
-              class="ia-input"
-              data-i18n-ph="ia.placeholder"
-              placeholder="Busca proyectos, tecnologías, contacto..."
-              autocomplete="off"
-              maxlength="200"
-            />
-            <button id="ia-send" class="ia-send-btn" aria-label="Buscar">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                   stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-              </svg>
-            </button>
-          </div>
-
-          <div class="ia-suggestions">
-            <button class="ia-suggestion" data-i18n="ia.sug1">¿Qué proyectos tienes?</button>
-            <button class="ia-suggestion">LLM Observatory</button>
-            <button class="ia-suggestion">RAG y embeddings</button>
-            <button class="ia-suggestion">AnaOS SaaS</button>
-            <button class="ia-suggestion">SecuraBank OWASP</button>
-            <button class="ia-suggestion" data-i18n="ia.sug2">¿Cómo contactarlo?</button>
-            <button class="ia-suggestion">UBApp</button>
-            <button class="ia-suggestion">Claude API</button>
-          </div>
-
-          <div id="ia-results" class="ia-results" aria-live="polite"></div>
-
-          <p class="ia-disclaimer">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-            </svg>
-            <span data-i18n="ia.disclaimer">Respuestas basadas en el perfil real de Jonathan · Motor NLP local</span>
-          </p>
-
-        </div>
-
-      </div>
-    </section>
 
     <!-- ══════════════════════════════════════════════
          § 5 — EXPERIENCE

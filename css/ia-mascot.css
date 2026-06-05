@@ -303,7 +303,11 @@
   flex-wrap: wrap;
   gap: 0.35rem;
   flex-shrink: 0;
+  max-height: 72px;       /* ~2 filas de chips; evita desbordar en mobile */
+  overflow-y: auto;
+  scrollbar-width: none;
 }
+#jotai-chips::-webkit-scrollbar { display: none; }
 
 .jotai-chip {
   font-size: 0.7rem;

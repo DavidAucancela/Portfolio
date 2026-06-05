@@ -158,7 +158,9 @@ export const IaMascot = (() => {
 
         case 'ready':
           _workerReady = true;
-          _setStatus('Listo para responder');
+          _setStatus(data.fromCache ? 'Listo (caché ⚡)' : 'Listo para responder');
+          // Restablece el texto normal después de 3s
+          setTimeout(() => _setStatus('Listo para responder'), 3000);
           break;
 
         case 'result': {
@@ -665,6 +667,11 @@ export const IaMascot = (() => {
     // Cierra panel al cambiar de modo
     window.addEventListener('portfolio:modeChange', () => {
       if (_isOpen) closePanel();
+    });
+
+    // Termina el worker limpiamente al salir de la página
+    window.addEventListener('beforeunload', () => {
+      _worker?.terminate();
     });
   }
 

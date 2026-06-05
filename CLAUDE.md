@@ -34,6 +34,7 @@ css/
   command-palette.css         # Command palette (Cmd+K) — overlay, modal, items, toast
   sec-terminal.css            # Terminal interactiva del hero en modo .sec
   pdf-modal.css               # Modal fullscreen visor de PDF (CV + links externos)
+  ia-mascot.css               # JotAI widget flotante: trigger, panel de chat, tour, estados
   themes/
     dev.css                   # Overrides modo .dev (azul, tipografía display)
     ia.css                    # Overrides modo .ia (púrpura, gradientes)
@@ -51,7 +52,10 @@ js/
   effects.js                  # SectionReveal (IntersectionObserver), parallax, partículas
   lang.js                     # LangSwitcher — internacionalización ES/EN
   section-nav.js              # Navegación lateral de secciones (dots laterales)
-  ia-assistant.js             # IAAssistant — chatbot solo visible en modo .ia
+  ia-assistant.js             # IAAssistant — KB dinámica desde JSON + motor de query (keywords)
+  ia-mascot.js                # IaMascot — widget JotAI: SVG, panel chat, 8 estados GSAP, worker
+  ia-worker.js                # Web Worker — embeddings MiniLM + IndexedDB cache + cosine ranking
+  ia-tour.js                  # IaTour — tour guiado por secciones (4 pasos x modo dev/ia/sec)
   trajectory.js               # Trajectory — drawer de trayectoria profesional
   command-palette.js          # CommandPalette — buscador global estilo Spotlight/VS Code
   sec-terminal.js             # SecTerminal — terminal interactiva en hero modo .sec
@@ -277,3 +281,85 @@ Visor inline de PDF — modal fullscreen que renderiza el documento en un `<ifra
    `assets/images/og-preview.png` → actualizar `og:image` y `twitter:image` en `index.html`
 2. **URL canónica** — actualizar `<link rel="canonical">`, `og:url` y JSON-LD `url`
    en `index.html` con el dominio Vercel real (actualmente apunta a GitHub Pages)
+
+## JotAI — Mascot Widget (`ia-mascot.js` + `ia-mascot.css` + `ia-worker.js` + `ia-tour.js`)
+
+Widget flotante `position: fixed; bottom: 1.5rem; right: 1.5rem` visible en **todos los modos**.
+Los colores heredan las CSS vars del tema activo (`--color-accent`, `--bg-secondary`, etc.)
+— sin CSS adicional por modo.
+
+### Arquitectura
+
+```
+IaMascot.init()
+  ├─ _inject()             → DOM del widget (SVG mascot + panel de chat)
+  ├─ jotai:kb-ready event  → _initWorker(docs)  → ia-worker.js
+  └─ portfolio:modeChange  → closePanel() si estaba abierto
+
+IAAssistant.init()
+  └─ _loadData()           → fetch 5 JSONs → _buildKB() → dispatch jotai:kb-ready
+
+ia-worker.js (Web Worker)
+  ├─ { type:'init', docs } → loadModel + IDB cache check + embed KB
+  ├─ { type:'query',... }  → embed query → cosine ranking → { type:'result',... }
+  └─ IndexedDB cache: key = FNV-1a hash de doc IDs + texts
+```
+
+### Nombre del mascot
+```js
+const MASCOT_NAME = 'JotAI'; // en js/ia-mascot.js — cambiar aquí para renombrar
+```
+
+### 8 estados del mascot
+| Estado | Cuándo | Animación GSAP |
+|--------|--------|----------------|
+| `idle` | Reposo | Float CSS, orejas/ojos neutros |
+| `greeting` | Panel abre | Bounce del trigger, orejas suben |
+| `listening` | Focus en input | Orejas se levantan, ojos se agrandan |
+| `thinking` | Procesando query | Ojos suben, cuerpo oscila |
+| `talking` | Respuesta llega | Boca abierta |
+| `success` | Resultado encontrado | Scale pulse, boca smile |
+| `confused` | Sin resultado | Rotación trigger, boca triste |
+| `pointing` | Tour activo | Oreja derecha apunta, cuerpo inclina |
+
+`prefers-reduced-motion`: todas las animaciones GSAP desactivadas → solo cambio de clase.
+
+### Motor NLP híbrido
+- **Siempre disponible:** búsqueda por keywords + intent detection (síncrona)
+- **Cuando el worker está listo:** búsqueda semántica con `Xenova/all-MiniLM-L6-v2` (384 dims)
+- **Umbral semántico:** `score ≥ 0.32` para aceptar resultado del worker
+- **Intent detection short-circuits:** `personal`, `contact`, `list_projects`, `list_skills`
+  → respuesta inmediata sin semántica
+
+### Knowledge Base
+La KB se construye dinámicamente en `ia-assistant.js`:
+- `_buildKB()` → fetcha `personal.json`, `dev-projects.json`, `ia-projects.json`,
+  `sec-projects.json`, `skills.json` → 20 proyectos + 29 skills + 2 docs especiales
+- Docs `project` y `skill` tienen campo `text` para embedding
+- Se emite `jotai:kb-ready` con los docs embeddables cuando la carga termina
+
+### Tour guiado (`ia-tour.js`)
+- 4 pasos por modo con contenido adaptado (dev/ia/sec)
+- Sección destacada con `outline` vía clase `.jotai-tour-target`
+- Scroll a la sección con `behavior: 'smooth'` (o `'instant'` si `prefers-reduced-motion`)
+- Navegación: botones ← Anterior / Siguiente → / ✕ Saltar + teclas ← → Esc
+- Botón "Tour 🗺" siempre visible en el header del panel
+
+### IndexedDB cache de embeddings
+`ia-worker.js` almacena los vectores precomputados en IDB con clave = hash FNV-1a
+de los IDs + texto de cada doc. En visitas subsiguientes la KB está lista casi al instante.
+El hash cambia automáticamente al añadir proyectos → recomputa sin intervención manual.
+
+### GSAP — CDN
+```html
+<!-- en index.html <head> -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+```
+Carga sincrónica antes del bundle de Vite. En `ia-mascot.js` se usa como `window.gsap`.
+Si GSAP no está disponible (bloqueador, fallo de CDN), las animaciones se omiten sin error.
+
+### Vite config
+`optimizeDeps.exclude: ['@huggingface/transformers']` — necesario para que los
+archivos WASM de ONNX Runtime se resuelvan correctamente en el worker.
+Worker bundleado en `dist/assets/ia-worker-*.js` (~519KB).
+WASM del runtime en `dist/assets/ort-wasm-simd-threaded.asyncify-*.wasm` (~23MB, cacheado).

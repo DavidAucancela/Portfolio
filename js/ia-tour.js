@@ -89,6 +89,7 @@ export const IaTour = (() => {
   let _overlay  = null;
   let _tip      = null;
   let _active   = false;
+  let _reduced  = false;
 
   /* ── INJECT DOM ────────────────────────────────────────────── */
 
@@ -151,10 +152,16 @@ export const IaTour = (() => {
     const target = document.getElementById(step.id);
     if (target) {
       target.classList.add('jotai-tour-target');
-      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      target.scrollIntoView({
+        behavior: _reduced ? 'instant' : 'smooth',
+        block: 'center',
+      });
     }
 
     _onState?.('pointing');
+
+    // Mueve el foco al botón Siguiente para navegación por teclado
+    setTimeout(() => document.getElementById('jt-next')?.focus(), 80);
   }
 
   function _nextStep() {
@@ -188,6 +195,7 @@ export const IaTour = (() => {
     _onState = onState;
     _onDone  = onDone;
     _active  = true;
+    _reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     _inject();
 
@@ -195,7 +203,6 @@ export const IaTour = (() => {
     _overlay.classList.add('is-active');
 
     _renderStep();
-    document.getElementById('jt-next')?.focus();
   }
 
   function _finish() {

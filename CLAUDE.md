@@ -427,6 +427,30 @@ Boca: un único `.jotai-mouth-path`; `d` cambia por `setAttribute` desde `_setSt
 `prefers-reduced-motion`: CSS apaga `.jotai-aura`, `.jotai-motes`, `.jotai-creature`, `.jotai-ear-l/r`
 y todos los keyframes de estado. JS no inicia los timers de vida. Transiciones suspendidas.
 
+### Panel de chat
+
+**Entrada:** campo de texto libre con placeholder. Sin chips de sugerencias predefinidas.
+
+**Hint de ejemplo** — `<p class="jotai-hint" id="jotai-hint">`:
+- Desaparece con transición suave (`opacity + max-height`) al primer mensaje enviado
+- Se oculta añadiendo la clase `.gone`; función `_hideHint()` lo llama desde `_handleSend`
+
+**Typewriter effect** — `_typewriterBotMessage(text)`:
+- Escribe carácter a carácter a `TYPEWRITER_MS = 14ms` usando `textContent`
+- Al terminar (o al ser abortado) convierte con `_md(text)` para renderizar markdown
+- `_typeAbort = true` al enviar nuevo mensaje → termina instantáneamente el typewriter anterior
+- `prefers-reduced-motion` → renderizado instantáneo sin animación
+
+| Tipo de respuesta | Modo de renderizado |
+|------------------|---------------------|
+| Saludo de bienvenida | Typewriter → `idle` + focus al terminar |
+| Intent especial (perfil, listas, contacto) | Typewriter → `success` |
+| Tarjeta proyecto / skill (HTML rico) | HTML instantáneo → `success` |
+| Sin resultado | Typewriter → `confused` |
+| Fin de tour | Typewriter → `success` |
+
+Estado `talking` activo mientras el typewriter escribe (boca se mueve en CSS).
+
 ### Motor NLP híbrido
 - **Siempre disponible:** búsqueda por keywords + intent detection (síncrona)
 - **Cuando el worker está listo:** búsqueda semántica con `Xenova/all-MiniLM-L6-v2` (384 dims)

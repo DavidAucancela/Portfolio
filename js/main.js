@@ -21,6 +21,7 @@ import { CommandPalette } from './command-palette.js';
 import { SecTerminal } from './sec-terminal.js';
 import { PDFModal } from './pdf-modal.js';
 import { IaMascot } from './ia-mascot.js';
+import { SectionDivider } from './section-divider.js';
 
 // CSS imports — Vite los bundlea automáticamente
 import '../css/main.css';
@@ -33,6 +34,7 @@ import '../css/command-palette.css';
 import '../css/sec-terminal.css';
 import '../css/pdf-modal.css';
 import '../css/ia-mascot.css';
+import '../css/section-divider.css';
 
 // Vercel Analytics y Speed Insights — solo activos en producción
 injectAnalytics();
@@ -54,4 +56,5 @@ document.addEventListener('DOMContentLoaded', () => {
   SecTerminal.init();
   PDFModal.init();
   IaMascot.init();
+  SectionDivider.init();
 });

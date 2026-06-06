@@ -1,4 +1,6 @@
-# Portfolio Project — CLAUDE.md
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 Portfolio personal de Jonathan Aucancela. Todo el copy de UI está en **español**.
@@ -12,10 +14,18 @@ Portfolio personal de Jonathan Aucancela. Todo el copy de UI está en **español
 ## Cómo desarrollar
 ```bash
 npm install       # instalar dependencias
-npm run dev       # servidor de desarrollo con HMR
+npm run dev       # servidor de desarrollo con HMR — http://localhost:3000
 npm run build     # build de producción en dist/
 npm run preview   # previsualizar el build
 ```
+
+## Tests & Linting
+No hay tests ni linting activo. `.eslintrc.json` existe pero es un artefacto heredado (extiende `next/core-web-vitals`) — ignorar.
+
+## CI/CD
+- `.github/workflows/deploy.yml` — deploy automático a Vercel en push a `main`
+- `.github/workflows/ci.yml` — pipeline de CI
+- `.lighthouserc.json` — Lighthouse CI para seguimiento de performance
 
 ## Estructura completa
 ```
@@ -87,6 +97,8 @@ public/                       # Servido con prefijo /public/ en Vite
 **Build con Vite + ES modules:** Los JS usan `import/export` estándar. Vite los bundlea.
 `vite.config.js` tiene `publicDir: false` y un plugin custom que copia `public/` → `dist/public/`,
 por eso las rutas de imágenes son `"public/images/..."` (no `"/images/..."`).
+
+**Vercel Analytics:** `@vercel/analytics` y `@vercel/speed-insights` inyectados en `index.html`. No eliminar — registran métricas de producción en el dashboard de Vercel.
 
 **Patrón de módulos:** IIFE exportado como objeto con API pública:
 ```js

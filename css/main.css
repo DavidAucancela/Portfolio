@@ -529,6 +529,17 @@ ul, ol { list-style: none; }
   transition: background 0.5s ease;
 }
 
+/* Fade inferior — funde el hero con el divider/about */
+.hero-section::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 200px;
+  background: linear-gradient(to bottom, transparent, var(--bg-primary));
+  pointer-events: none;
+  z-index: 0;
+}
+
 /* Canvas de fondo (partículas/matrix/neural) */
 #hero-canvas {
   position: absolute;
@@ -727,10 +738,10 @@ ul, ol { list-style: none; }
   z-index: 0;
   /* Fade del canvas en los bordes superior e inferior */
   -webkit-mask-image: linear-gradient(to bottom,
-    transparent 0%, black 8%, black 92%, transparent 100%
+    transparent 0%, black 5%, black 95%, transparent 100%
   );
   mask-image: linear-gradient(to bottom,
-    transparent 0%, black 8%, black 92%, transparent 100%
+    transparent 0%, black 5%, black 95%, transparent 100%
   );
 }
 
@@ -746,7 +757,7 @@ ul, ol { list-style: none; }
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 60px;
+  height: 100px;
   pointer-events: none;
   z-index: 0;
 }
@@ -759,7 +770,7 @@ ul, ol { list-style: none; }
   content: '';
   position: absolute;
   bottom: 0; left: 0; right: 0;
-  height: 60px;
+  height: 100px;
   pointer-events: none;
   z-index: 0;
 }

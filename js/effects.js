@@ -1035,21 +1035,21 @@ const SectionCanvas = (() => {
           y:            Math.random() * h,
           vy:           0.6 + Math.random() * 1.0,
           char:         _rndChar(),
-          baseOpacity:  0.05 + Math.random() * 0.10,
+          baseOpacity:  0.18 + Math.random() * 0.28,
           charTimer:    0,
           charInterval: 10 + Math.floor(Math.random() * 25),
         });
       }
     } else {
-      const count = Math.min(55, Math.max(20, Math.floor((w * h) / 18000)));
+      const count = Math.min(70, Math.max(28, Math.floor((w * h) / 13000)));
       for (let i = 0; i < count; i++) {
         state.particles.push({
           x:           Math.random() * w,
           y:           Math.random() * h,
           vx:          (Math.random() - 0.5) * 0.35,
           vy:          (Math.random() - 0.5) * 0.35,
-          r:           1.5 + Math.random() * 1.8,
-          baseOpacity: 0.18 + Math.random() * 0.22,
+          r:           2.5 + Math.random() * 2.5,
+          baseOpacity: 0.38 + Math.random() * 0.32,
           pulseR:      0,
           pulseAlpha:  0,
           pulsing:     false,
@@ -1086,8 +1086,8 @@ const SectionCanvas = (() => {
     if (inSection) {
       const [r, g, b] = ACCENT_RGB[curMode] || ACCENT_RGB.dev;
       const grd = ctx.createRadialGradient(mx, my, 0, mx, my, Math.min(w * 0.55, 420));
-      grd.addColorStop(0,    `rgba(${r},${g},${b},0.10)`);
-      grd.addColorStop(0.45, `rgba(${r},${g},${b},0.04)`);
+      grd.addColorStop(0,    `rgba(${r},${g},${b},0.20)`);
+      grd.addColorStop(0.45, `rgba(${r},${g},${b},0.09)`);
       grd.addColorStop(1,    `rgba(${r},${g},${b},0)`);
       ctx.fillStyle = grd;
       ctx.fillRect(0, 0, w, h);
@@ -1102,8 +1102,8 @@ const SectionCanvas = (() => {
   function _drawNodes(ctx, particles, w, h, mx, my, inSection) {
     const [r,  g,  b ] = ACCENT_RGB[curMode]  || ACCENT_RGB.dev;
     const [r2, g2, b2] = ACCENT2_RGB[curMode] || [r, g, b];
-    const CONNECT = 115;
-    const REPEL   = 130;
+    const CONNECT = 150;
+    const REPEL   = 140;
     const MAX_V   = 1.1;
 
     for (const p of particles) {
@@ -1133,7 +1133,7 @@ const SectionCanvas = (() => {
     }
 
     // Conexiones
-    ctx.lineWidth = 0.7;
+    ctx.lineWidth = 1.1;
     for (let i = 0; i < particles.length; i++) {
       for (let j = i + 1; j < particles.length; j++) {
         const a = particles[i];
@@ -1142,7 +1142,7 @@ const SectionCanvas = (() => {
         const dy = a.y - b_.y;
         const d2 = dx * dx + dy * dy;
         if (d2 < CONNECT * CONNECT) {
-          const alpha = (1 - Math.sqrt(d2) / CONNECT) * 0.20;
+          const alpha = (1 - Math.sqrt(d2) / CONNECT) * 0.42;
           ctx.strokeStyle = `rgba(${r},${g},${b},${alpha})`;
           ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b_.x, b_.y); ctx.stroke();
         }

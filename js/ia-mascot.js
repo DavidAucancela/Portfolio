@@ -1,9 +1,8 @@
 /**
  * ia-mascot.js — JotAI widget flotante
- * Fase 3: motor de embeddings via Web Worker (@huggingface/transformers)
- *
- * Búsqueda semántica (MiniLM) con fallback a keywords mientras el modelo carga.
- * Importa IAAssistant para KB y query de fallback.
+ * Fase 2 v2: conversación en texto libre + typewriter effect
+ * Fase 1 v2: mascot vivo (blink, look-around, cursor tracking, CSS states)
+ * Fase 3:    motor de embeddings via Web Worker (@huggingface/transformers)
  */
 
 import { IAAssistant } from './ia-assistant.js';
@@ -11,16 +10,8 @@ import { IaTour }      from './ia-tour.js';
 
 /* ── CONFIGURACIÓN ────────────────────────────────────────────── */
 
-const MASCOT_NAME = 'JotAI';
-
-const QUICK_CHIPS = [
-  '¿Qué proyectos tienes?',
-  '¿Quién es Jonathan?',
-  'UBApp',
-  'LLM Observatory',
-  'Stack tecnológico',
-  '¿Cómo contactarlo?',
-];
+const MASCOT_NAME    = 'JotAI';
+const TYPEWRITER_MS  = 14;   // ms por carácter en el efecto de escritura
 
 /* ── SVG DEL MASCOT ───────────────────────────────────────────── */
 // Personaje original: criatura tech con orejas expresivas, ojos enormes con párpado,
@@ -278,7 +269,9 @@ export const IaMascot = (() => {
              aria-live="polite"
              aria-label="Conversación con ${MASCOT_NAME}"></div>
 
-        <div id="jotai-chips"></div>
+        <p class="jotai-hint" id="jotai-hint">
+          Escribe en lenguaje natural — p. ej. «¿qué ha hecho en ciberseguridad?»
+        </p>
 
         <div id="jotai-input-wrap">
           <input
@@ -343,23 +336,6 @@ export const IaMascot = (() => {
       if (e.key === 'Escape' && _isOpen) closePanel();
     });
 
-    _renderChips();
-  }
-
-  /* ── CHIPS ──────────────────────────────────────────────────── */
-
-  function _renderChips() {
-    const container = document.getElementById('jotai-chips');
-    if (!container) return;
-    container.innerHTML = QUICK_CHIPS
-      .map(c => `<button class="jotai-chip" type="button">${_esc(c)}</button>`)
-      .join('');
-    container.querySelectorAll('.jotai-chip').forEach(btn => {
-      btn.addEventListener('click', () => {
-        _input.value = btn.textContent.trim();
-        _handleSend();
-      });
-    });
   }
 
   /* ── PANEL OPEN / CLOSE ─────────────────────────────────────── */
@@ -383,12 +359,10 @@ export const IaMascot = (() => {
     }
 
     _setState('greeting');
-    _addBotMessage(_getGreeting());
-
-    setTimeout(() => {
+    _typewriterBotMessage(_getGreeting()).then(() => {
       _setState('idle');
       _input.focus();
-    }, 1800);
+    });
   }
 
   function closePanel() {
@@ -421,13 +395,53 @@ export const IaMascot = (() => {
 
   /* ── MESSAGES ───────────────────────────────────────────────── */
 
-  function _addBotMessage(text, isHTML = false) {
+  let _typeAbort = false;
+
+  /* Mensaje bot instantáneo (para HTML rico: tarjetas de proyecto/skill) */
+  function _addBotMessage(html) {
     const msg = document.createElement('div');
     msg.className = 'jotai-msg jotai-msg--bot';
-    const content = isHTML ? text : _md(text);
-    msg.innerHTML = `<div class="jotai-msg__bubble">${content}</div>`;
+    msg.innerHTML = `<div class="jotai-msg__bubble">${html}</div>`;
     _chat.appendChild(msg);
     _chat.scrollTop = _chat.scrollHeight;
+  }
+
+  /* Efecto de escritura carácter a carácter para texto plano */
+  function _typewriterBotMessage(text) {
+    _typeAbort = false;
+    const msg    = document.createElement('div');
+    msg.className = 'jotai-msg jotai-msg--bot';
+    const bubble = document.createElement('div');
+    bubble.className = 'jotai-msg__bubble';
+    msg.appendChild(bubble);
+    _chat.appendChild(msg);
+    _chat.scrollTop = _chat.scrollHeight;
+
+    // Sin animación si prefers-reduced-motion
+    if (_reduced) {
+      bubble.innerHTML = _md(text);
+      return Promise.resolve();
+    }
+
+    return new Promise(res => {
+      let i = 0;
+      const iv = setInterval(() => {
+        if (_typeAbort || i >= text.length) {
+          clearInterval(iv);
+          bubble.innerHTML = _md(text); // render markdown completo al terminar
+          _chat.scrollTop  = _chat.scrollHeight;
+          res();
+          return;
+        }
+        bubble.textContent = text.slice(0, ++i);
+        _chat.scrollTop    = _chat.scrollHeight;
+      }, TYPEWRITER_MS);
+    });
+  }
+
+  /* Oculta el hint de texto libre tras el primer mensaje */
+  function _hideHint() {
+    document.getElementById('jotai-hint')?.classList.add('gone');
   }
 
   function _addUserMessage(text) {
@@ -462,9 +476,9 @@ export const IaMascot = (() => {
         _setState('idle');
         openPanel();
         setTimeout(() => {
-          _addBotMessage('¡Tour completado! ¿Tienes alguna pregunta sobre el portfolio?');
-          _setState('success');
-          setTimeout(() => _setState('idle'), 2000);
+          _setState('talking');
+          _typewriterBotMessage('¡Tour completado! ¿Tienes alguna pregunta sobre el portfolio?')
+            .then(() => { _setState('success'); setTimeout(() => _setState('idle'), 2000); });
         }, 300);
       },
     });
@@ -475,44 +489,49 @@ export const IaMascot = (() => {
   async function _handleSend() {
     const val = _input.value.trim();
     if (!val || _sendBtn.disabled) return;
-    _input.value = '';
+    _input.value    = '';
     _sendBtn.disabled = true;
+    _typeAbort      = true; // interrumpe cualquier typewriter en curso
 
     _addUserMessage(val);
+    _hideHint();
     _setState('thinking');
     _setStatus('Pensando…');
     _addLoadingDots();
 
-    // 1. Búsqueda por keywords / intent (síncrona, siempre disponible)
-    const kwResult = IAAssistant.query(val);
-
-    // 2. Si el intent es "especial" (listas, perfil, contacto) → respuesta inmediata
+    // 1. Keywords / intent (síncrono, siempre disponible)
+    const kwResult  = IAAssistant.query(val);
     const isSpecial = kwResult?.type === 'special';
-
     let finalResult = kwResult;
 
     if (!isSpecial && _workerReady) {
-      // 3. Búsqueda semántica via worker
+      // 2. Semántica via worker
       const semResults = await _semanticQuery(val);
       const topSem     = semResults.find(r => r.score >= SEMANTIC_THRESHOLD);
-
-      if (topSem) {
-        // Preferir resultado semántico si supera el umbral
-        finalResult = { type: topSem.type, data: topSem.data };
-      }
-      // Si semántica no supera umbral pero keyword sí matcheó → kwResult gana
+      if (topSem) finalResult = { type: topSem.type, data: topSem.data };
     } else if (!isSpecial && !_workerReady) {
-      // Worker aún cargando → pequeño delay para sensación de "pensando"
       await new Promise(r => setTimeout(r, 420 + Math.random() * 250));
     }
 
     _removeLoadingDots();
 
     if (finalResult) {
-      _addBotMessage(_buildResultHTML(finalResult), true);
-      _setState('success');
+      if (finalResult.type === 'special') {
+        // Texto plano (perfil, listas, contacto) → typewriter
+        _setState('talking');
+        await _typewriterBotMessage(finalResult.text);
+        _setState('success');
+      } else {
+        // Tarjeta rica (proyecto / skill) → HTML instantáneo
+        _addBotMessage(_buildResultHTML(finalResult));
+        _setState('success');
+      }
     } else {
-      _addBotMessage('No encontré resultados. Prueba con un proyecto (UBApp, LLM Observatory…) o una tecnología (Django, React, Docker…).');
+      _setState('talking');
+      await _typewriterBotMessage(
+        'No encontré resultados. Prueba con un proyecto (UBApp, LLM Observatory…) ' +
+        'o una tecnología (Django, React, Docker…).'
+      );
       _setState('confused');
     }
 

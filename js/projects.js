@@ -56,6 +56,10 @@ const SLUG_MAP = {
   'project-009': 'marevitae',
   'project-010': 'mindlog',
   'project-011': 'whatsapp-ai-agent',
+  'project-012': 'gesture-control',
+  'project-013': 'nunna',
+  'project-014': 'dualface',
+  'project-015': 'codereviewx',
 };
 
 /* ────────────────────────────────────────────────────

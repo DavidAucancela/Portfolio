@@ -13,12 +13,137 @@ import { IaTour }      from './ia-tour.js';
 const MASCOT_NAME    = 'JotAI';
 const TYPEWRITER_MS  = 14;   // ms por carácter en el efecto de escritura
 
-/* ── SVG DEL MASCOT ───────────────────────────────────────────── */
-// Personaje original: criatura tech con orejas expresivas, ojos enormes con párpado,
-// antena, aura, motes orbitando, think-dots, spark y signo de pregunta.
-// prefix evita IDs duplicados cuando hay dos instancias en el DOM.
+/**
+ * MASCOT_RENDER — cambia aquí para alternar entre modos:
+ *   'image'  → robot 3D (WebP/PNG, fondo transparente) + overlays vectoriales
+ *   'svg'    → blob vectorial puro (fallback sin asset externo)
+ */
+const MASCOT_RENDER = 'image';
 
+/* ── SVG DEL MASCOT ───────────────────────────────────────────── */
+
+/** Dispatcher — selecciona render según MASCOT_RENDER */
 function _buildSVG(prefix) {
+  return MASCOT_RENDER === 'image'
+    ? _buildSVGImage(prefix)
+    : _buildSVGVector(prefix);
+}
+
+/* ── MODO IMAGE: robot 3D + overlays animados ─────────────────── */
+// Robot: 307×660px → viewBox 200×200 (xMidYMid meet)
+// Renderiza 93×200, x-offset 53.5 — calibrar posiciones tras prueba visual
+
+function _buildSVGImage(prefix) {
+  const p = prefix || 'j';
+
+  // Geometría de los ojos sobre la pantalla del robot — CALIBRAR
+  const EL = { cx: 86,  cy: 42 };  // ojo izquierdo
+  const ER = { cx: 114, cy: 42 };  // ojo derecho
+  const ER_SCLERA = 11;            // radio sclera
+  const RP        = 6;             // radio pupila
+
+  return `<svg class="jotai-mascot" viewBox="0 0 200 200"
+         xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+  <defs>
+    <radialGradient id="${p}aura" cx="50%" cy="48%" r="55%">
+      <stop offset="0%"   stop-color="var(--color-accent,#06ffa5)" stop-opacity=".55"/>
+      <stop offset="60%"  stop-color="var(--color-accent,#06ffa5)" stop-opacity=".12"/>
+      <stop offset="100%" stop-color="var(--color-accent,#06ffa5)" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="${p}eye" cx="40%" cy="36%" r="65%">
+      <stop offset="0%"   stop-color="#e8f4ff"/>
+      <stop offset="100%" stop-color="var(--color-secondary,#b14eff)" stop-opacity=".5"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Aura centrada en el torso del robot -->
+  <circle class="jotai-aura" cx="100" cy="110" r="74" fill="url(#${p}aura)"/>
+
+  <!-- Motes orbitando -->
+  <g class="jotai-motes">
+    <circle cx="100" cy="26"  r="2.6" fill="var(--color-accent,#06ffa5)" opacity=".9"/>
+    <circle cx="176" cy="120" r="2"   fill="var(--color-secondary,#b14eff)" opacity=".8"/>
+  </g>
+  <g class="jotai-motes-2">
+    <circle cx="26"  cy="118" r="2.2" fill="var(--color-accent,#06ffa5)" opacity=".7"/>
+  </g>
+
+  <g class="jotai-creature">
+    <g class="jotai-tilt">
+
+      <!-- Cuerpo (imagen con fondo transparente) -->
+      <image class="jotai-body-img"
+             href="public/images/jotai/body.png"
+             x="0" y="0" width="200" height="200"
+             preserveAspectRatio="xMidYMid meet"/>
+
+      <!-- Orejas invisibles — preservan el contrato CSS de estados animados -->
+      <path class="jotai-ear jotai-ear-l" opacity="0"
+            d="M83 92 C72 77 70 53 77 41 C84 49 88 73 88 91 Z"/>
+      <path class="jotai-ear jotai-ear-r" opacity="0"
+            d="M117 92 C128 77 130 53 123 41 C116 49 112 73 112 91 Z"/>
+
+      <!-- Ojo izquierdo sobre la pantalla del robot -->
+      <g>
+        <ellipse cx="${EL.cx}" cy="${EL.cy}" rx="${ER_SCLERA}" ry="${ER_SCLERA}"
+                 fill="url(#${p}eye)" opacity=".4"/>
+        <g class="jotai-pupil-grp">
+          <circle cx="${EL.cx}"     cy="${EL.cy}"     r="${RP}"   fill="var(--bg-primary,#0a1430)" opacity=".85"/>
+          <circle cx="${EL.cx - 2}" cy="${EL.cy - 2}" r="1.8"    fill="#fff"/>
+          <circle cx="${EL.cx+1.5}" cy="${EL.cy + 2}" r="1.1"    fill="var(--color-accent,#06ffa5)"/>
+        </g>
+        <ellipse class="jotai-lid"
+                 cx="${EL.cx}" cy="${EL.cy}" rx="${ER_SCLERA+1}" ry="${ER_SCLERA+1}"
+                 fill="var(--bg-secondary,#1a2540)"/>
+      </g>
+
+      <!-- Ojo derecho -->
+      <g>
+        <ellipse cx="${ER.cx}" cy="${ER.cy}" rx="${ER_SCLERA}" ry="${ER_SCLERA}"
+                 fill="url(#${p}eye)" opacity=".4"/>
+        <g class="jotai-pupil-grp">
+          <circle cx="${ER.cx}"     cy="${ER.cy}"     r="${RP}"   fill="var(--bg-primary,#0a1430)" opacity=".85"/>
+          <circle cx="${ER.cx - 2}" cy="${ER.cy - 2}" r="1.8"    fill="#fff"/>
+          <circle cx="${ER.cx+1.5}" cy="${ER.cy + 2}" r="1.1"    fill="var(--color-accent,#06ffa5)"/>
+        </g>
+        <ellipse class="jotai-lid"
+                 cx="${ER.cx}" cy="${ER.cy}" rx="${ER_SCLERA+1}" ry="${ER_SCLERA+1}"
+                 fill="var(--bg-secondary,#1a2540)"/>
+      </g>
+
+      <!-- Boca (d cambia por JS según estado) -->
+      <path class="jotai-mouth-path"
+            d="M91 56 Q100 62 109 56"
+            fill="none"
+            stroke="var(--bg-primary,#0a1430)"
+            stroke-width="2.8"
+            stroke-linecap="round"/>
+
+      <!-- Think-dots (is-thinking) — zona superior derecha del robot -->
+      <g class="jotai-think-dots">
+        <circle cx="138" cy="20" r="3.2" fill="var(--color-accent,#06ffa5)"/>
+        <circle cx="149" cy="14" r="3.2" fill="var(--color-accent,#06ffa5)"/>
+        <circle cx="160" cy="10" r="3.2" fill="var(--color-accent,#06ffa5)"/>
+      </g>
+
+      <!-- Spark (is-success) -->
+      <path class="jotai-spark"
+            d="M154 6 l2.5 6.5 6.5 2.5 -6.5 2.5 -2.5 6.5 -2.5 -6.5 -6.5 -2.5 6.5 -2.5 z"
+            fill="var(--color-accent,#06ffa5)"/>
+
+      <!-- Signo de pregunta (is-confused) -->
+      <text class="jotai-qmark" x="143" y="24"
+            font-size="20" font-weight="800" font-family="monospace"
+            fill="var(--color-accent,#06ffa5)">?</text>
+
+    </g>
+  </g>
+</svg>`;
+}
+
+/* ── MODO SVG: blob vectorial (fallback sin asset externo) ────── */
+
+function _buildSVGVector(prefix) {
   const p = prefix || 'j';
   return `<svg class="jotai-mascot" viewBox="0 0 200 200"
          xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">

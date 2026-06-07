@@ -229,7 +229,9 @@
     ],
     "image": "public/images/projects/mapcriminals/main1.png",
     "images": [
-      "public/images/projects/mapcriminals/main1.png"
+      "public/images/projects/mapcriminals/main1.png",
+      "public/images/projects/mapcriminals/dashboard.png",
+      "public/images/projects/mapcriminals/reporte.png"
     ],
     "liveUrl": "https://mapcriminalscode-production.up.railway.app/",
     "repoUrl": "https://github.com/DavidAucancela/MapCriminalsCode",
@@ -528,8 +530,13 @@
       "OWASP",
       "PostgreSQL"
     ],
-    "image": null,
-    "images": [],
+    "image": "public/images/projects/securabank/dashboard.png",
+    "images": [
+      "public/images/projects/securabank/dashboard.png",
+      "public/images/projects/securabank/cuentas.png",
+      "public/images/projects/securabank/transferencias.png",
+      "public/images/projects/securabank/trasnfe-ok.png"
+    ],
     "liveUrl": null,
     "repoUrl": "https://github.com/DavidAucancela/SecuraBank",
     "featured": false,
@@ -601,6 +608,115 @@
         {
           "label": "Cobertura auditoría",
           "value": "100%"
+        }
+      ]
+    }
+  },
+  {
+    "id": "project-012",
+    "slug": "gesture-control",
+    "title": "Gesture Control",
+    "description": "Detección de gestos de mano en tiempo real vía webcam que mapea gestos a atajos de teclado, clics de ratón y acciones de sistema. Clasificador híbrido rule-based + ML sklearn.",
+    "longDescription": "Sistema de control por gestos con Python, OpenCV y MediaPipe Hands. Detecta 21 landmarks por mano en cada frame y los clasifica con un sistema híbrido: reglas geométricas para los gestos base (pulgar arriba/abajo, OK, mano abierta, etc.) y un clasificador sklearn RandomForest entrenable con datos propios. Las acciones (keypresses, clics, scroll) se ejecutan con debounce para evitar disparos repetidos. Configurable vía YAML sin tocar código.",
+    "tags": [
+      "Python",
+      "MediaPipe",
+      "OpenCV",
+      "pynput",
+      "sklearn"
+    ],
+    "image": "public/images/projects/gesture-control/mano_abierta.png",
+    "images": [
+      "public/images/projects/gesture-control/mano_abierta.png",
+      "public/images/projects/gesture-control/pulgar_arriba.png",
+      "public/images/projects/gesture-control/pulgar_abajo.png",
+      "public/images/projects/gesture-control/ok.png"
+    ],
+    "liveUrl": null,
+    "repoUrl": "https://github.com/DavidAucancela/Gesture-control",
+    "featured": false,
+    "date": "2026-05",
+    "techStack": {
+      "vision": [
+        "MediaPipe Hands (21 landmarks)",
+        "OpenCV (captura + renderer)"
+      ],
+      "ml": [
+        "sklearn RandomForest",
+        "Pipeline de recolección de datos",
+        "Clasificador rule-based híbrido"
+      ],
+      "tools": [
+        "Python 3.11+",
+        "pynput (teclado/ratón)",
+        "YAML config"
+      ]
+    },
+    "process": {
+      "overview": "Sistema de control por gestos que reemplaza el teclado/ratón con movimientos de mano captados por webcam. MediaPipe Hands extrae los 21 landmarks por frame; un clasificador híbrido los convierte en gestos; un dispatcher con debounce los dispara como acciones de sistema — todo configurable en YAML sin tocar código.",
+      "pasos": [
+        {
+          "id": "deteccion",
+          "resumen": "MediaPipe Hands detecta hasta 2 manos en tiempo real, extrayendo 21 puntos de landmark normalizados por frame. OpenCV captura el stream con modo mirror y overlay visual (esqueleto, label, FPS).",
+          "puntos": [
+            "MediaPipe Hands: 21 landmarks (muñeca + 4 articulaciones × 5 dedos) por frame",
+            "Captura con OpenCV en modo mirror — visualización natural para el usuario",
+            "Overlay visual: esqueleto de mano, label del gesto activo y contador FPS",
+            "Backend DirectShow en Windows para inicialización más rápida de la cámara",
+            "Flag --debug muestra coordenadas de muñeca para calibración"
+          ]
+        },
+        {
+          "id": "clasificacion",
+          "resumen": "Sistema de clasificación híbrido: reglas geométricas basadas en el estado extendido/plegado de cada dedo como lógica base, y un clasificador sklearn RandomForest como capa ML opcional que se activa automáticamente si existen los archivos de modelo.",
+          "puntos": [
+            "Clasificador rule-based: estado booleano de 5 dedos → lookup de gesto",
+            "9 gestos base: mano_abierta, punio, señalar, victoria, rock, ok, pulgar_arriba/abajo",
+            "Capa ML: RandomForest entrenado con datos propios vía tools/collect_data.py",
+            "Auto-detección del modelo: si existe models/gesture_v1.pkl, se usa el ML en lugar de reglas",
+            "Colección de datos interactiva: SPACE = sample, N = siguiente gesto, Q = guardar"
+          ]
+        },
+        {
+          "id": "acciones",
+          "resumen": "Dispatcher con debounce mapea cada gesto a una acción configurable en config/mappings.yaml. Soporta key_press (combos), mouse_click, mouse_scroll y none. Flag --no-actions permite usar solo detección.",
+          "puntos": [
+            "Debounce por gesto para evitar disparos repetidos en frames consecutivos",
+            "key_press: soporta combos (ctrl+c, ctrl+z) y teclas especiales (volumeup, f1–f12, media_*)",
+            "mouse_click: left, right, middle — invocado con pynput sin dependencias de escritorio",
+            "mouse_scroll: dirección (up/down) + número de pasos configurables",
+            "Flag --no-actions: detección visual sin ejecutar acciones — útil para debug y demos"
+          ]
+        },
+        {
+          "id": "configuracion",
+          "resumen": "Todo el comportamiento se configura en dos archivos YAML: settings.yaml para cámara y MediaPipe, y mappings.yaml para el mapeo gesto→acción. Sin necesidad de tocar el código para personalizar.",
+          "puntos": [
+            "config/settings.yaml: device_id, backend (dshow/avfoundation), confianza MediaPipe, FPS",
+            "config/mappings.yaml: mapeo completo gesto→acción editable sin reiniciar el código",
+            "Gestión de permisos en macOS: Accessibility access requerido para keyboard/mouse",
+            "Cross-platform: Windows (DirectShow), macOS (AVFoundation), Linux (V4L2)",
+            "requirements.txt fija mediapipe==0.10.9 — la única versión compatible con mp.solutions"
+          ]
+        }
+      ],
+      "resultado": "Sistema de control por gestos en tiempo real con 9 gestos predefinidos y soporte de gestos personalizados vía ML. Configurable sin código, cross-platform y extensible con el clasificador propio.",
+      "metricas": [
+        {
+          "label": "Gestos soportados",
+          "value": "9 base + custom"
+        },
+        {
+          "label": "Landmarks por mano",
+          "value": "21"
+        },
+        {
+          "label": "Clasificador",
+          "value": "Rule-based + ML"
+        },
+        {
+          "label": "Config",
+          "value": "YAML sin código"
         }
       ]
     }
@@ -686,6 +802,215 @@
         {
           "label": "Cliente",
           "value": "ConQuito"
+        }
+      ]
+    }
+  },
+  {
+    "id": "project-013",
+    "slug": "nunna",
+    "title": "Seres del Pase",
+    "description": "Catálogo digital + experiencia inmersiva sobre los personajes tradicionales de los pases riobambeños — Diablo Huma, Curiquingue, Sacha Runa y más.",
+    "longDescription": "Monorepo full-stack con Turborepo + pnpm workspaces. Next.js 15 como sitio público con SSR, NestJS como API de búsqueda semántica y webhooks, Directus como CMS headless para gestión del contenido cultural sin código, y Supabase (PostgreSQL + Prisma) como base de datos. Preservación digital del patrimonio intangible riobambeño.",
+    "tags": [
+      "Next.js",
+      "NestJS",
+      "Directus",
+      "Supabase",
+      "Turborepo"
+    ],
+    "image": null,
+    "images": [],
+    "liveUrl": null,
+    "repoUrl": "https://github.com/DavidAucancela/Nunna",
+    "featured": false,
+    "date": "2026-06",
+    "techStack": {
+      "frontend": [
+        "Next.js 15 (SSR)",
+        "TypeScript",
+        "React"
+      ],
+      "backend": [
+        "NestJS",
+        "TypeScript",
+        "Prisma ORM"
+      ],
+      "tools": [
+        "Directus CMS",
+        "Supabase (PostgreSQL)",
+        "Turborepo",
+        "pnpm workspaces"
+      ]
+    },
+    "process": {
+      "overview": "Plataforma de preservación del patrimonio cultural intangible riobambeño. Monorepo Turborepo con dos apps (web Next.js 15 y API NestJS) y tres packages compartidos (types, ui, config). Directus como CMS headless permite gestionar el contenido cultural sin intervención técnica.",
+      "pasos": [
+        {
+          "id": "analisis",
+          "resumen": "El patrimonio inmaterial riobambeño (Diablo Huma, Curiquingue, Sacha Runa) carecía de documentación digital estructurada y accesible. Los pases y sus personajes corrían riesgo de pérdida cultural sin un registro interactivo que los narrara con rigor.",
+          "puntos": [
+            "Personajes tradicionales sin documentación digital centralizada ni interactiva",
+            "Necesidad de CMS para gestión del contenido cultural por no-técnicos",
+            "Búsqueda semántica sobre el catálogo de seres y tradiciones",
+            "Arquitectura monorepo para compartir tipos y componentes entre web y API"
+          ]
+        },
+        {
+          "id": "arquitectura",
+          "resumen": "Monorepo Turborepo + pnpm workspaces con dos apps y tres packages. Next.js 15 con SSR para el sitio público y SEO, NestJS para la API de búsqueda semántica y webhooks de Directus, Prisma como ORM sobre Supabase PostgreSQL.",
+          "puntos": [
+            "Turborepo: build paralelo y caché compartida entre apps/web y apps/api",
+            "packages/types: tipos TypeScript compartidos entre frontend y backend",
+            "packages/ui: componentes React base reutilizables sin duplicación",
+            "Next.js 15 App Router con SSR para páginas de seres — SEO optimizado",
+            "NestJS modular: módulos de búsqueda, webhooks Directus y sincronización"
+          ]
+        },
+        {
+          "id": "cms",
+          "resumen": "Directus como CMS headless con Docker en local. Los editores de contenido cultural gestionan seres, tradiciones y medios sin tocar el código. Webhooks de Directus notifican a NestJS para sincronizar búsqueda semántica al publicar contenido.",
+          "puntos": [
+            "Directus: interfaz visual para gestionar seres, capítulos, imágenes y audio",
+            "Webhooks Directus → NestJS: sincronización de índice semántico al publicar",
+            "Supabase PostgreSQL como base de datos con Prisma migrations",
+            "Supabase Auth opcional para acceso al panel de edición cultural",
+            "Contenido estructurado: ser → capítulos → imágenes → referencias históricas"
+          ]
+        },
+        {
+          "id": "despliegue",
+          "resumen": "Next.js en Vercel con preview deployments automáticos. API NestJS y Directus en servicios dedicados con variables de entorno separadas por ambiente.",
+          "puntos": [
+            "pnpm install en la raíz — workspaces instalan todas las dependencias en cascada",
+            "pnpm dev arranca web (3000), api (3001) y Directus (8055) en paralelo con Turborepo",
+            ".env.local con credenciales de Supabase y Directus separadas por servicio",
+            "Vercel para Next.js con deploy automático desde GitHub",
+            "Docker Compose para Directus local sin instalar Directus globalmente"
+          ]
+        }
+      ],
+      "resultado": "Plataforma de preservación cultural digital del patrimonio riobambeño con CMS headless, búsqueda semántica y arquitectura monorepo escalable.",
+      "metricas": [
+        {
+          "label": "Apps en monorepo",
+          "value": "2 (web + api)"
+        },
+        {
+          "label": "Packages compartidos",
+          "value": "3"
+        },
+        {
+          "label": "CMS",
+          "value": "Directus headless"
+        },
+        {
+          "label": "Build",
+          "value": "Turborepo"
+        }
+      ]
+    }
+  },
+  {
+    "id": "project-014",
+    "slug": "dualface",
+    "title": "DualFace",
+    "description": "Experiencia web inmersiva de preservación cultural sobre el Diablo Huma y el Cucurucho — dos íconos del patrimonio ecuatoriano. Scroll narrativo estilo Persepolis con GSAP y audio ambiental por universo.",
+    "longDescription": "Plataforma cultural con sistema de temas dual vía atributo CSS. Dos universos comparten el mismo HTML; un toggle cambia el data-theme y todo el diseño reacciona. GSAP ScrollTrigger activa capítulos narrativos con parallax en 3 capas. Tone.js reproduce audio ambiental diferenciado por universo (percusión andina vs campanas). Bilingüe ES/EN con i18n vanilla. Sin frameworks ni bundler en v1.",
+    "tags": [
+      "HTML5",
+      "CSS3",
+      "GSAP",
+      "ScrollTrigger",
+      "Tone.js"
+    ],
+    "image": null,
+    "images": [],
+    "liveUrl": null,
+    "repoUrl": "https://github.com/DavidAucancela/DualFace",
+    "featured": false,
+    "date": "2026-06",
+    "techStack": {
+      "animacion": [
+        "GSAP 3.12",
+        "ScrollTrigger",
+        "Parallax multicapa"
+      ],
+      "audio": [
+        "Tone.js",
+        "Audio ambiental opt-in"
+      ],
+      "frontend": [
+        "HTML5",
+        "CSS3 custom properties",
+        "JavaScript Vanilla",
+        "i18n ES/EN"
+      ]
+    },
+    "process": {
+      "overview": "Experiencia web inmersiva inspirada en Persepolis Reimagined del Getty Museum. Dos universos culturales (Diablo Huma y Cucurucho) coexisten en el mismo HTML con un sistema de temas dual via CSS. GSAP ScrollTrigger orquesta la narrativa visual; Tone.js diferencia cada universo con audio ambiental opt-in.",
+      "pasos": [
+        {
+          "id": "concepto",
+          "resumen": "El Diablo Huma (figura de la cosmovisión andina kichwa, Inti Raymi) y el Cucurucho (tradición franciscana de Semana Santa en Quito, Patrimonio UNESCO) representan dos mundos culturales ecuatorianos. El reto: narrarlos juntos sin mezclarlos, y con rigor histórico.",
+          "puntos": [
+            "Diablo Huma: 4 capítulos — Origen kichwa, Inti Raymi, La Máscara (12 cuernos = 12 meses), Hoy",
+            "Cucurucho: 4 capítulos — Origen 1534, Semana Santa, El Anonimato, Hoy (UNESCO)",
+            "Rigor cultural: ninguna afirmación sin fuente, nombres kichwa sin traducir en EN",
+            "Audio siempre opt-in — el sitio funciona al 100% sin audio"
+          ]
+        },
+        {
+          "id": "sistema-dual",
+          "resumen": "Un único atributo data-theme en <html> controla todo el diseño. CSS custom properties en themes.css definen paletas completamente distintas para cada universo. El toggle cambia el atributo y el browser reapunta todas las variables instantáneamente.",
+          "puntos": [
+            "data-theme='dh': fondo #0b1a0b (verde oscuro), acento #c44d00 (naranja fuego)",
+            "data-theme='cu': fondo #120820 (púrpura profundo), acento #7a0020 (carmesí)",
+            "Ningún color hardcodeado fuera de themes.css — todo usa var(--variable)",
+            "Toggle cambia universo completo en < 800ms sin recargar la página",
+            "Arquitectura extensible: añadir un tercer ser cultural solo requiere un nuevo bloque en themes.css"
+          ]
+        },
+        {
+          "id": "scroll-narrativo",
+          "resumen": "GSAP ScrollTrigger activa cada capítulo según el rango de scroll. El contenedor scroll-driver tiene height: 600vh+ y el stage es sticky — el viewport no se mueve, cambian las escenas. Parallax mínimo en 3 capas por capítulo.",
+          "puntos": [
+            "scroll-driver: captura el scroll con height mínimo de 600vh por universo",
+            "stage: position sticky en 100vh — el usuario scrollea, las escenas cambian",
+            "3 capas de parallax por capítulo: .layer-bg, .layer-mid, .layer-fg",
+            "GSAP ScrollTrigger: cada .chapter se activa en su rango de scroll con scrub",
+            "prefers-reduced-motion: parallax y fades desactivados para accesibilidad"
+          ]
+        },
+        {
+          "id": "i18n-audio",
+          "resumen": "i18n vanilla con locales/es.json y locales/en.json. Ningún texto va hardcodeado en HTML — todo pasa por i18n.js con claves tipo seccion.componente.elemento. Tone.js carga el audio ambiental del universo activo solo tras interacción explícita.",
+          "puntos": [
+            "i18n.js: sistema de traducciones ES/EN con detección automática de idioma del browser",
+            "Claves estructuradas: nav.toggle.dh, quiz.result.cu — mantenibles y escalables",
+            "Tone.js: percusión andina + bombo para Diablo Huma; campanas + canto gregoriano para Cucurucho",
+            "Audio cargado lazy: solo al activar el toggle de audio — nunca autoplay",
+            "Fallback: sin audio el sitio funciona con la misma experiencia visual completa"
+          ]
+        }
+      ],
+      "resultado": "Experiencia web inmersiva bilingüe con scroll narrativo, sistema de temas dual y audio ambiental diferenciado por universo cultural. Entrega para cliente institucional.",
+      "metricas": [
+        {
+          "label": "Universos culturales",
+          "value": "2 (DH + Cucurucho)"
+        },
+        {
+          "label": "Capítulos narrativos",
+          "value": "8 (4 × universo)"
+        },
+        {
+          "label": "Frameworks",
+          "value": "0 (vanilla)"
+        },
+        {
+          "label": "Idiomas",
+          "value": "ES/EN"
         }
       ]
     }

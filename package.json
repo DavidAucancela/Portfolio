@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/DavidAucancela/Portfolio#readme",
   "devDependencies": {
+    "playwright": "^1.60.0",
     "vite": "^8.0.0"
   },
   "dependencies": {

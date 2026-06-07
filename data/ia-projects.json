@@ -13,7 +13,12 @@
     ],
     "image": "public/images/projects/llm observatory/dashboard.png",
     "images": [
-      "public/images/projects/llm observatory/dashboard.png"
+      "public/images/projects/llm observatory/dashboard.png",
+      "public/images/projects/llm observatory/landing.png",
+      "public/images/projects/llm observatory/login.png",
+      "public/images/projects/llm observatory/config.png",
+      "public/images/projects/llm observatory/dashboard-light.png",
+      "public/images/projects/llm observatory/request.png"
     ],
     "liveUrl": "https://llm-web-production.up.railway.app/settings",
     "repoUrl": "https://github.com/DavidAucancela/llm-observatory",
@@ -654,6 +659,115 @@
         {
           "label": "Roles de usuario",
           "value": "4"
+        }
+      ]
+    }
+  },
+  {
+    "id": "project-015",
+    "slug": "codereviewx",
+    "title": "CodeReviewX",
+    "description": "GitHub App de revisión de código automatizada. Analiza diffs con Ruff/ESLint y Claude Sonnet, y publica comentarios inline en el PR — sin intervención humana.",
+    "longDescription": "Bot desplegado como GitHub App con FastAPI + Uvicorn. Escucha eventos pull_request (opened/synchronize), verifica la firma HMAC-SHA256 del webhook y responde 200 OK inmediatamente. El análisis corre en background con asyncio: obtiene los archivos del PR, extrae contexto de cada diff, corre Ruff (Python) o ESLint (JS/TS) y envía el resultado junto con el diff a Claude Sonnet, que detecta bugs lógicos, edge cases no manejados y problemas de seguridad. Los comentarios se mapean a las líneas exactas del diff vía la GitHub API.",
+    "tags": [
+      "Claude API",
+      "FastAPI",
+      "GitHub App",
+      "Ruff",
+      "ESLint"
+    ],
+    "image": null,
+    "images": [],
+    "liveUrl": null,
+    "repoUrl": "https://github.com/DavidAucancela/CodeReviewX-",
+    "featured": true,
+    "date": "2026-05",
+    "techStack": {
+      "ia": [
+        "Claude Sonnet (claude-sonnet-4-6)",
+        "Análisis semántico de diffs",
+        "Detección de bugs y security issues"
+      ],
+      "backend": [
+        "Python",
+        "FastAPI + Uvicorn",
+        "asyncio (pipeline non-blocking)",
+        "PyGithub + JWT auth"
+      ],
+      "static": [
+        "Ruff (Python)",
+        "ESLint (JS/TS/JSX/TSX)"
+      ],
+      "tools": [
+        "GitHub App API",
+        "HMAC-SHA256 webhook verification",
+        "Railway (Docker)"
+      ]
+    },
+    "process": {
+      "overview": "GitHub App que automatiza la revisión de código combinando análisis estático (Ruff + ESLint) con análisis semántico de Claude Sonnet. El webhook responde 200 OK de inmediato; el análisis corre en background y publica comentarios inline en las líneas exactas del diff vía la GitHub API.",
+      "pasos": [
+        {
+          "id": "problema",
+          "resumen": "Los code reviews manuales en PRs son lentos y consistencia-dependientes del revisor. Los linters detectan problemas de estilo pero no bugs lógicos, edge cases no manejados ni vulnerabilidades de seguridad sutiles. Se necesitaba automatizar la capa semántica del review.",
+          "puntos": [
+            "Linters detectan estilo pero no bugs lógicos ni edge cases",
+            "Reviews manuales lentos — bloquean el merge en repositorios con pocos revisores",
+            "Inconsistencia entre revisores en criterios de seguridad y diseño async",
+            "Sin feedback inmediato en PRs abiertos fuera del horario laboral"
+          ]
+        },
+        {
+          "id": "arquitectura",
+          "resumen": "Pipeline de dos fases: análisis estático síncrono (Ruff/ESLint) seguido de análisis semántico con Claude Sonnet. Todo corre en background con asyncio para no bloquear el webhook. Los comentarios se mapean a líneas del diff antes de publicarlos inline.",
+          "puntos": [
+            "POST /webhook: verifica HMAC-SHA256, responde 200 OK en < 200ms",
+            "Background task asyncio: no bloquea el webhook — análisis desacoplado",
+            "get_pr_files → filter soportados (.py, .js, .ts, .jsx, .tsx) → extract_diffs",
+            "Por archivo: run_static_analysis → analyze_semantically (Claude) → post_review",
+            "diff_parser.py mapea comentarios Claude a números de línea exactos del diff"
+          ]
+        },
+        {
+          "id": "ia",
+          "resumen": "Claude Sonnet recibe el diff + issues del análisis estático y detecta bugs lógicos, edge cases no manejados, problemas de seguridad (injection, secrets expuestos, validación faltante) y patrones async mal diseñados. El resultado se mapea a líneas específicas del PR.",
+          "puntos": [
+            "Prompt estructurado: diff + static issues → Claude identifica problemas reales (no estilo)",
+            "Detección de seguridad: injection, secrets hardcodeados, falta de validación de input",
+            "Análisis de async: race conditions, awaits faltantes, promesas no manejadas",
+            "Claude filtra falsos positivos del linter — solo comenta lo que realmente importa",
+            "Comentarios mapeados a línea exacta del diff via position en la GitHub Review API"
+          ]
+        },
+        {
+          "id": "github-app",
+          "resumen": "Instalable en cualquier repo sin configuración extra. JWT firmado con la clave privada del App para obtener installation tokens. HMAC-SHA256 verifica que cada webhook proviene de GitHub. Health endpoint para monitoreo de uptime.",
+          "puntos": [
+            "GitHub App: permisos Contents (read), Pull requests (read+write), Metadata (read)",
+            "JWT firmado con private key RSA → exchange por installation_token por repo",
+            "HMAC-SHA256 en cada webhook — rechaza requests no firmados con 403",
+            "GET /health → {status: ok} para monitoreo de uptime en Railway",
+            "Railway: auto-deploy en push a main con Docker — GITHUB_APP_PRIVATE_KEY como env var"
+          ]
+        }
+      ],
+      "resultado": "GitHub App instalable que publica comentarios inline en PRs combinando análisis estático y semántico de Claude Sonnet. Respuesta en segundos, sin intervención humana.",
+      "metricas": [
+        {
+          "label": "Modelo IA",
+          "value": "Claude Sonnet 4.6"
+        },
+        {
+          "label": "Latencia webhook",
+          "value": "< 200ms"
+        },
+        {
+          "label": "Lenguajes",
+          "value": "Python + JS/TS"
+        },
+        {
+          "label": "Comentarios",
+          "value": "Inline por línea"
         }
       ]
     }

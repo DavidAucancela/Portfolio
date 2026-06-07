@@ -8,12 +8,7 @@
   align-items: center;
   justify-content: center;
   cursor: crosshair;
-  background: linear-gradient(
-    to bottom,
-    var(--bg-primary)   0%,
-    var(--bg-secondary) 100%
-  );
-  transition: background 0.5s ease;
+  background: transparent;
   user-select: none;
   overflow: hidden;
   z-index: 1;
@@ -151,47 +146,6 @@
   100% { left: -24%; opacity: 0; }
 }
 
-/* ── Label — aparece al cargarse completamente ── */
-.sdiv__label {
-  position: absolute;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-family: var(--font-mono, monospace);
-  font-size: 0.78rem;
-  letter-spacing: 0.22em;
-  color: var(--color-accent);
-  text-transform: uppercase;
-  opacity: 0;
-  transform: translateY(12px);
-  transition: opacity 0.4s ease, transform 0.4s ease;
-  pointer-events: none;
-  z-index: 4;
-  white-space: nowrap;
-  text-shadow:
-    0 0 14px var(--color-accent),
-    0 0 30px var(--color-accent-glow);
-  background: rgba(0, 0, 0, 0.22);
-  padding: 0.3rem 0.9rem;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-#section-divider.sdiv--charged .sdiv__label {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.sdiv__arrow {
-  display: inline-block;
-  animation: sdiv-bounce 1.4s ease-in-out infinite;
-}
-
-@keyframes sdiv-bounce {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(6px); }
-}
-
 /* ── Canvas — efectos de partículas (ambientales + burst + ripple) ── */
 #sdiv-canvas {
   position: absolute;
@@ -220,15 +174,16 @@
   opacity: 0.45;
 }
 
-/* Borde superior sutil — funde con el hero */
-#section-divider::after {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 40px;
-  background: linear-gradient(to bottom, var(--bg-primary), transparent);
-  pointer-events: none;
-  z-index: 0;
+/* ── Flash de línea al hacer click ── */
+#section-divider.sdiv--flash .sdiv__charge {
+  transform: translateY(-50%) scaleX(1);
+  filter: brightness(3) saturate(1.4);
+  transition: filter 0.35s ease-out, transform 0s;
+}
+
+#section-divider.sdiv--flash::before {
+  opacity: 0.75;
+  transition: opacity 0.08s ease;
 }
 
 /* ── Reduced motion ── */
@@ -236,8 +191,6 @@
   .sdiv__charge          { transition: none; }
   .sdiv__scan            { animation: none; left: 40%; opacity: 0.4; width: 20%; }
   .sdiv__scan--rev       { display: none; }
-  .sdiv__arrow           { animation: none; }
-  .sdiv__label           { transition: none; }
   .sdiv__cursor-glow     { display: none; }
   #section-divider::before { transition: none; }
 }

@@ -4,16 +4,16 @@ export const SectionDivider = (() => {
   const AMBIENT_COUNT = 36;
   const ACCENT_RGB = { dev: '59,130,246', ia: '6,255,165', sec: '0,255,65' };
 
-  let el, canvas, ctx, glowEl;
+  let el, canvas, ctx, glowEl, chargeEl;
   let hoverTimer  = null;
-  let burstParticles  = [];
+  let burstParticles   = [];
   let ambientParticles = [];
-  let ripples     = [];
   let rafId       = null;
   let reduced     = false;
   let isHovered   = false;
   let hoverX      = -1;
   let hoverY      = -1;
+  let enterOrigin = 0.5;   // 0–1: fraction of width where mouse entered
 
   /* ── public ── */
   function init() {
@@ -23,7 +23,8 @@ export const SectionDivider = (() => {
     canvas = document.getElementById('sdiv-canvas');
     if (!canvas) return;
     ctx = canvas.getContext('2d');
-    glowEl = el.querySelector('.sdiv__cursor-glow');
+    glowEl   = el.querySelector('.sdiv__cursor-glow');
+    chargeEl = el.querySelector('.sdiv__charge');
     reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     _resize();
@@ -79,6 +80,12 @@ export const SectionDivider = (() => {
     isHovered = true;
     el.classList.add('sdiv--hovered');
     _moveGlow(e);
+
+    /* Charge bar grows from the X position where the mouse entered */
+    const rect = el.getBoundingClientRect();
+    enterOrigin = (e.clientX - rect.left) / rect.width;
+    if (chargeEl) chargeEl.style.transformOrigin = `${enterOrigin * 100}% 50%`;
+
     clearTimeout(hoverTimer);
     hoverTimer = setTimeout(() => el.classList.add('sdiv--charged'), CHARGE_DELAY);
   }
@@ -104,71 +111,58 @@ export const SectionDivider = (() => {
     glowEl.style.left = (e.clientX - rect.left) + 'px';
   }
 
-  /* ── click: burst + ripple waves + scroll ── */
+  /* ── click: chispas horizontales + flash de línea ── */
   function _onClick(e) {
-    if (reduced) {
-      document.getElementById('about')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      return;
-    }
+    if (reduced) return;
     const rect = el.getBoundingClientRect();
     const cx   = e.clientX - rect.left;
     const cy   = el.offsetHeight / 2;
-
-    _burst(cx, cy);
-    _addRipples(cx, cy);          // second action: energy ripple waves
-
-    setTimeout(() => {
-      document.getElementById('about')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 480);
+    _wireSparks(cx, cy);
+    _lineFlash();
   }
 
-  /* Radial particle explosion from click point */
-  function _burst(cx, cy) {
+  /* Chispas que viajan horizontalmente a lo largo del eje de la línea */
+  function _wireSparks(cx, cy) {
     const col = _getCol();
-    for (let i = 0; i < BURST_COUNT; i++) {
-      const angle = (Math.PI * 2 / BURST_COUNT) * i + (Math.random() - 0.5) * 0.45;
-      const speed = 2.2 + Math.random() * 5.8;
-      burstParticles.push({
-        x:  cx, y: cy,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed * 0.32,
-        r:  1.2 + Math.random() * 3.2,
-        a:  0.9 + Math.random() * 0.1,
-        decay: 0.014 + Math.random() * 0.018,
-        col,
-      });
+    /* 25 chispas a la izquierda, 25 a la derecha */
+    for (let side = -1; side <= 1; side += 2) {
+      for (let i = 0; i < 25; i++) {
+        const speed = 5 + Math.random() * 11;
+        burstParticles.push({
+          x:     cx,
+          y:     cy + (Math.random() - 0.5) * 10,
+          vx:    side * speed,
+          vy:    (Math.random() - 0.5) * 1.4,
+          r:     0.9 + Math.random() * 1.8,
+          a:     0.85 + Math.random() * 0.15,
+          decay: 0.016 + Math.random() * 0.022,
+          col,
+          trail:    true,
+          trailLen: 3 + Math.random() * 5,
+        });
+      }
     }
-    /* White-core flash */
-    for (let i = 0; i < 18; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const speed = 0.5 + Math.random() * 2.8;
+    /* Núcleo blanco — chispas rápidas muy cortas en el punto de impact */
+    for (let i = 0; i < 12; i++) {
+      const side = Math.random() < 0.5 ? -1 : 1;
       burstParticles.push({
-        x:  cx, y: cy,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed * 0.4,
-        r:  0.7 + Math.random() * 1.8,
-        a:  1,
-        decay: 0.03 + Math.random() * 0.032,
-        col: '255,255,255',
+        x:     cx, y: cy + (Math.random() - 0.5) * 4,
+        vx:    side * (8 + Math.random() * 8),
+        vy:    (Math.random() - 0.5) * 0.8,
+        r:     0.5 + Math.random() * 0.8,
+        a:     1,
+        decay: 0.04 + Math.random() * 0.04,
+        col:   '255,255,255',
+        trail:    true,
+        trailLen: 5 + Math.random() * 6,
       });
     }
   }
 
-  /* Horizontal energy ripple waves (flat ellipses expanding outward) */
-  function _addRipples(cx, cy) {
-    const col = _getCol();
-    for (let i = 0; i < 4; i++) {
-      ripples.push({
-        x:    cx,
-        y:    cy,
-        rx:   0,
-        maxRx: 200 + i * 90,
-        a:    0.72 - i * 0.12,
-        speed: 5 + i * 1.4,
-        col,
-        lw:   2.2 - i * 0.3,
-      });
-    }
+  /* Flash instantáneo de la línea entera */
+  function _lineFlash() {
+    el.classList.add('sdiv--flash');
+    setTimeout(() => el.classList.remove('sdiv--flash'), 380);
   }
 
   /* ── rAF loop — ambient + ripples + burst ── */
@@ -176,8 +170,7 @@ export const SectionDivider = (() => {
     rafId = requestAnimationFrame(_loop);
     if (!ctx || !canvas) return;
 
-    const hasWork = burstParticles.length > 0 || ripples.length > 0 ||
-                    (!reduced && ambientParticles.length > 0);
+    const hasWork = burstParticles.length > 0 || (!reduced && ambientParticles.length > 0);
     if (!hasWork) return;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -230,33 +223,33 @@ export const SectionDivider = (() => {
       }
     }
 
-    /* Ripple waves */
-    for (let i = ripples.length - 1; i >= 0; i--) {
-      const rp = ripples[i];
-      rp.rx += rp.speed;
-      rp.a  *= 0.966;
-      if (rp.rx >= rp.maxRx || rp.a < 0.01) { ripples.splice(i, 1); continue; }
-      const ry = rp.rx * 0.26;             // flatten: horizontal ellipse
-      ctx.beginPath();
-      ctx.ellipse(rp.x, rp.y, rp.rx, ry, 0, 0, Math.PI * 2);
-      ctx.strokeStyle = `rgba(${rp.col},${rp.a})`;
-      ctx.lineWidth   = rp.lw;
-      ctx.stroke();
-    }
-
-    /* Burst particles */
+    /* Wire sparks / burst particles */
+    ctx.lineCap = 'round';
     for (let i = burstParticles.length - 1; i >= 0; i--) {
       const p = burstParticles[i];
       p.x  += p.vx;
       p.y  += p.vy;
-      p.vx *= 0.92;
-      p.vy *= 0.92;
+      p.vx *= 0.91;
+      p.vy *= 0.88;
       p.a  -= p.decay;
       if (p.a <= 0.01) { burstParticles.splice(i, 1); continue; }
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${p.col},${Math.min(p.a, 1)})`;
-      ctx.fill();
+
+      const alpha = Math.min(p.a, 1);
+      if (p.trail && p.vx !== 0) {
+        /* Trail: línea en la dirección de movimiento */
+        const trailX = p.x - Math.sign(p.vx) * Math.min(Math.abs(p.vx) * p.trailLen, 48);
+        ctx.beginPath();
+        ctx.moveTo(p.x, p.y);
+        ctx.lineTo(trailX, p.y);
+        ctx.strokeStyle = `rgba(${p.col},${alpha})`;
+        ctx.lineWidth   = p.r * 1.6;
+        ctx.stroke();
+      } else {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${p.col},${alpha})`;
+        ctx.fill();
+      }
     }
   }
 

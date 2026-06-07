@@ -764,6 +764,13 @@ ul, ol { list-style: none; }
 .section::before     { background: linear-gradient(to bottom, var(--bg-primary),   transparent); }
 .section--alt::before { background: linear-gradient(to bottom, var(--bg-secondary), transparent); }
 
+/* #about viene después del divider transparente — su vignette arranca desde
+   --bg-primary (= body/hero bottom) para cubrir la zona del divider sin seam */
+#about.section--alt::before {
+  height: 280px;
+  background: linear-gradient(to bottom, var(--bg-primary), transparent);
+}
+
 /* Vignette inferior — suaviza el corte hacia la siguiente sección */
 .section::after,
 .section--alt::after {

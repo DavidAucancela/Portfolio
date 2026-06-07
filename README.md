@@ -1,75 +1,134 @@
-# Jonathan.dev — Portfolio
+# Jonathan Aucancela — Portfolio
 
-Portfolio personal de **Jonathan David Aucancela** — Software Engineer, IA Developer y Security Researcher.
+Portfolio personal de **Jonathan David Aucancela** — Software Engineer · IA Developer · Security Researcher.
 
-**URL:** [davidaucancela.github.io/Portfolio](https://davidaucancela.github.io/Portfolio/)
+**URL:** [davidaucancela-portfolio.vercel.app](https://davidaucancela-portfolio.vercel.app/)
 
-## Stack Tecnológico
+---
 
-- **HTML5 + CSS3 + JavaScript vanilla** — sin framework, sin build step
-- **Deploy:** Vercel (`@vercel/static`)
-- **Fuentes e íconos:** Google Fonts + SVG personalizados
+## Tres modos, una sola página
 
-## Ver el proyecto
+El portfolio cambia completamente según el perfil seleccionado:
 
-Abrir `index.html` directamente en el navegador, o usar un servidor estático:
+| Modo | Perfil | Acento |
+|------|--------|--------|
+| `dev` | Software Engineer — sistemas fullstack, arquitectura, deploy | Azul |
+| `ia` | IA Developer — LLMs, RAG, agentes, embeddings | Púrpura |
+| `sec` | Security Researcher — pentesting, CTF, ciberseguridad | Verde terminal |
+
+El modo activo persiste en `localStorage` y cambia contenido, colores, proyectos y secciones visibles.
+
+---
+
+## Stack
+
+- **HTML5 + CSS3 + JavaScript vanilla** con ES modules
+- **Vite** como bundler (`npm run dev` / `npm run build`)
+- **Deploy:** Vercel — auto-deploy en push a `main`
+- **Analytics:** `@vercel/analytics` + `@vercel/speed-insights`
+
+---
+
+## Desarrollo local
 
 ```bash
-npx serve .
-# o
-python -m http.server 8080
+npm install
+npm run dev      # http://localhost:3000 con HMR
+npm run build    # build de producción en dist/
+npm run preview  # previsualizar el build
 ```
+
+---
+
+## Proyectos por modo
+
+Los proyectos se cargan con `fetch` desde JSON en runtime:
+
+| Archivo | Modo | Proyectos |
+|---------|------|-----------|
+| `data/dev-projects.json` | `.dev` | ArtEcuador, Ideancestral, MapCriminals, Notes App, Equity, SecuraBank, Gesture Control, ConQuito, Seres del Pase, DualFace |
+| `data/ia-projects.json` | `.ia` | LLM Observatory, UBApp, MindLog, Mare Vitae, Social Media AI Agent, AnaOS, CodeReviewX |
+| `data/sec-projects.json` | `.sec` | Labs HTB + prácticas profesionales + certificaciones |
+
+---
+
+## Funcionalidades
+
+- **JotAI** — mascot flotante con chat inteligente, búsqueda semántica con `Xenova/all-MiniLM-L6-v2` (Web Worker + IndexedDB cache) y tour guiado por secciones
+- **Command Palette** (`Cmd+K`) — 21 comandos en 4 grupos: navegación, modo, proyectos, acciones
+- **Project Gallery** — galería fullscreen con filmstrip, navegación táctil y panel de proceso detallado
+- **SecTerminal** — terminal interactiva en modo `.sec` con boot sequence y comandos (`help`, `whoami`, `ls`, `cat`, `ping`, `clear`)
+- **PDF Modal** — visor inline del CV sin abrir nueva pestaña
+- **Trajectory Drawer** — línea de tiempo interactiva de la trayectoria profesional
+- **Scroll-driven Animations** — vía `animation-timeline: view()` con fallback IntersectionObserver
+- **Section Canvas** — fondos dinámicos por modo (partículas azules / red neuronal púrpura / matrix verde)
+- **Bilingüe ES/EN** — internacionalización completa con `LangSwitcher`
+
+---
 
 ## Estructura
 
 ```
-index.html            # Página principal (única)
-404.html              # Página de error
+index.html
 css/
-  main.css            # Variables, reset, layout base, tipografía
-  sections.css        # Estilos por sección (hero, about, projects, skills, contact)
-  animations.css      # Keyframes y clases de animación
-  polish.css          # Detalles visuales, jonathan-panel, trayectoria interactiva
-  themes/             # Overrides por modo (dev, ia, sec)
+  main.css              # Variables, reset, layout, hero
+  sections.css          # About, projects, skills, contact
+  animations.css        # Keyframes + scroll-driven animations
+  polish.css            # Jonathan panel, trayectoria, detalles
+  project-gallery.css   # Gallery fullscreen
+  project-detail.css    # Panel de detalle de proyecto
+  command-palette.css   # Command palette overlay
+  ia-mascot.css         # JotAI widget
+  sec-terminal.css      # Terminal modo .sec
+  pdf-modal.css         # Visor PDF
+  trajectory.css        # Drawer de trayectoria
+  section-divider.css   # Divisor interactivo hero→about
+  themes/
+    dev.css | ia.css | sec.css
+
 js/
-  main.js             # Init global, jonathan-panel, formulario de contacto
-  sections.js         # Renderizadores por sección (EXPERIENCE_DATA, ABOUT_DATA, etc.)
-  projects.js         # Renderizado de tarjetas de proyectos
-  animations.js       # Scroll observer, animaciones de entrada
-  effects.js          # Efectos visuales, parallax, partículas
-  theme-switcher.js   # Cambio entre modos dev / ia / sec
-  lang.js             # Internacionalización ES/EN
-  section-nav.js      # Navegación lateral por secciones
-  ia-assistant.js     # Asistente IA (solo modo .ia)
+  main.js               # Entry point Vite
+  app.js                # Navbar, scroll, contacto
+  theme-switcher.js     # Cambio dev/ia/sec
+  sections.js           # Renderizado de secciones
+  projects.js           # Renderizado de tarjetas
+  project-detail.js     # Panel lateral de detalle
+  project-gallery.js    # Gallery fullscreen
+  ia-mascot.js          # JotAI widget
+  ia-assistant.js       # Motor NLP híbrido + KB dinámica
+  ia-worker.js          # Web Worker: MiniLM + IndexedDB
+  ia-tour.js            # Tour guiado por secciones
+  command-palette.js    # Buscador global Cmd+K
+  sec-terminal.js       # Terminal interactiva .sec
+  pdf-modal.js          # Visor PDF inline
+  trajectory.js         # Drawer de trayectoria
+  animations.js         # Hero canvas (partículas/matrix/neural)
+  effects.js            # SectionReveal + SectionCanvas
+  lang.js               # Internacionalización ES/EN
+  section-nav.js        # Dots de navegación lateral
+  section-divider.js    # Divisor interactivo
+
 data/
-  projects.json       # 6 proyectos con proceso, métricas, links
-  personal.json       # Nombre, bio, email, redes, timeline
-  skills.json         # Skills por categoría
-  hero.json           # Contenido del hero por modo
-assets/               # Fuentes, íconos SVG
-public/               # Imágenes (foto, screenshots de proyectos)
-vercel.json           # Config deploy estático
+  dev-projects.json
+  ia-projects.json
+  sec-projects.json
+  personal.json
+  skills.json
+
+public/
+  images/projects/<slug>/   # Screenshots por proyecto
+  images/certificados/      # PDFs de certificaciones (modo .sec)
 ```
 
-## Modos del portfolio
+---
 
-El portfolio tiene tres modos que cambian contenido, colores y secciones visibles:
+## CI/CD
 
-| Modo | Foco |
-|------|------|
-| `dev` | Software Engineer — proyectos y stack técnico |
-| `ia` | IA Developer — asistente integrado y proyectos de ML/LLM |
-| `sec` | Security Researcher — proyectos y habilidades de ciberseguridad |
+- `.github/workflows/deploy.yml` — deploy a Vercel en push a `main`
+- `.github/workflows/ci.yml` — pipeline de CI
+- `.lighthouserc.json` — Lighthouse CI para seguimiento de performance
 
-## Secciones
-
-- **Hero** — presentación dinámica según modo activo
-- **About** — bio, stats, focus card
-- **Projects** — grid de proyectos renderizado desde `data/projects.json`
-- **Skills** — grid de habilidades técnicas
-- **IA Assistant** — chat integrado (solo modo `ia`)
-- **Contact** — formulario y redes sociales
-- **Jonathan Panel** — drawer lateral con Trayectoria Interactiva (línea de tiempo)
+---
 
 ## Licencia
 

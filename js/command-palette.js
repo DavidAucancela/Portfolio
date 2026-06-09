@@ -67,7 +67,7 @@ const ALL_COMMANDS = [
     action: () => _openProject('conquito-fundaciones', 'dev') },
 
   // Acciones
-  { id: 'action-cv', icon: '📄', label: 'Descargar CV', sub: 'Hoja de vida en PDF',
+  { id: 'action-cv', icon: '📄', label: 'Ver mi CV', sub: 'Hoja de vida en PDF',
     group: 'Acciones', keys: 'cv curriculum resume descargar pdf hoja vida',
     action: () => _downloadCV() },
   { id: 'action-email', icon: '📋', label: 'Copiar email', sub: 'jonathan_jd@outlook.com',

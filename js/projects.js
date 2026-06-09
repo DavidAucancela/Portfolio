@@ -243,7 +243,7 @@ function _buildCard(p, mode) {
   if (mode === 'sec' && p.lab) return _buildLabCard(p);
 
   const card = document.createElement('article');
-  card.className = `project-card${p.featured ? ' project-card--featured' : ''}`;
+  card.className = `project-card project-card--fullbleed${p.featured ? ' project-card--featured' : ''}`;
   card.setAttribute('aria-label', p.title);
 
   if (p.id && SLUG_MAP[p.id]) card.dataset.slug = SLUG_MAP[p.id];
@@ -251,8 +251,8 @@ function _buildCard(p, mode) {
   // Imagen o placeholder
   const imgHTML = p.image
     ? `<img src="${p.image}" alt="Captura de ${p.title}" loading="lazy"
-            onerror="this.parentElement.innerHTML='<div class=\\'card-image-placeholder\\'>${_getModeEmoji(mode)}</div>'; this.onerror=null;" />`
-    : `<div class="card-image-placeholder" aria-hidden="true">${_getModeEmoji(mode)}</div>`;
+            onerror="this.style.display='none'; this.onerror=null;" />`
+    : _buildCardPlaceholder(p);
 
   // Fecha formateada
   const dateLabel = p.date
@@ -326,24 +326,24 @@ function _buildCard(p, mode) {
         ${featuredBadge}
         ${dateBadge}
       </div>
-    </div>
-    <div class="card-body">
-      <h3 class="card-title">${p.title}</h3>
-      <p class="card-description">${p.description}</p>
-      <div class="card-tags">${tagsHTML}</div>
-    </div>
-    <div class="card-links">
-      ${liveBtn}
-      ${repoBtn}
-      ${privateNote}
-      <button class="card-btn card-btn--process" aria-label="Ver proceso de ${p.title}" type="button">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="10"/>
-          <polyline points="12 8 12 12 14 14"/>
-        </svg>
-        <span class="card-btn-text">${LangSwitcher.t('projects.process')}</span>
-      </button>
+      <div class="card-body">
+        <div class="card-tags">${tagsHTML}</div>
+        <h3 class="card-title">${p.title}</h3>
+        <p class="card-description">${p.description}</p>
+        <div class="card-links">
+          ${liveBtn}
+          ${repoBtn}
+          ${privateNote}
+          <button class="card-btn card-btn--process" aria-label="Ver proceso de ${p.title}" type="button">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 8 12 12 14 14"/>
+            </svg>
+            <span class="card-btn-text">${LangSwitcher.t('projects.process')}</span>
+          </button>
+        </div>
+      </div>
     </div>
   `;
 
@@ -442,6 +442,11 @@ function _buildLabCard(p) {
 
 function _getModeEmoji(mode) {
   return { dev: '💻', ia: '🤖', sec: '🔒' }[mode] || '📁';
+}
+
+function _buildCardPlaceholder(p) {
+  const t = (p.title || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return `<div class="card-image-placeholder" aria-hidden="true"><span class="cph__bg-text">${t}</span></div>`;
 }
 
 /* ────────────────────────────────────────────────────

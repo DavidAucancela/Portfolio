@@ -13,9 +13,12 @@
       "nginx",
       "Railway"
     ],
-    "image": "public/images/projects/artecuador/main.png",
+    "image": "public/images/projects/artecuador/artecuador-01.png",
     "images": [
-      "public/images/projects/artecuador/main.png"
+      "public/images/projects/artecuador/artecuador-01.png",
+      "public/images/projects/artecuador/artecuador-02.png",
+      "public/images/projects/artecuador/artecuador-03.png",
+      "public/images/projects/artecuador/artecuador-04.png"
     ],
     "liveUrl": "https://artecuador-production.up.railway.app/",
     "repoUrl": "https://github.com/DavidAucancela/ArtEcuador",
@@ -442,8 +445,10 @@
       "PostgreSQL",
       "ETL"
     ],
-    "image": null,
-    "images": [],
+    "image": "public/images/projects/equity/equity-01.jpeg",
+    "images": [
+      "public/images/projects/equity/equity-01.jpeg"
+    ],
     "liveUrl": null,
     "repoUrl": null,
     "featured": false,
@@ -732,8 +737,10 @@
       "Chart.js",
       "Datos Abiertos"
     ],
-    "image": null,
-    "images": [],
+    "image": "public/images/projects/conquito-fundaciones/conquito-01.jpeg",
+    "images": [
+      "public/images/projects/conquito-fundaciones/conquito-01.jpeg"
+    ],
     "liveUrl": null,
     "repoUrl": "https://github.com/DavidAucancela/Proyect_OpenLab",
     "featured": false,
@@ -809,7 +816,7 @@
   {
     "id": "project-013",
     "slug": "nunna",
-    "title": "Seres del Pase",
+    "title": "Nunna",
     "description": "Catálogo digital + experiencia inmersiva sobre los personajes tradicionales de los pases riobambeños — Diablo Huma, Curiquingue, Sacha Runa y más.",
     "longDescription": "Monorepo full-stack con Turborepo + pnpm workspaces. Next.js 15 como sitio público con SSR, NestJS como API de búsqueda semántica y webhooks, Directus como CMS headless para gestión del contenido cultural sin código, y Supabase (PostgreSQL + Prisma) como base de datos. Preservación digital del patrimonio intangible riobambeño.",
     "tags": [
@@ -819,9 +826,18 @@
       "Supabase",
       "Turborepo"
     ],
-    "image": null,
-    "images": [],
     "liveUrl": null,
+    "image": "public/images/projects/nunna/nunna-01.png",
+    "images": [
+      "public/images/projects/nunna/nunna-01.png",
+      "public/images/projects/nunna/nunna-02.png",
+      "public/images/projects/nunna/nunna-03.png",
+      "public/images/projects/nunna/nunna-04.png",
+      "public/images/projects/nunna/nunna-05.png",
+      "public/images/projects/nunna/nunna-06.png",
+      "public/images/projects/nunna/nunna-07.png",
+      "public/images/projects/nunna/nunna-08.png"
+    ],
     "repoUrl": "https://github.com/DavidAucancela/Nunna",
     "featured": false,
     "date": "2026-06",
@@ -924,8 +940,14 @@
       "ScrollTrigger",
       "Tone.js"
     ],
-    "image": null,
-    "images": [],
+    "image": "public/images/projects/dual-face/dual-face-01.png",
+    "images": [
+      "public/images/projects/dual-face/dual-face-01.png",
+      "public/images/projects/dual-face/dual-face-02.png",
+      "public/images/projects/dual-face/dual-face-03.png",
+      "public/images/projects/dual-face/dual-face-04.png",
+      "public/images/projects/dual-face/dual-face-05.png"
+    ],
     "liveUrl": null,
     "repoUrl": "https://github.com/DavidAucancela/DualFace",
     "featured": false,
@@ -1022,8 +1044,21 @@
     "description": "Portfolio personal con tres modos de presentación (dev / ia / sec), canvas de partículas por modo, asistente de IA integrado con embeddings semánticos y galería fullscreen de proyectos.",
     "longDescription": "Sitio web de una sola página construido con HTML5, CSS3 y JavaScript vanilla (ES modules) bundleado con Vite. El sistema trimodal cambia contenido, paleta de colores y animaciones según el perfil seleccionado: desarrollador, IA o ciberseguridad. Incluye un widget de IA (JotAI) con búsqueda semántica usando MiniLM via Web Worker, Command Palette estilo VS Code, terminal interactiva en modo .sec y scroll-driven animations.",
     "tags": ["HTML5", "CSS3", "JavaScript", "Vite", "Vercel"],
-    "image": null,
-    "images": [],
+    "image": "public/images/projects/portfolio/portfolio-01.png",
+    "images": [
+      "public/images/projects/portfolio/portfolio-01.png",
+      "public/images/projects/portfolio/portfolio-02.png",
+      "public/images/projects/portfolio/portfolio-03.png",
+      "public/images/projects/portfolio/portfolio-04.png",
+      "public/images/projects/portfolio/portfolio-05.png",
+      "public/images/projects/portfolio/portfolio-06.png",
+      "public/images/projects/portfolio/portfolio-07.png",
+      "public/images/projects/portfolio/portfolio-08.png",
+      "public/images/projects/portfolio/portfolio-09.png",
+      "public/images/projects/portfolio/portfolio-10.png",
+      "public/images/projects/portfolio/portfolio-11.png",
+      "public/images/projects/portfolio/portfolio-12.png"
+    ],
     "liveUrl": "https://davidaucancela.github.io/Portfolio/",
     "repoUrl": "https://github.com/DavidAucancela/Portfolio",
     "featured": true,

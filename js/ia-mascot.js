@@ -7,6 +7,7 @@
 
 import { IAAssistant } from './ia-assistant.js';
 import { IaTour }      from './ia-tour.js';
+import { IaBubble }    from './ia-bubble.js';
 
 /* ── CONFIGURACIÓN ────────────────────────────────────────────── */
 
@@ -430,6 +431,19 @@ export const IaMascot = (() => {
 
     document.body.appendChild(widget);
 
+    /* Globo de diálogo efímero anclado al trigger */
+    IaBubble.init(widget, {
+      onTalkStart: () => _setState('talking'),
+      onTalkEnd:   mood => {
+        if (mood && _ALL_STATES.includes(mood)) {
+          _setState(mood);
+          setTimeout(() => { if (!_isOpen) _setState('idle'); }, 1800);
+        } else {
+          _setState('idle');
+        }
+      },
+    });
+
     _panel   = widget.querySelector('#jotai-panel');
     _trigger = widget.querySelector('#jotai-trigger');
     _chat    = widget.querySelector('#jotai-chat');
@@ -472,6 +486,7 @@ export const IaMascot = (() => {
   function openPanel() {
     if (_isOpen) return;
     _isOpen = true;
+    IaBubble.clear(); // la conversación reemplaza a los globos
     _prevFocus = document.activeElement;
     _panel.hidden = false;
     _trigger.setAttribute('aria-expanded', 'true');
@@ -594,6 +609,7 @@ export const IaMascot = (() => {
 
   function _startTour() {
     closePanel();
+    IaBubble.clear();
     const mode = document.body.dataset.theme || 'dev';
     IaTour.start(mode, {
       onState: _setState,
@@ -712,13 +728,21 @@ export const IaMascot = (() => {
 
   const _ALL_STATES = ['idle','greeting','listening','thinking','talking','success','confused','pointing'];
 
-  // Mouth path por estado
-  const _MOUTH = {
+  // Mouth path por estado — coordenadas distintas según el render activo
+  // (en modo image la boca está en la pantalla del robot, y≈56)
+  const _MOUTH_VECTOR = {
     success:  'M85 138 Q100 156 115 138',
     confused: 'M93 144 Q100 139 107 144',
     thinking: 'M93 143 L107 143',
     _default: 'M89 141 Q100 150 111 141',
   };
+  const _MOUTH_IMAGE = {
+    success:  'M88 53 Q100 65 112 53',
+    confused: 'M94 59 Q100 55 106 59',
+    thinking: 'M94 57 L106 57',
+    _default: 'M91 56 Q100 62 109 56',
+  };
+  const _MOUTH = MASCOT_RENDER === 'image' ? _MOUTH_IMAGE : _MOUTH_VECTOR;
 
   function _blink(el) {
     if (_reduced || !el) return;
@@ -805,6 +829,18 @@ export const IaMascot = (() => {
     widget.querySelectorAll('.jotai-mouth-path').forEach(m => m.setAttribute('d', d));
   }
 
+  /* ── SPEECH BUBBLE (presencia proactiva) ───────────────────── */
+
+  /**
+   * Muestra un globo de diálogo efímero anclado al avatar.
+   * Suprimido si el panel de chat está abierto o el tour activo.
+   * opts: { duration, persist, mood, replace } — ver ia-bubble.js
+   */
+  function say(text, opts = {}) {
+    if (_isOpen || IaTour.isActive()) return false;
+    return IaBubble.say(text, opts);
+  }
+
   /* ── STATUS TEXT ────────────────────────────────────────────── */
 
   function _setStatus(text) {
@@ -840,7 +876,10 @@ export const IaMascot = (() => {
     _inject();
 
     // Inicializa boca en estado neutral al arrancar
-    setTimeout(() => _updateMouth('idle'), 0);
+    setTimeout(() => _setState('idle'), 0);
+
+    // Acceso desde consola para QA (solo en dev)
+    if (import.meta.env?.DEV) window.IaMascot = { say, openPanel, closePanel };
 
     // Cuando IAAssistant termina de cargar la KB → inicia el worker
     window.addEventListener('jotai:kb-ready', ({ detail }) => {
@@ -860,5 +899,5 @@ export const IaMascot = (() => {
     });
   }
 
-  return { init, openPanel, closePanel, setState: _setState };
+  return { init, openPanel, closePanel, setState: _setState, say };
 })();

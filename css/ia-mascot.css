@@ -198,6 +198,81 @@
 .is-pointing .jotai-ear-r { animation: none; transform: rotate(20deg) translateY(-4px); }
 .is-pointing .jotai-tilt  { transform: rotate(4deg); }
 
+/* ── SPEECH BUBBLE (globos efímeros) ──────────────────────────── */
+
+#jotai-bubble {
+  position: relative;
+  max-width: min(300px, calc(100vw - 2rem));
+  background: var(--bg-secondary, #1a1a2e);
+  border: 1px solid var(--color-accent, #06ffa5);
+  border-radius: 14px 14px 4px 14px;
+  padding: 0.625rem 1.75rem 0.625rem 0.875rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  box-shadow:
+    0 0 0 1px var(--color-accent-glow, rgba(6,255,165,0.12)),
+    0 6px 28px rgba(0,0,0,0.45);
+  opacity: 0;
+  transform: translateY(8px) scale(0.95);
+  transform-origin: bottom right;
+  transition: opacity 0.22s ease, transform 0.22s cubic-bezier(.3,.8,.3,1.15);
+}
+#jotai-bubble.is-visible { opacity: 1; transform: none; }
+#jotai-bubble[hidden]    { display: none; }
+
+/* Cola apuntando al avatar */
+#jotai-bubble::after {
+  content: '';
+  position: absolute;
+  right: 24px;
+  bottom: -7px;
+  width: 12px;
+  height: 12px;
+  transform: rotate(45deg);
+  background: inherit;
+  border-right: 1px solid var(--color-accent, #06ffa5);
+  border-bottom: 1px solid var(--color-accent, #06ffa5);
+}
+
+/* Caret parpadeante mientras escribe */
+.jotai-bubble__text.is-typing::after {
+  content: '▍';
+  margin-left: 1px;
+  color: var(--color-accent, #06ffa5);
+  animation: jotai-caret 0.8s steps(1) infinite;
+}
+@keyframes jotai-caret { 50% { opacity: 0; } }
+
+/* Texto completo para lectores de pantalla (visualmente oculto) */
+.jotai-bubble__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.jotai-bubble__close {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: color 0.2s;
+}
+.jotai-bubble__close:hover         { color: var(--text-primary); }
+.jotai-bubble__close:focus-visible { outline: 1px solid var(--color-accent); }
+
 /* ── PANEL ────────────────────────────────────────────────────── */
 
 #jotai-panel {
@@ -705,4 +780,7 @@
   .jotai-ear-l, .jotai-ear-r {
     transition: none !important;
   }
+  /* Globos: sin transición ni caret animado */
+  #jotai-bubble { transition: none !important; }
+  .jotai-bubble__text.is-typing::after { content: none; }
 }

@@ -504,10 +504,18 @@ export const IaMascot = (() => {
     }
 
     _setState('greeting');
-    _typewriterBotMessage(_getGreeting()).then(() => {
-      _setState('idle');
+    if (!_hasGreeted) {
+      // Primer encuentro en el chat — las aperturas siguientes conservan
+      // el historial y no re-saludan (la presencia ya la dan los globos)
+      _hasGreeted = true;
+      _typewriterBotMessage(_getGreeting()).then(() => {
+        _setState('idle');
+        _input.focus();
+      });
+    } else {
+      setTimeout(() => { if (_isOpen && _state === 'greeting') _setState('idle'); }, 900);
       _input.focus();
-    });
+    }
   }
 
   function closePanel() {
@@ -531,11 +539,7 @@ export const IaMascot = (() => {
   /* ── GREETING ───────────────────────────────────────────────── */
 
   function _getGreeting() {
-    if (!_hasGreeted) {
-      _hasGreeted = true;
-      return `¡Hola! Soy **${MASCOT_NAME}**, el asistente de Jonathan. Puedo contarte sobre sus proyectos, tecnologías y experiencia. ¿Qué quieres saber?`;
-    }
-    return `¡De vuelta! ¿En qué puedo ayudarte?`;
+    return `¡Hola! Soy **${MASCOT_NAME}**, el asistente de Jonathan. Puedo contarte sobre sus proyectos, tecnologías y experiencia. ¿Qué quieres saber?`;
   }
 
   /* ── MESSAGES ───────────────────────────────────────────────── */

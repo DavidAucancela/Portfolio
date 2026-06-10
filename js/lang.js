@@ -28,7 +28,7 @@ const TRANSLATIONS = {
     // About
     'about.label':    '// sobre mí',
     'about.title':    'Conóceme',
-    'about.cv':       'Descargar CV',
+    'about.cv':       'Ver mi CV',
     'about.connect':  'Conecta conmigo',
     'about.open':     'Siempre abierto a nuevas oportunidades, proyectos interesantes y colaboraciones de impacto real.',
     // Skills
@@ -120,7 +120,7 @@ const TRANSLATIONS = {
     // About
     'about.label':    '// about me',
     'about.title':    'Get to know me',
-    'about.cv':       'Download CV',
+    'about.cv':       'View my CV',
     'about.connect':  'Connect with me',
     'about.open':     'Always open to new opportunities, interesting projects and real-impact collaborations.',
     // Skills

@@ -2,6 +2,21 @@ import { ProjectDetail } from './project-detail.js';
 
 const MODE_EMOJI = { dev: '⚙️', ia: '🤖', sec: '🔒' };
 
+function _buildPgalPlaceholder(p) {
+  const esc  = s => (s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const title = esc(p?.title);
+  const desc  = esc(p?.description);
+  const tags  = (p?.tags || []).slice(0, 5).map(t => `<span class="tag">${esc(t)}</span>`).join('');
+  return `
+    <span class="pgal-ph__bg-text">${title}</span>
+    <div class="pgal-ph__content">
+      <h2 class="pgal-ph__title">${title}</h2>
+      ${desc ? `<p class="pgal-ph__desc">${desc}</p>` : ''}
+      ${tags ? `<div class="pgal-ph__tags">${tags}</div>` : ''}
+    </div>
+  `;
+}
+
 /* Encode each path segment to handle spaces and accented chars (é, ú, ñ…) */
 function _src(path) {
   return path.split('/').map(encodeURIComponent).join('/');
@@ -172,7 +187,7 @@ export const ProjectGallery = (() => {
     if (_images.length === 0) {
       img.style.display = 'none';
       ph.style.display  = 'flex';
-      ph.textContent    = MODE_EMOJI[_mode] || '📁';
+      ph.innerHTML      = _buildPgalPlaceholder(_p);
       document.getElementById('pgal-counter').textContent = '';
       return;
     }
@@ -183,7 +198,7 @@ export const ProjectGallery = (() => {
     img.onerror = () => {
       img.style.display = 'none';
       ph.style.display  = 'flex';
-      ph.textContent    = MODE_EMOJI[_mode] || '📁';
+      ph.innerHTML      = _buildPgalPlaceholder(_p);
     };
     img.style.display = '';
     ph.style.display  = 'none';

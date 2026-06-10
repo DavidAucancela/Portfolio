@@ -1022,6 +1022,10 @@ export const IaMascot = (() => {
       }
     });
 
+    // El modo inicial no saluda (ThemeSwitcher emite modeChange al cargar
+    // y pisaría al globo de bienvenida)
+    _greetedModes.add(document.body.dataset.theme || localStorage.getItem('portfolio-mode') || 'dev');
+
     // Cambio de modo: cierra el panel + saludo temático (1× por modo)
     window.addEventListener('portfolio:modeChange', ({ detail }) => {
       if (_isOpen) closePanel();
@@ -1035,7 +1039,8 @@ export const IaMascot = (() => {
     });
 
     // Command palette: la palette cubre al globo → atención silenciosa
-    window.addEventListener('command-palette:open', () => {
+    // ('opened' es la notificación; 'open' es el canal para abrirla)
+    window.addEventListener('command-palette:opened', () => {
       IaBubble.dismiss();
       if (_isOpen || IaTour.isActive()) return;
       _setState('listening');

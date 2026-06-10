@@ -75,7 +75,7 @@
 }
 
 .is-peeking #jotai-trigger .jotai-mascot {
-  transform: scale(2.6) translateY(32%);
+  transform: scale(3.3) translateY(33%);
 }
 
 /* En el close-up la aura y los motes escalados estorban */
@@ -302,6 +302,9 @@
 .jotai-bubble__close:focus-visible { outline: 1px solid var(--color-accent); }
 
 /* ── PANEL ────────────────────────────────────────────────────── */
+
+/* El display:flex del ID le gana al [hidden] del UA stylesheet */
+#jotai-panel[hidden] { display: none; }
 
 #jotai-panel {
   width: 340px;

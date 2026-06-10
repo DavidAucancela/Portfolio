@@ -75,6 +75,9 @@ export const IaBubble = (() => {
     if (opts.replace) {
       _queue = [];
       _stopCurrent();
+      const old = _current;
+      _current = null;
+      old?.onHidden?.(); // el globo reemplazado también notifica su cierre
       _show(item);
       return true;
     }

@@ -306,6 +306,10 @@ export const ProjectGallery = (() => {
 
     _goTo(startIndex);
     setTimeout(() => document.getElementById('pgal-close')?.focus(), 50);
+
+    window.dispatchEvent(new CustomEvent('portfolio:projectOpen', {
+      detail: { project: p, mode },
+    }));
   }
 
   /* ── Close ── */
@@ -321,6 +325,10 @@ export const ProjectGallery = (() => {
       _keyHandler = null;
     }
     _prevFocus?.focus();
+
+    window.dispatchEvent(new CustomEvent('portfolio:projectClose', {
+      detail: { project: _p, mode: _mode },
+    }));
   }
 
   return { open, close };

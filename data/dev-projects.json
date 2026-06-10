@@ -1014,5 +1014,77 @@
         }
       ]
     }
+  },
+  {
+    "id": "project-016",
+    "slug": "portfolio-trimodal",
+    "title": "Portfolio Trimodal",
+    "description": "Portfolio personal con tres modos de presentación (dev / ia / sec), canvas de partículas por modo, asistente de IA integrado con embeddings semánticos y galería fullscreen de proyectos.",
+    "longDescription": "Sitio web de una sola página construido con HTML5, CSS3 y JavaScript vanilla (ES modules) bundleado con Vite. El sistema trimodal cambia contenido, paleta de colores y animaciones según el perfil seleccionado: desarrollador, IA o ciberseguridad. Incluye un widget de IA (JotAI) con búsqueda semántica usando MiniLM via Web Worker, Command Palette estilo VS Code, terminal interactiva en modo .sec y scroll-driven animations.",
+    "tags": ["HTML5", "CSS3", "JavaScript", "Vite", "Vercel"],
+    "image": null,
+    "images": [],
+    "liveUrl": "https://davidaucancela.github.io/Portfolio/",
+    "repoUrl": "https://github.com/DavidAucancela/Portfolio",
+    "featured": true,
+    "date": "2026-06",
+    "techStack": {
+      "frontend": ["HTML5", "CSS3", "JavaScript (ES Modules)"],
+      "build": ["Vite"],
+      "ia": ["Transformers.js", "MiniLM-L6-v2", "Web Worker", "IndexedDB"],
+      "deploy": ["Vercel", "GitHub Actions"]
+    },
+    "process": {
+      "overview": "Portfolio personal diseñado con un sistema trimodal que adapta visualmente todo el sitio (colores, animaciones, contenido) según el perfil de presentación activo: desarrollador, IA o ciberseguridad.",
+      "pasos": [
+        {
+          "id": "arquitectura",
+          "resumen": "Sistema trimodal y arquitectura de módulos",
+          "puntos": [
+            "Diseño del sistema de modos dev/ia/sec con CSS custom properties y data-theme en el body",
+            "Arquitectura de módulos ES6 con patrón IIFE: cada feature es un módulo independiente con API pública",
+            "Eventos custom (portfolio:modeChange) para coordinación entre módulos sin acoplamiento directo",
+            "Vite como bundler con plugin custom para copiar public/ → dist/public/"
+          ]
+        },
+        {
+          "id": "visual",
+          "resumen": "Efectos visuales y animaciones por modo",
+          "puntos": [
+            "Canvas de partículas en el hero adaptado por modo: nodos azules (.dev), neural teal (.ia), matrix ASCII (.sec)",
+            "SectionCanvas con el mismo sistema de partículas en cada sección de contenido",
+            "Scroll-driven animations con animation-timeline: view() + fallback IntersectionObserver",
+            "Section-divider interactivo con wire sparks al click y ambient particles"
+          ]
+        },
+        {
+          "id": "ia",
+          "resumen": "Asistente JotAI con búsqueda semántica",
+          "puntos": [
+            "Widget flotante JotAI con SVG animado (parpadeo, mirada errante, cursor tracking, 8 estados)",
+            "Motor NLP híbrido: búsqueda por keywords (síncrona) + embeddings MiniLM-L6-v2 via Web Worker",
+            "Cache de embeddings en IndexedDB con hash FNV-1a para invalidación automática",
+            "Knowledge base dinámica construida desde los JSONs de proyectos y skills en runtime"
+          ]
+        },
+        {
+          "id": "ux",
+          "resumen": "UX avanzada y features complementarios",
+          "puntos": [
+            "Command Palette (Cmd+K) con 21 comandos, búsqueda fuzzy y navegación por teclado",
+            "Terminal interactiva en modo .sec con boot sequence, historial y 8 comandos",
+            "Gallery fullscreen con filmstrip, swipe táctil, modo docs (PDF inline) y panel de detalle de proceso",
+            "Internacionalización ES/EN con LangSwitcher y keys data-i18n"
+          ]
+        }
+      ],
+      "resultado": "Portfolio en producción con deploy automático en Vercel vía GitHub Actions. Sistema trimodal completamente funcional con asistente de IA, galería de proyectos y experiencia de usuario diferenciada por perfil.",
+      "metricas": [
+        { "label": "Módulos JS", "value": "18" },
+        { "label": "Modos", "value": "3" },
+        { "label": "Proyectos", "value": "20+" },
+        { "label": "Deploy", "value": "Vercel" }
+      ]
+    }
   }
 ]

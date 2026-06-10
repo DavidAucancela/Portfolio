@@ -60,6 +60,7 @@ const SLUG_MAP = {
   'project-013': 'nunna',
   'project-014': 'dualface',
   'project-015': 'codereviewx',
+  'project-016': 'portfolio-trimodal',
 };
 
 /* ────────────────────────────────────────────────────

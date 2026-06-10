@@ -56,6 +56,34 @@
   50%       { transform: translateY(-7px); }
 }
 
+/* ── PEEK DE ENTRADA (solo cabeza) ───────────────────────────── */
+/* Encuadre del MISMO SVG: zoom hacia la cabeza del robot
+   (centro de cabeza ≈ y36 del viewBox 200×200) + slide-up de entrada */
+
+#jotai-trigger .jotai-mascot {
+  transition: transform 0.5s cubic-bezier(.3,.8,.3,1.1);
+}
+
+.is-peeking #jotai-trigger {
+  overflow: hidden;
+  animation: jotai-peek-in 0.65s cubic-bezier(.2,.9,.3,1.15) both;
+}
+
+@keyframes jotai-peek-in {
+  from { transform: translateY(140%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+.is-peeking #jotai-trigger .jotai-mascot {
+  transform: scale(2.6) translateY(32%);
+}
+
+/* En el close-up la aura y los motes escalados estorban */
+.is-peeking .jotai-aura,
+.is-peeking .jotai-motes,
+.is-peeking .jotai-motes-2 { opacity: 0; }
+.jotai-aura, .jotai-motes, .jotai-motes-2 { transition: opacity 0.35s ease; }
+
 /* ── MASCOT SVG — vida continua ───────────────────────────────── */
 
 /* El SVG completo */
@@ -783,4 +811,7 @@
   /* Globos: sin transición ni caret animado */
   #jotai-bubble { transition: none !important; }
   .jotai-bubble__text.is-typing::after { content: none; }
+  /* Peek de entrada: sin slide ni zoom (JS tampoco lo activa) */
+  .is-peeking #jotai-trigger { animation: none !important; }
+  #jotai-trigger .jotai-mascot { transition: none !important; }
 }

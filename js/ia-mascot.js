@@ -272,6 +272,10 @@ function _buildSVGVector(prefix) {
 
 const SEMANTIC_THRESHOLD = 0.32; // score mínimo para aceptar resultado semántico
 
+/* Bienvenida de entrada — 1× por sesión */
+const WELCOME_TEXT = '¡Bienvenido! Soy JotAI y estoy aquí para guiarte.';
+const WELCOME_KEY  = 'jotai-welcomed';
+
 export const IaMascot = (() => {
   /* UI refs */
   let _panel      = null;
@@ -487,6 +491,7 @@ export const IaMascot = (() => {
     if (_isOpen) return;
     _isOpen = true;
     IaBubble.clear(); // la conversación reemplaza a los globos
+    _unpeek();
     _prevFocus = document.activeElement;
     _panel.hidden = false;
     _trigger.setAttribute('aria-expanded', 'true');
@@ -829,6 +834,38 @@ export const IaMascot = (() => {
     widget.querySelectorAll('.jotai-mouth-path').forEach(m => m.setAttribute('d', d));
   }
 
+  /* ── ENTRADA: peek "solo cabeza" + bienvenida (1×/sesión) ──── */
+
+  function _unpeek() {
+    document.getElementById('jotai-widget')?.classList.remove('is-peeking');
+  }
+
+  function _entrance() {
+    let welcomed = false;
+    try { welcomed = !!sessionStorage.getItem(WELCOME_KEY); } catch { /* privado */ }
+    if (welcomed) return;
+    try { sessionStorage.setItem(WELCOME_KEY, '1'); } catch { /* privado */ }
+
+    // Reduced motion: sin peek ni slide — solo el globo con texto instantáneo
+    if (_reduced) {
+      setTimeout(() => say(WELCOME_TEXT, { duration: 5000 }), 800);
+      return;
+    }
+
+    // Peek inmediato (la clase se aplica antes del primer paint → sin flash)
+    document.getElementById('jotai-widget')?.classList.add('is-peeking');
+
+    // Espera al slide-up antes de hablar
+    setTimeout(() => {
+      const ok = say(WELCOME_TEXT, {
+        duration: 4500,
+        mood:     'greeting',
+        onHidden: _unpeek, // al ocultarse el globo → encuadre normal + idle
+      });
+      if (!ok) _unpeek(); // panel/tour abiertos → aborta el peek
+    }, 900);
+  }
+
   /* ── SPEECH BUBBLE (presencia proactiva) ───────────────────── */
 
   /**
@@ -877,6 +914,9 @@ export const IaMascot = (() => {
 
     // Inicializa boca en estado neutral al arrancar
     setTimeout(() => _setState('idle'), 0);
+
+    // Secuencia de entrada: peek + globo de bienvenida (1× por sesión)
+    _entrance();
 
     // Acceso desde consola para QA (solo en dev)
     if (import.meta.env?.DEV) window.IaMascot = { say, openPanel, closePanel };

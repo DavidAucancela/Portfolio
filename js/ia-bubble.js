@@ -5,7 +5,7 @@
  *
  * API:
  *   IaBubble.init(container, hooks)  — hooks: { onTalkStart, onTalkEnd(mood) }
- *   IaBubble.say(text, { duration, persist, mood, replace })
+ *   IaBubble.say(text, { duration, persist, mood, replace, onHidden })
  *   IaBubble.dismiss()  · IaBubble.clear()  · IaBubble.isVisible()
  */
 
@@ -69,6 +69,7 @@ export const IaBubble = (() => {
       duration: opts.duration ?? DEFAULT_DURATION,
       persist:  !!opts.persist,
       mood:     opts.mood || null,
+      onHidden: typeof opts.onHidden === 'function' ? opts.onHidden : null,
     };
 
     if (opts.replace) {
@@ -157,9 +158,11 @@ export const IaBubble = (() => {
   }
 
   function _hide() {
+    const item = _current;
     _current = null;
     _root.classList.remove('is-visible');
     const finish = () => {
+      item?.onHidden?.();
       if (_current) return; // ya hay otro globo mostrándose
       _root.hidden = true;
       _next();

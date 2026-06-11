@@ -241,7 +241,7 @@ function _renderPagination(totalPages, projects, mode) {
 }
 
 function _buildCard(p, mode) {
-  if (mode === 'sec' && p.lab) return _buildLabCard(p);
+  if (mode === 'sec') return p.lab ? _buildLabCard(p) : _buildSecDocCard(p);
 
   const card = document.createElement('article');
   card.className = `project-card project-card--fullbleed${p.featured ? ' project-card--featured' : ''}`;
@@ -441,6 +441,93 @@ function _buildLabCard(p) {
   return card;
 }
 
+/* Card .sec para prácticas y certificaciones (sin lab HTB) —
+   misma estructura visual que la lab card para que el grid quede uniforme */
+function _buildSecDocCard(p) {
+  const isCert    = (p.id || '').startsWith('cert-');
+  const typeLabel = LangSwitcher.t(isCert ? 'projects.cert' : 'projects.practice');
+  const color     = isCert ? '#ffce3d' : '#3da9fc';
+  const colorBg   = isCert ? 'rgba(255,206,61,0.08)' : 'rgba(61,169,252,0.08)';
+
+  const dateLabel = p.date
+    ? (() => {
+        const [y, m] = p.date.split('-');
+        const mes = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][parseInt(m,10)-1] || '';
+        return `${mes} ${y}`;
+      })()
+    : '';
+
+  const topicsHTML = (p.tags || [])
+    .map(t => `<span class="lab-technique">${t}</span>`)
+    .join('');
+
+  const featuredChip = p.featured
+    ? `<span class="lab-diff" style="color:#ffce3d; border-color:#ffce3d33;">★ ${LangSwitcher.t('projects.featured')}</span>`
+    : '';
+
+  const card = document.createElement('article');
+  card.className = 'project-card lab-card';
+  card.setAttribute('aria-label', `${p.title} — ${typeLabel}`);
+
+  card.innerHTML = `
+    <div class="lab-card-header" style="border-bottom: 1px solid var(--border-color);">
+      <div class="lab-platform-bar" style="background:${color};"></div>
+      <div class="lab-header-content">
+        <div class="lab-platform-badge" style="color:${color}; background:${colorBg};">
+          ${isCert
+            ? `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="6"/><path d="M15.5 13.5 17 22l-5-3-5 3 1.5-8.5"/></svg>`
+            : `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-4h6v4"/></svg>`
+          }
+          ${typeLabel}
+        </div>
+        <span class="lab-status">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#9fef00" stroke-width="3" aria-hidden="true">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          ${LangSwitcher.t('projects.completed')}
+        </span>
+      </div>
+    </div>
+
+    <div class="card-body" style="gap:0.6rem;">
+      <div class="lab-meta">
+        ${dateLabel ? `<span class="lab-os">📅 ${dateLabel}</span>` : ''}
+        ${featuredChip}
+      </div>
+
+      <h3 class="card-title" style="font-size:1.25rem; letter-spacing:0.02em;">${p.title}</h3>
+
+      <p class="card-description">${p.description}</p>
+
+      <div class="lab-techniques">
+        <span class="lab-techniques-label">${LangSwitcher.t('projects.topics')}</span>
+        ${topicsHTML}
+      </div>
+    </div>
+
+    <div class="card-links" style="justify-content:center; gap:0.5rem;">
+      <span class="lab-pwned-badge" style="color:${color}; border-color:${color}4d; background:${colorBg};">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        ${LangSwitcher.t(isCert ? 'projects.certified' : 'projects.completed')}
+      </span>
+      <button class="card-btn card-btn--process" aria-label="Ver detalle de ${p.title}" type="button">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        <span class="card-btn-text">${LangSwitcher.t(isCert ? 'projects.certificate' : 'projects.process')}</span>
+      </button>
+    </div>
+  `;
+
+  _addTiltEffect(card);
+  _addDetailClick(card, p);
+  return card;
+}
+
 function _getModeEmoji(mode) {
   return { dev: '💻', ia: '🤖', sec: '🔒' }[mode] || '📁';
 }
@@ -559,20 +646,23 @@ window.addEventListener('portfolio:langChange', () => {
 window.addEventListener('portfolio:openProjectDetail', async e => {
   const { slug } = e.detail;
   let project = _allProjects.find(p => p.slug === slug);
+  let projectMode = currentMode;
 
-  /* Fallback: si no está en el modo actual, buscar en dev-projects.json */
+  /* Fallback: si no está en el modo actual, buscar en los JSON de los 3 modos */
   if (!project) {
-    try {
-      const res = await fetch('data/dev-projects.json');
-      if (res.ok) {
-        const devProjects = await res.json();
-        devProjects.forEach(p => { if (!p.slug && p.id) p.slug = SLUG_MAP[p.id] || null; });
-        project = devProjects.find(p => p.slug === slug);
-      }
-    } catch (_) {}
+    for (const m of ['dev', 'ia', 'sec']) {
+      try {
+        const res = await fetch(`data/${m}-projects.json`);
+        if (!res.ok) continue;
+        const list = await res.json();
+        list.forEach(p => { if (!p.slug && p.id) p.slug = SLUG_MAP[p.id] || null; });
+        project = list.find(p => p.slug === slug);
+        if (project) { projectMode = m; break; }
+      } catch (_) {}
+    }
   }
 
-  if (project) ProjectGallery.open(project, currentMode);
+  if (project) ProjectGallery.open(project, projectMode);
 });
 
 /* ────────────────────────────────────────────────────

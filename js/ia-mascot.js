@@ -7,6 +7,7 @@
 
 import { IAAssistant } from './ia-assistant.js';
 import { IaTour }      from './ia-tour.js';
+import { IaBubble }    from './ia-bubble.js';
 
 /* ── CONFIGURACIÓN ────────────────────────────────────────────── */
 
@@ -271,6 +272,30 @@ function _buildSVGVector(prefix) {
 
 const SEMANTIC_THRESHOLD = 0.32; // score mínimo para aceptar resultado semántico
 
+/* Bienvenida de entrada — 1× por sesión */
+const WELCOME_TEXT = '¡Bienvenido! Soy JotAI y estoy aquí para guiarte.';
+const WELCOME_KEY  = 'jotai-welcomed';
+
+/* Nudges contextuales — sutiles, con cooldown y presupuesto por sesión */
+const NUDGE_DWELL_MS    = 8000;   // tiempo en una sección antes del tip
+const NUDGE_COOLDOWN_MS = 45000;  // silencio mínimo entre globos (global)
+const NUDGE_MAX_SESSION = 3;      // tope de nudges por sesión
+const NUDGE_SEEN_KEY    = 'jotai-nudge-seen';
+const NUDGE_COUNT_KEY   = 'jotai-nudge-count';
+
+const SECTION_TIPS = {
+  about:    '¿Quieres el resumen rápido del perfil? Haz clic en mí y pregúntame.',
+  projects: 'Haz clic en cualquier card para ver el proceso completo del proyecto.',
+  skills:   'Pregúntame por cualquier tecnología y te digo dónde la usó Jonathan.',
+  contact:  '¿Un proyecto en mente? El formulario llega directo a Jonathan.',
+};
+
+const MODE_HELLO = {
+  dev: 'Modo .dev — sistemas full-stack en producción.',
+  ia:  'Modo .ia — proyectos con LLMs, RAG y embeddings.',
+  sec: 'Modo .sec — labs de HackTheBox y seguridad.',
+};
+
 export const IaMascot = (() => {
   /* UI refs */
   let _panel      = null;
@@ -430,6 +455,19 @@ export const IaMascot = (() => {
 
     document.body.appendChild(widget);
 
+    /* Globo de diálogo efímero anclado al trigger */
+    IaBubble.init(widget, {
+      onTalkStart: () => _setState('talking'),
+      onTalkEnd:   mood => {
+        if (mood && _ALL_STATES.includes(mood)) {
+          _setState(mood);
+          setTimeout(() => { if (!_isOpen) _setState('idle'); }, 1800);
+        } else {
+          _setState('idle');
+        }
+      },
+    });
+
     _panel   = widget.querySelector('#jotai-panel');
     _trigger = widget.querySelector('#jotai-trigger');
     _chat    = widget.querySelector('#jotai-chat');
@@ -472,6 +510,8 @@ export const IaMascot = (() => {
   function openPanel() {
     if (_isOpen) return;
     _isOpen = true;
+    IaBubble.clear(); // la conversación reemplaza a los globos
+    _unpeek();
     _prevFocus = document.activeElement;
     _panel.hidden = false;
     _trigger.setAttribute('aria-expanded', 'true');
@@ -484,10 +524,18 @@ export const IaMascot = (() => {
     }
 
     _setState('greeting');
-    _typewriterBotMessage(_getGreeting()).then(() => {
-      _setState('idle');
+    if (!_hasGreeted) {
+      // Primer encuentro en el chat — las aperturas siguientes conservan
+      // el historial y no re-saludan (la presencia ya la dan los globos)
+      _hasGreeted = true;
+      _typewriterBotMessage(_getGreeting()).then(() => {
+        _setState('idle');
+        _input.focus();
+      });
+    } else {
+      setTimeout(() => { if (_isOpen && _state === 'greeting') _setState('idle'); }, 900);
       _input.focus();
-    });
+    }
   }
 
   function closePanel() {
@@ -511,11 +559,7 @@ export const IaMascot = (() => {
   /* ── GREETING ───────────────────────────────────────────────── */
 
   function _getGreeting() {
-    if (!_hasGreeted) {
-      _hasGreeted = true;
-      return `¡Hola! Soy **${MASCOT_NAME}**, el asistente de Jonathan. Puedo contarte sobre sus proyectos, tecnologías y experiencia. ¿Qué quieres saber?`;
-    }
-    return `¡De vuelta! ¿En qué puedo ayudarte?`;
+    return `¡Hola! Soy **${MASCOT_NAME}**, el asistente de Jonathan. Puedo contarte sobre sus proyectos, tecnologías y experiencia. ¿Qué quieres saber?`;
   }
 
   /* ── MESSAGES ───────────────────────────────────────────────── */
@@ -594,15 +638,15 @@ export const IaMascot = (() => {
 
   function _startTour() {
     closePanel();
-    const mode = document.body.dataset.theme || 'dev';
-    IaTour.start(mode, {
+    IaBubble.clear();
+    IaTour.start({
       onState: _setState,
       onDone:  () => {
         _setState('idle');
         openPanel();
         setTimeout(() => {
           _setState('talking');
-          _typewriterBotMessage('¡Tour completado! ¿Tienes alguna pregunta sobre el portfolio?')
+          _typewriterBotMessage('¿Te quedó alguna duda del recorrido? Pregúntame por cualquier proyecto, tecnología o modo.')
             .then(() => { _setState('success'); setTimeout(() => _setState('idle'), 2000); });
         }, 300);
       },
@@ -712,13 +756,21 @@ export const IaMascot = (() => {
 
   const _ALL_STATES = ['idle','greeting','listening','thinking','talking','success','confused','pointing'];
 
-  // Mouth path por estado
-  const _MOUTH = {
+  // Mouth path por estado — coordenadas distintas según el render activo
+  // (en modo image la boca está en la pantalla del robot, y≈56)
+  const _MOUTH_VECTOR = {
     success:  'M85 138 Q100 156 115 138',
     confused: 'M93 144 Q100 139 107 144',
     thinking: 'M93 143 L107 143',
     _default: 'M89 141 Q100 150 111 141',
   };
+  const _MOUTH_IMAGE = {
+    success:  'M88 53 Q100 65 112 53',
+    confused: 'M94 59 Q100 55 106 59',
+    thinking: 'M94 57 L106 57',
+    _default: 'M91 56 Q100 62 109 56',
+  };
+  const _MOUTH = MASCOT_RENDER === 'image' ? _MOUTH_IMAGE : _MOUTH_VECTOR;
 
   function _blink(el) {
     if (_reduced || !el) return;
@@ -805,6 +857,120 @@ export const IaMascot = (() => {
     widget.querySelectorAll('.jotai-mouth-path').forEach(m => m.setAttribute('d', d));
   }
 
+  /* ── ENTRADA: peek "solo cabeza" + bienvenida (1×/sesión) ──── */
+
+  function _unpeek() {
+    document.getElementById('jotai-widget')?.classList.remove('is-peeking');
+  }
+
+  function _entrance() {
+    let welcomed = false;
+    try { welcomed = !!sessionStorage.getItem(WELCOME_KEY); } catch { /* privado */ }
+    if (welcomed) return;
+    try { sessionStorage.setItem(WELCOME_KEY, '1'); } catch { /* privado */ }
+
+    // Reduced motion: sin peek ni slide — solo el globo con texto instantáneo
+    if (_reduced) {
+      setTimeout(() => say(WELCOME_TEXT, { duration: 5000 }), 800);
+      return;
+    }
+
+    // Peek inmediato (la clase se aplica antes del primer paint → sin flash)
+    document.getElementById('jotai-widget')?.classList.add('is-peeking');
+
+    // Espera al slide-up antes de hablar
+    setTimeout(() => {
+      const ok = say(WELCOME_TEXT, {
+        duration: 4500,
+        mood:     'greeting',
+        onHidden: _unpeek, // al ocultarse el globo → encuadre normal + idle
+      });
+      if (!ok) _unpeek(); // panel/tour abiertos → aborta el peek
+    }, 900);
+  }
+
+  /* ── SPEECH BUBBLE (presencia proactiva) ───────────────────── */
+
+  /**
+   * Muestra un globo de diálogo efímero anclado al avatar.
+   * Suprimido si el panel de chat está abierto o el tour activo.
+   * opts: { duration, persist, mood, replace } — ver ia-bubble.js
+   */
+  function say(text, opts = {}) {
+    if (_isOpen || IaTour.isActive()) return false;
+    const ok = IaBubble.say(text, opts);
+    if (ok) _lastSayAt = Date.now();
+    return ok;
+  }
+
+  /* ── NUDGES CONTEXTUALES ───────────────────────────────────── */
+
+  let _lastSayAt    = 0;
+  const _greetedModes = new Set();
+  let _lastProject  = null;
+
+  /* Gallery, PDF modal y palette bloquean el scroll → el globo quedaría tapado */
+  function _overlayBlocked() {
+    return document.body.style.overflow === 'hidden';
+  }
+
+  /**
+   * Lanza un nudge si nada lo impide: panel/tour/overlay cerrados, sin globo
+   * activo, cooldown global cumplido, presupuesto de sesión disponible y
+   * `key` no usado antes en esta sesión.
+   */
+  function _maybeNudge(key, text, opts = {}) {
+    if (!text) return;
+    if (_isOpen || IaTour.isActive() || _overlayBlocked()) return;
+    if (IaBubble.isVisible()) return; // nunca encadenar globos
+    if (Date.now() - _lastSayAt < NUDGE_COOLDOWN_MS) return;
+
+    let seen = [], count = 0;
+    try {
+      seen  = JSON.parse(sessionStorage.getItem(NUDGE_SEEN_KEY) || '[]');
+      count = +sessionStorage.getItem(NUDGE_COUNT_KEY) || 0;
+    } catch { /* privado */ }
+    if (count >= NUDGE_MAX_SESSION || seen.includes(key)) return;
+
+    if (say(text, { duration: 6000, ...opts })) {
+      try {
+        sessionStorage.setItem(NUDGE_SEEN_KEY, JSON.stringify([...seen, key]));
+        sessionStorage.setItem(NUDGE_COUNT_KEY, String(count + 1));
+      } catch { /* privado */ }
+    }
+  }
+
+  /* Tip de sección tras permanecer NUDGE_DWELL_MS en ella.
+     Detección: banda central del viewport (rootMargin -40 %) — funciona
+     también con secciones más altas que la pantalla. */
+  function _initNudges() {
+    if (!('IntersectionObserver' in window)) return;
+    const sections = Object.keys(SECTION_TIPS)
+      .map(id => document.getElementById(id))
+      .filter(Boolean);
+    if (!sections.length) return;
+
+    let dwellTimer = null;
+    let currentId  = null;
+
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(en => {
+        const id = en.target.id;
+        if (en.isIntersecting) {
+          if (currentId === id) return;
+          currentId = id;
+          clearTimeout(dwellTimer);
+          dwellTimer = setTimeout(() => _maybeNudge(id, SECTION_TIPS[id]), NUDGE_DWELL_MS);
+        } else if (currentId === id) {
+          currentId = null;
+          clearTimeout(dwellTimer);
+        }
+      });
+    }, { rootMargin: '-40% 0px -40% 0px', threshold: 0 });
+
+    sections.forEach(s => io.observe(s));
+  }
+
   /* ── STATUS TEXT ────────────────────────────────────────────── */
 
   function _setStatus(text) {
@@ -840,7 +1006,13 @@ export const IaMascot = (() => {
     _inject();
 
     // Inicializa boca en estado neutral al arrancar
-    setTimeout(() => _updateMouth('idle'), 0);
+    setTimeout(() => _setState('idle'), 0);
+
+    // Secuencia de entrada: peek + globo de bienvenida (1× por sesión)
+    _entrance();
+
+    // Acceso desde consola para QA (solo en dev)
+    if (import.meta.env?.DEV) window.IaMascot = { say, openPanel, closePanel };
 
     // Cuando IAAssistant termina de cargar la KB → inicia el worker
     window.addEventListener('jotai:kb-ready', ({ detail }) => {
@@ -849,10 +1021,51 @@ export const IaMascot = (() => {
       }
     });
 
-    // Cierra panel al cambiar de modo
-    window.addEventListener('portfolio:modeChange', () => {
+    // El modo inicial no saluda (ThemeSwitcher emite modeChange al cargar
+    // y pisaría al globo de bienvenida)
+    _greetedModes.add(document.body.dataset.theme || localStorage.getItem('portfolio-mode') || 'dev');
+
+    // Cambio de modo: cierra el panel + saludo temático (1× por modo)
+    window.addEventListener('portfolio:modeChange', ({ detail }) => {
       if (_isOpen) closePanel();
+      // El tour cambia de modo por su cuenta: ni saludar ni gastar el 1× por modo
+      if (IaTour.isActive()) return;
+      const mode = detail?.mode;
+      if (!mode || !MODE_HELLO[mode] || _greetedModes.has(mode)) return;
+      _greetedModes.add(mode);
+      setTimeout(() => {
+        if (_isOpen || IaTour.isActive() || _overlayBlocked()) return;
+        say(MODE_HELLO[mode], { duration: 4000, replace: true });
+      }, 500);
     });
+
+    // Command palette: la palette cubre al globo → atención silenciosa
+    // ('opened' es la notificación; 'open' es el canal para abrirla)
+    window.addEventListener('command-palette:opened', () => {
+      IaBubble.dismiss();
+      if (_isOpen || IaTour.isActive()) return;
+      _setState('listening');
+      setTimeout(() => {
+        if (_state === 'listening' && !_isOpen) _setState('idle');
+      }, 2600);
+    });
+
+    // Gallery de proyecto: comentario corto al CERRAR (abierta tapa al globo)
+    window.addEventListener('portfolio:projectOpen', ({ detail }) => {
+      _lastProject = detail?.project || null;
+      IaBubble.dismiss();
+    });
+    window.addEventListener('portfolio:projectClose', () => {
+      const title = _lastProject?.title;
+      _lastProject = null;
+      if (!title) return;
+      setTimeout(() => {
+        _maybeNudge('project', `¿Te interesó ${title}? Abre el chat y pregúntame por su stack.`, { mood: 'success' });
+      }, 600);
+    });
+
+    // Tips contextuales por sección (dwell + cooldown + presupuesto)
+    _initNudges();
 
     // Termina el worker limpiamente al salir de la página
     window.addEventListener('beforeunload', () => {
@@ -860,5 +1073,5 @@ export const IaMascot = (() => {
     });
   }
 
-  return { init, openPanel, closePanel, setState: _setState };
+  return { init, openPanel, closePanel, setState: _setState, say };
 })();

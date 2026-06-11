@@ -64,6 +64,7 @@ js/
   section-nav.js              # Navegación lateral de secciones (dots laterales)
   ia-assistant.js             # IAAssistant — KB dinámica desde JSON + motor de query (keywords)
   ia-mascot.js                # IaMascot — widget JotAI: SVG vivo (blink/mirada/cursor), CSS states, worker
+  ia-bubble.js                # IaBubble — globos de diálogo efímeros: cola, typewriter, dismiss
   ia-worker.js                # Web Worker — embeddings MiniLM + IndexedDB cache + cosine ranking
   ia-tour.js                  # IaTour — tour guiado por secciones (4 pasos x modo dev/ia/sec)
   trajectory.js               # Trajectory — drawer de trayectoria profesional
@@ -119,6 +120,9 @@ window.dispatchEvent(new CustomEvent('portfolio:modeChange', { detail: { mode } 
 'portfolio:modeChange'      // cambio de modo (dev/ia/sec)
 'portfolio:syncTrayectoria' // abrir el panel de trayectoria
 'command-palette:open'      // abrir la Command Palette desde código
+'command-palette:opened'    // notificación: la palette se abrió (teclado/botón/evento)
+'portfolio:projectOpen'     // gallery de proyecto abierta  → detail: { project, mode }
+'portfolio:projectClose'    // gallery de proyecto cerrada → detail: { project, mode }
 ```
 
 **Scroll-driven Animations (`animations.css`):**
@@ -139,6 +143,9 @@ Los keyframes globales son: `sd-up`, `sd-left`, `sd-right`, `sd-scale`, `sd-bar`
 - Boot sequence animado la primera vez que se activa el modo
 - Comandos: `help`, `whoami`, `ls [projects]`, `cat <file>.md`, `ping linkedin`, `clear`, `exit`
 - Historial de comandos con ↑↓
+- `SecTerminal.demo(cmd)` — API pública: teclea el comando en el input real
+  (85ms/char; instantáneo con reduced-motion) y lo ejecuta. Sin uso actual
+  (el tour de JotAI la usó; quedó disponible)
 - El archivo `sec.css` oculta `#hero-bg-text` cuando el terminal está visible
 
 ## Secciones en index.html
@@ -322,7 +329,7 @@ Cuando `mode === 'sec'` y el proyecto tiene `docs[]`, la gallery entra en **docs
 ## PDF Modal (`pdf-modal.js` + `pdf-modal.css`)
 Visor inline de PDF — modal fullscreen que renderiza el documento en un `<iframe>` sin abrir nueva pestaña.
 
-- **API pública:** `PDFModal.init()` (llamado en `main.js`) · `PDFModal.open(url, label)`
+- **API pública:** `PDFModal.init()` (llamado en `main.js`) · `PDFModal.open(url, label)` · `PDFModal.close()`
 - **Trigger actual:** botón `#cv-open-btn` en la sección `#about` → `app.js` llama `PDFModal.open(...)`
 - **Header:** título del documento · botón `⬇ Descargar` (`<a download>`) · botón `✕` cerrar
 - **Cierre:** botón ✕ · tecla Esc · clic en el overlay oscuro
@@ -347,7 +354,7 @@ Visor inline de PDF — modal fullscreen que renderiza el documento en un `<ifra
 2. **URL canónica** — actualizar `<link rel="canonical">`, `og:url` y JSON-LD `url`
    en `index.html` con el dominio Vercel real (actualmente apunta a GitHub Pages)
 
-## JotAI — Mascot Widget (`ia-mascot.js` + `ia-mascot.css` + `ia-worker.js` + `ia-tour.js`)
+## JotAI — Mascot Widget (`ia-mascot.js` + `ia-bubble.js` + `ia-mascot.css` + `ia-worker.js` + `ia-tour.js`)
 
 Widget flotante `position: fixed; bottom: 1.5rem; right: 1.5rem` visible en **todos los modos**.
 Los colores heredan las CSS vars del tema activo (`--color-accent`, `--bg-secondary`, etc.)
@@ -358,10 +365,15 @@ Los colores heredan las CSS vars del tema activo (`--color-accent`, `--bg-second
 ```
 IaMascot.init()
   ├─ _inject()              → DOM del widget (2× SVG mascot + panel de chat)
+  ├─ IaBubble.init()        → globo de diálogo anclado al trigger (ia-bubble.js)
+  ├─ _entrance()            → peek "solo cabeza" + globo de bienvenida (1×/sesión)
   ├─ _startLife(svgEl)      → timers de parpadeo + mirada errante por instancia
   ├─ _initCursorTracking()  → pointermove en el panel → pupila sigue el cursor
+  ├─ _initNudges()          → tips por sección (IntersectionObserver + dwell)
   ├─ jotai:kb-ready event   → _initWorker(docs) → ia-worker.js
-  └─ portfolio:modeChange   → closePanel() si estaba abierto
+  ├─ portfolio:modeChange   → closePanel() + saludo temático (1× por modo)
+  ├─ command-palette:opened → estado listening (sin globo) + dismiss del globo
+  └─ portfolio:projectClose → comentario corto del proyecto (via _maybeNudge)
 
 IAAssistant.init()
   └─ _loadData()            → fetch 5 JSONs → _buildKB() → dispatch jotai:kb-ready
@@ -430,16 +442,55 @@ Los estados se aplican como clase `is-<estado>` al `#jotai-widget` — afecta **
 | `confused` | Sin resultado | Rotación 7°, oreja derecha 34°, qmark flotante |
 | `pointing` | Tour activo | Oreja derecha 20°, tilt 4° |
 
-Boca: un único `.jotai-mouth-path`; `d` cambia por `setAttribute` desde `_setState`:
-- `neutral` → `M89 141 Q100 150 111 141`
-- `success` → `M85 138 Q100 156 115 138`
-- `confused` → `M93 144 Q100 139 107 144`
-- `thinking` → `M93 143 L107 143`
+Boca: un único `.jotai-mouth-path`; `d` cambia por `setAttribute` desde `_setState`.
+Hay **dos juegos de coordenadas** según `MASCOT_RENDER` (`_MOUTH_IMAGE` con la boca
+en la pantalla del robot, y≈56 / `_MOUTH_VECTOR` para el blob, y≈141):
+- `neutral` → `M91 56 Q100 62 109 56` (image) / `M89 141 Q100 150 111 141` (vector)
+- `success`, `confused`, `thinking` — variantes en ambos juegos
 
 `prefers-reduced-motion`: CSS apaga `.jotai-aura`, `.jotai-motes`, `.jotai-creature`, `.jotai-ear-l/r`
 y todos los keyframes de estado. JS no inicia los timers de vida. Transiciones suspendidas.
 
-### Panel de chat
+### Presencia proactiva — speech bubbles (`ia-bubble.js`)
+
+JotAI vive en la página y habla con **globos efímeros** anclados al trigger;
+el chat solo se abre al hacer clic en el avatar (conversación bajo demanda).
+
+**API:** `IaMascot.say(text, { duration, persist, mood, replace, onHidden })`
+- Globo único con cola FIFO (máx. 3 en espera); `replace: true` descarta todo y muestra el nuevo
+- Typewriter a 16ms/carácter con caret; instantáneo con `prefers-reduced-motion`
+- Dismiss: botón ✕, clic fuera, o auto-timeout (`duration`, default 4500ms; `persist` lo desactiva)
+- A11y: `role="status"` + texto completo en span `aria-live` oculto (el typewriter visible va `aria-hidden`)
+- Suprimido si el panel está abierto o `IaTour.isActive()`; `mood` final (success/confused/…) 1.8s → idle
+- En dev (`import.meta.env.DEV`): `window.IaMascot` expuesto para QA desde consola
+
+**Entrada — peek "solo cabeza" (1×/sesión, `sessionStorage('jotai-welcomed')`):**
+el trigger emerge con slide-up mostrando solo la cabeza del robot — clase `is-peeking`,
+zoom CSS del mismo SVG (`scale(3.3) translateY(33%)` + `overflow: hidden`, calibrar ahí) —
+y lanza el globo de bienvenida; al ocultarse el globo (`onHidden`) → encuadre normal + idle.
+Reduced motion: sin peek ni slide, globo con texto instantáneo.
+
+**Nudges contextuales (`_maybeNudge(key, text)`):** tip de sección tras **8s** de permanencia.
+Detección por banda central del viewport (`rootMargin: '-40% 0px -40% 0px'` — funciona con
+secciones más altas que la pantalla). Guardas anti-molestia:
+- Cooldown global **45s** entre globos (`_lastSayAt` — la bienvenida también cuenta)
+- Máx. **3 nudges/sesión** + 1 vez por `key` (sessionStorage `jotai-nudge-*`)
+- Nunca con globo visible, panel abierto, tour activo u overlay
+  (`body.style.overflow === 'hidden'` — gallery, PDF modal y palette lo activan)
+
+**Reacciones a eventos:**
+- `portfolio:modeChange` → saludo temático del modo, 1× por modo y por carga;
+  el modo **inicial no saluda** (ThemeSwitcher emite modeChange al cargar)
+- `command-palette:opened` → estado `listening` 2.6s sin globo + dismiss del activo
+- `portfolio:projectOpen/Close` (emitidos por ProjectGallery) → comentario corto
+  **al cerrar** la gallery (abierta tapa al globo: z 9990 > widget 9940)
+
+### Panel de chat (bajo demanda)
+
+Se abre **solo al hacer clic en el avatar**. El saludo se escribe únicamente en la
+**primera apertura**; las siguientes conservan el historial y enfocan el input directo.
+Nota CSS: `#jotai-panel[hidden] { display: none; }` es necesario — el `display: flex`
+del ID le gana al `[hidden]` del UA stylesheet.
 
 **Entrada:** campo de texto libre con placeholder. Sin chips de sugerencias predefinidas.
 
@@ -455,7 +506,7 @@ y todos los keyframes de estado. JS no inicia los timers de vida. Transiciones s
 
 | Tipo de respuesta | Modo de renderizado |
 |------------------|---------------------|
-| Saludo de bienvenida | Typewriter → `idle` + focus al terminar |
+| Saludo (solo 1ª apertura) | Typewriter → `idle` + focus al terminar |
 | Intent especial (perfil, listas, contacto) | Typewriter → `success` |
 | Tarjeta proyecto / skill (HTML rico) | HTML instantáneo → `success` |
 | Sin resultado | Typewriter → `confused` |
@@ -478,12 +529,27 @@ La KB se construye dinámicamente en `ia-assistant.js`:
 - Docs `project` y `skill` tienen campo `text` para embedding
 - Se emite `jotai:kb-ready` con los docs embeddables cuando la carga termina
 
-### Tour guiado (`ia-tour.js`)
-- 4 pasos por modo con contenido adaptado (dev/ia/sec)
-- Sección destacada con `outline` vía clase `.jotai-tour-target`
-- Scroll a la sección con `behavior: 'smooth'` (o `'instant'` si `prefers-reduced-motion`)
-- Navegación: botones ← Anterior / Siguiente → / ✕ Saltar + teclas ← → Esc
-- Botón "Tour 🗺" siempre visible en el header del panel; al finalizar el tour JotAI reabre el panel
+### Tour guiado (`ia-tour.js`) — trayectoria + los 3 MODOS
+5 pasos globales (no por modo): los pasos de modo **cambian de modo de verdad**
+(`ThemeSwitcher.switchMode`) y muestran el grid de proyectos de ese modo:
+
+| Paso | Modo | Demo |
+|------|------|------|
+| 1 | actual | Drawer de trayectoria — transversal, sin cambio de modo (evento `portfolio:syncTrayectoria`; cierra con clic en `#jonathan-panel-close`) |
+| 2 | `.dev` | Scroll a `#projects` + highlight del grid (proyectos full-stack) |
+| 3 | `.ia`  | Scroll a `#projects` + highlight del grid (proyectos de IA) |
+| 4 | `.sec` | Scroll a `#projects` + highlight del grid (labs y writeups) |
+| 5 | —      | Cierre: **restaura el modo inicial** del usuario + invita al chat |
+
+- API: `IaTour.start({ onState, onDone })` (acepta el legacy `start(mode, opts)`)
+- Saltar/Esc en cualquier paso → cierra la demo activa y restaura el modo inicial
+- Demos asíncronas con token (`_seq`): cambiar de paso rápido no deja callbacks zombis
+  (espera `MODE_SETTLE_MS = 650ms` tras cada switchMode)
+- **Sin velo**: las demos quedan interactivas; overlay en `z-index: 10600`
+  (sobre el PDF modal 10500) con `pointer-events: none` salvo el tooltip
+- El handler de teclado ignora eventos con foco en INPUT/TEXTAREA (la terminal usa Enter)
+- Los `modeChange` del tour no disparan el saludo temático de JotAI (`IaTour.isActive()`)
+- Botón "Tour 🗺" siempre visible en el header del panel; al finalizar JotAI reabre el panel
 
 ### IndexedDB cache de embeddings
 `ia-worker.js` almacena los vectores precomputados en IDB con clave = hash FNV-1a

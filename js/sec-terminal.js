@@ -76,6 +76,31 @@ export const SecTerminal = (() => {
     }, 120);
   }
 
+  /**
+   * Demo para el tour de JotAI: escribe `cmd` en el input real
+   * carácter a carácter y lo ejecuta como si lo tecleara el usuario.
+   */
+  function demo(cmd) {
+    const input = document.getElementById('sec-terminal-input');
+    if (!input || !cmd) return;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const run = () => {
+      input.value = '';
+      _printLine(`jonathan@sec:~$ ${cmd}`, 'cmd');
+      _history.unshift(cmd);
+      _handleCommand(cmd.toLowerCase());
+    };
+
+    if (reduced) { run(); return; }
+
+    let i = 0;
+    const iv = setInterval(() => {
+      if (i >= cmd.length) { clearInterval(iv); setTimeout(run, 350); return; }
+      input.value = cmd.slice(0, ++i);
+    }, 85);
+  }
+
   /* ── Entrada al modo .sec ─────────────────────────── */
   function _onEnterSec() {
     if (!_booted) {
@@ -270,5 +295,5 @@ export const SecTerminal = (() => {
     });
   }
 
-  return { init };
+  return { init, demo };
 })();

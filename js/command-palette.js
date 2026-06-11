@@ -196,6 +196,9 @@ function open() {
   _activeIdx = -1;
   _render('');
   requestAnimationFrame(() => _inputEl.focus());
+
+  // Notificación de apertura (cubre teclado, botón y evento)
+  window.dispatchEvent(new CustomEvent('command-palette:opened'));
 }
 
 function close() {

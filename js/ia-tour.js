@@ -1,8 +1,8 @@
 /**
  * ia-tour.js — Tour guiado de JotAI por los 3 MODOS del portfolio
  * Cada paso cambia de modo de verdad y demuestra una funcionalidad en vivo:
- *   .dev → drawer de trayectoria (navbar) · .ia → CV en el visor PDF inline
- *   .sec → terminal interactiva (auto-escribe un comando)
+ *   trayectoria (modo actual) → .dev grid de proyectos → .ia CV en visor
+ *   PDF inline → .sec terminal interactiva (auto-escribe un comando) → cierre.
  * Al terminar (o saltar) se restaura el modo que tenía el usuario.
  *
  * API: IaTour.start({ onState, onDone }) · IaTour.isActive()
@@ -21,21 +21,34 @@ const DEMO_CMD       = 'whoami';
 
 const STEPS = [
   {
-    mode:   'dev',
-    icon:   '💼',
-    title:  'Modo .dev — Trayectoria',
-    text:   'Primer modo: desarrollo full-stack. La trayectoria completa de Jonathan ' +
-            '— formación, experiencia y proyectos — vive en este drawer, siempre a un clic en la navbar.',
+    mode:   null, // transversal: se muestra en el modo actual del usuario
+    icon:   '🧭',
+    title:  'Trayectoria',
+    text:   'La trayectoria completa de Jonathan — formación, experiencia y proyectos — ' +
+            'vive en este drawer, siempre a un clic en la navbar, en cualquier modo.',
     target: '.jonathan-panel__drawer',
     enter()  { window.dispatchEvent(new CustomEvent('portfolio:syncTrayectoria')); },
     exit()   { document.getElementById('jonathan-panel-close')?.click(); },
   },
   {
+    mode:   'dev',
+    icon:   '💼',
+    title:  'Modo .dev — Proyectos full-stack',
+    text:   'Primer modo: desarrollo. Sistemas en producción real — APIs REST, SaaS ' +
+            'multi-tenant, pipelines ETL. Haz clic en cualquier card para ver su proceso.',
+    target: '#projects',
+    enter(reduced) {
+      document.getElementById('projects')
+        ?.scrollIntoView({ behavior: reduced ? 'instant' : 'smooth', block: 'start' });
+    },
+    exit()   {},
+  },
+  {
     mode:   'ia',
     icon:   '📄',
     title:  'Modo .ia — CV sin descargas',
-    text:   'Segundo modo: IA aplicada. El CV se abre aquí mismo en un visor integrado ' +
-            '— sin descargar nada ni salir de la página.',
+    text:   'Segundo modo: IA aplicada (LLMs, RAG, embeddings). Y de paso: el CV se abre ' +
+            'aquí mismo en un visor integrado — sin descargar nada ni salir de la página.',
     target: null,
     enter() {
       const btn = document.getElementById('cv-open-btn');

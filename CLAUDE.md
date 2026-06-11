@@ -528,16 +528,17 @@ La KB se construye dinámicamente en `ia-assistant.js`:
 - Docs `project` y `skill` tienen campo `text` para embedding
 - Se emite `jotai:kb-ready` con los docs embeddables cuando la carga termina
 
-### Tour guiado (`ia-tour.js`) — recorre los 3 MODOS con demos en vivo
-4 pasos globales (no por modo): cada paso **cambia de modo de verdad**
-(`ThemeSwitcher.switchMode`) y abre una funcionalidad:
+### Tour guiado (`ia-tour.js`) — trayectoria + los 3 MODOS con demos en vivo
+5 pasos globales (no por modo): los pasos de modo **cambian de modo de verdad**
+(`ThemeSwitcher.switchMode`) y abren una funcionalidad:
 
 | Paso | Modo | Demo |
 |------|------|------|
-| 1 | `.dev` | Drawer de trayectoria (evento `portfolio:syncTrayectoria`; cierra con clic en `#jonathan-panel-close`) |
-| 2 | `.ia`  | CV en el visor PDF inline (`PDFModal.open/close`, url del dataset de `#cv-open-btn`) |
-| 3 | `.sec` | Terminal del hero — auto-escribe `whoami` (`SecTerminal.demo(cmd)`, espera 1.7s al boot) |
-| 4 | —      | Cierre: **restaura el modo inicial** del usuario + invita al chat |
+| 1 | actual | Drawer de trayectoria — transversal, sin cambio de modo (evento `portfolio:syncTrayectoria`; cierra con clic en `#jonathan-panel-close`) |
+| 2 | `.dev` | Scroll a `#projects` + highlight del grid de proyectos full-stack |
+| 3 | `.ia`  | CV en el visor PDF inline (`PDFModal.open/close`, url del dataset de `#cv-open-btn`) |
+| 4 | `.sec` | Terminal del hero — auto-escribe `whoami` (`SecTerminal.demo(cmd)`, espera 1.7s al boot) |
+| 5 | —      | Cierre: **restaura el modo inicial** del usuario + invita al chat |
 
 - API: `IaTour.start({ onState, onDone })` (acepta el legacy `start(mode, opts)`)
 - Saltar/Esc en cualquier paso → cierra la demo activa y restaura el modo inicial

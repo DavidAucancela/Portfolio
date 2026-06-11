@@ -1,8 +1,11 @@
 /**
  * ia-mascot.js — JotAI widget flotante
- * Fase 2 v2: conversación en texto libre + typewriter effect
- * Fase 1 v2: mascot vivo (blink, look-around, cursor tracking, CSS states)
- * Fase 3:    motor de embeddings via Web Worker (@huggingface/transformers)
+ * Presencia: speech bubbles efímeras (ia-bubble.js) — entrada con peek
+ *            "solo cabeza" + bienvenida 1×/sesión, nudges contextuales
+ *            con cooldown y reacciones a eventos del portfolio.
+ * Conversación: panel de chat bajo demanda (clic en el avatar) con
+ *            typewriter y motor de embeddings via Web Worker (ia-worker.js).
+ * Vida: blink, mirada errante, cursor tracking y 8 estados CSS.
  */
 
 import { IAAssistant } from './ia-assistant.js';

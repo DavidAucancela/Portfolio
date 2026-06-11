@@ -73,9 +73,9 @@ js/
   pdf-modal.js                # PDFModal — visor PDF inline (modal overlay con iframe)
 
 data/
-  dev-projects.json           # 7 proyectos del modo .dev (cargados con fetch en runtime)
-  ia-projects.json            # 6 proyectos del modo .ia (cargados con fetch en runtime)
-  sec-projects.json           # 7 proyectos del modo .sec (cargados con fetch en runtime)
+  dev-projects.json           # 11 proyectos del modo .dev (cargados con fetch en runtime)
+  ia-projects.json            # 7 proyectos del modo .ia (cargados con fetch en runtime)
+  sec-projects.json           # 7 proyectos del modo .sec (labs HTB + prácticas + certs)
   personal.json               # Bio, email, redes, timeline
   skills.json                 # Skills por categoría
 
@@ -164,7 +164,9 @@ const res = await fetch(`data/${mode}-projects.json`);
 const projects = await res.json();
 ```
 Los datos personales (`ABOUT_DATA`, `EXPERIENCE_DATA`, `SKILLS_DATA`) **sí están embebidos**
-como constantes en `sections.js`.
+como constantes en `sections.js`. `EXPERIENCE_DATA` alimenta el drawer de trayectoria
+(22 items: proyectos + prácticas + certificaciones); al agregar un proyecto a los JSON
+hay que añadirlo también ahí para que aparezca en la trayectoria.
 
 ### Campos de proyecto (estructura completa)
 ```json
@@ -203,16 +205,19 @@ paths con espacios o acentos antes de asignar a `img.src`. En HTML estático (`<
 el browser lo codifica solo, pero en JS hay que codificar manualmente.
 
 ## SLUG_MAP de proyectos (`projects.js`)
+Es un **fallback**: solo se aplica si el proyecto del JSON no trae `slug` explícito
+(`if (!p.slug && p.id) p.slug = SLUG_MAP[p.id]`). Ojo: `project-009` está reutilizado —
+en `dev-projects.json` trae `slug: 'artecuador'` explícito; el map lo resuelve a
+`marevitae` para `ia-projects.json`.
 ```js
-'project-001' → 'ubapp'
-'project-002' → 'ideancestral'
-'project-003' → 'anaos'
-'project-004' → 'equity'
-'project-005' → 'securabank'
-'project-006' → 'conquito-fundaciones'
-'project-007' → 'mapcriminals'
-'project-008' → 'llm-observatory'
-'project-010' → 'mindlog'        ← solo en ia-projects.json
+'project-001' → 'ubapp'              'project-009' → 'marevitae'
+'project-002' → 'ideancestral'       'project-010' → 'mindlog'
+'project-003' → 'anaos'              'project-011' → 'whatsapp-ai-agent'
+'project-004' → 'equity'             'project-012' → 'gesture-control'
+'project-005' → 'securabank'         'project-013' → 'nunna'
+'project-006' → 'conquito-fundaciones' 'project-014' → 'dualface'
+'project-007' → 'mapcriminals'       'project-015' → 'codereviewx'
+'project-008' → 'llm-observatory'    'project-016' → 'portfolio-trimodal'
 ```
 
 ## Fondos dinámicos de sección — `SectionCanvas` (`effects.js`)
@@ -525,7 +530,7 @@ Estado `talking` activo mientras el typewriter escribe (boca se mueve en CSS).
 ### Knowledge Base
 La KB se construye dinámicamente en `ia-assistant.js`:
 - `_buildKB()` → fetcha `personal.json`, `dev-projects.json`, `ia-projects.json`,
-  `sec-projects.json`, `skills.json` → 20 proyectos + 29 skills + 2 docs especiales
+  `sec-projects.json`, `skills.json` → 25 proyectos + 29 skills + 2 docs especiales
 - Docs `project` y `skill` tienen campo `text` para embedding
 - Se emite `jotai:kb-ready` con los docs embeddables cuando la carga termina
 

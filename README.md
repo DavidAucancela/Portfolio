@@ -46,7 +46,7 @@ Los proyectos se cargan con `fetch` desde JSON en runtime:
 
 | Archivo | Modo | Proyectos |
 |---------|------|-----------|
-| `data/dev-projects.json` | `.dev` | ArtEcuador, Ideancestral, MapCriminals, Notes App, Equity, SecuraBank, Gesture Control, ConQuito, Seres del Pase, DualFace |
+| `data/dev-projects.json` | `.dev` | ArtEcuador, Ideancestral, MapCriminals, Notes App, Equity, SecuraBank, Gesture Control, ConQuito, Nunna, DualFace, Portfolio Trimodal |
 | `data/ia-projects.json` | `.ia` | LLM Observatory, UBApp, MindLog, Mare Vitae, Social Media AI Agent, AnaOS, CodeReviewX |
 | `data/sec-projects.json` | `.sec` | Labs HTB + prácticas profesionales + certificaciones |
 
@@ -54,7 +54,8 @@ Los proyectos se cargan con `fetch` desde JSON en runtime:
 
 ## Funcionalidades
 
-- **JotAI** — mascot flotante con chat inteligente, búsqueda semántica con `Xenova/all-MiniLM-L6-v2` (Web Worker + IndexedDB cache) y tour guiado por secciones
+- **JotAI** — mascot flotante que vive en la página: emerge al cargar con un globo de bienvenida (speech bubbles efímeras con typewriter), lanza tips contextuales por sección con cooldown, y abre el chat inteligente al hacer clic — búsqueda semántica con `Xenova/all-MiniLM-L6-v2` (Web Worker + IndexedDB cache)
+- **Tour guiado** — recorre la trayectoria y los 3 modos cambiándolos en vivo (cada uno muestra sus proyectos); al terminar restaura el modo inicial
 - **Command Palette** (`Cmd+K`) — 21 comandos en 4 grupos: navegación, modo, proyectos, acciones
 - **Project Gallery** — galería fullscreen con filmstrip, navegación táctil y panel de proceso detallado
 - **SecTerminal** — terminal interactiva en modo `.sec` con boot sequence y comandos (`help`, `whoami`, `ls`, `cat`, `ping`, `clear`)
@@ -94,10 +95,11 @@ js/
   projects.js           # Renderizado de tarjetas
   project-detail.js     # Panel lateral de detalle
   project-gallery.js    # Gallery fullscreen
-  ia-mascot.js          # JotAI widget
+  ia-mascot.js          # JotAI widget (presencia + chat)
+  ia-bubble.js          # Speech bubbles efímeras del mascot
   ia-assistant.js       # Motor NLP híbrido + KB dinámica
   ia-worker.js          # Web Worker: MiniLM + IndexedDB
-  ia-tour.js            # Tour guiado por secciones
+  ia-tour.js            # Tour: trayectoria + 3 modos en vivo
   command-palette.js    # Buscador global Cmd+K
   sec-terminal.js       # Terminal interactiva .sec
   pdf-modal.js          # Visor PDF inline

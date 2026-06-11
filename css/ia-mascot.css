@@ -668,25 +668,18 @@
 
 /* ── TOUR OVERLAY ─────────────────────────────────────────────── */
 
+/* Sin velo: las demos en vivo (trayectoria, PDF modal, terminal) quedan
+   visibles e interactivas. z-index sobre el PDF modal (10500). */
 #jotai-tour-overlay {
   display: none;        /* JS agrega .is-active */
   position: fixed;
   inset: 0;
-  z-index: 9935;
+  z-index: 10600;
   pointer-events: none;
 }
 
 #jotai-tour-overlay.is-active {
   display: block;
-}
-
-/* Velo semitransparente */
-#jotai-tour-veil {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.52);
-  pointer-events: all;
-  animation: jotai-msg-in 0.2s ease;
 }
 
 /* Tooltip del tour */

@@ -96,5 +96,5 @@ export const PDFModal = (() => {
     if (_prevFocus) _prevFocus.focus();
   }
 
-  return { init, open };
+  return { init, open, close };
 })();

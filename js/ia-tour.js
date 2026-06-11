@@ -1,95 +1,108 @@
 /**
- * ia-tour.js — Tour guiado de JotAI
- * Recorre las secciones del portfolio con tooltips y estado pointing.
- * Funciona en los 3 modos con contenido adaptado.
+ * ia-tour.js — Tour guiado de JotAI por los 3 MODOS del portfolio
+ * Cada paso cambia de modo de verdad y demuestra una funcionalidad en vivo:
+ *   .dev → drawer de trayectoria (navbar) · .ia → CV en el visor PDF inline
+ *   .sec → terminal interactiva (auto-escribe un comando)
+ * Al terminar (o saltar) se restaura el modo que tenía el usuario.
  *
- * API: IaTour.start(mode, { onState, onDone })
+ * API: IaTour.start({ onState, onDone }) · IaTour.isActive()
  */
 
-/* ── PASOS POR MODO ───────────────────────────────────────────── */
+import { ThemeSwitcher } from './theme-switcher.js';
+import { PDFModal }      from './pdf-modal.js';
+import { SecTerminal }   from './sec-terminal.js';
 
-const STEPS = {
-  dev: [
-    {
-      id:    'about',
-      title: 'Sobre Jonathan',
-      text:  'Perfil completo del desarrollador: experiencia, stats animados y CV descargable. Todo lo que necesitas saber.',
-    },
-    {
-      id:    'projects',
-      title: 'Proyectos .dev',
-      text:  'Sistemas full-stack en producción: APIs REST, SaaS multi-tenant, pipelines ETL y catálogos digitales.',
-    },
-    {
-      id:    'skills',
-      title: 'Stack técnico',
-      text:  'Angular, Vue, React, Django, Node.js, Docker, PostgreSQL... el stack completo con niveles reales.',
-    },
-    {
-      id:    'contact',
-      title: '¿Hablamos?',
-      text:  '¿Tienes un proyecto en mente? Escríbele aquí directamente o encuéntralo en GitHub y LinkedIn.',
-    },
-  ],
+const MODE_SETTLE_MS = 650;  // espera tras switchMode a que el DOM se re-renderice
+const DEMO_CMD       = 'whoami';
 
-  ia: [
-    {
-      id:    'about',
-      title: 'IA Aplicada',
-      text:  'Jonathan integra LLMs en producción real: RAG, embeddings vectoriales, pgvector y APIs de Claude y OpenAI.',
-    },
-    {
-      id:    'projects',
-      title: 'Proyectos IA',
-      text:  'LLM Observatory (monitoreo de Claude), UBApp (búsqueda semántica), MindLog (diario con RAG) y más.',
-    },
-    {
-      id:    'skills',
-      title: 'Stack de IA',
-      text:  'OpenAI API, Claude, embeddings, pgvector, RAG pipelines, FastAPI async y arquitecturas de agentes.',
-    },
-    {
-      id:    'contact',
-      title: '¿Integrar IA?',
-      text:  '¿Necesitas un asistente, búsqueda semántica o integración con LLMs? Jonathan puede construirlo.',
-    },
-  ],
+/* ── PASOS ────────────────────────────────────────────────────── */
+/* mode: null → el paso restaura el modo inicial del usuario
+   enter/exit: abre/cierra la demo · demo/demoDelay: acción retardada extra */
 
-  sec: [
-    {
-      id:    'about',
-      title: 'Security Researcher',
-      text:  'Prácticas en DETIC-ESPOCH, certificación Cisco NetAcad e IBM SkillsBuild. Security-by-design desde el primer commit.',
+const STEPS = [
+  {
+    mode:   'dev',
+    icon:   '💼',
+    title:  'Modo .dev — Trayectoria',
+    text:   'Primer modo: desarrollo full-stack. La trayectoria completa de Jonathan ' +
+            '— formación, experiencia y proyectos — vive en este drawer, siempre a un clic en la navbar.',
+    target: '.jonathan-panel__drawer',
+    enter()  { window.dispatchEvent(new CustomEvent('portfolio:syncTrayectoria')); },
+    exit()   { document.getElementById('jonathan-panel-close')?.click(); },
+  },
+  {
+    mode:   'ia',
+    icon:   '📄',
+    title:  'Modo .ia — CV sin descargas',
+    text:   'Segundo modo: IA aplicada. El CV se abre aquí mismo en un visor integrado ' +
+            '— sin descargar nada ni salir de la página.',
+    target: null,
+    enter() {
+      const btn = document.getElementById('cv-open-btn');
+      PDFModal.open(
+        btn?.dataset.pdfUrl   || 'public/Hoja%20de%20vida%20-%20Jonathan%20Aucancela.pdf',
+        btn?.dataset.pdfLabel || 'CV — Jonathan Aucancela'
+      );
     },
-    {
-      id:    'projects',
-      title: 'Writeups & Labs',
-      text:  'Máquinas de HackTheBox documentadas y proyectos con OWASP Top 10 implementado (JWT, bcrypt, CSRF, rate limiting).',
+    exit()   { PDFModal.close(); },
+  },
+  {
+    mode:   'sec',
+    icon:   '🖥️',
+    title:  'Modo .sec — Terminal interactiva',
+    text:   'Tercer modo: ciberseguridad. Esta terminal responde de verdad — escribí ' +
+            '`whoami` por ti; prueba también `help`, `ls projects` o `cat skills.md`.',
+    target: '#sec-terminal',
+    enter(reduced) {
+      document.getElementById('hero')
+        ?.scrollIntoView({ behavior: reduced ? 'instant' : 'smooth', block: 'start' });
     },
-    {
-      id:    'skills',
-      title: 'Herramientas',
-      text:  'Análisis de vulnerabilidades, pentesting ético, ISO 27001 y herramientas de seguridad ofensiva/defensiva.',
+    demo()     { SecTerminal.demo(DEMO_CMD); },
+    demoDelay: 1700, // espera al boot sequence de la terminal
+    exit()   {},
+  },
+  {
+    mode:   null,
+    icon:   '✨',
+    title:  '¡Tour completado!',
+    text:   'Esos son los 3 modos del portfolio. Te dejo donde empezaste — cámbialos ' +
+            'desde la navbar (.dev / .ia / .sec) y pregúntame lo que quieras en el chat.',
+    target: null,
+    enter(reduced) {
+      window.scrollTo({ top: 0, behavior: reduced ? 'instant' : 'smooth' });
     },
-    {
-      id:    'contact',
-      title: '¿Auditoría?',
-      text:  '¿Necesitas revisar la seguridad de un sistema? Aquí puedes contactar a Jonathan directamente.',
-    },
-  ],
-};
+    exit()   {},
+  },
+];
 
 /* ── MÓDULO ───────────────────────────────────────────────────── */
 
 export const IaTour = (() => {
-  let _steps    = [];
-  let _idx      = 0;
-  let _onState  = null;
-  let _onDone   = null;
-  let _overlay  = null;
-  let _tip      = null;
-  let _active   = false;
-  let _reduced  = false;
+  let _idx         = 0;
+  let _onState     = null;
+  let _onDone      = null;
+  let _overlay     = null;
+  let _tip         = null;
+  let _active      = false;
+  let _reduced     = false;
+  let _initialMode = 'dev';
+  let _seq         = 0;   // token: invalida callbacks de pasos anteriores
+  let _timers      = [];
+
+  /* ── TIMERS CON TOKEN ──────────────────────────────────────── */
+
+  function _later(fn, ms) {
+    const token = _seq;
+    _timers.push(setTimeout(() => {
+      if (token === _seq && _active) fn();
+    }, ms));
+  }
+
+  function _clearTimers() {
+    _timers.forEach(clearTimeout);
+    _timers = [];
+    _seq++;
+  }
 
   /* ── INJECT DOM ────────────────────────────────────────────── */
 
@@ -100,10 +113,9 @@ export const IaTour = (() => {
     wrap.id = 'jotai-tour-overlay';
     wrap.setAttribute('aria-hidden', 'true');
     wrap.innerHTML = `
-      <div id="jotai-tour-veil"></div>
       <div id="jotai-tour-tip" role="dialog" aria-label="Tour de JotAI" aria-modal="false">
         <div class="jt-header">
-          <span class="jt-icon">🔮</span>
+          <span class="jt-icon" id="jt-icon">🔮</span>
           <span class="jt-title" id="jt-title"></span>
           <span class="jt-counter" id="jt-counter"></span>
         </div>
@@ -127,47 +139,66 @@ export const IaTour = (() => {
     document.addEventListener('keydown', _onKey);
   }
 
-  /* ── NAVEGACIÓN ────────────────────────────────────────────── */
+  /* ── HIGHLIGHT ─────────────────────────────────────────────── */
 
-  function _renderStep() {
-    const step = _steps[_idx];
-    const total = _steps.length;
+  function _highlight(sel) {
+    _clearHighlight();
+    if (!sel) return;
+    document.querySelector(sel)?.classList.add('jotai-tour-target');
+  }
 
+  function _clearHighlight() {
+    document.querySelectorAll('.jotai-tour-target').forEach(el => {
+      el.classList.remove('jotai-tour-target');
+    });
+  }
+
+  /* ── RENDER DE PASO ────────────────────────────────────────── */
+
+  function _renderStep(prevIdx = null) {
+    _clearTimers();
+    if (prevIdx !== null) STEPS[prevIdx]?.exit?.();
+    _clearHighlight();
+
+    const step  = STEPS[_idx];
+    const total = STEPS.length;
+
+    document.getElementById('jt-icon').textContent    = step.icon;
     document.getElementById('jt-title').textContent   = step.title;
     document.getElementById('jt-text').textContent    = step.text;
     document.getElementById('jt-counter').textContent = `${_idx + 1} / ${total}`;
 
-    // Botón Anterior: oculto en el paso 0
     const prevBtn = document.getElementById('jt-prev');
     prevBtn.style.visibility = _idx === 0 ? 'hidden' : 'visible';
 
-    // Último paso → "Finalizar"
     const nextBtn = document.getElementById('jt-next');
     nextBtn.textContent = _idx === total - 1 ? 'Finalizar ✓' : 'Siguiente →';
 
-    // Quitar highlight anterior y aplicar al nuevo
-    document.querySelectorAll('.jotai-tour-target').forEach(el => {
-      el.classList.remove('jotai-tour-target');
-    });
-    const target = document.getElementById(step.id);
-    if (target) {
-      target.classList.add('jotai-tour-target');
-      target.scrollIntoView({
-        behavior: _reduced ? 'instant' : 'smooth',
-        block: 'center',
-      });
-    }
-
     _onState?.('pointing');
 
-    // Mueve el foco al botón Siguiente para navegación por teclado
+    // Cambio de modo real (el paso final restaura el inicial)
+    const targetMode = step.mode || _initialMode;
+    const changed    = document.body.dataset.theme !== targetMode;
+    if (changed) ThemeSwitcher.switchMode(targetMode);
+
+    // Demo cuando el DOM del modo nuevo está asentado
+    const settle = changed ? MODE_SETTLE_MS : 120;
+    _later(() => {
+      step.enter?.(_reduced);
+      _later(() => _highlight(step.target), 200);
+    }, settle);
+    if (step.demo) _later(() => step.demo(), settle + (step.demoDelay || 0));
+
     setTimeout(() => document.getElementById('jt-next')?.focus(), 80);
   }
 
+  /* ── NAVEGACIÓN ────────────────────────────────────────────── */
+
   function _nextStep() {
-    if (_idx < _steps.length - 1) {
+    if (_idx < STEPS.length - 1) {
+      const prev = _idx;
       _idx++;
-      _renderStep();
+      _renderStep(prev);
     } else {
       _finish();
     }
@@ -175,13 +206,16 @@ export const IaTour = (() => {
 
   function _prevStep() {
     if (_idx > 0) {
+      const prev = _idx;
       _idx--;
-      _renderStep();
+      _renderStep(prev);
     }
   }
 
   function _onKey(e) {
     if (!_active) return;
+    // No interceptar teclas mientras se escribe (p. ej. en la terminal .sec)
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
     if (e.key === 'ArrowRight' || e.key === 'Enter') _nextStep();
     if (e.key === 'ArrowLeft')  _prevStep();
     if (e.key === 'Escape')     _finish();
@@ -189,13 +223,15 @@ export const IaTour = (() => {
 
   /* ── START / FINISH ────────────────────────────────────────── */
 
-  function start(mode, { onState, onDone } = {}) {
-    _steps   = STEPS[mode] || STEPS.dev;
-    _idx     = 0;
-    _onState = onState;
-    _onDone  = onDone;
-    _active  = true;
-    _reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function start(a, b) {
+    // Acepta start({ onState, onDone }) y el legacy start(mode, opts)
+    const opts = (a && typeof a === 'object') ? a : (b || {});
+    _onState     = opts.onState;
+    _onDone      = opts.onDone;
+    _idx         = 0;
+    _active      = true;
+    _reduced     = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    _initialMode = document.body.dataset.theme || 'dev';
 
     _inject();
 
@@ -206,12 +242,17 @@ export const IaTour = (() => {
   }
 
   function _finish() {
+    if (!_active) return;
     _active = false;
+    _clearTimers();
 
-    // Limpia highlight
-    document.querySelectorAll('.jotai-tour-target').forEach(el => {
-      el.classList.remove('jotai-tour-target');
-    });
+    STEPS[_idx]?.exit?.();
+    _clearHighlight();
+
+    // Restaura el modo que tenía el usuario antes del tour
+    if (document.body.dataset.theme !== _initialMode) {
+      ThemeSwitcher.switchMode(_initialMode);
+    }
 
     _overlay?.classList.remove('is-active');
     _overlay?.setAttribute('aria-hidden', 'true');

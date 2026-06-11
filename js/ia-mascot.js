@@ -639,15 +639,14 @@ export const IaMascot = (() => {
   function _startTour() {
     closePanel();
     IaBubble.clear();
-    const mode = document.body.dataset.theme || 'dev';
-    IaTour.start(mode, {
+    IaTour.start({
       onState: _setState,
       onDone:  () => {
         _setState('idle');
         openPanel();
         setTimeout(() => {
           _setState('talking');
-          _typewriterBotMessage('¡Tour completado! ¿Tienes alguna pregunta sobre el portfolio?')
+          _typewriterBotMessage('¿Te quedó alguna duda del recorrido? Pregúntame por cualquier proyecto, tecnología o modo.')
             .then(() => { _setState('success'); setTimeout(() => _setState('idle'), 2000); });
         }, 300);
       },
@@ -1029,6 +1028,8 @@ export const IaMascot = (() => {
     // Cambio de modo: cierra el panel + saludo temático (1× por modo)
     window.addEventListener('portfolio:modeChange', ({ detail }) => {
       if (_isOpen) closePanel();
+      // El tour cambia de modo por su cuenta: ni saludar ni gastar el 1× por modo
+      if (IaTour.isActive()) return;
       const mode = detail?.mode;
       if (!mode || !MODE_HELLO[mode] || _greetedModes.has(mode)) return;
       _greetedModes.add(mode);

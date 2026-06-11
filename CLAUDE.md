@@ -143,6 +143,8 @@ Los keyframes globales son: `sd-up`, `sd-left`, `sd-right`, `sd-scale`, `sd-bar`
 - Boot sequence animado la primera vez que se activa el modo
 - Comandos: `help`, `whoami`, `ls [projects]`, `cat <file>.md`, `ping linkedin`, `clear`, `exit`
 - Historial de comandos con ↑↓
+- `SecTerminal.demo(cmd)` — API pública para el tour de JotAI: teclea el comando en el
+  input real (85ms/char; instantáneo con reduced-motion) y lo ejecuta
 - El archivo `sec.css` oculta `#hero-bg-text` cuando el terminal está visible
 
 ## Secciones en index.html
@@ -326,7 +328,7 @@ Cuando `mode === 'sec'` y el proyecto tiene `docs[]`, la gallery entra en **docs
 ## PDF Modal (`pdf-modal.js` + `pdf-modal.css`)
 Visor inline de PDF — modal fullscreen que renderiza el documento en un `<iframe>` sin abrir nueva pestaña.
 
-- **API pública:** `PDFModal.init()` (llamado en `main.js`) · `PDFModal.open(url, label)`
+- **API pública:** `PDFModal.init()` (llamado en `main.js`) · `PDFModal.open(url, label)` · `PDFModal.close()`
 - **Trigger actual:** botón `#cv-open-btn` en la sección `#about` → `app.js` llama `PDFModal.open(...)`
 - **Header:** título del documento · botón `⬇ Descargar` (`<a download>`) · botón `✕` cerrar
 - **Cierre:** botón ✕ · tecla Esc · clic en el overlay oscuro
@@ -526,12 +528,26 @@ La KB se construye dinámicamente en `ia-assistant.js`:
 - Docs `project` y `skill` tienen campo `text` para embedding
 - Se emite `jotai:kb-ready` con los docs embeddables cuando la carga termina
 
-### Tour guiado (`ia-tour.js`)
-- 4 pasos por modo con contenido adaptado (dev/ia/sec)
-- Sección destacada con `outline` vía clase `.jotai-tour-target`
-- Scroll a la sección con `behavior: 'smooth'` (o `'instant'` si `prefers-reduced-motion`)
-- Navegación: botones ← Anterior / Siguiente → / ✕ Saltar + teclas ← → Esc
-- Botón "Tour 🗺" siempre visible en el header del panel; al finalizar el tour JotAI reabre el panel
+### Tour guiado (`ia-tour.js`) — recorre los 3 MODOS con demos en vivo
+4 pasos globales (no por modo): cada paso **cambia de modo de verdad**
+(`ThemeSwitcher.switchMode`) y abre una funcionalidad:
+
+| Paso | Modo | Demo |
+|------|------|------|
+| 1 | `.dev` | Drawer de trayectoria (evento `portfolio:syncTrayectoria`; cierra con clic en `#jonathan-panel-close`) |
+| 2 | `.ia`  | CV en el visor PDF inline (`PDFModal.open/close`, url del dataset de `#cv-open-btn`) |
+| 3 | `.sec` | Terminal del hero — auto-escribe `whoami` (`SecTerminal.demo(cmd)`, espera 1.7s al boot) |
+| 4 | —      | Cierre: **restaura el modo inicial** del usuario + invita al chat |
+
+- API: `IaTour.start({ onState, onDone })` (acepta el legacy `start(mode, opts)`)
+- Saltar/Esc en cualquier paso → cierra la demo activa y restaura el modo inicial
+- Demos asíncronas con token (`_seq`): cambiar de paso rápido no deja callbacks zombis
+  (espera `MODE_SETTLE_MS = 650ms` tras cada switchMode)
+- **Sin velo**: las demos quedan interactivas; overlay en `z-index: 10600`
+  (sobre el PDF modal 10500) con `pointer-events: none` salvo el tooltip
+- El handler de teclado ignora eventos con foco en INPUT/TEXTAREA (la terminal usa Enter)
+- Los `modeChange` del tour no disparan el saludo temático de JotAI (`IaTour.isActive()`)
+- Botón "Tour 🗺" siempre visible en el header del panel; al finalizar JotAI reabre el panel
 
 ### IndexedDB cache de embeddings
 `ia-worker.js` almacena los vectores precomputados en IDB con clave = hash FNV-1a

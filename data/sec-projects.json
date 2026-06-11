@@ -81,7 +81,12 @@
         }
       ]
     },
-    "docs": []
+    "docs": [
+      {
+        "label": "Writeup — Meow (Telnet)",
+        "url": "public/images/labs/meow-tcp.pdf"
+      }
+    ]
   },
   {
     "id": "lab-002",
@@ -166,7 +171,12 @@
         }
       ]
     },
-    "docs": []
+    "docs": [
+      {
+        "label": "Writeup — Fawn (FTP)",
+        "url": "public/images/labs/fawn-ftp.pdf"
+      }
+    ]
   },
   {
     "id": "lab-003",
@@ -251,7 +261,12 @@
         }
       ]
     },
-    "docs": []
+    "docs": [
+      {
+        "label": "Writeup — Dancing (SMB)",
+        "url": "public/images/labs/dancing-smb.pdf"
+      }
+    ]
   },
   {
     "id": "lab-004",
@@ -336,7 +351,12 @@
         }
       ]
     },
-    "docs": []
+    "docs": [
+      {
+        "label": "Writeup — Redeemer (Redis)",
+        "url": "public/images/labs/redeemer-redis.pdf"
+      }
+    ]
   },
   {
     "id": "prac-001",

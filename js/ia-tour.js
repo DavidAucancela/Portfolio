@@ -1,23 +1,24 @@
 /**
  * ia-tour.js — Tour guiado de JotAI por los 3 MODOS del portfolio
- * Cada paso cambia de modo de verdad y demuestra una funcionalidad en vivo:
- *   trayectoria (modo actual) → .dev grid de proyectos → .ia CV en visor
- *   PDF inline → .sec terminal interactiva (auto-escribe un comando) → cierre.
- * Al terminar (o saltar) se restaura el modo que tenía el usuario.
+ * Paso 1: trayectoria (drawer, en el modo actual). Pasos 2–4: cambian de modo
+ * de verdad y muestran el grid de proyectos de cada modo (scroll + highlight).
+ * Paso 5: cierre. Al terminar (o saltar) se restaura el modo que tenía el usuario.
  *
  * API: IaTour.start({ onState, onDone }) · IaTour.isActive()
  */
 
 import { ThemeSwitcher } from './theme-switcher.js';
-import { PDFModal }      from './pdf-modal.js';
-import { SecTerminal }   from './sec-terminal.js';
 
 const MODE_SETTLE_MS = 650;  // espera tras switchMode a que el DOM se re-renderice
-const DEMO_CMD       = 'whoami';
 
 /* ── PASOS ────────────────────────────────────────────────────── */
-/* mode: null → el paso restaura el modo inicial del usuario
-   enter/exit: abre/cierra la demo · demo/demoDelay: acción retardada extra */
+/* mode: null → el paso usa/restaura el modo inicial del usuario
+   enter/exit: abre/cierra la demo del paso */
+
+function _scrollToProjects(reduced) {
+  document.getElementById('projects')
+    ?.scrollIntoView({ behavior: reduced ? 'instant' : 'smooth', block: 'start' });
+}
 
 const STEPS = [
   {
@@ -37,41 +38,27 @@ const STEPS = [
     text:   'Primer modo: desarrollo. Sistemas en producción real — APIs REST, SaaS ' +
             'multi-tenant, pipelines ETL. Haz clic en cualquier card para ver su proceso.',
     target: '#projects',
-    enter(reduced) {
-      document.getElementById('projects')
-        ?.scrollIntoView({ behavior: reduced ? 'instant' : 'smooth', block: 'start' });
-    },
+    enter:  _scrollToProjects,
     exit()   {},
   },
   {
     mode:   'ia',
-    icon:   '📄',
-    title:  'Modo .ia — CV sin descargas',
-    text:   'Segundo modo: IA aplicada (LLMs, RAG, embeddings). Y de paso: el CV se abre ' +
-            'aquí mismo en un visor integrado — sin descargar nada ni salir de la página.',
-    target: null,
-    enter() {
-      const btn = document.getElementById('cv-open-btn');
-      PDFModal.open(
-        btn?.dataset.pdfUrl   || 'public/Hoja%20de%20vida%20-%20Jonathan%20Aucancela.pdf',
-        btn?.dataset.pdfLabel || 'CV — Jonathan Aucancela'
-      );
-    },
-    exit()   { PDFModal.close(); },
+    icon:   '🤖',
+    title:  'Modo .ia — Proyectos de IA',
+    text:   'Segundo modo: IA aplicada. LLM Observatory, búsqueda semántica, RAG… ' +
+            'los mismos proyectos cambian: aquí solo los que integran LLMs y embeddings.',
+    target: '#projects',
+    enter:  _scrollToProjects,
+    exit()   {},
   },
   {
     mode:   'sec',
-    icon:   '🖥️',
-    title:  'Modo .sec — Terminal interactiva',
-    text:   'Tercer modo: ciberseguridad. Esta terminal responde de verdad — escribí ' +
-            '`whoami` por ti; prueba también `help`, `ls projects` o `cat skills.md`.',
-    target: '#sec-terminal',
-    enter(reduced) {
-      document.getElementById('hero')
-        ?.scrollIntoView({ behavior: reduced ? 'instant' : 'smooth', block: 'start' });
-    },
-    demo()     { SecTerminal.demo(DEMO_CMD); },
-    demoDelay: 1700, // espera al boot sequence de la terminal
+    icon:   '🛡️',
+    title:  'Modo .sec — Labs y writeups',
+    text:   'Tercer modo: ciberseguridad. Writeups de HackTheBox y proyectos con ' +
+            'OWASP Top 10 implementado — con certificados y evidencia documentada.',
+    target: '#projects',
+    enter:  _scrollToProjects,
     exit()   {},
   },
   {
@@ -200,7 +187,6 @@ export const IaTour = (() => {
       step.enter?.(_reduced);
       _later(() => _highlight(step.target), 200);
     }, settle);
-    if (step.demo) _later(() => step.demo(), settle + (step.demoDelay || 0));
 
     setTimeout(() => document.getElementById('jt-next')?.focus(), 80);
   }

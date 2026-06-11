@@ -143,8 +143,9 @@ Los keyframes globales son: `sd-up`, `sd-left`, `sd-right`, `sd-scale`, `sd-bar`
 - Boot sequence animado la primera vez que se activa el modo
 - Comandos: `help`, `whoami`, `ls [projects]`, `cat <file>.md`, `ping linkedin`, `clear`, `exit`
 - Historial de comandos con ↑↓
-- `SecTerminal.demo(cmd)` — API pública para el tour de JotAI: teclea el comando en el
-  input real (85ms/char; instantáneo con reduced-motion) y lo ejecuta
+- `SecTerminal.demo(cmd)` — API pública: teclea el comando en el input real
+  (85ms/char; instantáneo con reduced-motion) y lo ejecuta. Sin uso actual
+  (el tour de JotAI la usó; quedó disponible)
 - El archivo `sec.css` oculta `#hero-bg-text` cuando el terminal está visible
 
 ## Secciones en index.html
@@ -528,16 +529,16 @@ La KB se construye dinámicamente en `ia-assistant.js`:
 - Docs `project` y `skill` tienen campo `text` para embedding
 - Se emite `jotai:kb-ready` con los docs embeddables cuando la carga termina
 
-### Tour guiado (`ia-tour.js`) — trayectoria + los 3 MODOS con demos en vivo
+### Tour guiado (`ia-tour.js`) — trayectoria + los 3 MODOS
 5 pasos globales (no por modo): los pasos de modo **cambian de modo de verdad**
-(`ThemeSwitcher.switchMode`) y abren una funcionalidad:
+(`ThemeSwitcher.switchMode`) y muestran el grid de proyectos de ese modo:
 
 | Paso | Modo | Demo |
 |------|------|------|
 | 1 | actual | Drawer de trayectoria — transversal, sin cambio de modo (evento `portfolio:syncTrayectoria`; cierra con clic en `#jonathan-panel-close`) |
-| 2 | `.dev` | Scroll a `#projects` + highlight del grid de proyectos full-stack |
-| 3 | `.ia`  | CV en el visor PDF inline (`PDFModal.open/close`, url del dataset de `#cv-open-btn`) |
-| 4 | `.sec` | Terminal del hero — auto-escribe `whoami` (`SecTerminal.demo(cmd)`, espera 1.7s al boot) |
+| 2 | `.dev` | Scroll a `#projects` + highlight del grid (proyectos full-stack) |
+| 3 | `.ia`  | Scroll a `#projects` + highlight del grid (proyectos de IA) |
+| 4 | `.sec` | Scroll a `#projects` + highlight del grid (labs y writeups) |
 | 5 | —      | Cierre: **restaura el modo inicial** del usuario + invita al chat |
 
 - API: `IaTour.start({ onState, onDone })` (acepta el legacy `start(mode, opts)`)

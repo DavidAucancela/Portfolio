@@ -283,7 +283,9 @@ sec: [0,  255,  65]   // verde terminal
 
 ## Imágenes
 - Las fotos del avatar cambian por modo: `AVATAR_SRC` en `app.js`
-- Screenshots de proyectos en `public/images/projects/<slug>/`
+- Screenshots de proyectos en `public/images/projects/<slug>/` — **formato WebP**
+  (q80, máx. 1600px de ancho). Al agregar screenshots nuevos, convertirlos:
+  `npx sharp-cli -i in.png -o out.webp -f webp -q 80 resize 1600 --withoutEnlargement`
 - Proyectos sin imágenes reales (Equity, SecuraBank, ConQuito): `"image": null, "images": []`
 - Certificados PDF en `public/images/certificados/` — commiteados al repo para que Vercel los sirva
 - Ruta correcta con Vite: `"public/images/..."` → en prod se sirve desde `/public/images/...`
@@ -561,14 +563,17 @@ La KB se construye dinámicamente en `ia-assistant.js`:
 de los IDs + texto de cada doc. En visitas subsiguientes la KB está lista casi al instante.
 El hash cambia automáticamente al añadir proyectos → recomputa sin intervención manual.
 
-### GSAP — CDN (solo para uso futuro / animaciones opcionales)
-```html
-<!-- en index.html <head> -->
-<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-```
-Carga sincrónica antes del bundle de Vite. Disponible como `window.gsap` si se necesita.
-Los **estados del mascot ya no usan GSAP** — son 100% CSS classes. GSAP queda como opción
-para animaciones puntuales que requieran control de timeline (ej: secuencias de onboarding futuras).
+### GSAP — eliminado
+GSAP ya **no se carga** (se quitó el CDN de `index.html`). La animación de apertura/cierre
+del panel de JotAI — su único uso — ahora es CSS: clases `is-opening`/`is-closing` en
+`#jotai-panel` con keyframes `jotai-panelIn/Out` en `ia-mascot.css`. Si se necesita GSAP
+en el futuro, instalarlo como dependencia npm en lugar de CDN.
+
+### Carga diferida del worker en touch
+En dispositivos `pointer: coarse` el worker de embeddings (~23MB WASM + modelo) **no se
+descarga al cargar la página**: `jotai:kb-ready` guarda la KB en `_pendingKB` y
+`openPanel()` inicia el worker la primera vez que el usuario abre el chat. Mientras
+tanto responde el fallback por keywords. En desktop el comportamiento no cambia.
 
 ### Vite config
 `optimizeDeps.exclude: ['@huggingface/transformers']` — necesario para que los

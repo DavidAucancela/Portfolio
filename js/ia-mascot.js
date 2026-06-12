@@ -308,7 +308,6 @@ export const IaMascot = (() => {
   let _sendBtn    = null;
   let _isOpen     = false;
   let _state      = 'idle';
-  let _gsap       = null;
   let _reduced    = false;
   let _hasGreeted = false;
   let _prevFocus  = null;
@@ -317,6 +316,7 @@ export const IaMascot = (() => {
   let _worker       = null;
   let _workerReady  = false;
   let _workerInit   = false;
+  let _pendingKB    = null;  // KB diferida en touch: se inicia al abrir el chat
   let _queryId      = 0;
   const _pending    = new Map(); // id → { resolve, timer }
 
@@ -513,17 +513,20 @@ export const IaMascot = (() => {
   function openPanel() {
     if (_isOpen) return;
     _isOpen = true;
+    if (_pendingKB) {
+      _initWorker(_pendingKB); // touch: descarga del modelo diferida hasta aquí
+      _pendingKB = null;
+    }
     IaBubble.clear(); // la conversación reemplaza a los globos
     _unpeek();
     _prevFocus = document.activeElement;
     _panel.hidden = false;
     _trigger.setAttribute('aria-expanded', 'true');
 
-    if (!_reduced && _gsap) {
-      _gsap.fromTo(_panel,
-        { opacity: 0, y: 14, scale: 0.94 },
-        { opacity: 1, y: 0, scale: 1, duration: 0.22, ease: 'back.out(1.4)' }
-      );
+    if (!_reduced) {
+      _panel.classList.remove('is-closing');
+      _panel.classList.add('is-opening');
+      setTimeout(() => _panel.classList.remove('is-opening'), 260);
     }
 
     _setState('greeting');
@@ -547,11 +550,12 @@ export const IaMascot = (() => {
     _trigger.setAttribute('aria-expanded', 'false');
     _setState('idle');
 
-    if (!_reduced && _gsap) {
-      _gsap.to(_panel, {
-        opacity: 0, y: 10, scale: 0.95, duration: 0.16, ease: 'power2.in',
-        onComplete: () => { _panel.hidden = true; },
-      });
+    if (!_reduced) {
+      _panel.classList.add('is-closing');
+      setTimeout(() => {
+        _panel.classList.remove('is-closing');
+        if (!_isOpen) _panel.hidden = true; // guarda: pudo reabrirse durante el cierre
+      }, 180);
     } else {
       _panel.hidden = true;
     }
@@ -1004,7 +1008,6 @@ export const IaMascot = (() => {
 
   function init() {
     _reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    _gsap    = window.gsap || null;
 
     _inject();
 
@@ -1017,9 +1020,14 @@ export const IaMascot = (() => {
     // Acceso desde consola para QA (solo en dev)
     if (import.meta.env?.DEV) window.IaMascot = { say, openPanel, closePanel };
 
-    // Cuando IAAssistant termina de cargar la KB → inicia el worker
+    // Cuando IAAssistant termina de cargar la KB → inicia el worker.
+    // En dispositivos touch el modelo (~23MB WASM) se difiere hasta que el
+    // usuario abra el chat; mientras tanto responde el fallback por keywords.
     window.addEventListener('jotai:kb-ready', ({ detail }) => {
-      if (detail.kb?.length > 0) {
+      if (!(detail.kb?.length > 0)) return;
+      if (window.matchMedia('(pointer: coarse)').matches && !_isOpen) {
+        _pendingKB = detail.kb;
+      } else {
         _initWorker(detail.kb);
       }
     });

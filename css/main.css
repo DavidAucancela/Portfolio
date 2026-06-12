@@ -155,6 +155,7 @@ ul, ol { list-style: none; }
 }
 
 .mode-bar-chip {
+  position: relative;
   font-family: var(--font-display);
   font-size: 12px;
   font-weight: 500;
@@ -171,6 +172,15 @@ ul, ol { list-style: none; }
     border-color 0.3s ease;
   display: inline-flex;
   align-items: center;
+}
+
+/* Amplía el área táctil a ~44px de alto sin alterar el diseño de la barra */
+@media (pointer: coarse) {
+  .mode-bar-chip::after {
+    content: '';
+    position: absolute;
+    inset: -11px -2px;
+  }
 }
 
 .mode-bar-chip:hover {
@@ -521,6 +531,7 @@ ul, ol { list-style: none; }
 .hero-section {
   position: relative;
   min-height: 100vh;
+  min-height: 100dvh; /* mobile: no cuenta la barra dinámica del navegador */
   display: flex;
   align-items: center;
   padding-top: calc(var(--mode-bar-height) + var(--nav-height));
@@ -1068,19 +1079,30 @@ ul, ol { list-style: none; }
 
 .pag-dots {
   display: flex;
-  gap: 0.4rem;
+  gap: 0.1rem;
   align-items: center;
 }
 
+/* Dot visual de 8px dentro de un área táctil mayor:
+   el padding amplía el hit area y background-clip mantiene el punto pequeño */
 .pag-dot {
-  width: 8px;
-  height: 8px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: var(--border-color);
+  background-clip: content-box;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.2s ease;
   border: none;
-  padding: 0;
+  padding: 8px;
+}
+
+@media (pointer: coarse) {
+  .pag-dot {
+    width: 36px;
+    height: 36px;
+    padding: 14px;
+  }
 }
 
 .pag-dot.active {
@@ -1741,7 +1763,7 @@ ul, ol { list-style: none; }
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius-sm);
   color: var(--text-primary);
-  font-size: 0.95rem;
+  font-size: 1rem; /* ≥16px: evita el zoom automático de iOS Safari al enfocar */
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease,
@@ -2244,7 +2266,6 @@ ul, ol { list-style: none; }
 
 @media (max-width: 600px) {
   .ia-search-bar { padding: 0.45rem 0.45rem 0.45rem 1rem; }
-  .ia-input { font-size: 0.92rem; }
   .ia-result-card { padding: 1rem 1.1rem; border-radius: 0 8px 8px 0; }
   .ia-suggestions { gap: 0.4rem; }
 }

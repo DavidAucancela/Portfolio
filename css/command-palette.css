@@ -71,7 +71,7 @@
   border: none;
   outline: none;
   color: var(--text-primary);
-  font-size: 0.975rem;
+  font-size: 1rem; /* ≥16px: evita el zoom automático de iOS Safari al enfocar */
   font-family: var(--font-display);
   caret-color: var(--color-accent);
 }

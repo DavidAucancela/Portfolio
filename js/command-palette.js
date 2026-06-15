@@ -116,6 +116,7 @@ function _inject() {
   _el.id        = 'cmd-palette';
   _el.className = 'cmd-overlay';
   _el.setAttribute('aria-hidden', 'true');
+  _el.inert = true; // cerrada: saca el input/botones del orden de tabulación (a11y)
   _el.setAttribute('role', 'dialog');
   _el.setAttribute('aria-modal', 'true');
   _el.setAttribute('aria-label', 'Buscador de comandos');
@@ -190,6 +191,7 @@ function open() {
   if (_isOpen) return;
   _isOpen = true;
   _el.setAttribute('aria-hidden', 'false');
+  _el.inert = false;
   _el.classList.add('is-open');
   document.body.style.overflow = 'hidden';
   _inputEl.value = '';
@@ -205,6 +207,7 @@ function close() {
   if (!_isOpen) return;
   _isOpen = false;
   _el.setAttribute('aria-hidden', 'true');
+  _el.inert = true;
   _el.classList.remove('is-open');
   document.body.style.overflow = '';
   _activeIdx = -1;

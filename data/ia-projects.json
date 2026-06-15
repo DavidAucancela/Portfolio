@@ -11,14 +11,14 @@
       "Socket.io",
       "Claude API"
     ],
-    "image": "public/images/projects/llm observatory/dashboard.png",
+    "image": "public/images/projects/llm observatory/dashboard.webp",
     "images": [
-      "public/images/projects/llm observatory/dashboard.png",
-      "public/images/projects/llm observatory/landing.png",
-      "public/images/projects/llm observatory/login.png",
-      "public/images/projects/llm observatory/config.png",
-      "public/images/projects/llm observatory/dashboard-light.png",
-      "public/images/projects/llm observatory/request.png"
+      "public/images/projects/llm observatory/dashboard.webp",
+      "public/images/projects/llm observatory/landing.webp",
+      "public/images/projects/llm observatory/login.webp",
+      "public/images/projects/llm observatory/config.webp",
+      "public/images/projects/llm observatory/dashboard-light.webp",
+      "public/images/projects/llm observatory/request.webp"
     ],
     "liveUrl": "https://llm-web-production.up.railway.app/settings",
     "repoUrl": "https://github.com/DavidAucancela/llm-observatory",
@@ -119,18 +119,18 @@
       "Docker",
       "OpenAI"
     ],
-    "image": "public/images/projects/ubapp/index.png",
+    "image": "public/images/projects/ubapp/index.webp",
     "images": [
-      "public/images/projects/ubapp/index.png",
-      "public/images/projects/ubapp/dashboard.png",
-      "public/images/projects/ubapp/Login.png",
-      "public/images/projects/ubapp/búsqueda semántica.png",
-      "public/images/projects/ubapp/envío.png",
-      "public/images/projects/ubapp/importar envios.png",
-      "public/images/projects/ubapp/mapa.png",
-      "public/images/projects/ubapp/métricas semánticas.png",
-      "public/images/projects/ubapp/productos.png",
-      "public/images/projects/ubapp/resultados semántica.png"
+      "public/images/projects/ubapp/index.webp",
+      "public/images/projects/ubapp/dashboard.webp",
+      "public/images/projects/ubapp/Login.webp",
+      "public/images/projects/ubapp/búsqueda semántica.webp",
+      "public/images/projects/ubapp/envío.webp",
+      "public/images/projects/ubapp/importar envios.webp",
+      "public/images/projects/ubapp/mapa.webp",
+      "public/images/projects/ubapp/métricas semánticas.webp",
+      "public/images/projects/ubapp/productos.webp",
+      "public/images/projects/ubapp/resultados semántica.webp"
     ],
     "liveUrl": "https://frontend-angular-production.up.railway.app/login",
     "repoUrl": "https://github.com/DavidAucancela/UBAppV2",
@@ -238,11 +238,11 @@
       "FastAPI",
       "Streaming SSE"
     ],
-    "image": "public/images/projects/mindlog/chat IA.jpeg",
+    "image": "public/images/projects/mindlog/chat IA.webp",
     "images": [
-      "public/images/projects/mindlog/chat IA.jpeg",
-      "public/images/projects/mindlog/login.jpeg",
-      "public/images/projects/mindlog/notas.jpeg"
+      "public/images/projects/mindlog/chat IA.webp",
+      "public/images/projects/mindlog/login.webp",
+      "public/images/projects/mindlog/notas.webp"
     ],
     "repoUrl": "https://github.com/DavidAucancela/MindLog",
     "featured": true,
@@ -360,13 +360,13 @@
       "Whisper",
       "TypeScript"
     ],
-    "image": "public/images/projects/marevitae/marevitae-02.png",
+    "image": "public/images/projects/marevitae/marevitae-02.webp",
     "images": [
-      "public/images/projects/marevitae/marevitae-01.png",
-      "public/images/projects/marevitae/marevitae-02.png",
-      "public/images/projects/marevitae/marevitae-03.png",
-      "public/images/projects/marevitae/marevitae-04.png",
-      "public/images/projects/marevitae/marevitae-05.png"
+      "public/images/projects/marevitae/marevitae-01.webp",
+      "public/images/projects/marevitae/marevitae-02.webp",
+      "public/images/projects/marevitae/marevitae-03.webp",
+      "public/images/projects/marevitae/marevitae-04.webp",
+      "public/images/projects/marevitae/marevitae-05.webp"
     ],
     "liveUrl": "https://www.marevitaeint.com/",
     "repoUrl": "https://github.com/DavidAucancela/MareVitae",
@@ -469,10 +469,10 @@
       "Kommo CRM",
       "Telegram API"
     ],
-    "image": "public/images/projects/whatsapp-ai-agent/flujo_completo_telegram_Kommo.jpeg",
+    "image": "public/images/projects/whatsapp-ai-agent/flujo_completo_telegram_Kommo.webp",
     "images": [
-      "public/images/projects/whatsapp-ai-agent/flujo_completo_telegram_Kommo.jpeg",
-      "public/images/projects/whatsapp-ai-agent/flujo_WS.jpeg"
+      "public/images/projects/whatsapp-ai-agent/flujo_completo_telegram_Kommo.webp",
+      "public/images/projects/whatsapp-ai-agent/flujo_WS.webp"
     ],
     "repoUrl": "https://github.com/DavidAucancela/whatsapp-ai-agent",
     "featured": false,
@@ -572,9 +572,9 @@
       "Railway",
       "Docker"
     ],
-    "image": "public/images/projects/anaos/mainAnaOS.png",
+    "image": "public/images/projects/anaos/mainAnaOS.webp",
     "images": [
-      "public/images/projects/anaos/mainAnaOS.png"
+      "public/images/projects/anaos/mainAnaOS.webp"
     ],
     "liveUrl": "https://frontend-production-cc73.up.railway.app/",
     "repoUrl": "https://github.com/DavidAucancela/AnaOS",

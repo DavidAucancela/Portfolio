@@ -155,6 +155,11 @@
     max-height: 260px;
     font-size: 0.76rem;
   }
+
+  /* ≥16px en el input: evita el zoom automático de iOS Safari al enfocar */
+  [data-theme="sec"] .sec-terminal__input {
+    font-size: 1rem;
+  }
 }
 
 @media (max-width: 480px) {

@@ -13,12 +13,12 @@
       "nginx",
       "Railway"
     ],
-    "image": "public/images/projects/artecuador/artecuador-01.png",
+    "image": "public/images/projects/artecuador/artecuador-01.webp",
     "images": [
-      "public/images/projects/artecuador/artecuador-01.png",
-      "public/images/projects/artecuador/artecuador-02.png",
-      "public/images/projects/artecuador/artecuador-03.png",
-      "public/images/projects/artecuador/artecuador-04.png"
+      "public/images/projects/artecuador/artecuador-01.webp",
+      "public/images/projects/artecuador/artecuador-02.webp",
+      "public/images/projects/artecuador/artecuador-03.webp",
+      "public/images/projects/artecuador/artecuador-04.webp"
     ],
     "liveUrl": "https://artecuador-production.up.railway.app/",
     "repoUrl": "https://github.com/DavidAucancela/ArtEcuador",
@@ -118,15 +118,15 @@
       "i18n",
       "Vercel"
     ],
-    "image": "public/images/projects/ideancestral/index.png",
+    "image": "public/images/projects/ideancestral/index.webp",
     "images": [
-      "public/images/projects/ideancestral/index.png",
-      "public/images/projects/ideancestral/admin panel.png",
-      "public/images/projects/ideancestral/admin.png",
-      "public/images/projects/ideancestral/categorias-index.png",
-      "public/images/projects/ideancestral/categorias-productos.png",
-      "public/images/projects/ideancestral/encuéntranos.png",
-      "public/images/projects/ideancestral/productos.png"
+      "public/images/projects/ideancestral/index.webp",
+      "public/images/projects/ideancestral/admin panel.webp",
+      "public/images/projects/ideancestral/admin.webp",
+      "public/images/projects/ideancestral/categorias-index.webp",
+      "public/images/projects/ideancestral/categorias-productos.webp",
+      "public/images/projects/ideancestral/encuéntranos.webp",
+      "public/images/projects/ideancestral/productos.webp"
     ],
     "liveUrl": "https://ideancestral-production.up.railway.app/",
     "repoUrl": "https://github.com/DavidAucancela/IDEANCESTRAL",
@@ -230,11 +230,11 @@
       "Google Trends",
       "Railway"
     ],
-    "image": "public/images/projects/mapcriminals/main1.png",
+    "image": "public/images/projects/mapcriminals/main1.webp",
     "images": [
-      "public/images/projects/mapcriminals/main1.png",
-      "public/images/projects/mapcriminals/dashboard.png",
-      "public/images/projects/mapcriminals/reporte.png"
+      "public/images/projects/mapcriminals/main1.webp",
+      "public/images/projects/mapcriminals/dashboard.webp",
+      "public/images/projects/mapcriminals/reporte.webp"
     ],
     "liveUrl": "https://mapcriminalscode-production.up.railway.app/",
     "repoUrl": "https://github.com/DavidAucancela/MapCriminalsCode",
@@ -325,9 +325,9 @@
       "PostgreSQL",
       "Railway"
     ],
-    "image": "public/images/projects/notes-app/main1.png",
+    "image": "public/images/projects/notes-app/main1.webp",
     "images": [
-      "public/images/projects/notes-app/main1.png"
+      "public/images/projects/notes-app/main1.webp"
     ],
     "liveUrl": "https://aucancela-35ab41.vercel.app",
     "repoUrl": null,
@@ -445,9 +445,9 @@
       "PostgreSQL",
       "ETL"
     ],
-    "image": "public/images/projects/equity/equity-01.jpeg",
+    "image": "public/images/projects/equity/equity-01.webp",
     "images": [
-      "public/images/projects/equity/equity-01.jpeg"
+      "public/images/projects/equity/equity-01.webp"
     ],
     "liveUrl": null,
     "repoUrl": null,
@@ -535,12 +535,12 @@
       "OWASP",
       "PostgreSQL"
     ],
-    "image": "public/images/projects/securabank/dashboard.png",
+    "image": "public/images/projects/securabank/dashboard.webp",
     "images": [
-      "public/images/projects/securabank/dashboard.png",
-      "public/images/projects/securabank/cuentas.png",
-      "public/images/projects/securabank/transferencias.png",
-      "public/images/projects/securabank/trasnfe-ok.png"
+      "public/images/projects/securabank/dashboard.webp",
+      "public/images/projects/securabank/cuentas.webp",
+      "public/images/projects/securabank/transferencias.webp",
+      "public/images/projects/securabank/trasnfe-ok.webp"
     ],
     "liveUrl": null,
     "repoUrl": "https://github.com/DavidAucancela/SecuraBank",
@@ -630,12 +630,12 @@
       "pynput",
       "sklearn"
     ],
-    "image": "public/images/projects/gesture-control/mano_abierta.png",
+    "image": "public/images/projects/gesture-control/mano_abierta.webp",
     "images": [
-      "public/images/projects/gesture-control/mano_abierta.png",
-      "public/images/projects/gesture-control/pulgar_arriba.png",
-      "public/images/projects/gesture-control/pulgar_abajo.png",
-      "public/images/projects/gesture-control/ok.png"
+      "public/images/projects/gesture-control/mano_abierta.webp",
+      "public/images/projects/gesture-control/pulgar_arriba.webp",
+      "public/images/projects/gesture-control/pulgar_abajo.webp",
+      "public/images/projects/gesture-control/ok.webp"
     ],
     "liveUrl": null,
     "repoUrl": "https://github.com/DavidAucancela/Gesture-control",
@@ -737,9 +737,9 @@
       "Chart.js",
       "Datos Abiertos"
     ],
-    "image": "public/images/projects/conquito-fundaciones/conquito-01.jpeg",
+    "image": "public/images/projects/conquito-fundaciones/conquito-01.webp",
     "images": [
-      "public/images/projects/conquito-fundaciones/conquito-01.jpeg"
+      "public/images/projects/conquito-fundaciones/conquito-01.webp"
     ],
     "liveUrl": null,
     "repoUrl": "https://github.com/DavidAucancela/Proyect_OpenLab",
@@ -827,16 +827,16 @@
       "Turborepo"
     ],
     "liveUrl": null,
-    "image": "public/images/projects/nunna/nunna-01.png",
+    "image": "public/images/projects/nunna/nunna-01.webp",
     "images": [
-      "public/images/projects/nunna/nunna-01.png",
-      "public/images/projects/nunna/nunna-02.png",
-      "public/images/projects/nunna/nunna-03.png",
-      "public/images/projects/nunna/nunna-04.png",
-      "public/images/projects/nunna/nunna-05.png",
-      "public/images/projects/nunna/nunna-06.png",
-      "public/images/projects/nunna/nunna-07.png",
-      "public/images/projects/nunna/nunna-08.png"
+      "public/images/projects/nunna/nunna-01.webp",
+      "public/images/projects/nunna/nunna-02.webp",
+      "public/images/projects/nunna/nunna-03.webp",
+      "public/images/projects/nunna/nunna-04.webp",
+      "public/images/projects/nunna/nunna-05.webp",
+      "public/images/projects/nunna/nunna-06.webp",
+      "public/images/projects/nunna/nunna-07.webp",
+      "public/images/projects/nunna/nunna-08.webp"
     ],
     "repoUrl": "https://github.com/DavidAucancela/Nunna",
     "featured": false,
@@ -940,13 +940,13 @@
       "ScrollTrigger",
       "Tone.js"
     ],
-    "image": "public/images/projects/dual-face/dual-face-01.png",
+    "image": "public/images/projects/dual-face/dual-face-01.webp",
     "images": [
-      "public/images/projects/dual-face/dual-face-01.png",
-      "public/images/projects/dual-face/dual-face-02.png",
-      "public/images/projects/dual-face/dual-face-03.png",
-      "public/images/projects/dual-face/dual-face-04.png",
-      "public/images/projects/dual-face/dual-face-05.png"
+      "public/images/projects/dual-face/dual-face-01.webp",
+      "public/images/projects/dual-face/dual-face-02.webp",
+      "public/images/projects/dual-face/dual-face-03.webp",
+      "public/images/projects/dual-face/dual-face-04.webp",
+      "public/images/projects/dual-face/dual-face-05.webp"
     ],
     "liveUrl": null,
     "repoUrl": "https://github.com/DavidAucancela/DualFace",
@@ -1044,20 +1044,20 @@
     "description": "Portfolio personal con tres modos de presentación (dev / ia / sec), canvas de partículas por modo, asistente de IA integrado con embeddings semánticos y galería fullscreen de proyectos.",
     "longDescription": "Sitio web de una sola página construido con HTML5, CSS3 y JavaScript vanilla (ES modules) bundleado con Vite. El sistema trimodal cambia contenido, paleta de colores y animaciones según el perfil seleccionado: desarrollador, IA o ciberseguridad. Incluye un widget de IA (JotAI) con búsqueda semántica usando MiniLM via Web Worker, Command Palette estilo VS Code, terminal interactiva en modo .sec y scroll-driven animations.",
     "tags": ["HTML5", "CSS3", "JavaScript", "Vite", "Vercel"],
-    "image": "public/images/projects/portfolio/portfolio-01.png",
+    "image": "public/images/projects/portfolio/portfolio-01.webp",
     "images": [
-      "public/images/projects/portfolio/portfolio-01.png",
-      "public/images/projects/portfolio/portfolio-02.png",
-      "public/images/projects/portfolio/portfolio-03.png",
-      "public/images/projects/portfolio/portfolio-04.png",
-      "public/images/projects/portfolio/portfolio-05.png",
-      "public/images/projects/portfolio/portfolio-06.png",
-      "public/images/projects/portfolio/portfolio-07.png",
-      "public/images/projects/portfolio/portfolio-08.png",
-      "public/images/projects/portfolio/portfolio-09.png",
-      "public/images/projects/portfolio/portfolio-10.png",
-      "public/images/projects/portfolio/portfolio-11.png",
-      "public/images/projects/portfolio/portfolio-12.png"
+      "public/images/projects/portfolio/portfolio-01.webp",
+      "public/images/projects/portfolio/portfolio-02.webp",
+      "public/images/projects/portfolio/portfolio-03.webp",
+      "public/images/projects/portfolio/portfolio-04.webp",
+      "public/images/projects/portfolio/portfolio-05.webp",
+      "public/images/projects/portfolio/portfolio-06.webp",
+      "public/images/projects/portfolio/portfolio-07.webp",
+      "public/images/projects/portfolio/portfolio-08.webp",
+      "public/images/projects/portfolio/portfolio-09.webp",
+      "public/images/projects/portfolio/portfolio-10.webp",
+      "public/images/projects/portfolio/portfolio-11.webp",
+      "public/images/projects/portfolio/portfolio-12.webp"
     ],
     "liveUrl": "https://davidaucancela.github.io/Portfolio/",
     "repoUrl": "https://github.com/DavidAucancela/Portfolio",

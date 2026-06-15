@@ -8,15 +8,15 @@
     "category": "P2",
     "tags": ["Django", "Angular", "IA", "PostgreSQL", "Render"],
     "images": {
-      "thumbnail": "/images/projects/ubapp/index.png",
+      "thumbnail": "/images/projects/ubapp/index.webp",
       "gallery": [
-        "/images/projects/ubapp/index.png",
-        "/images/projects/ubapp/Login.png",
-        "/images/projects/ubapp/dashboard.png",
-        "/images/projects/ubapp/búsqueda semántica.png",
-        "/images/projects/ubapp/importar envios.png",
-        "/images/projects/ubapp/resultados semántica.png",
-        "/images/projects/ubapp/mapa.png"
+        "/images/projects/ubapp/index.webp",
+        "/images/projects/ubapp/Login.webp",
+        "/images/projects/ubapp/dashboard.webp",
+        "/images/projects/ubapp/búsqueda semántica.webp",
+        "/images/projects/ubapp/importar envios.webp",
+        "/images/projects/ubapp/resultados semántica.webp",
+        "/images/projects/ubapp/mapa.webp"
       ]
     },
     "links": {
@@ -122,14 +122,14 @@
     "category": "P1",
     "tags": ["Vue.js", "Node.js", "PostgreSQL", "SPA"],
     "images": {
-      "thumbnail": "/images/projects/ideancestral/index.png",
+      "thumbnail": "/images/projects/ideancestral/index.webp",
       "gallery": [
-        "/images/projects/ideancestral/index.png",
-        "/images/projects/ideancestral/categorias-index.png",
-        "/images/projects/ideancestral/categorias-productos.png",
-        "/images/projects/ideancestral/encuéntranos.png",
-        "/images/projects/ideancestral/productos.png",
-        "/images/projects/ideancestral/admin.png"
+        "/images/projects/ideancestral/index.webp",
+        "/images/projects/ideancestral/categorias-index.webp",
+        "/images/projects/ideancestral/categorias-productos.webp",
+        "/images/projects/ideancestral/encuéntranos.webp",
+        "/images/projects/ideancestral/productos.webp",
+        "/images/projects/ideancestral/admin.webp"
       ]
     },
     "links": {
@@ -231,9 +231,9 @@
     "category": "P1",
     "tags": ["ASP.NET Core", "React", "TypeScript", "SaaS", "Railway"],
     "images": {
-      "thumbnail": "/images/projects/anaos/mainAnaOS.png",
+      "thumbnail": "/images/projects/anaos/mainAnaOS.webp",
       "gallery": [
-        "/images/projects/anaos/mainAnaOS.png"
+        "/images/projects/anaos/mainAnaOS.webp"
       ]
     },
     "links": {
@@ -655,9 +655,9 @@
     "category": "P1",
     "tags": ["Claude API", "Observabilidad", "React", "Node.js", "Open Source"],
     "images": {
-      "thumbnail": "/images/projects/llm observatory/dashboard.png",
+      "thumbnail": "/images/projects/llm observatory/dashboard.webp",
       "gallery": [
-        "/images/projects/llm observatory/dashboard.png"
+        "/images/projects/llm observatory/dashboard.webp"
       ]
     },
     "links": {
@@ -763,9 +763,9 @@
     "category": "P3",
     "tags": ["Node.js", "Leaflet", "FBI API", "Mapas", "Visualización"],
     "images": {
-      "thumbnail": "/images/projects/mapcriminals/main1.png",
+      "thumbnail": "/images/projects/mapcriminals/main1.webp",
       "gallery": [
-        "/images/projects/mapcriminals/main1.png"
+        "/images/projects/mapcriminals/main1.webp"
       ]
     },
     "links": {
@@ -870,11 +870,11 @@
     "category": "P1",
     "tags": ["React Native", "Expo", "FastAPI", "Claude API", "Mobile"],
     "images": {
-      "thumbnail": "/public/images/projects/mindlog/login.jpeg",
+      "thumbnail": "/public/images/projects/mindlog/login.webp",
       "gallery": [
-        "/public/images/projects/mindlog/login.jpeg",
-        "/public/images/projects/mindlog/notas.jpeg",
-        "/public/images/projects/mindlog/chat IA.jpeg"
+        "/public/images/projects/mindlog/login.webp",
+        "/public/images/projects/mindlog/notas.webp",
+        "/public/images/projects/mindlog/chat IA.webp"
       ]
     },
     "links": {

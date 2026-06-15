@@ -115,6 +115,15 @@
   transform: translateY(-3px);
 }
 
+@media (pointer: coarse) {
+  .social-link {
+    width: 44px;
+    height: 44px;
+  }
+
+  .social-link--pill { width: auto; }
+}
+
 .social-link--pill {
   width: auto;
   padding: 0 0.85rem;
@@ -467,8 +476,8 @@
    ───────────────────────────────────────────────────────────── */
 .back-to-top {
   position: fixed;
-  bottom: 2rem;
-  right: 2rem;
+  bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
+  right: calc(2rem + env(safe-area-inset-right, 0px));
   width: 44px;
   height: 44px;
   border-radius: 12px;
@@ -533,8 +542,8 @@
   }
 
   .back-to-top {
-    bottom: 1.25rem;
-    right: 1.25rem;
+    bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+    right: calc(1.25rem + env(safe-area-inset-right, 0px));
   }
 
   .contact-availability { font-size: 0.75rem; }

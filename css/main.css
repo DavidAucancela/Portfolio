@@ -1527,6 +1527,50 @@ ul, ol { list-style: none; }
   color: rgba(255, 255, 255, 0.55);
 }
 
+/* ── Cards .dev/.ia en touch: layout apilado sólido (sin dependencia de hover) ──
+   El diseño fullbleed (texto sobre la imagen, revelado en :hover) no funciona en
+   touch porque no hay hover. En dispositivos sin hover convertimos la card a un
+   layout apilado tipo .sec: imagen 16:9 arriba + body sólido debajo, todo siempre
+   visible. Desktop (hover: hover) conserva el overlay original. */
+@media (hover: none) {
+  /* image-wrap deja de recortar a 4:3 y pasa a columna: imagen + body apilados */
+  .project-card--fullbleed .card-image-wrap {
+    aspect-ratio: auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* la imagen (y el placeholder) recuperan su propia proporción */
+  .project-card--fullbleed .card-image-wrap img {
+    aspect-ratio: 16 / 9;
+    height: auto;
+  }
+  .project-card--fullbleed .card-image-placeholder {
+    position: static;
+    aspect-ratio: 16 / 9;
+  }
+
+  /* sin gradiente: el texto ya no va sobre la foto */
+  .project-card--fullbleed .card-image-overlay { display: none; }
+
+  /* body en flujo normal, fondo sólido de card, contenido siempre visible */
+  .project-card--fullbleed .card-body {
+    position: static;
+    background: var(--bg-card, var(--bg-secondary));
+    padding: 0.9rem 1rem 1rem;
+    gap: 0.45rem;
+  }
+  .project-card--fullbleed .card-description {
+    max-height: none;
+    opacity: 1;
+  }
+  .project-card--fullbleed .card-links {
+    opacity: 1;
+    transform: none;
+    margin-top: 0.5rem;
+  }
+}
+
 /* ─── Estado Coming Soon ─────────────────────────────────────── */
 .coming-soon {
   display: flex;
@@ -1991,10 +2035,8 @@ ul, ol { list-style: none; }
   .card-btn svg           { width: 13px; height: 13px; flex-shrink: 0; }
   .card-btn--process      { flex: 0 0 100%; justify-content: center; }
 
-  /* Fullbleed en mobile: body siempre visible (hover no existe en touch) */
-  .project-card--fullbleed .card-description { max-height: 60px; opacity: 1; }
-  .project-card--fullbleed .card-links       { opacity: 1; transform: none; padding: 0; }
-  .project-card--fullbleed .card-body        { padding: 0.75rem 0.875rem 0.75rem; gap: 0.28rem; }
+  /* El layout apilado fullbleed en touch lo maneja @media (hover: none).
+     Aquí solo quedan los ajustes de tamaño para 2 columnas estrechas (arriba). */
 }
 
 /* ═══════════════════════════════════════════════════

@@ -1079,7 +1079,9 @@ ul, ol { list-style: none; }
 
 .pag-dots {
   display: flex;
-  gap: 0.1rem;
+  /* gap ≥ holgura del dot activo (scale 1.25 → +3px/lado): evita que invada
+     a los vecinos y los deje bajo el mínimo de 24px de target-size (a11y) */
+  gap: 0.5rem;
   align-items: center;
 }
 
@@ -1847,7 +1849,9 @@ ul, ol { list-style: none; }
 
 .footer__copy {
   font-size: 0.85rem;
-  color: var(--text-muted);
+  /* color propio (no --text-muted): garantiza contraste ≥4.5:1 sobre --bg-primary
+     en los 3 modos — el footer va directo sobre el fondo más oscuro (a11y WCAG AA) */
+  color: #7c8aa3;
   transition: color 0.3s ease;
 }
 
@@ -1859,7 +1863,7 @@ ul, ol { list-style: none; }
 .footer__mode {
   font-family: var(--font-display);
   font-size: 0.8rem;
-  color: var(--text-muted);
+  color: #7c8aa3;
   transition: color 0.3s ease;
 }
 

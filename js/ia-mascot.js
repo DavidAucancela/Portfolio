@@ -33,113 +33,57 @@ function _buildSVG(prefix) {
     : _buildSVGVector(prefix);
 }
 
-/* ── MODO IMAGE: robot 3D + overlays animados ─────────────────── */
-// Robot: 307×660px → viewBox 200×200 (xMidYMid meet)
-// Renderiza 93×200, x-offset 53.5 — calibrar posiciones tras prueba visual
+/* ── MODO IMAGE: robot 3D con su cara propia (sin overlays de cara) ──
+   El PNG ya trae ojos y boca pintados → no se dibujan vectoriales encima.
+   Encuadre a CABEZA+TORSO: la imagen se escala 200×430 y el clipPath
+   recorta las piernas (viewBox 0 0 200 200). Solo quedan las decoraciones
+   de estado (puntos / chispa / ?) junto a la cabeza.
+   Geometría del asset: 307×660px. Calibrar `y`/`height` si cambia. */
 
 function _buildSVGImage(prefix) {
   const p = prefix || 'j';
 
-  // Geometría de los ojos sobre la pantalla del robot — CALIBRAR
-  const EL = { cx: 86,  cy: 42 };  // ojo izquierdo
-  const ER = { cx: 114, cy: 42 };  // ojo derecho
-  const ER_SCLERA = 11;            // radio sclera
-  const RP        = 6;             // radio pupila
-
   return `<svg class="jotai-mascot" viewBox="0 0 200 200"
          xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
   <defs>
-    <radialGradient id="${p}aura" cx="50%" cy="48%" r="55%">
-      <stop offset="0%"   stop-color="var(--color-accent,#06ffa5)" stop-opacity=".55"/>
-      <stop offset="60%"  stop-color="var(--color-accent,#06ffa5)" stop-opacity=".12"/>
-      <stop offset="100%" stop-color="var(--color-accent,#06ffa5)" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="${p}eye" cx="40%" cy="36%" r="65%">
-      <stop offset="0%"   stop-color="#e8f4ff"/>
-      <stop offset="100%" stop-color="var(--color-secondary,#b14eff)" stop-opacity=".5"/>
-    </radialGradient>
+    <clipPath id="${p}crop"><rect x="0" y="0" width="200" height="200"/></clipPath>
   </defs>
 
-  <!-- Aura centrada en el torso del robot -->
-  <circle class="jotai-aura" cx="100" cy="110" r="74" fill="url(#${p}aura)"/>
+  <!-- Grupo estático con el recorte: estable aunque la criatura respire/incline -->
+  <g clip-path="url(#${p}crop)">
+    <g class="jotai-creature">
+      <g class="jotai-tilt">
 
-  <!-- Motes orbitando -->
-  <g class="jotai-motes">
-    <circle cx="100" cy="26"  r="2.6" fill="var(--color-accent,#06ffa5)" opacity=".9"/>
-    <circle cx="176" cy="120" r="2"   fill="var(--color-secondary,#b14eff)" opacity=".8"/>
-  </g>
-  <g class="jotai-motes-2">
-    <circle cx="26"  cy="118" r="2.2" fill="var(--color-accent,#06ffa5)" opacity=".7"/>
-  </g>
+        <!-- Cuerpo 3D con su cara propia. 200×430 → piernas recortadas por el clip -->
+        <image class="jotai-body-img"
+               href="public/images/jotai/body.png"
+               x="0" y="8" width="200" height="430"
+               preserveAspectRatio="xMidYMid meet"/>
 
-  <g class="jotai-creature">
-    <g class="jotai-tilt">
+        <!-- Orejas invisibles — preservan el contrato CSS de estados animados -->
+        <path class="jotai-ear jotai-ear-l" opacity="0"
+              d="M83 92 C72 77 70 53 77 41 C84 49 88 73 88 91 Z"/>
+        <path class="jotai-ear jotai-ear-r" opacity="0"
+              d="M117 92 C128 77 130 53 123 41 C116 49 112 73 112 91 Z"/>
 
-      <!-- Cuerpo (imagen con fondo transparente) -->
-      <image class="jotai-body-img"
-             href="public/images/jotai/body.png"
-             x="0" y="0" width="200" height="200"
-             preserveAspectRatio="xMidYMid meet"/>
-
-      <!-- Orejas invisibles — preservan el contrato CSS de estados animados -->
-      <path class="jotai-ear jotai-ear-l" opacity="0"
-            d="M83 92 C72 77 70 53 77 41 C84 49 88 73 88 91 Z"/>
-      <path class="jotai-ear jotai-ear-r" opacity="0"
-            d="M117 92 C128 77 130 53 123 41 C116 49 112 73 112 91 Z"/>
-
-      <!-- Ojo izquierdo sobre la pantalla del robot -->
-      <g>
-        <ellipse cx="${EL.cx}" cy="${EL.cy}" rx="${ER_SCLERA}" ry="${ER_SCLERA}"
-                 fill="url(#${p}eye)" opacity=".4"/>
-        <g class="jotai-pupil-grp">
-          <circle cx="${EL.cx}"     cy="${EL.cy}"     r="${RP}"   fill="var(--bg-primary,#0a1430)" opacity=".85"/>
-          <circle cx="${EL.cx - 2}" cy="${EL.cy - 2}" r="1.8"    fill="#fff"/>
-          <circle cx="${EL.cx+1.5}" cy="${EL.cy + 2}" r="1.1"    fill="var(--color-accent,#06ffa5)"/>
+        <!-- Decoraciones de estado, junto a la cabeza (arriba-derecha) -->
+        <g class="jotai-think-dots">
+          <circle cx="150" cy="30" r="3.4" fill="var(--color-accent,#06ffa5)"/>
+          <circle cx="162" cy="23" r="3.4" fill="var(--color-accent,#06ffa5)"/>
+          <circle cx="173" cy="18" r="3.4" fill="var(--color-accent,#06ffa5)"/>
         </g>
-        <ellipse class="jotai-lid"
-                 cx="${EL.cx}" cy="${EL.cy}" rx="${ER_SCLERA+1}" ry="${ER_SCLERA+1}"
-                 fill="var(--bg-secondary,#1a2540)"/>
+
+        <!-- Spark (is-success) -->
+        <path class="jotai-spark"
+              d="M163 11 l2.8 7 7 2.8 -7 2.8 -2.8 7 -2.8 -7 -7 -2.8 7 -2.8 z"
+              fill="var(--color-accent,#06ffa5)"/>
+
+        <!-- Signo de pregunta (is-confused) -->
+        <text class="jotai-qmark" x="150" y="38"
+              font-size="22" font-weight="800" font-family="monospace"
+              fill="var(--color-accent,#06ffa5)">?</text>
+
       </g>
-
-      <!-- Ojo derecho -->
-      <g>
-        <ellipse cx="${ER.cx}" cy="${ER.cy}" rx="${ER_SCLERA}" ry="${ER_SCLERA}"
-                 fill="url(#${p}eye)" opacity=".4"/>
-        <g class="jotai-pupil-grp">
-          <circle cx="${ER.cx}"     cy="${ER.cy}"     r="${RP}"   fill="var(--bg-primary,#0a1430)" opacity=".85"/>
-          <circle cx="${ER.cx - 2}" cy="${ER.cy - 2}" r="1.8"    fill="#fff"/>
-          <circle cx="${ER.cx+1.5}" cy="${ER.cy + 2}" r="1.1"    fill="var(--color-accent,#06ffa5)"/>
-        </g>
-        <ellipse class="jotai-lid"
-                 cx="${ER.cx}" cy="${ER.cy}" rx="${ER_SCLERA+1}" ry="${ER_SCLERA+1}"
-                 fill="var(--bg-secondary,#1a2540)"/>
-      </g>
-
-      <!-- Boca (d cambia por JS según estado) -->
-      <path class="jotai-mouth-path"
-            d="M91 56 Q100 62 109 56"
-            fill="none"
-            stroke="var(--bg-primary,#0a1430)"
-            stroke-width="2.8"
-            stroke-linecap="round"/>
-
-      <!-- Think-dots (is-thinking) — zona superior derecha del robot -->
-      <g class="jotai-think-dots">
-        <circle cx="138" cy="20" r="3.2" fill="var(--color-accent,#06ffa5)"/>
-        <circle cx="149" cy="14" r="3.2" fill="var(--color-accent,#06ffa5)"/>
-        <circle cx="160" cy="10" r="3.2" fill="var(--color-accent,#06ffa5)"/>
-      </g>
-
-      <!-- Spark (is-success) -->
-      <path class="jotai-spark"
-            d="M154 6 l2.5 6.5 6.5 2.5 -6.5 2.5 -2.5 6.5 -2.5 -6.5 -6.5 -2.5 6.5 -2.5 z"
-            fill="var(--color-accent,#06ffa5)"/>
-
-      <!-- Signo de pregunta (is-confused) -->
-      <text class="jotai-qmark" x="143" y="24"
-            font-size="20" font-weight="800" font-family="monospace"
-            fill="var(--color-accent,#06ffa5)">?</text>
-
     </g>
   </g>
 </svg>`;
@@ -518,7 +462,6 @@ export const IaMascot = (() => {
       _pendingKB = null;
     }
     IaBubble.clear(); // la conversación reemplaza a los globos
-    _unpeek();
     _prevFocus = document.activeElement;
     _panel.hidden = false;
     _trigger.setAttribute('aria-expanded', 'true');
@@ -866,34 +809,19 @@ export const IaMascot = (() => {
 
   /* ── ENTRADA: peek "solo cabeza" + bienvenida (1×/sesión) ──── */
 
-  function _unpeek() {
-    document.getElementById('jotai-widget')?.classList.remove('is-peeking');
+  function _welcomed() {
+    try { return !!sessionStorage.getItem(WELCOME_KEY); } catch { return false; }
+  }
+  function _markWelcomed() {
+    try { sessionStorage.setItem(WELCOME_KEY, '1'); } catch { /* privado */ }
   }
 
+  /* Entrada: sin animación de asomo — solo el globo de bienvenida (1×/sesión).
+     El avatar aparece estático en su sitio. */
   function _entrance() {
-    let welcomed = false;
-    try { welcomed = !!sessionStorage.getItem(WELCOME_KEY); } catch { /* privado */ }
-    if (welcomed) return;
-    try { sessionStorage.setItem(WELCOME_KEY, '1'); } catch { /* privado */ }
-
-    // Reduced motion: sin peek ni slide — solo el globo con texto instantáneo
-    if (_reduced) {
-      setTimeout(() => say(WELCOME_TEXT, { duration: 5000 }), 800);
-      return;
-    }
-
-    // Peek inmediato (la clase se aplica antes del primer paint → sin flash)
-    document.getElementById('jotai-widget')?.classList.add('is-peeking');
-
-    // Espera al slide-up antes de hablar
-    setTimeout(() => {
-      const ok = say(WELCOME_TEXT, {
-        duration: 4500,
-        mood:     'greeting',
-        onHidden: _unpeek, // al ocultarse el globo → encuadre normal + idle
-      });
-      if (!ok) _unpeek(); // panel/tour abiertos → aborta el peek
-    }, 900);
+    if (_welcomed()) return;
+    _markWelcomed();
+    setTimeout(() => say(WELCOME_TEXT, { duration: 4500, mood: 'greeting' }), 900);
   }
 
   /* ── SPEECH BUBBLE (presencia proactiva) ───────────────────── */

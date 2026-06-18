@@ -1077,39 +1077,36 @@ ul, ol { list-style: none; }
   cursor: not-allowed;
 }
 
-.pag-dots {
-  display: flex;
-  /* gap ≥ holgura del dot activo (scale 1.25 → +3px/lado): evita que invada
-     a los vecinos y los deje bajo el mínimo de 24px de target-size (a11y) */
-  gap: 0.5rem;
-  align-items: center;
+/* Contador de página en píldora — misma altura/borde que los .pag-btn
+   para que el grupo central encaje con los botones de los lados */
+.pag-counter {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.15rem;
+  padding: 0.5rem 0.95rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85rem;
+  line-height: 1;
+  color: var(--text-secondary);
+  user-select: none;
+  font-variant-numeric: tabular-nums;
 }
 
-/* Dot visual de 8px dentro de un área táctil mayor:
-   el padding amplía el hit area y background-clip mantiene el punto pequeño */
-.pag-dot {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: var(--border-color);
-  background-clip: content-box;
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
-  border: none;
-  padding: 8px;
+.pag-counter__current {
+  color: var(--color-accent);
+  font-weight: 700;
 }
 
-@media (pointer: coarse) {
-  .pag-dot {
-    width: 36px;
-    height: 36px;
-    padding: 14px;
-  }
+.pag-counter__sep {
+  color: var(--text-muted);
+  margin: 0 0.1rem;
 }
 
-.pag-dot.active {
-  background: var(--color-accent);
-  transform: scale(1.25);
+.pag-counter__total {
+  color: var(--text-muted);
 }
 
 /* ── @property para beam angle ── */

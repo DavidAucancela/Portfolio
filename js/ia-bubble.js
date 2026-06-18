@@ -37,9 +37,13 @@ export const IaBubble = (() => {
     _root.hidden = true;
     _root.setAttribute('role', 'status');
     _root.innerHTML = `
+      <svg class="jotai-bubble__cloud" viewBox="0 0 120 80" preserveAspectRatio="none"
+           aria-hidden="true" focusable="false">
+        <path vector-effect="non-scaling-stroke"
+              d="M24 60 C9 58 4 44 9 33 C3 22 16 11 28 17 C31 4 51 4 55 16 C60 4 82 4 86 17 C99 12 114 24 105 35 C117 41 113 57 98 56 C96 70 70 73 62 60 C40 72 24 70 24 60 Z"/>
+      </svg>
       <span class="jotai-bubble__sr" aria-live="polite"></span>
       <span class="jotai-bubble__text" aria-hidden="true"></span>
-      <button class="jotai-bubble__close" type="button" aria-label="Cerrar mensaje">✕</button>
     `;
 
     // Antes del trigger → en el flex column queda encima del avatar
@@ -48,9 +52,6 @@ export const IaBubble = (() => {
 
     _textEl = _root.querySelector('.jotai-bubble__text');
     _srEl   = _root.querySelector('.jotai-bubble__sr');
-
-    _root.querySelector('.jotai-bubble__close')
-      .addEventListener('click', e => { e.stopPropagation(); dismiss(); });
 
     // Clic fuera del globo → dismiss
     document.addEventListener('pointerdown', e => {

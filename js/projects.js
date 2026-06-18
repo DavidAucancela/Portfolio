@@ -193,12 +193,6 @@ function _renderPagination(totalPages, projects, mode) {
   const prevDisabled = _currentPage === 1 ? 'disabled' : '';
   const nextDisabled = _currentPage === totalPages ? 'disabled' : '';
 
-  const dots = Array.from({ length: totalPages }, (_, i) => `
-    <button class="pag-dot${i + 1 === _currentPage ? ' active' : ''}"
-            data-page="${i + 1}" aria-label="Página ${i + 1}"
-            ${i + 1 === _currentPage ? 'aria-current="page"' : ''}></button>
-  `).join('');
-
   pag.innerHTML = `
     <button class="pag-btn pag-btn--prev" ${prevDisabled} aria-label="Página anterior">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
@@ -206,7 +200,10 @@ function _renderPagination(totalPages, projects, mode) {
       </svg>
       ${LangSwitcher.t('projects.prev')}
     </button>
-    <div class="pag-dots" role="group" aria-label="Páginas">${dots}</div>
+    <span class="pag-counter" role="status" aria-live="polite"
+          aria-label="Página ${_currentPage} de ${totalPages}">
+      <span class="pag-counter__current">${_currentPage}</span><span class="pag-counter__sep">/</span><span class="pag-counter__total">${totalPages}</span>
+    </span>
     <button class="pag-btn pag-btn--next" ${nextDisabled} aria-label="Página siguiente">
       ${LangSwitcher.t('projects.next')}
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
@@ -229,14 +226,6 @@ function _renderPagination(totalPages, projects, mode) {
       _renderPage(document.getElementById('projects-grid'), projects, mode);
       _scrollToProjectsTop();
     }
-  });
-
-  pag.querySelectorAll('.pag-dot').forEach(dot => {
-    dot.addEventListener('click', () => {
-      _currentPage = parseInt(dot.dataset.page, 10);
-      _renderPage(document.getElementById('projects-grid'), projects, mode);
-      _scrollToProjectsTop();
-    });
   });
 }
 

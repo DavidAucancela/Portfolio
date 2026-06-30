@@ -241,10 +241,41 @@ function _respContact() {
 
 function _respListProjects() {
   if (!_projects.length) return 'Un momento, estoy cargando los datos…';
-  const lines = _projects
-    .map(p => `**${p.title}** — ${(p.description || '').slice(0, 90)}${(p.description || '').length > 90 ? '…' : ''}`)
+  const featured = _projects.filter(p => p.featured);
+  const shown = featured.length >= 3 ? featured.slice(0, 6) : _projects.slice(0, 6);
+  const lines = shown
+    .map(p => `**${p.title}** — ${(p.description || '').slice(0, 80)}…`)
     .join('\n');
-  return `Jonathan tiene **${_projects.length} proyectos** en su portfolio:\n\n${lines}\n\nPregúntame por cualquiera para ver detalles.`;
+  return `Algunos proyectos destacados de Jonathan (${_projects.length} en total):\n\n${lines}\n\nPregúntame por uno específico o escribe "todos" para ver la lista completa.`;
+}
+
+function _respAllProjects() {
+  if (!_projects.length) return 'Un momento, estoy cargando los datos…';
+  const lines = _projects
+    .map(p => `**${p.title}** — ${(p.description || '').slice(0, 70)}…`)
+    .join('\n');
+  return `Los **${_projects.length} proyectos** de Jonathan:\n\n${lines}\n\nPregúntame por cualquiera para ver detalles.`;
+}
+
+function _respRecentProjects() {
+  const sorted = [..._projects]
+    .filter(p => p.date)
+    .sort((a, b) => (b.date > a.date ? 1 : -1))
+    .slice(0, 5);
+  if (!sorted.length) return _respListProjects();
+  const lines = sorted
+    .map(p => `**${p.title}** (${p.date}) — ${(p.description || '').slice(0, 70)}…`)
+    .join('\n');
+  return `Los proyectos más recientes de Jonathan:\n\n${lines}\n\nPregúntame por cualquiera para ver más detalles.`;
+}
+
+function _respTopSkills() {
+  const top = [..._skills].filter(s => s.level >= 4).sort((a, b) => b.level - a.level);
+  if (!top.length) return _respListSkills();
+  const list = top
+    .map(s => `**${s.name}** — ${'★'.repeat(s.level)}${'☆'.repeat(5 - s.level)} ${_skillLevel(s.level)}`)
+    .join('\n');
+  return `Las áreas donde Jonathan más destaca:\n\n${list}`;
 }
 
 function _respListSkills() {
@@ -259,19 +290,48 @@ function _respListSkills() {
       .join('\n');
 }
 
+// ── RESPONSE BUILDERS (nuevos intents) ──────────────────────────────────────
+
+function _respThanks() {
+  return '¡De nada! Estoy aquí si tienes más preguntas sobre el portafolio de Jonathan.';
+}
+
+function _respHelp() {
+  return `Puedo ayudarte con esto:\n\n**Proyectos** — "muéstrame UBApp", "¿qué proyectos tiene?"\n**Skills** — "¿qué tecnologías usa?", "cuéntame sobre React"\n**Perfil** — "¿quién es Jonathan?", "preséntate"\n**Contacto** — "¿cómo contactarlo?"\n\nPregunta en lenguaje natural — entiendo español e inglés.`;
+}
+
 // ── INTENT DETECTION ─────────────────────────────────────────────────────────
 
 function _detectIntent(norm) {
+  // "todos" explícito → lista completa
   if (_matchAny(norm, [
-    'todos los proyectos', 'lista proyectos', 'que proyectos', 'cuantos proyectos',
-    'que trabajos', 'que has hecho', 'que hiciste', 'mostrar proyectos', 'ver proyectos',
-    'tu portafolio', 'tu portfolio',
+    'todos los proyectos', 'lista completa', 'listar proyectos', 'lista proyectos',
+    'cuantos proyectos', 'que proyectos tiene', 'que trabajos tiene',
+    'mostrar todos', 'ver todos', 'todos',
+  ])) return 'list_all_projects';
+
+  if (_matchAny(norm, [
+    'proyectos', 'portafolio', 'portfolio', 'que has hecho', 'que hiciste',
+    'mostrar proyectos', 'ver proyectos', 'que trabajo',
   ])) return 'list_projects';
+
+  // Proyectos recientes
+  if (_matchAny(norm, [
+    'reciente', 'recientes', 'nuevo', 'nuevos', 'lo nuevo', 'ultimo', 'ultimos',
+    'lo mas nuevo', 'novedades', 'latest', 'recent', 'recientemente',
+  ])) return 'recent_projects';
+
+  // Top skills / especialidades
+  if (_matchAny(norm, [
+    'en que es pro', 'en que destaca', 'en que sobresale', 'mejor en', 'fuerte en',
+    'especialidad', 'especialidades', 'mas fuerte', 'mas avanzado',
+    'experto', 'experta', 'avanzado', 'avanzada', 'domina',
+  ])) return 'top_skills';
 
   if (_matchAny(norm, [
     'tus skills', 'tus habilidades', 'que sabes', 'que tecnologias', 'que dominas',
     'tu stack', 'tecnologias que', 'habilidades tecnicas', 'que conoces',
-    'que lenguajes', 'que frameworks',
+    'que lenguajes', 'que frameworks', 'stack tecnologico',
   ])) return 'list_skills';
 
   if (_matchAny(norm, [
@@ -284,12 +344,82 @@ function _detectIntent(norm) {
     'donde encontrar', 'como contactar', 'instagram',
   ])) return 'contact';
 
+  if (_matchAny(norm, [
+    'gracias', 'muchas gracias', 'genial', 'perfecto', 'ok gracias', 'thank you', 'thanks',
+    'chevere', 'excelente', 'buenisimo',
+  ])) return 'thanks';
+
+  if (_matchAny(norm, [
+    'ayuda', 'que puedes hacer', 'que sabes hacer', 'capacidades', 'que puedo preguntar',
+    'comandos', 'help', 'opciones disponibles', 'opciones', 'como funciona',
+  ])) return 'help';
+
+  if (_matchAny(norm, [
+    'cuando fue', 'en que ano', 'fecha del', 'cuando lo hizo', 'cuando hizo',
+    'en que fecha', 'que ano', 'cuando fue ese',
+  ])) return 'when';
+
   return 'search';
+}
+
+// ── REFERENTIAL RESOLUTION ───────────────────────────────────────────────────
+
+function _detectReferential(norm) {
+  const refs = [
+    'ese proyecto', 'eso mismo', 'el mismo', 'la misma', 'ese mismo',
+    'ese', 'eso', 'el otro', 'mas sobre', 'mas informacion', 'cuentame mas',
+    'y ese', 'dime mas', 'que stack', 'que tecnologia uso', 'que uso',
+    'proyectos similares', 'parecidos', 'como ese', 'relacionados',
+  ];
+  return refs.some(r => norm.includes(r));
+}
+
+function _resolveWhen(context) {
+  for (let i = context.length - 1; i >= 0; i--) {
+    const turn = context[i];
+    if (turn.role === 'bot' && turn.result?.type === 'project') {
+      const d = turn.result.data?.date;
+      if (d) return { type: 'special', text: `Ese proyecto fue en **${d.replace('-', ' / ')}**.` };
+      return { type: 'special', text: 'No tengo la fecha exacta de ese proyecto.' };
+    }
+  }
+  return { type: 'special', text: '¿A qué proyecto te refieres? Pregúntame por uno específico.' };
+}
+
+function _resolveReferential(norm, context) {
+  for (let i = context.length - 1; i >= 0; i--) {
+    const turn = context[i];
+    if (turn.role !== 'bot' || !turn.result) continue;
+    const last = turn.result;
+
+    if (_matchAny(norm, ['stack', 'tecnologia', 'que uso', 'que usa', 'que lenguaje', 'herramientas'])) {
+      if (last.type === 'project' && last.data?.techStack) {
+        const tech = Object.values(last.data.techStack).flat().join(', ');
+        return { type: 'special', text: `Stack de **${last.data.title}**: ${tech}.` };
+      }
+    }
+
+    if (_matchAny(norm, ['similares', 'parecidos', 'como ese', 'relacionados'])) {
+      if (last.type === 'project' && last.data?.tags?.length) {
+        const tag = last.data.tags[0];
+        const similar = _kb.find(doc =>
+          doc.type === 'project' &&
+          doc.data.slug !== last.data.slug &&
+          (doc.data.tags || []).includes(tag)
+        );
+        if (similar) return { type: 'project', data: similar.data };
+      }
+    }
+
+    // Follow-up general: devuelve el último resultado
+    return { ...last, _referential: true };
+  }
+  return null;
 }
 
 // ── QUERY ENGINE ─────────────────────────────────────────────────────────────
 
-function _query(input) {
+function _query(input, context = []) {
   if (!_ready) return {
     type: 'special',
     text: 'Un momento, estoy cargando mis datos… Intenta de nuevo enseguida.',
@@ -298,10 +428,22 @@ function _query(input) {
   const norm   = _norm(input);
   const intent = _detectIntent(norm);
 
+  if (intent === 'list_all_projects') return { type: 'special', text: _respAllProjects() };
   if (intent === 'list_projects') return { type: 'special', text: _respListProjects() };
+  if (intent === 'recent_projects') return { type: 'special', text: _respRecentProjects() };
+  if (intent === 'top_skills')    return { type: 'special', text: _respTopSkills() };
   if (intent === 'list_skills')   return { type: 'special', text: _respListSkills() };
   if (intent === 'personal')      return { type: 'special', text: _respPersonal() };
   if (intent === 'contact')       return { type: 'special', text: _respContact() };
+  if (intent === 'thanks')        return { type: 'special', text: _respThanks(), mood: 'excited' };
+  if (intent === 'help')          return { type: 'special', text: _respHelp() };
+  if (intent === 'when')          return _resolveWhen(context);
+
+  // Resolución referencial si hay contexto previo
+  if (context.length > 0 && _detectReferential(norm)) {
+    const ref = _resolveReferential(norm, context);
+    if (ref) return ref;
+  }
 
   // Keyword search over KB
   for (const doc of _kb) {
@@ -324,4 +466,4 @@ async function init() {
 }
 
 // Expone query() y getKB() para ia-mascot.js y Fase 3 (embeddings)
-export const IAAssistant = { init, query: _query, getKB: () => _kb };
+export const IAAssistant = { init, query: (input, context) => _query(input, context), getKB: () => _kb };

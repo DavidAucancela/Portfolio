@@ -66,6 +66,109 @@ function _buildSVGImage(prefix) {
         <path class="jotai-ear jotai-ear-r" opacity="0"
               d="M117 92 C128 77 130 53 123 41 C116 49 112 73 112 91 Z"/>
 
+        <!-- Think ring (visible en .is-thinking) -->
+        <circle class="jotai-think-ring" cx="100" cy="85" r="55" stroke-width="2" opacity="0.6"/>
+
+        <!-- ── ACCESORIOS POR MODO ────────────────────────────── -->
+        <!-- Ojos: izq(62,73) der(135,69) — tilt manual en y, sin transform -->
+
+        <!-- .dev — gafas redondas doradas estilo nerd -->
+        <g class="jotai-acc jotai-acc--dev">
+          <!-- Patilla izquierda -->
+          <line x1="36" y1="71" x2="20" y2="65" stroke="#92400e" stroke-width="4" stroke-linecap="round"/>
+          <!-- Patilla derecha -->
+          <line x1="161" y1="67" x2="177" y2="61" stroke="#92400e" stroke-width="4" stroke-linecap="round"/>
+          <!-- Lente izquierda -->
+          <circle cx="62" cy="73" r="26"
+                  fill="rgba(251,191,36,0.38)" stroke="#92400e" stroke-width="5"/>
+          <!-- Lente derecha (4px más alto por tilt) -->
+          <circle cx="135" cy="69" r="26"
+                  fill="rgba(251,191,36,0.38)" stroke="#92400e" stroke-width="5"/>
+          <!-- Puente -->
+          <path d="M88 71 C93 65 102 63 109 67"
+                stroke="#92400e" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+          <!-- Brillo izquierda -->
+          <line x1="48" y1="62" x2="60" y2="57" stroke="rgba(255,255,255,0.85)" stroke-width="3" stroke-linecap="round"/>
+          <!-- Brillo derecha -->
+          <line x1="121" y1="58" x2="133" y2="53" stroke="rgba(255,255,255,0.85)" stroke-width="3" stroke-linecap="round"/>
+        </g>
+
+        <!-- .ia — ojos AI con scan rings + red neural flotante -->
+        <g class="jotai-acc jotai-acc--ia">
+          <!-- Anillo exterior teal ojo izquierdo -->
+          <ellipse cx="62" cy="73" rx="32" ry="29"
+                   fill="rgba(6,255,165,0.08)" stroke="#06ffa5" stroke-width="2.5" class="jotai-scan-outer"/>
+          <!-- Anillo interior púrpura ojo izquierdo (pulsa) -->
+          <ellipse cx="62" cy="73" rx="24" ry="21"
+                   fill="rgba(177,78,255,0.32)" stroke="#b14eff" stroke-width="3.5" class="jotai-halo"/>
+          <!-- Crosshair ojo izquierdo -->
+          <line x1="62" y1="55" x2="62" y2="91" stroke="#06ffa5" stroke-width="1.8" opacity="0.75"/>
+          <line x1="44" y1="73" x2="80" y2="73" stroke="#06ffa5" stroke-width="1.8" opacity="0.75"/>
+
+          <!-- Anillo exterior teal ojo derecho -->
+          <ellipse cx="135" cy="69" rx="32" ry="29"
+                   fill="rgba(6,255,165,0.08)" stroke="#06ffa5" stroke-width="2.5" class="jotai-scan-outer"/>
+          <!-- Anillo interior púrpura ojo derecho -->
+          <ellipse cx="135" cy="69" rx="24" ry="21"
+                   fill="rgba(177,78,255,0.32)" stroke="#b14eff" stroke-width="3.5"/>
+          <!-- Crosshair ojo derecho -->
+          <line x1="135" y1="51" x2="135" y2="87" stroke="#06ffa5" stroke-width="1.8" opacity="0.75"/>
+          <line x1="117" y1="69" x2="153" y2="69" stroke="#06ffa5" stroke-width="1.8" opacity="0.75"/>
+
+          <!-- Red neural flotante sobre la cabeza -->
+          <!-- Nodo central -->
+          <circle cx="99" cy="28" r="6" fill="#b14eff" stroke="#06ffa5" stroke-width="2"/>
+          <!-- Nodos satélite -->
+          <circle cx="62"  cy="38" r="4" fill="#06ffa5"/>
+          <circle cx="136" cy="35" r="4" fill="#06ffa5"/>
+          <circle cx="78"  cy="22" r="3" fill="#b14eff" opacity="0.9"/>
+          <circle cx="120" cy="20" r="3" fill="#b14eff" opacity="0.9"/>
+          <!-- Conexiones -->
+          <line x1="66"  y1="38" x2="93"  y2="30" stroke="#06ffa5" stroke-width="2" opacity="0.7"/>
+          <line x1="132" y1="35" x2="105" y2="30" stroke="#06ffa5" stroke-width="2" opacity="0.7"/>
+          <line x1="80"  y1="22" x2="93"  y2="26" stroke="#b14eff" stroke-width="1.5" opacity="0.6"/>
+          <line x1="118" y1="20" x2="105" y2="26" stroke="#b14eff" stroke-width="1.5" opacity="0.6"/>
+          <line x1="64"  y1="36" x2="76"  y2="24" stroke="#06ffa5" stroke-width="1.5" opacity="0.5"/>
+          <line x1="134" y1="33" x2="122" y2="21" stroke="#06ffa5" stroke-width="1.5" opacity="0.5"/>
+        </g>
+
+        <!-- .sec — Terminator: ojo rojo + vigilancia verde + scan lines -->
+        <g class="jotai-acc jotai-acc--sec">
+
+          <!-- Scan lines horizontales estilo CRT/terminal sobre la cara -->
+          <line x1="30" y1="50" x2="168" y2="50" stroke="#00ff41" stroke-width="1.5" opacity="0.22"/>
+          <line x1="30" y1="60" x2="168" y2="60" stroke="#00ff41" stroke-width="1.5" opacity="0.22"/>
+          <line x1="30" y1="70" x2="168" y2="70" stroke="#00ff41" stroke-width="2"   opacity="0.35"/>
+          <line x1="30" y1="80" x2="168" y2="80" stroke="#00ff41" stroke-width="2"   opacity="0.35"/>
+          <line x1="30" y1="90" x2="168" y2="90" stroke="#00ff41" stroke-width="1.5" opacity="0.22"/>
+          <line x1="30" y1="100" x2="168" y2="100" stroke="#00ff41" stroke-width="1.5" opacity="0.18"/>
+          <!-- Barra de scan animada -->
+          <rect x="30" y="44" width="138" height="6" rx="0"
+                fill="rgba(0,255,65,0.18)" class="jotai-scanbar"/>
+
+          <!-- Ojo derecho — TERMINATOR (rojo, concéntrico, crosshair) -->
+          <!-- Glow exterior -->
+          <circle cx="135" cy="69" r="34"
+                  fill="rgba(220,0,0,0.18)" stroke="none"/>
+          <!-- Iris rojo -->
+          <circle cx="135" cy="69" r="28"
+                  fill="rgba(180,0,0,0.82)" stroke="#ff2200" stroke-width="4"/>
+          <!-- Iris medio -->
+          <circle cx="135" cy="69" r="18"
+                  fill="rgba(255,40,0,0.7)" stroke="#ff4400" stroke-width="2"/>
+          <!-- Pupila -->
+          <circle cx="135" cy="69" r="9"
+                  fill="#ff6600" opacity="0.95"/>
+          <!-- Crosshair Terminator -->
+          <line x1="135" y1="44" x2="135" y2="94" stroke="rgba(255,100,0,0.85)" stroke-width="2"/>
+          <line x1="110" y1="69" x2="160" y2="69" stroke="rgba(255,100,0,0.85)" stroke-width="2"/>
+          <!-- Anillo de targeting -->
+          <circle cx="135" cy="69" r="22"
+                  fill="none" stroke="#ff6600" stroke-width="1.5" opacity="0.6"
+                  stroke-dasharray="6 4"/>
+
+        </g>
+
         <!-- Decoraciones de estado, junto a la cabeza (arriba-derecha) -->
         <g class="jotai-think-dots">
           <circle cx="150" cy="30" r="3.4" fill="var(--color-accent,#06ffa5)"/>
@@ -189,6 +292,9 @@ function _buildSVGVector(prefix) {
             stroke-width="3.4"
             stroke-linecap="round"/>
 
+      <!-- Think ring (visible en .is-thinking) -->
+      <circle class="jotai-think-ring" cx="100" cy="100" r="60" stroke-width="1.5" opacity="0.6"/>
+
       <!-- Think-dots (visibles en .is-thinking) -->
       <g class="jotai-think-dots">
         <circle cx="142" cy="74" r="3.2" fill="var(--color-accent,#06ffa5)"/>
@@ -255,6 +361,10 @@ export const IaMascot = (() => {
   let _reduced    = false;
   let _hasGreeted = false;
   let _prevFocus  = null;
+
+  /* Contexto de conversación */
+  let _context = [];
+  const CONTEXT_MAX = 3;
 
   /* Worker state */
   let _worker       = null;
@@ -340,20 +450,14 @@ export const IaMascot = (() => {
            aria-modal="false"
            hidden>
 
+        <div class="jotai-swipe-handle" aria-hidden="true"></div>
+
         <div id="jotai-panel-header">
-          <div class="jotai-header-avatar">${_buildSVG('p')}</div>
-          <div class="jotai-header-info">
-            <div class="jotai-header-name">${MASCOT_NAME}</div>
-            <div class="jotai-header-status">
-              <span class="jotai-status-dot"></span>
-              <span id="jotai-status-text">Listo para responder</span>
-            </div>
-          </div>
           <button id="jotai-tour-btn" aria-label="Iniciar tour del portfolio">
             Tour 🗺
           </button>
           <button id="jotai-panel-close" aria-label="Cerrar asistente">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
               <line x1="18" y1="6" x2="6" y2="18"/>
               <line x1="6" y1="6" x2="18" y2="18"/>
@@ -366,19 +470,17 @@ export const IaMascot = (() => {
              aria-live="polite"
              aria-label="Conversación con ${MASCOT_NAME}"></div>
 
-        <p class="jotai-hint" id="jotai-hint">
-          Escribe en lenguaje natural — p. ej. «¿qué ha hecho en ciberseguridad?»
-        </p>
+        <div class="jotai-char-counter" id="jotai-char-counter" aria-live="polite"></div>
 
         <div id="jotai-input-wrap">
-          <input
+          <textarea
             id="jotai-input"
-            type="text"
             placeholder="Pregúntame algo…"
             maxlength="200"
             autocomplete="off"
+            rows="1"
             aria-label="Escribe tu pregunta para ${MASCOT_NAME}"
-          />
+          ></textarea>
           <button id="jotai-send" aria-label="Enviar pregunta">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2.5"
@@ -442,8 +544,71 @@ export const IaMascot = (() => {
     _input.addEventListener('blur', () => {
       if (_state === 'listening') _setState('idle');
     });
+
+    /* Autosize textarea */
+    _input.addEventListener('input', () => {
+      _input.style.height = 'auto';
+      _input.style.height = Math.min(_input.scrollHeight, 80) + 'px';
+    });
+
+    /* Char counter */
+    _input.addEventListener('input', () => {
+      const counter = document.getElementById('jotai-char-counter');
+      if (!counter) return;
+      const remaining = 200 - _input.value.length;
+      if (remaining <= 40) {
+        counter.textContent = `${remaining} caracteres restantes`;
+        counter.classList.add('is-visible');
+        counter.classList.toggle('is-warning', remaining <= 15);
+      } else {
+        counter.classList.remove('is-visible');
+      }
+    });
+
+    /* Swipe-to-close mobile */
+    let _swipeStartY = 0;
+    let _swipeDelta  = 0;
+    _panel.addEventListener('touchstart', e => {
+      _swipeStartY = e.touches[0].clientY;
+      _swipeDelta  = 0;
+    }, { passive: true });
+    _panel.addEventListener('touchmove', e => {
+      _swipeDelta = e.touches[0].clientY - _swipeStartY;
+      if (_swipeDelta > 0 && _chat.scrollTop <= 0) {
+        const resistance = Math.min(_swipeDelta * 0.45, 70);
+        _panel.style.transform = `translateY(${resistance}px)`;
+        _panel.style.opacity   = String(Math.max(0.4, 1 - _swipeDelta / 250));
+      }
+    }, { passive: true });
+    _panel.addEventListener('touchend', () => {
+      if (_swipeDelta > 80 && _chat.scrollTop <= 0) {
+        _panel.style.transform = '';
+        _panel.style.opacity   = '';
+        closePanel();
+      } else {
+        _panel.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
+        _panel.style.transform  = '';
+        _panel.style.opacity    = '';
+        setTimeout(() => { _panel.style.transition = ''; }, 200);
+      }
+      _swipeDelta = 0;
+    });
+
+    /* Focus trap + Escape */
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && _isOpen) closePanel();
+      if (e.key === 'Escape' && _isOpen) { closePanel(); return; }
+      if (e.key !== 'Tab' || !_isOpen) return;
+      const focusables = Array.from(_panel.querySelectorAll(
+        'button:not([disabled]), textarea, a[href], [tabindex]:not([tabindex="-1"])'
+      )).filter(el => !el.closest('[hidden]') && el.offsetParent !== null);
+      if (!focusables.length) return;
+      const first = focusables[0];
+      const last  = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault(); last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault(); first.focus();
+      }
     });
 
   }
@@ -465,20 +630,20 @@ export const IaMascot = (() => {
     _prevFocus = document.activeElement;
     _panel.hidden = false;
     _trigger.setAttribute('aria-expanded', 'true');
+    requestAnimationFrame(() => _scrollToBottom(true));
 
     if (!_reduced) {
       _panel.classList.remove('is-closing');
       _panel.classList.add('is-opening');
-      setTimeout(() => _panel.classList.remove('is-opening'), 260);
+      setTimeout(() => _panel.classList.remove('is-opening'), 360);
     }
 
     _setState('greeting');
     if (!_hasGreeted) {
-      // Primer encuentro en el chat — las aperturas siguientes conservan
-      // el historial y no re-saludan (la presencia ya la dan los globos)
       _hasGreeted = true;
       _typewriterBotMessage(_getGreeting()).then(() => {
         _setState('idle');
+        _addEmptyStateChips();
         _input.focus();
       });
     } else {
@@ -516,13 +681,24 @@ export const IaMascot = (() => {
 
   let _typeAbort = false;
 
+  function _scrollToBottom(force = false) {
+    if (!_chat) return;
+    const nearBottom = (_chat.scrollHeight - _chat.scrollTop - _chat.clientHeight) < 100;
+    if (force || nearBottom) _chat.scrollTop = _chat.scrollHeight;
+  }
+
+  function _getTimeStr() {
+    const now = new Date();
+    return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  }
+
   /* Mensaje bot instantáneo (para HTML rico: tarjetas de proyecto/skill) */
   function _addBotMessage(html) {
     const msg = document.createElement('div');
     msg.className = 'jotai-msg jotai-msg--bot';
-    msg.innerHTML = `<div class="jotai-msg__bubble">${html}</div>`;
+    msg.innerHTML = `<div class="jotai-msg__bubble">${html}</div><div class="jotai-msg__time">${_getTimeStr()}</div>`;
     _chat.appendChild(msg);
-    _chat.scrollTop = _chat.scrollHeight;
+    _scrollToBottom();
   }
 
   /* Efecto de escritura carácter a carácter para texto plano */
@@ -534,11 +710,15 @@ export const IaMascot = (() => {
     bubble.className = 'jotai-msg__bubble';
     msg.appendChild(bubble);
     _chat.appendChild(msg);
-    _chat.scrollTop = _chat.scrollHeight;
+    _scrollToBottom();
 
     // Sin animación si prefers-reduced-motion
     if (_reduced) {
       bubble.innerHTML = _md(text);
+      const timeEl = document.createElement('div');
+      timeEl.className = 'jotai-msg__time';
+      timeEl.textContent = _getTimeStr();
+      msg.appendChild(timeEl);
       return Promise.resolve();
     }
 
@@ -547,13 +727,17 @@ export const IaMascot = (() => {
       const iv = setInterval(() => {
         if (_typeAbort || i >= text.length) {
           clearInterval(iv);
-          bubble.innerHTML = _md(text); // render markdown completo al terminar
-          _chat.scrollTop  = _chat.scrollHeight;
+          bubble.innerHTML = _md(text);
+          const timeEl = document.createElement('div');
+          timeEl.className = 'jotai-msg__time';
+          timeEl.textContent = _getTimeStr();
+          msg.appendChild(timeEl);
+          _scrollToBottom();
           res();
           return;
         }
         bubble.textContent = text.slice(0, ++i);
-        _chat.scrollTop    = _chat.scrollHeight;
+        _scrollToBottom();
       }, TYPEWRITER_MS);
     });
   }
@@ -566,9 +750,9 @@ export const IaMascot = (() => {
   function _addUserMessage(text) {
     const msg = document.createElement('div');
     msg.className = 'jotai-msg jotai-msg--user';
-    msg.innerHTML = `<div class="jotai-msg__bubble">${_esc(text)}</div>`;
+    msg.innerHTML = `<div class="jotai-msg__bubble">${_esc(text)}</div><div class="jotai-msg__time">${_getTimeStr()}</div>`;
     _chat.appendChild(msg);
-    _chat.scrollTop = _chat.scrollHeight;
+    _scrollToBottom();
   }
 
   function _addLoadingDots() {
@@ -577,11 +761,83 @@ export const IaMascot = (() => {
     msg.id = 'jotai-loading-msg';
     msg.innerHTML = `<div class="jotai-msg__bubble"><div class="jotai-dots"><span></span><span></span><span></span></div></div>`;
     _chat.appendChild(msg);
-    _chat.scrollTop = _chat.scrollHeight;
+    _scrollToBottom();
   }
 
   function _removeLoadingDots() {
     document.getElementById('jotai-loading-msg')?.remove();
+  }
+
+  /* ── QUICK REPLY CHIPS ──────────────────────────────────────── */
+
+  function _removeChips() {
+    document.getElementById('jotai-chips')?.remove();
+  }
+
+  function _addChips(chips) {
+    _removeChips();
+    if (!chips?.length) return;
+    const container = document.createElement('div');
+    container.className = 'jotai-chips';
+    container.id = 'jotai-chips';
+    chips.forEach(label => {
+      const btn = document.createElement('button');
+      btn.className = 'jotai-chip';
+      btn.textContent = label;
+      btn.addEventListener('click', () => {
+        _removeChips();
+        _handleSend(label);
+      });
+      container.appendChild(btn);
+    });
+    const inputWrap = document.getElementById('jotai-input-wrap');
+    _panel.insertBefore(container, inputWrap);
+  }
+
+  function _getSuggestedChips(result) {
+    if (!result) return [];
+    if (result.type === 'project') {
+      const chips = [];
+      if (result.data?.repoUrl) chips.push('Ver repositorio');
+      chips.push('¿Qué stack usó?');
+      chips.push('Proyectos similares');
+      return chips.slice(0, 3);
+    }
+    if (result.type === 'skill') {
+      return ['Ver proyectos con esta skill', '¿En qué es pro?'];
+    }
+    if (result.type === 'special') {
+      if (result.mood === 'excited') return ['Ver proyectos', '¿Cómo contactarlo?'];
+      // Para listas de proyectos
+      const t = result.text || '';
+      if (t.includes('recientes') || t.includes('reciente')) return ['¿En qué es pro?', '¿Quién es Jonathan?'];
+      if (t.includes('destacados') || t.includes('destacado')) return ['Proyectos recientes', '¿En qué es pro?', 'Todos'];
+      if (t.includes('proyectos') && t.includes('total')) return ['Proyectos recientes', '¿En qué es pro?'];
+      if (t.includes('destaca') || t.includes('avanzado')) return ['Ver proyectos', '¿Cómo contactarlo?'];
+    }
+    return [];
+  }
+
+  function _getConfusedChips() {
+    return ['¿Quién es Jonathan?', 'Proyectos destacados', '¿En qué es pro?'];
+  }
+
+  function _addEmptyStateChips() {
+    if (_chat.querySelectorAll('.jotai-msg--user').length > 0) return;
+    const container = document.createElement('div');
+    container.className = 'jotai-chips jotai-chips--empty';
+    ['¿Quién es Jonathan?', 'Proyectos destacados', '¿En qué es pro?'].forEach(label => {
+      const btn = document.createElement('button');
+      btn.className = 'jotai-chip';
+      btn.textContent = label;
+      btn.addEventListener('click', () => {
+        container.remove();
+        _handleSend(label);
+      });
+      container.appendChild(btn);
+    });
+    _chat.appendChild(container);
+    _scrollToBottom();
   }
 
   /* ── TOUR ───────────────────────────────────────────────────── */
@@ -605,12 +861,18 @@ export const IaMascot = (() => {
 
   /* ── QUERY HANDLING ─────────────────────────────────────────── */
 
-  async function _handleSend() {
-    const val = _input.value.trim();
+  async function _handleSend(prefilledText = null) {
+    const val = prefilledText !== null ? prefilledText : _input.value.trim();
     if (!val || _sendBtn.disabled) return;
-    _input.value    = '';
+
+    if (prefilledText === null) {
+      _input.value = '';
+      if (_input.tagName === 'TEXTAREA') _input.style.height = 'auto';
+      document.getElementById('jotai-char-counter')?.classList.remove('is-visible');
+    }
     _sendBtn.disabled = true;
-    _typeAbort      = true; // interrumpe cualquier typewriter en curso
+    _typeAbort      = true;
+    _removeChips();
 
     _addUserMessage(val);
     _hideHint();
@@ -618,8 +880,8 @@ export const IaMascot = (() => {
     _setStatus('Pensando…');
     _addLoadingDots();
 
-    // 1. Keywords / intent (síncrono, siempre disponible)
-    const kwResult  = IAAssistant.query(val);
+    // 1. Keywords / intent (síncrono, siempre disponible) — pasa contexto
+    const kwResult  = IAAssistant.query(val, _context);
     const isSpecial = kwResult?.type === 'special';
     let finalResult = kwResult;
 
@@ -634,24 +896,35 @@ export const IaMascot = (() => {
 
     _removeLoadingDots();
 
+    // Actualiza contexto
+    _context.push({ role: 'user', text: val });
+
     if (finalResult) {
+      _context.push({ role: 'bot', text: '', result: finalResult });
+      if (_context.length > CONTEXT_MAX * 2) _context = _context.slice(-CONTEXT_MAX * 2);
+
+      const targetState = finalResult.mood === 'excited' ? 'excited' : 'success';
+
       if (finalResult.type === 'special') {
-        // Texto plano (perfil, listas, contacto) → typewriter
         _setState('talking');
         await _typewriterBotMessage(finalResult.text);
-        _setState('success');
+        _setState(targetState);
       } else {
-        // Tarjeta rica (proyecto / skill) → HTML instantáneo
         _addBotMessage(_buildResultHTML(finalResult));
-        _setState('success');
+        _setState(targetState);
       }
+      setTimeout(() => _addChips(_getSuggestedChips(finalResult)), 200);
     } else {
+      _context.push({ role: 'bot', text: '', result: null });
+      if (_context.length > CONTEXT_MAX * 2) _context = _context.slice(-CONTEXT_MAX * 2);
+
       _setState('talking');
       await _typewriterBotMessage(
         'No encontré resultados. Prueba con un proyecto (UBApp, LLM Observatory…) ' +
         'o una tecnología (Django, React, Docker…).'
       );
       _setState('confused');
+      setTimeout(() => _addChips(_getConfusedChips()), 200);
     }
 
     _setStatus(_workerReady ? 'Listo para responder' : 'Motor semántico cargando…');
@@ -704,7 +977,7 @@ export const IaMascot = (() => {
 
   /* ── VIDA DEL MASCOT ────────────────────────────────────────── */
 
-  const _ALL_STATES = ['idle','greeting','listening','thinking','talking','success','confused','pointing'];
+  const _ALL_STATES = ['idle','greeting','listening','thinking','talking','success','confused','pointing','excited'];
 
   // Mouth path por estado — coordenadas distintas según el render activo
   // (en modo image la boca está en la pantalla del robot, y≈56)
@@ -792,19 +1065,37 @@ export const IaMascot = (() => {
 
   /* ── STATE MACHINE (CSS classes) ──────────────────────────── */
 
+  function _emitParticles() {
+    if (_reduced || !_trigger) return;
+    const container = document.createElement('div');
+    container.className = 'jotai-particles';
+    for (let i = 0; i < 6; i++) {
+      const span = document.createElement('span');
+      span.style.setProperty('--angle', `${i * 60}deg`);
+      span.style.setProperty('--dist', `${22 + Math.random() * 14}px`);
+      span.style.animationDelay = `${i * 45}ms`;
+      container.appendChild(span);
+    }
+    _trigger.style.position = 'relative';
+    _trigger.appendChild(container);
+    setTimeout(() => container.remove(), 900);
+  }
+
   function _setState(state) {
     _state = state;
     const widget = document.getElementById('jotai-widget');
     if (!widget) return;
 
-    // CSS state classes → afectan ambas instancias del mascot
-    _ALL_STATES.forEach(s => widget.classList.remove('is-' + s));
-    widget.classList.add('is-' + state);
-    widget.setAttribute('data-jotai-state', state);
-
-    // Actualiza boca en todas las instancias
-    const d = _MOUTH[state] || _MOUTH._default;
-    widget.querySelectorAll('.jotai-mouth-path').forEach(m => m.setAttribute('d', d));
+    widget.classList.add('is-state-changing');
+    requestAnimationFrame(() => {
+      _ALL_STATES.forEach(s => widget.classList.remove('is-' + s));
+      widget.classList.add('is-' + state);
+      widget.setAttribute('data-jotai-state', state);
+      const d = _MOUTH[state] || _MOUTH._default;
+      widget.querySelectorAll('.jotai-mouth-path').forEach(m => m.setAttribute('d', d));
+      if (state === 'success' || state === 'excited') _emitParticles();
+      setTimeout(() => widget.classList.remove('is-state-changing'), 80);
+    });
   }
 
   /* ── ENTRADA: peek "solo cabeza" + bienvenida (1×/sesión) ──── */

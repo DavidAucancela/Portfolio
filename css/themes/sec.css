@@ -27,7 +27,7 @@
   --text-primary:      #c8ffc8;
   --text-secondary:    #4dff4d;
   --text-accent:       #00ff41;
-  --text-muted:        #1a4d1a;
+  --text-muted:        #4daa4d; /* #1a4d1a tenía contraste ~2.4:1 sobre #000 — sube a ~5.2:1 (WCAG AA) */
   --text-inverse:      #000000;
 
   /* Gradientes */
@@ -86,6 +86,12 @@
   /* Cursor / partículas */
   --cursor-color:      #00ff41;
   --cursor-trail:      rgba(0, 255, 65, 0.5);
+
+  /* Alias semántico — consumido por .card-btn--primary */
+  --color-primary:     var(--color-accent);
+
+  /* Color de marca HackTheBox — distinto del acento del sistema */
+  --htb-green:         #9fef00;
 }
 
 /* ─── Navbar — separación visual del fondo negro ────────────── */

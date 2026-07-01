@@ -25,7 +25,7 @@
 
   /* Texto */
   --text-primary:      #e8d5ff;
-  --text-secondary:    #a78bca;
+  --text-secondary:    #c4aae8; /* #a78bca era ~4.1:1 sobre bg-card — sube a ~5.4:1 (WCAG AA para texto pequeño) */
   --text-accent:       #06ffa5;
   --text-muted:        #5c3d7a;
   --text-inverse:      #0d0221;
@@ -86,6 +86,9 @@
   /* Cursor / partículas */
   --cursor-color:      #06ffa5;
   --cursor-trail:      rgba(6, 255, 165, 0.5);
+
+  /* Alias semántico — consumido por .card-btn--primary */
+  --color-primary:     var(--color-accent);
 }
 
 /* ─── Glassmorphism para cards en modo IA ───────────────────── */

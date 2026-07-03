@@ -68,6 +68,26 @@
 /* El avatar del header del chat conserva su disco → sin drop-shadow extra */
 .jotai-header-avatar .jotai-mascot { filter: none; }
 
+/* ── CUERPO POR MODO (render 3D intercambiable) ───────────────── */
+
+/* Fade-out corto al cambiar el asset; fade-in con la transición base */
+.jotai-body-img {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+.jotai-body-img.is-swapping { opacity: 0; transition: opacity 0.22s ease; }
+
+/* Render con accesorio integrado (body-<modo>.webp) → overlays SVG fuera */
+#jotai-widget.jotai-baked .jotai-acc--dev,
+#jotai-widget.jotai-baked .jotai-acc--ia,
+#jotai-widget.jotai-baked .jotai-acc--sec { display: none !important; }
+
+/* ── CARA VIVA (modo image) ───────────────────────────────────── */
+
+/* Parche que tapa la sonrisa horneada del PNG — difuminado para
+   fundirse con el tono de la cara del render */
+.jotai-mouth-mask { filter: blur(1.4px); }
+
 /* ── ACCESORIOS POR MODO ──────────────────────────────────────── */
 
 /* Por defecto todos ocultos */

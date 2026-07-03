@@ -1048,17 +1048,10 @@
     "image": "public/images/projects/portfolio/portfolio-01.webp",
     "images": [
       "public/images/projects/portfolio/portfolio-01.webp",
-      "public/images/projects/portfolio/portfolio-02.webp",
-      "public/images/projects/portfolio/portfolio-03.webp",
       "public/images/projects/portfolio/portfolio-04.webp",
       "public/images/projects/portfolio/portfolio-05.webp",
-      "public/images/projects/portfolio/portfolio-06.webp",
       "public/images/projects/portfolio/portfolio-07.webp",
-      "public/images/projects/portfolio/portfolio-08.webp",
-      "public/images/projects/portfolio/portfolio-09.webp",
-      "public/images/projects/portfolio/portfolio-10.webp",
-      "public/images/projects/portfolio/portfolio-11.webp",
-      "public/images/projects/portfolio/portfolio-12.webp"
+      "public/images/projects/portfolio/portfolio-09.webp"
     ],
     "liveUrl": "https://davidaucancela.github.io/Portfolio/",
     "repoUrl": "https://github.com/DavidAucancela/Portfolio",

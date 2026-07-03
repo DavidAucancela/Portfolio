@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "start": "serve dist -s -l $PORT",
     "preview": "vite preview"
   },
   "repository": {
@@ -26,6 +27,7 @@
   "dependencies": {
     "@huggingface/transformers": "^4.2.0",
     "@vercel/analytics": "^2.0.1",
-    "@vercel/speed-insights": "^2.0.0"
+    "@vercel/speed-insights": "^2.0.0",
+    "serve": "^14.2.4"
   }
 }

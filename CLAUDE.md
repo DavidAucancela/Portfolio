@@ -450,10 +450,29 @@ Los estados se aplican como clase `is-<estado>` al `#jotai-widget` — afecta **
 | `pointing` | Tour activo | Oreja derecha 20°, tilt 4° |
 
 Boca: un único `.jotai-mouth-path`; `d` cambia por `setAttribute` desde `_setState`.
-Hay **dos juegos de coordenadas** según `MASCOT_RENDER` (`_MOUTH_IMAGE` con la boca
-en la pantalla del robot, y≈56 / `_MOUTH_VECTOR` para el blob, y≈141):
-- `neutral` → `M91 56 Q100 62 109 56` (image) / `M89 141 Q100 150 111 141` (vector)
+Hay **dos juegos de coordenadas** según `MASCOT_RENDER` (`_MOUTH_IMAGE` sobre la boca
+real del render 3D, centro ≈ (109,112) / `_MOUTH_VECTOR` para el blob, y≈141):
+- `neutral` → `M100 108 Q109 117 119 107` (image) / `M89 141 Q100 150 111 141` (vector)
 - `success`, `confused`, `thinking` — variantes en ambos juegos
+
+### Cara viva en modo image (`.jotai-face`)
+El render 3D trae la cara pintada, pero encima van **overlays vectoriales calibrados**
+a los ojos LED del PNG — izq (62,73), der (135,69), boca (109,112):
+- `.jotai-pupil-grp` — glow de pupila (radial gradient) que sigue `--px/--py`
+  → parpadeo, mirada errante y cursor-tracking funcionan igual que en modo vector
+- `.jotai-lid` — párpados metálicos (elipses, `scaleY(0)→1` con `.is-blinking`)
+- `.jotai-mouth-mask` — parche color cara con `blur(1.4px)` (CSS) que tapa la
+  sonrisa horneada del PNG para que los estados de boca no se dupliquen
+Los accesorios de modo se dibujan **después** (encima) de la cara viva.
+
+### Cuerpo por modo (renders 3D intercambiables)
+`MODE_BODY_SRC` en `ia-mascot.js` mapea modo → `public/images/jotai/body-<modo>.webp`.
+Al iniciar y en cada `portfolio:modeChange`, `_applyModeBody(mode)` hace un probe
+(`new Image()`, resultado cacheado): si el render del modo existe se intercambia el
+`href` con fade-out/in (clase `.is-swapping`) y `#jotai-widget.jotai-baked` oculta
+los overlays SVG de accesorios; si no existe (404), fallback a `body.webp` + overlays.
+Specs y prompts para generar los renders: `docs/jotai-renders.md`. Los renders nuevos
+deben mantener la misma pose/encuadre que `body.png` (ojos y boca en las mismas coords).
 
 `prefers-reduced-motion`: CSS apaga `.jotai-aura`, `.jotai-motes`, `.jotai-creature`, `.jotai-ear-l/r`
 y todos los keyframes de estado. JS no inicia los timers de vida. Transiciones suspendidas.

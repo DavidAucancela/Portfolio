@@ -24,6 +24,19 @@ const TYPEWRITER_MS  = 14;   // ms por carácter en el efecto de escritura
  */
 const MASCOT_RENDER = 'image';
 
+/**
+ * Renders 3D por modo (accesorio integrado en el render — ver docs/jotai-renders.md).
+ * Si el archivo del modo no existe aún, se usa BODY_FALLBACK_SRC + overlays SVG.
+ * Mantener la misma pose/encuadre que body.png (307×660) para que los
+ * párpados/pupilas/boca vectoriales sigan alineados.
+ */
+const MODE_BODY_SRC = {
+  dev: 'public/images/jotai/body-dev.webp',
+  ia:  'public/images/jotai/body-ia.webp',
+  sec: 'public/images/jotai/body-sec.webp',
+};
+const BODY_FALLBACK_SRC = 'public/images/jotai/body.webp';
+
 /* ── SVG DEL MASCOT ───────────────────────────────────────────── */
 
 /** Dispatcher — selecciona render según MASCOT_RENDER */
@@ -47,6 +60,22 @@ function _buildSVGImage(prefix) {
          xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
   <defs>
     <clipPath id="${p}crop"><rect x="0" y="0" width="200" height="200"/></clipPath>
+    <!-- Párpado metálico (tono del entrecejo del render) -->
+    <linearGradient id="${p}lid" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#8c8579"/>
+      <stop offset="100%" stop-color="#6e675d"/>
+    </linearGradient>
+    <!-- Glow de pupila desplazable sobre el LED del ojo -->
+    <radialGradient id="${p}pup" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#e8fdff" stop-opacity="0.95"/>
+      <stop offset="55%"  stop-color="#9fe8ff" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#9fe8ff" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Parche color cara que enmascara la sonrisa horneada del PNG -->
+    <linearGradient id="${p}face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#9a8d80"/>
+      <stop offset="100%" stop-color="#877b6e"/>
+    </linearGradient>
   </defs>
 
   <!-- Grupo estático con el recorte: estable aunque la criatura respire/incline -->
@@ -56,7 +85,7 @@ function _buildSVGImage(prefix) {
 
         <!-- Cuerpo 3D con su cara propia. 200×430 → piernas recortadas por el clip -->
         <image class="jotai-body-img"
-               href="public/images/jotai/body.png"
+               href="public/images/jotai/body.webp"
                x="0" y="8" width="200" height="430"
                preserveAspectRatio="xMidYMid meet"/>
 
@@ -65,6 +94,35 @@ function _buildSVGImage(prefix) {
               d="M83 92 C72 77 70 53 77 41 C84 49 88 73 88 91 Z"/>
         <path class="jotai-ear jotai-ear-r" opacity="0"
               d="M117 92 C128 77 130 53 123 41 C116 49 112 73 112 91 Z"/>
+
+        <!-- ── CARA VIVA (overlays alineados a los ojos del render) ──
+             Ojos LED: izq(62,73) der(135,69). Pupilas bajo los párpados;
+             los accesorios de modo se dibujan después (encima). -->
+        <g class="jotai-face">
+          <!-- Glow de pupila — sigue --px/--py (mirada errante / cursor) -->
+          <g class="jotai-pupil-grp">
+            <circle cx="62" cy="73" r="7.5" fill="url(#${p}pup)"/>
+          </g>
+          <g class="jotai-pupil-grp">
+            <circle cx="135" cy="69" r="7.5" fill="url(#${p}pup)"/>
+          </g>
+
+          <!-- Párpados: cerrados = scaleY(1) via .is-blinking (contrato CSS) -->
+          <ellipse class="jotai-lid" cx="63.5" cy="74.5" rx="21.5" ry="19.5"
+                   fill="url(#${p}lid)" stroke="rgba(0,0,0,0.28)" stroke-width="1"/>
+          <ellipse class="jotai-lid" cx="136.5" cy="70.5" rx="21.5" ry="19.5"
+                   fill="url(#${p}lid)" stroke="rgba(0,0,0,0.28)" stroke-width="1"/>
+
+          <!-- Boca vectorial sobre la sonrisa horneada (centro ≈ 109,112).
+               El parche difuminado (CSS blur) tapa la boca del PNG para que
+               los estados (recta/confusa/sonrisa) no se dupliquen. -->
+          <ellipse class="jotai-mouth-mask" cx="109.5" cy="112" rx="15" ry="9"
+                   fill="url(#${p}face)"/>
+          <path class="jotai-mouth-path"
+                d="M100 108 Q109 117 119 107"
+                fill="none" stroke="#1f1a17" stroke-width="3.4"
+                stroke-linecap="round"/>
+        </g>
 
         <!-- Think ring (visible en .is-thinking) -->
         <circle class="jotai-think-ring" cx="100" cy="85" r="55" stroke-width="2" opacity="0.6"/>
@@ -987,11 +1045,12 @@ export const IaMascot = (() => {
     thinking: 'M93 143 L107 143',
     _default: 'M89 141 Q100 150 111 141',
   };
+  // Boca real del render: centro ≈ (109,112) — calibrada sobre body.png
   const _MOUTH_IMAGE = {
-    success:  'M88 53 Q100 65 112 53',
-    confused: 'M94 59 Q100 55 106 59',
-    thinking: 'M94 57 L106 57',
-    _default: 'M91 56 Q100 62 109 56',
+    success:  'M97 106 Q109 121 121 105',
+    confused: 'M103 113 Q109 108 115 113',
+    thinking: 'M103 111 L116 110',
+    _default: 'M100 108 Q109 117 119 107',
   };
   const _MOUTH = MASCOT_RENDER === 'image' ? _MOUTH_IMAGE : _MOUTH_VECTOR;
 
@@ -1060,6 +1119,46 @@ export const IaMascot = (() => {
     _panel.addEventListener('pointerleave', () => {
       svgEl._tracking = false;
       _setLook(svgEl, 0, 0);
+    });
+  }
+
+  /* ── CUERPO POR MODO (render 3D con accesorio integrado) ───── */
+
+  const _bodyProbeCache = new Map(); // src → true (existe) | false (404)
+
+  /**
+   * Cambia el asset del cuerpo según el modo. Si el render del modo existe
+   * se usa y la clase `jotai-baked` oculta los overlays SVG de accesorios;
+   * si no, se mantiene el cuerpo base + overlays (comportamiento anterior).
+   */
+  function _applyModeBody(mode) {
+    if (MASCOT_RENDER !== 'image') return;
+    const widget = document.getElementById('jotai-widget');
+    if (!widget) return;
+
+    const src  = MODE_BODY_SRC[mode];
+    const done = ok => _swapBody(widget, ok ? src : BODY_FALLBACK_SRC, ok);
+
+    if (!src) return done(false);
+    if (_bodyProbeCache.has(src)) return done(_bodyProbeCache.get(src));
+
+    const probe = new Image();
+    probe.onload  = () => { _bodyProbeCache.set(src, true);  done(true);  };
+    probe.onerror = () => { _bodyProbeCache.set(src, false); done(false); };
+    probe.src = src;
+  }
+
+  function _swapBody(widget, src, baked) {
+    widget.classList.toggle('jotai-baked', baked);
+    widget.querySelectorAll('.jotai-body-img').forEach(img => {
+      if (img.getAttribute('href') === src) return;
+      if (_reduced) { img.setAttribute('href', src); return; }
+      // Fade-out → swap → fade-in (transiciones en ia-mascot.css)
+      img.classList.add('is-swapping');
+      setTimeout(() => {
+        img.setAttribute('href', src);
+        img.classList.remove('is-swapping');
+      }, 220);
     });
   }
 
@@ -1233,11 +1332,14 @@ export const IaMascot = (() => {
     // Inicializa boca en estado neutral al arrancar
     setTimeout(() => _setState('idle'), 0);
 
+    // Asset del cuerpo según el modo guardado (probe = preload)
+    _applyModeBody(document.body.dataset.theme || localStorage.getItem('portfolio-mode') || 'dev');
+
     // Secuencia de entrada: peek + globo de bienvenida (1× por sesión)
     _entrance();
 
     // Acceso desde consola para QA (solo en dev)
-    if (import.meta.env?.DEV) window.IaMascot = { say, openPanel, closePanel };
+    if (import.meta.env?.DEV) window.IaMascot = { say, openPanel, closePanel, setState: _setState };
 
     // Cuando IAAssistant termina de cargar la KB → inicia el worker.
     // En dispositivos touch el modelo (~23MB WASM) se difiere hasta que el
@@ -1258,6 +1360,8 @@ export const IaMascot = (() => {
     // Cambio de modo: cierra el panel + saludo temático (1× por modo)
     window.addEventListener('portfolio:modeChange', ({ detail }) => {
       if (_isOpen) closePanel();
+      // El cuerpo cambia siempre — también durante el tour (cambia de modo real)
+      if (detail?.mode) _applyModeBody(detail.mode);
       // El tour cambia de modo por su cuenta: ni saludar ni gastar el 1× por modo
       if (IaTour.isActive()) return;
       const mode = detail?.mode;

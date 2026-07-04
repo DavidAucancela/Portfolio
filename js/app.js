@@ -429,9 +429,28 @@ export function initApp() {
     }
   });
 
-  /* ── CV viewer button ── */
+  /* ── CV viewer button — CV distinto por modo ── */
+  const CV_BY_MODE = {
+    dev: 'public/cvs/dev-cv.pdf',
+    ia:  'public/cvs/ia-cv.pdf',
+    sec: 'public/cvs/sec-cv.pdf',
+  };
+
   const cvBtn = document.getElementById('cv-open-btn');
   if (cvBtn) {
+    const _updateCvUrl = (mode) => {
+      const url = CV_BY_MODE[mode] || cvBtn.dataset.pdfUrl;
+      cvBtn.dataset.pdfUrl = url;
+    };
+
+    // Aplica el modo actual al arrancar
+    _updateCvUrl(document.body.dataset.theme || localStorage.getItem('portfolio-mode') || 'dev');
+
+    // Actualiza cuando cambia el modo
+    window.addEventListener('portfolio:modeChange', ({ detail }) => {
+      if (detail?.mode) _updateCvUrl(detail.mode);
+    });
+
     cvBtn.addEventListener('click', () =>
       PDFModal.open(cvBtn.dataset.pdfUrl, cvBtn.dataset.pdfLabel)
     );

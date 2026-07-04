@@ -134,7 +134,7 @@
     ],
     "liveUrl": "https://frontend-angular-production.up.railway.app/login",
     "repoUrl": "https://github.com/DavidAucancela/UBAppV2",
-    "featured": true,
+    "featured": false,
     "date": "2026-01",
     "techStack": {
       "ai": [
@@ -245,7 +245,7 @@
       "public/images/projects/mindlog/notas.webp"
     ],
     "repoUrl": "https://github.com/DavidAucancela/MindLog",
-    "featured": true,
+    "featured": false,
     "date": "2026-05",
     "techStack": {
       "ia": [
@@ -370,7 +370,7 @@
     ],
     "liveUrl": "https://www.marevitaeint.com/",
     "repoUrl": "https://github.com/DavidAucancela/MareVitae",
-    "featured": true,
+    "featured": false,
     "date": "2025-09",
     "techStack": {
       "ia": [

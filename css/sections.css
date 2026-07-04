@@ -477,7 +477,7 @@
 .back-to-top {
   position: fixed;
   bottom: calc(2rem + env(safe-area-inset-bottom, 0px));
-  right: calc(2rem + env(safe-area-inset-right, 0px));
+  right: calc(6rem + env(safe-area-inset-right, 0px));
   width: 44px;
   height: 44px;
   border-radius: 12px;
@@ -499,7 +499,7 @@
     border-color 0.2s ease,
     color 0.2s ease,
     box-shadow 0.2s ease;
-  z-index: 50;
+  z-index: 9945;
 }
 
 .back-to-top.visible {
@@ -543,7 +543,8 @@
 
   .back-to-top {
     bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
-    right: calc(1.25rem + env(safe-area-inset-right, 0px));
+    right: unset;
+    left: calc(1.25rem + env(safe-area-inset-left, 0px));
   }
 
   .contact-availability { font-size: 0.75rem; }

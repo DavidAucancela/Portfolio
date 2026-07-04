@@ -159,8 +159,8 @@ async function _query(text, id) {
   self.postMessage({
     type: 'result',
     id,
-    // Devuelve top-5; el hilo principal aplica el umbral
-    results: scored.slice(0, 5).map(s => ({
+    // Devuelve top-10 para rankHybrid (Fase C); el hilo principal aplica los pesos
+    results: scored.slice(0, 10).map(s => ({
       id:    s.doc.id,
       type:  s.doc.type,
       data:  s.doc.data,

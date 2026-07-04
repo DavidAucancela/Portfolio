@@ -1,0 +1,27 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["CLAUDE.md"],
+  "permission": {
+    "bash": {
+      "git *": "allow",
+      "grep *": "allow",
+      "node *": "allow",
+      "npm *": "allow",
+      "npx *": "allow",
+      "curl *": "allow",
+      "python3 *": "allow",
+      "open *": "allow",
+      "mv *": "allow",
+      "pkill *": "allow",
+      "sips *": "allow",
+      "lsof *": "allow",
+      "xargs *": "allow",
+      "echo *": "allow",
+      "export *": "allow",
+      "perl *": "allow",
+      "awk *": "allow",
+      "xxd *": "allow",
+      "*": "ask"
+    }
+  }
+}

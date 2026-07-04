@@ -381,7 +381,7 @@ function _buildSVGVector(prefix) {
 
 /* ── CONSTANTES ───────────────────────────────────────────────── */
 
-const SEMANTIC_THRESHOLD = 0.32; // score mínimo para aceptar resultado semántico
+const SEMANTIC_THRESHOLD = 0.10; // piso de inclusión en pool para rankHybrid (Fase C)
 
 /* Bienvenida de entrada — 1× por sesión */
 const WELCOME_TEXT = '¡Bienvenido! Soy JotAI y estoy aquí para guiarte.';
@@ -420,8 +420,13 @@ export const IaMascot = (() => {
   let _hasGreeted = false;
   let _prevFocus  = null;
 
-  /* Contexto de conversación */
-  let _context = [];
+  /* Contexto de conversación (Fase C) */
+  let _context = {
+    turns: [],
+    lastProjectId: null,
+    lastSkillName: null,
+    lastCategory: null,
+  };
   const CONTEXT_MAX = 3;
 
   /* Worker state */
@@ -514,6 +519,9 @@ export const IaMascot = (() => {
           <button id="jotai-tour-btn" aria-label="Iniciar tour del portfolio">
             Tour 🗺
           </button>
+          <button id="jotai-commands-btn" aria-label="Ver lista de comandos">
+            Comandos 📋
+          </button>
           <button id="jotai-panel-close" aria-label="Cerrar asistente">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
@@ -547,6 +555,46 @@ export const IaMascot = (() => {
               <polygon points="22 2 15 22 11 13 2 9 22 2"/>
             </svg>
           </button>
+        </div>
+
+        <!-- Modal de Comandos con Tabs -->
+        <div id="jotai-commands-modal" hidden class="jotai-commands-modal">
+          <div class="jotai-commands-content">
+            <div class="jotai-commands-header">
+              <div class="jotai-commands-tabs">
+                <button class="jotai-commands-tab active" data-tab="info" aria-label="Información">Info</button>
+                <button class="jotai-commands-tab" data-tab="projects" aria-label="Proyectos">Proyectos</button>
+                <button class="jotai-commands-tab" data-tab="skills" aria-label="Skills">Skills</button>
+              </div>
+              <button id="jotai-commands-close" aria-label="Cerrar comandos">✕</button>
+            </div>
+            <div class="jotai-commands-list">
+              <!-- Tab: Información -->
+              <div class="jotai-commands-group active" data-group="info">
+                <button class="jotai-command-item" data-cmd="quien eres">quien eres</button>
+                <button class="jotai-command-item" data-cmd="experiencia laboral">experiencia laboral</button>
+                <button class="jotai-command-item" data-cmd="donde estudias">donde estudias</button>
+                <button class="jotai-command-item" data-cmd="como contactar">como contactar</button>
+              </div>
+              <!-- Tab: Proyectos -->
+              <div class="jotai-commands-group hidden" data-group="projects">
+                <button class="jotai-command-item" data-cmd="todos los proyectos">todos los proyectos</button>
+                <button class="jotai-command-item" data-cmd="ubapp">ubapp</button>
+                <button class="jotai-command-item" data-cmd="llm observabilidad">llm observabilidad</button>
+                <button class="jotai-command-item" data-cmd="anaos">anaos</button>
+                <button class="jotai-command-item" data-cmd="mindlog">mindlog</button>
+              </div>
+              <!-- Tab: Skills -->
+              <div class="jotai-commands-group hidden" data-group="skills">
+                <button class="jotai-command-item" data-cmd="que sabes">que sabes</button>
+                <button class="jotai-command-item" data-cmd="react">react</button>
+                <button class="jotai-command-item" data-cmd="postgres">postgres</button>
+                <button class="jotai-command-item" data-cmd="django">django</button>
+                <button class="jotai-command-item" data-cmd="docker">docker</button>
+                <button class="jotai-command-item" data-cmd="claude">claude</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -592,6 +640,23 @@ export const IaMascot = (() => {
     _trigger.addEventListener('click', _togglePanel);
     widget.querySelector('#jotai-panel-close').addEventListener('click', closePanel);
     widget.querySelector('#jotai-tour-btn').addEventListener('click', _startTour);
+    widget.querySelector('#jotai-commands-btn').addEventListener('click', _toggleCommandsModal);
+    widget.querySelector('#jotai-commands-close').addEventListener('click', _closeCommandsModal);
+    // Tabs listener
+    widget.querySelectorAll('.jotai-commands-tab').forEach(tab => {
+      tab.addEventListener('click', e => {
+        const targetTab = e.target.getAttribute('data-tab');
+        _switchCommandsTab(widget, targetTab);
+      });
+    });
+    // Delegated listener para items de comando
+    widget.querySelector('.jotai-commands-list').addEventListener('click', e => {
+      if (e.target.classList.contains('jotai-command-item')) {
+        const cmd = e.target.getAttribute('data-cmd');
+        _closeCommandsModal();
+        _handleSend(cmd);
+      }
+    });
     _sendBtn.addEventListener('click', _handleSend);
     _input.addEventListener('keydown', e => {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); _handleSend(); }
@@ -727,6 +792,32 @@ export const IaMascot = (() => {
     }
 
     _prevFocus?.focus();
+  }
+
+  /* ── COMMANDS MODAL ──────────────────────────────────────────── */
+
+  function _toggleCommandsModal() {
+    const modal = document.getElementById('jotai-commands-modal');
+    if (modal.hidden) {
+      modal.hidden = false;
+      modal.focus();
+    } else {
+      _closeCommandsModal();
+    }
+  }
+
+  function _closeCommandsModal() {
+    const modal = document.getElementById('jotai-commands-modal');
+    modal.hidden = true;
+  }
+
+  function _switchCommandsTab(widget, tabName) {
+    // Desactivar todos los tabs y grupos
+    widget.querySelectorAll('.jotai-commands-tab').forEach(t => t.classList.remove('active'));
+    widget.querySelectorAll('.jotai-commands-group').forEach(g => g.classList.add('hidden'));
+    // Activar el tab seleccionado
+    widget.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+    widget.querySelector(`[data-group="${tabName}"]`).classList.remove('hidden');
   }
 
   /* ── GREETING ───────────────────────────────────────────────── */
@@ -943,23 +1034,47 @@ export const IaMascot = (() => {
     const isSpecial = kwResult?.type === 'special';
     let finalResult = kwResult;
 
-    if (!isSpecial && _workerReady) {
-      // 2. Semántica via worker
-      const semResults = await _semanticQuery(val);
-      const topSem     = semResults.find(r => r.score >= SEMANTIC_THRESHOLD);
-      if (topSem) finalResult = { type: topSem.type, data: topSem.data };
-    } else if (!isSpecial && !_workerReady) {
-      await new Promise(r => setTimeout(r, 420 + Math.random() * 250));
+    if (!isSpecial && kwResult?.type === 'search') {
+      // 2. Semántica via worker + rankHybrid (Fase C)
+      if (_workerReady) {
+        // Expandir query con entidades detectadas antes de mandar al worker
+        const expandedText = IAAssistant.expandQuery(val);
+        const semResults = await _semanticQuery(expandedText);
+
+        // rankHybrid combina keyword candidates + semantic results con pesos
+        const rankingResult = IAAssistant.rankHybrid({
+          keywordCandidates: kwResult.candidates || [],
+          semanticCandidates: semResults.filter(r => r.score >= SEMANTIC_THRESHOLD),
+          context: _context,
+        });
+
+        if (rankingResult && rankingResult.best) {
+          finalResult = { type: rankingResult.best.type, data: rankingResult.best.data };
+        } else {
+          finalResult = null;
+        }
+      } else {
+        // Fallback a keyword-only si worker no está listo
+        if (kwResult.candidates && kwResult.candidates.length > 0) {
+          finalResult = { type: kwResult.candidates[0].type, data: kwResult.candidates[0].data };
+        } else {
+          finalResult = null;
+        }
+        await new Promise(r => setTimeout(r, 420 + Math.random() * 250));
+      }
     }
 
     _removeLoadingDots();
 
-    // Actualiza contexto
-    _context.push({ role: 'user', text: val });
+    // Actualiza contexto conversacional
+    _context.turns.push({ role: 'user', text: val });
 
     if (finalResult) {
-      _context.push({ role: 'bot', text: '', result: finalResult });
-      if (_context.length > CONTEXT_MAX * 2) _context = _context.slice(-CONTEXT_MAX * 2);
+      _context.turns.push({ role: 'bot', text: '', result: finalResult });
+      if (_context.turns.length > CONTEXT_MAX * 2) _context.turns = _context.turns.slice(-CONTEXT_MAX * 2);
+
+      // Actualizar punteros de continuidad (Fase C)
+      _updateContext(finalResult);
 
       const targetState = finalResult.mood === 'excited' ? 'excited' : 'success';
 
@@ -973,8 +1088,8 @@ export const IaMascot = (() => {
       }
       setTimeout(() => _addChips(_getSuggestedChips(finalResult)), 200);
     } else {
-      _context.push({ role: 'bot', text: '', result: null });
-      if (_context.length > CONTEXT_MAX * 2) _context = _context.slice(-CONTEXT_MAX * 2);
+      _context.turns.push({ role: 'bot', text: '', result: null });
+      if (_context.turns.length > CONTEXT_MAX * 2) _context.turns = _context.turns.slice(-CONTEXT_MAX * 2);
 
       _setState('talking');
       await _typewriterBotMessage(
@@ -1195,6 +1310,22 @@ export const IaMascot = (() => {
       if (state === 'success' || state === 'excited') _emitParticles();
       setTimeout(() => widget.classList.remove('is-state-changing'), 80);
     });
+  }
+
+  /* ── CONTEXTO CONVERSACIONAL (Fase C) ──── */
+
+  function _updateContext(finalResult) {
+    if (!finalResult) return;
+    if (finalResult.type === 'project') {
+      _context.lastProjectId = finalResult.data.slug || finalResult.data.id;
+      _context.lastSkillName = null;
+      _context.lastCategory = null;
+    } else if (finalResult.type === 'skill') {
+      _context.lastSkillName = finalResult.data.name;
+      _context.lastCategory = finalResult.data.category;
+      _context.lastProjectId = null;
+    }
+    // Si es special o null, no tocar los punteros (preservar contexto de proyecto/skill previo)
   }
 
   /* ── ENTRADA: peek "solo cabeza" + bienvenida (1×/sesión) ──── */

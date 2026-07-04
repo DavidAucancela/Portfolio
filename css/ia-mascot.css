@@ -550,6 +550,167 @@ body[data-theme="sec"] .jotai-mascot {
   border-color: var(--color-accent);
 }
 
+/* Commands — botón junto a Tour */
+#jotai-commands-btn {
+  background: var(--color-accent-glow, rgba(6,255,165,0.12));
+  border: 1.5px solid var(--color-accent, #06ffa5);
+  color: var(--color-accent, #06ffa5);
+  cursor: pointer;
+  padding: 0.45rem 1rem;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+  font-family: inherit;
+  white-space: nowrap;
+  box-shadow: 0 0 8px var(--color-accent-glow, rgba(6,255,165,0.18));
+}
+#jotai-commands-btn:hover {
+  background: var(--color-accent-glow, rgba(6,255,165,0.22));
+  box-shadow: 0 0 14px var(--color-accent-glow, rgba(6,255,165,0.32));
+  transform: translateY(-1px);
+}
+#jotai-commands-btn:active { transform: translateY(0); }
+
+/* ── COMMANDS MODAL ───────────────────────────────────────────── */
+
+.jotai-commands-modal[hidden] { display: none !important; }
+
+.jotai-commands-modal {
+  position: fixed;
+  top: 50%;
+  right: 100%;
+  transform: translateY(-50%);
+  margin-right: 0.75rem;
+  background: var(--bg-secondary, #1a1a2e);
+  border: 1.5px solid var(--color-accent-glow, rgba(6,255,165,0.25));
+  border-radius: 16px;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.4));
+  z-index: 10000;
+  width: 240px;
+  max-height: 380px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.jotai-commands-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.jotai-commands-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.625rem;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.jotai-commands-tabs {
+  display: flex;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.jotai-commands-tab {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.35rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-family: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  transition: background 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+.jotai-commands-tab:hover {
+  background: var(--color-accent-glow, rgba(6,255,165,0.12));
+  color: var(--text-primary);
+}
+.jotai-commands-tab.active {
+  background: var(--color-accent-glow, rgba(6,255,165,0.2));
+  color: var(--color-accent);
+  border-bottom: 2px solid var(--color-accent);
+}
+
+#jotai-commands-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+  flex-shrink: 0;
+}
+#jotai-commands-close:hover {
+  color: var(--color-accent);
+}
+
+.jotai-commands-list {
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+  flex: 1;
+}
+.jotai-commands-list::-webkit-scrollbar { width: 4px; }
+.jotai-commands-list::-webkit-scrollbar-track { background: transparent; }
+.jotai-commands-list::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 2px; }
+
+.jotai-commands-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.jotai-commands-group.hidden {
+  display: none !important;
+}
+
+.jotai-command-item {
+  background: none;
+  border: 1px solid transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  padding: 0.4rem 0.65rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-family: inherit;
+  text-align: left;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.jotai-command-item:hover {
+  background: var(--color-accent-glow, rgba(6,255,165,0.15));
+  border-color: var(--color-accent-glow, rgba(6,255,165,0.3));
+  color: var(--color-accent);
+}
+.jotai-command-item:active { transform: scale(0.98); }
+
 /* ── CHAT AREA ────────────────────────────────────────────────── */
 
 #jotai-chat {

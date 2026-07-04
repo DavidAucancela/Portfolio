@@ -1,0 +1,125 @@
+{
+  "aliases": {
+    "django": ["django", "djangorestframework", "drf"],
+    "react": ["react", "reactjs", "tsx", "jsx"],
+    "vue": ["vue", "vuejs", "vue3"],
+    "angular": ["angular", "angularjs"],
+    "nestjs": ["nestjs", "nest", "typescript backend"],
+    "fastapi": ["fastapi", "python api", "async python"],
+    "aspnetcore": ["aspnetcore", "csharp", "dotnet", ".net"],
+    "nodejs": ["nodejs", "node.js", "node", "javascript backend"],
+    "express": ["express", "expressjs"],
+    "postgresql": ["postgresql", "postgres", "pg", "pgvector", "sql"],
+    "mongodb": ["mongodb", "mongo", "nosql"],
+    "supabase": ["supabase", "firebase alternative"],
+    "docker": ["docker", "containers", "containerization"],
+    "kubernetes": ["kubernetes", "k8s", "orchestration"],
+    "railway": ["railway", "deployment", "paas"],
+    "vercel": ["vercel", "nextjs deployment"],
+    "github": ["github", "git", "vcs"],
+    "openaiapi": ["openai api", "gpt", "openai", "embeddings", "ada-002", "chatgpt"],
+    "claude": ["claude", "claude api", "anthropic", "haiku", "sonnet", "opus"],
+    "tensorflow": ["tensorflow", "keras", "ml"],
+    "transformers": ["transformers.js", "huggingface", "nlp models"],
+    "n8n": ["n8n", "workflow automation", "zapier"],
+    "supabase": ["supabase", "postgres cloud"],
+    "redis": ["redis", "caching", "cache"],
+    "nginx": ["nginx", "web server", "reverse proxy"],
+    "websocket": ["websocket", "real-time", "socket.io"],
+    "rag": ["rag", "retrieval augmented generation", "semantic search", "vector search"],
+    "embeddings": ["embeddings", "vectores", "vector database", "pgvector"],
+    "whisper": ["whisper", "audio transcription", "speech-to-text"],
+    "semantic": ["semantic", "similarity", "cosine similarity"],
+    "typeorm": ["typeorm", "orm", "database mapper"],
+    "sqlalchemy": ["sqlalchemy", "python orm"],
+    "jwt": ["jwt", "json web token", "authentication"],
+    "oauth": ["oauth", "oauth2", "authorization"],
+    "tailwind": ["tailwind", "tailwindcss", "utility css"],
+    "shadcn": ["shadcn", "shadcn/ui", "component library"],
+    "expo": ["expo", "react native", "mobile"],
+    "swiftui": ["swiftui", "ios", "apple"],
+    "flutter": ["flutter", "dart", "cross-platform mobile"],
+    "leetcode": ["leetcode", "dsa", "algorithms", "data structures"],
+    "hackthebox": ["hackthebox", "htb", "ctf", "penetration testing", "security labs"],
+    "pentesting": ["pentesting", "penetration testing", "security assessment"],
+    "zero-trust": ["zero-trust", "zero trust", "security architecture"],
+    "iso27001": ["iso27001", "iso 27001", "information security", "compliance"],
+    "nmap": ["nmap", "port scanning", "reconnaissance"],
+    "burp": ["burp", "burpsuite", "web security testing"],
+    "metasploit": ["metasploit", "exploit framework"],
+    "figma": ["figma", "design", "ui design"],
+    "semantic-search": ["semantic search", "semantic", "similarity search"],
+    "microservices": ["microservices", "microservicio", "distributed architecture"],
+    "cicd": ["cicd", "ci/cd", "github actions", "continuous integration"],
+    "monitoring": ["monitoring", "observability", "logs", "metrics"]
+  },
+
+  "tagTaxonomy": {
+    "backend": [
+      "django", "djangorestframework",
+      "nestjs", "fastapi", "aspnetcore",
+      "nodejs", "express",
+      "python", "typescript", "csharp", "javascript"
+    ],
+    "frontend": [
+      "react", "vue", "angular",
+      "html", "css", "javascript", "typescript",
+      "nextjs", "tailwind", "shadcn/ui"
+    ],
+    "database": [
+      "postgresql", "mongodb", "redis",
+      "pgvector", "sql", "nosql"
+    ],
+    "devops": [
+      "docker", "kubernetes", "github actions",
+      "cicd", "nginx", "railway", "vercel"
+    ],
+    "cloud": [
+      "supabase", "railway", "vercel",
+      "aws", "gcp", "azure"
+    ],
+    "ai": [
+      "openaiapi", "claude", "transformers.js",
+      "embeddings", "rag", "semantic-search",
+      "tensorflow", "nlp"
+    ],
+    "mobile": [
+      "react native", "expo", "swiftui", "flutter"
+    ],
+    "security": [
+      "pentesting", "zero-trust", "iso27001",
+      "hackthebox", "nmap", "burpsuite", "metasploit"
+    ]
+  },
+
+  "intents": {
+    "experience": {
+      "phrases": [
+        "experiencia laboral",
+        "donde ha trabajado",
+        "donde trabajas",
+        "trabajos anteriores",
+        "freelance",
+        "cliente",
+        "proyectos profesionales",
+        "trayectoria profesional"
+      ]
+    },
+    "education": {
+      "phrases": [
+        "donde estudias",
+        "donde estudio",
+        "educacion",
+        "formacion",
+        "universidad",
+        "espoch",
+        "carrera",
+        "licenciatura",
+        "grado",
+        "certificaciones",
+        "certificado",
+        "titulacion"
+      ]
+    }
+  }
+}

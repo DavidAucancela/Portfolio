@@ -34,23 +34,27 @@ function _matchAny(norm, terms) {
 let _personal  = null;
 let _projects  = [];
 let _skills    = [];
+let _lexicon   = {};
 let _kb        = [];
+let _entityIndex = new Map();
 let _ready     = false;
 
 // ── DATA LOADING ─────────────────────────────────────────────────────────────
 
 async function _loadData() {
   try {
-    const [personal, dev, ia, sec, skills] = await Promise.all([
+    const [personal, dev, ia, sec, skills, lexicon] = await Promise.all([
       fetch('data/personal.json').then(r => r.json()),
       fetch('data/dev-projects.json').then(r => r.json()),
       fetch('data/ia-projects.json').then(r => r.json()),
       fetch('data/sec-projects.json').then(r => r.json()),
       fetch('data/skills.json').then(r => r.json()),
+      fetch('data/nlp-lexicon.json').then(r => r.json()).catch(() => ({})),
     ]);
     _personal = personal;
     _projects = [...dev, ...ia, ...sec];
     _skills   = skills;
+    _lexicon  = lexicon;
     _buildKB();
     _ready = true;
   } catch (e) {
@@ -113,7 +117,9 @@ function _projectKeywords(p) {
 function _skillKeywords(s) {
   const normKey = s.name.toLowerCase().replace(/[^a-z0-9]/g, '');
   const words = new Set(_kwFromText(s.name, s.category));
-  const aliases = _SKILL_ALIASES[normKey];
+  // Usar aliases del lexicón si existe, fallback a _SKILL_ALIASES
+  const lexiconAliases = _lexicon.aliases && _lexicon.aliases[normKey];
+  const aliases = lexiconAliases || _SKILL_ALIASES[normKey];
   if (aliases) aliases.forEach(a => _kwFromText(a).forEach(w => words.add(w)));
   return [...words];
 }
@@ -146,6 +152,7 @@ function _projectEmbedText(p) {
   const lab = p.lab
     ? `${p.lab.platform} ${p.lab.difficulty} ${(p.lab.techniques || []).join(' ')}`
     : '';
+  const highlights = (p.highlights || []).join(' ');
   return [
     p.title,
     p.description,
@@ -154,6 +161,7 @@ function _projectEmbedText(p) {
     tech,
     p.process?.overview,
     lab,
+    highlights,
   ].filter(Boolean).join(' ').replace(/\s+/g, ' ').slice(0, 600);
 }
 
@@ -212,6 +220,79 @@ function _buildKB() {
       },
     });
   });
+
+  // Build entity index para entity extraction (Fase B)
+  _buildEntityIndex();
+}
+
+// ── ENTITY INDEX ─────────────────────────────────────────────────────────────
+
+function _buildEntityIndex() {
+  _entityIndex.clear();
+
+  // Agregar aliases del lexicón (con normalización inversa)
+  if (_lexicon.aliases) {
+    Object.entries(_lexicon.aliases).forEach(([canonical, aliasList]) => {
+      _entityIndex.set(_norm(canonical), canonical);
+      if (Array.isArray(aliasList)) {
+        aliasList.forEach(alias => {
+          _entityIndex.set(_norm(alias), canonical);
+        });
+      }
+    });
+  }
+
+  // Agregar nombres de skills
+  _skills.forEach(s => {
+    _entityIndex.set(_norm(s.name), s.name);
+  });
+
+  // Agregar tags de proyectos
+  _projects.forEach(p => {
+    (p.tags || []).forEach(tag => {
+      _entityIndex.set(_norm(tag), tag);
+    });
+    // Agregar techStack si existe
+    if (p.techStack) {
+      Object.values(p.techStack).flat().forEach(tech => {
+        if (tech) _entityIndex.set(_norm(tech), tech);
+      });
+    }
+    // Agregar lab.techniques si existe
+    if (p.lab && p.lab.techniques) {
+      p.lab.techniques.forEach(tech => {
+        _entityIndex.set(_norm(tech), tech);
+      });
+    }
+  });
+}
+
+// ── ENTITY EXTRACTION (Fase B) ────────────────────────────────────────────────
+
+function _extractEntities(norm) {
+  const entities = new Set();
+  // Iterar sobre las claves del índice ordenadas por longitud descendente
+  // (para que "postgresql" gane sobre "sql" cuando ambos aparecen)
+  const sortedTerms = Array.from(_entityIndex.keys()).sort((a, b) => b.length - a.length);
+
+  for (const term of sortedTerms) {
+    if (norm.includes(term)) {
+      const canonical = _entityIndex.get(term);
+      entities.add(canonical);
+      // Remover el término encontrado del norm para no duplicar entidades
+      norm = norm.replace(term, '');
+    }
+  }
+  return Array.from(entities);
+}
+
+function expandQuery(text) {
+  const norm = _norm(text);
+  const entities = _extractEntities(norm);
+  // Si no hay entidades, devolver el texto original
+  if (!entities.length) return text;
+  // Agregar las entidades canónicas al final del texto para mejorar embeddings
+  return `${text} ${entities.join(' ')}`;
 }
 
 // ── RESPONSE BUILDERS ────────────────────────────────────────────────────────
@@ -259,6 +340,30 @@ function _respListSkills() {
       .join('\n');
 }
 
+function _respExperience() {
+  if (!_personal || !_personal.timeline) return 'Un momento, estoy cargando los datos…';
+  const work = _personal.timeline.filter(t =>
+    ['Freelance', 'Cliente', 'Hackathon', 'Internship'].includes(t.type)
+  );
+  if (!work.length) return 'Jonathan aún no ha documentado experiencia profesional.';
+  const lines = work
+    .map(e => `**${e.role}** en ${e.project || 'proyecto'} (${e.period})\n${e.description}`)
+    .join('\n\n');
+  return `Experiencia profesional de Jonathan:\n\n${lines}`;
+}
+
+function _respEducation() {
+  if (!_personal || !_personal.timeline) return 'Un momento, estoy cargando los datos…';
+  const edu = _personal.timeline.filter(t =>
+    ['Titulación', 'Certificación', 'Práctica', 'En Curso'].includes(t.type)
+  );
+  if (!edu.length) return 'Jonathan aún no ha documentado su formación.';
+  const lines = edu
+    .map(e => `**${e.role}** — ${e.project || 'programa'} (${e.period})\n${e.description}`)
+    .join('\n\n');
+  return `Formación y certificaciones de Jonathan:\n\n${lines}`;
+}
+
 // ── INTENT DETECTION ─────────────────────────────────────────────────────────
 
 function _detectIntent(norm) {
@@ -284,12 +389,172 @@ function _detectIntent(norm) {
     'donde encontrar', 'como contactar', 'instagram',
   ])) return 'contact';
 
+  // Nuevos intents (Fase B) — después de los 4 legacy
+  if (_matchAny(norm, [
+    'experiencia laboral', 'donde ha trabajado', 'donde trabajas', 'trabajos anteriores',
+    'freelance', 'cliente', 'proyectos profesionales', 'trayectoria profesional',
+  ])) return 'experience';
+
+  if (_matchAny(norm, [
+    'donde estudias', 'donde estudio', 'educacion', 'formacion',
+    'universidad', 'espoch', 'carrera', 'licenciatura', 'grado',
+    'certificaciones', 'certificado', 'titulacion',
+  ])) return 'education';
+
   return 'search';
+}
+
+// ── SCORING (Fase C) ─────────────────────────────────────────────────────────
+
+function _scoreKeywordCandidates(norm, entities) {
+  const candidates = [];
+  const queryTokens = norm.split(/\s+/).filter(t => t.length > 1 && !_STOP.has(t));
+
+  for (const doc of _kb) {
+    if (doc.type !== 'project' && doc.type !== 'skill') continue;
+
+    // Calcular keywordScore: Jaccard-like sobre tokens
+    // overlap / queryTokens.length (no sobre doc.keywords.length, para no penalizar docs con muchos keywords)
+    let overlap = 0;
+    queryTokens.forEach(token => {
+      if (_matchAny(token, doc.keywords)) overlap++;
+    });
+    const keywordScore = queryTokens.length > 0 ? overlap / queryTokens.length : 0;
+
+    // +1.0 flat si slug o título matchean verbatim (bonus por exactitud)
+    const titleSquish = (doc.data.title || '').toLowerCase().replace(/\s+/g, '');
+    const slugMatch = (doc.data.slug || '').toLowerCase() === norm.replace(/\s+/g, '');
+    const titleMatch = titleSquish === norm.replace(/\s+/g, '');
+    if (slugMatch || titleMatch) overlap += 1.0;
+
+    // tagScore: overlap entre entidades extraídas y tags del doc
+    const docTags = new Set([
+      ...(doc.data.tags || []),
+      ...(doc.data.category ? [doc.data.category] : []),
+    ].map(t => _norm(t)));
+    let tagOverlap = 0;
+    entities.forEach(e => {
+      if (docTags.has(_norm(e))) tagOverlap++;
+    });
+    const tagScore = entities.length > 0 ? tagOverlap / entities.length : 0;
+
+    // contextBoost: será calculado en rankHybrid (aquí es 0)
+    // pero preparamos el objeto para que rankHybrid lo use
+
+    if (keywordScore > 0 || tagScore > 0) {
+      candidates.push({
+        id: doc.id,
+        type: doc.type,
+        data: doc.data,
+        keywordScore,
+        tagScore,
+      });
+    }
+  }
+
+  // Ordenar por keywordScore descendente (fallback si rankHybrid no lo toca)
+  return candidates.sort((a, b) => b.keywordScore - a.keywordScore);
+}
+
+function rankHybrid({ keywordCandidates = [], semanticCandidates = [], context = {} }) {
+  // Función pura que combina keyword + semantic + tag scores con pesos:
+  // keywordScore 0.45, semanticScore 0.30, tagScore 0.15, contextBoost 0.10
+
+  // Unir candidatos de ambas fuentes (keyword ∪ semantic)
+  const candidateMap = new Map();
+
+  keywordCandidates.forEach(c => {
+    candidateMap.set(c.id, {
+      ...c,
+      semanticScore: 0,
+    });
+  });
+
+  semanticCandidates.forEach(c => {
+    const existing = candidateMap.get(c.id);
+    if (existing) {
+      existing.semanticScore = c.score;
+    } else {
+      candidateMap.set(c.id, {
+        id: c.id,
+        type: c.type,
+        data: c.data,
+        keywordScore: 0,
+        tagScore: 0,
+        semanticScore: c.score,
+      });
+    }
+  });
+
+  const poolCandidates = Array.from(candidateMap.values());
+  if (!poolCandidates.length) return null;
+
+  // Normalizar scores min-max dentro del pool (para que sean comparables)
+  const normalizeScores = (candidates) => {
+    ['keywordScore', 'semanticScore', 'tagScore'].forEach(scoreType => {
+      const scores = candidates.map(c => c[scoreType]).filter(s => s > 0);
+      if (scores.length === 0) return;
+      const min = Math.min(...scores);
+      const max = Math.max(...scores);
+      const range = max - min || 1;
+      candidates.forEach(c => {
+        c[scoreType] = (c[scoreType] - min) / range;
+      });
+    });
+  };
+
+  normalizeScores(poolCandidates);
+
+  // Calcular context boost (0.1 weight)
+  poolCandidates.forEach(c => {
+    let boost = 0;
+    if (context.lastProjectId && c.type === 'project' && c.data.slug === context.lastProjectId) {
+      boost = 1.0; // match exacto con último proyecto
+    } else if (context.lastSkillName && c.type === 'skill' && c.data.name === context.lastSkillName) {
+      boost = 1.0; // match exacto con último skill
+    } else if (c.data.featured) {
+      boost = 0.3; // desempate suave para proyectos destacados
+    }
+    c.contextBoost = boost;
+  });
+
+  // Aplicar pesos: 0.45 keyword, 0.30 semantic, 0.15 tag, 0.10 context
+  poolCandidates.forEach(c => {
+    c.finalScore = (
+      c.keywordScore * 0.45 +
+      c.semanticScore * 0.30 +
+      c.tagScore * 0.15 +
+      c.contextBoost * 0.10
+    );
+  });
+
+  // Ordenar por finalScore descendente
+  poolCandidates.sort((a, b) => b.finalScore - a.finalScore);
+
+  // Threshold de aceptación: el mejor candidato debe tener score >= 0.15
+  // para ser considerado una respuesta válida (no ruido/error)
+  if (!poolCandidates[0] || poolCandidates[0].finalScore < 0.15) {
+    return null;
+  }
+
+  // Devolver el mejor + top-3 para fallback
+  return {
+    best: poolCandidates[0],
+    top3: poolCandidates.slice(0, 3),
+  };
 }
 
 // ── QUERY ENGINE ─────────────────────────────────────────────────────────────
 
-function _query(input) {
+const _FOLLOWUP_PATTERNS = [
+  'que stack usa', 'que tecnologias usa', 'que tecnologia',
+  'y el backend', 'y el frontend', 'y la arquitectura',
+  'cuentame mas', 'cuéntame más', 'dime mas', 'dime más',
+  'en que nivel', 'que tan bueno', 'que tal es',
+  'como se construyo', 'como esta hecho',
+];
+
+function _query(input, context = {}) {
   if (!_ready) return {
     type: 'special',
     text: 'Un momento, estoy cargando mis datos… Intenta de nuevo enseguida.',
@@ -302,14 +567,31 @@ function _query(input) {
   if (intent === 'list_skills')   return { type: 'special', text: _respListSkills() };
   if (intent === 'personal')      return { type: 'special', text: _respPersonal() };
   if (intent === 'contact')       return { type: 'special', text: _respContact() };
+  if (intent === 'experience')    return { type: 'special', text: _respExperience() };
+  if (intent === 'education')     return { type: 'special', text: _respEducation() };
 
-  // Keyword search over KB
-  for (const doc of _kb) {
-    if (doc.type !== 'project' && doc.type !== 'skill') continue;
-    if (_matchAny(norm, doc.keywords)) return { type: doc.type, data: doc.data };
+  // ── Resolución de continuidad (follow-up questions sobre el contexto anterior)
+  // Si el patrón matchea y tenemos contexto, resolver directamente sin pasar por scoring
+  const isFollowup = _FOLLOWUP_PATTERNS.some(p => norm.includes(_norm(p)));
+  if (isFollowup && context) {
+    if (context.lastProjectId) {
+      // Buscar el proyecto en _kb por id
+      const projDoc = _kb.find(d => d.type === 'project' && d.data.slug === context.lastProjectId);
+      if (projDoc) return { type: 'project', data: projDoc.data, isFollowup: true };
+    }
+    if (context.lastSkillName) {
+      // Buscar el skill en _kb por nombre
+      const skillDoc = _kb.find(d => d.type === 'skill' && d.data.name === context.lastSkillName);
+      if (skillDoc) return { type: 'skill', data: skillDoc.data, isFollowup: true };
+    }
   }
 
-  return null;
+  // ── Keyword search + entity extraction (Fase B/C)
+  const entities = _extractEntities(norm);
+  const candidates = _scoreKeywordCandidates(norm, entities);
+
+  // Devolver el mejor candidato con su score y candidates para rankHybrid (Fase C)
+  return { type: 'search', candidates, entities };
 }
 
 // ── PUBLIC API ───────────────────────────────────────────────────────────────
@@ -323,5 +605,5 @@ async function init() {
   }));
 }
 
-// Expone query() y getKB() para ia-mascot.js y Fase 3 (embeddings)
-export const IAAssistant = { init, query: _query, getKB: () => _kb };
+// Expone query() y getKB() para ia-mascot.js, expandQuery para Fase C, rankHybrid para scoring
+export const IAAssistant = { init, query: _query, getKB: () => _kb, expandQuery, rankHybrid };

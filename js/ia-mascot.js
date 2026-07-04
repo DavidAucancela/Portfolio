@@ -945,6 +945,12 @@ export const IaMascot = (() => {
 
   function _getSuggestedChips(result) {
     if (!result) return [];
+
+    // Fase D: usar chipContext estructurado si existe
+    if (result.chipContext && result.chipContext.chips) {
+      return result.chipContext.chips.slice(0, 3);
+    }
+
     if (result.type === 'project') {
       const chips = [];
       if (result.data?.repoUrl) chips.push('Ver repositorio');
@@ -957,12 +963,10 @@ export const IaMascot = (() => {
     }
     if (result.type === 'special') {
       if (result.mood === 'excited') return ['Ver proyectos', '¿Cómo contactarlo?'];
-      // Para listas de proyectos
+      // Fallback a substrings si no hay chipContext (legacy)
       const t = result.text || '';
       if (t.includes('recientes') || t.includes('reciente')) return ['¿En qué es pro?', '¿Quién es Jonathan?'];
       if (t.includes('destacados') || t.includes('destacado')) return ['Proyectos recientes', '¿En qué es pro?', 'Todos'];
-      if (t.includes('proyectos') && t.includes('total')) return ['Proyectos recientes', '¿En qué es pro?'];
-      if (t.includes('destaca') || t.includes('avanzado')) return ['Ver proyectos', '¿Cómo contactarlo?'];
     }
     return [];
   }
@@ -1091,11 +1095,30 @@ export const IaMascot = (() => {
       _context.turns.push({ role: 'bot', text: '', result: null });
       if (_context.turns.length > CONTEXT_MAX * 2) _context.turns = _context.turns.slice(-CONTEXT_MAX * 2);
 
+      // Fallback multinivel (Fase D)
+      const norm = val.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+      const fallbackResult = IAAssistant.getFallback(norm, kwResult?.entities || []);
+
       _setState('talking');
-      await _typewriterBotMessage(
-        'No encontré resultados. Prueba con un proyecto (UBApp, LLM Observatory…) ' +
-        'o una tecnología (Django, React, Docker…).'
-      );
+      let fallbackMsg = '';
+
+      if (fallbackResult.level === 1) {
+        // Nivel 1: encontró con query expandida
+        const best = fallbackResult.candidates[0];
+        fallbackMsg = `Hmm, no lo encontré literal, pero creo que buscas algo relacionado con **${best.data.name || best.data.title}**. ¿Es eso?`;
+      } else if (fallbackResult.level === 2) {
+        // Nivel 2: encontró por categoría/tags
+        const cats = fallbackResult.candidates.map(c => c.data.name || c.data.title).join(', ');
+        fallbackMsg = `No encontré exactamente eso, pero Jonathan trabaja con **${cats}**. ¿Quizás uno de estos?`;
+      } else {
+        // Nivel 3: exploratoria (sin candidatos técnicos)
+        const projNames = fallbackResult.featuredProjects
+          .map(p => p.data.title)
+          .join(', ') || 'varios proyectos';
+        fallbackMsg = `No encontré "**${val}**" en su portfolio. Pero Jonathan trabaja en **${projNames}** y otros. ¿Quieres saber más?`;
+      }
+
+      await _typewriterBotMessage(fallbackMsg);
       _setState('confused');
       setTimeout(() => _addChips(_getConfusedChips()), 200);
     }

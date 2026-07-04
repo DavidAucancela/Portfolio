@@ -407,6 +407,17 @@ const MODE_HELLO = {
   sec: 'Modo .sec — labs de HackTheBox y seguridad.',
 };
 
+/* Microcopy variado para estado "pensando" (Fase E) */
+const THINKING_MESSAGES = [
+  'Pensando…',
+  'Un momento…',
+  'Procesando…',
+  'Analizando…',
+  'Buscando…',
+  'Consultando…',
+  'Investigando…',
+];
+
 export const IaMascot = (() => {
   /* UI refs */
   let _panel      = null;
@@ -436,6 +447,39 @@ export const IaMascot = (() => {
   let _pendingKB    = null;  // KB diferida en touch: se inicia al abrir el chat
   let _queryId      = 0;
   const _pending    = new Map(); // id → { resolve, timer }
+
+  /* Métricas locales (Fase E) — ring-buffer en localStorage */
+  const METRICS_KEY = 'jotai-metrics';
+  const METRICS_MAX = 200;
+
+  function _logEvent(event) {
+    try {
+      const metrics = JSON.parse(localStorage.getItem(METRICS_KEY) || '[]');
+      metrics.push({
+        ...event,
+        timestamp: new Date().toISOString(),
+      });
+      // Ring-buffer: mantener solo los últimos METRICS_MAX eventos
+      if (metrics.length > METRICS_MAX) {
+        metrics.splice(0, metrics.length - METRICS_MAX);
+      }
+      localStorage.setItem(METRICS_KEY, JSON.stringify(metrics));
+    } catch (e) {
+      // Ignorar errores de storage
+    }
+  }
+
+  function _getMetrics() {
+    try {
+      return JSON.parse(localStorage.getItem(METRICS_KEY) || '[]');
+    } catch {
+      return [];
+    }
+  }
+
+  function _clearMetrics() {
+    localStorage.removeItem(METRICS_KEY);
+  }
 
   /* ── WORKER ─────────────────────────────────────────────────── */
 
@@ -1030,7 +1074,9 @@ export const IaMascot = (() => {
     _addUserMessage(val);
     _hideHint();
     _setState('thinking');
-    _setStatus('Pensando…');
+    // Microcopy variado (Fase E)
+    const thinkingMsg = THINKING_MESSAGES[Math.floor(Math.random() * THINKING_MESSAGES.length)];
+    _setStatus(thinkingMsg);
     _addLoadingDots();
 
     // 1. Keywords / intent (síncrono, siempre disponible) — pasa contexto
@@ -1080,6 +1126,14 @@ export const IaMascot = (() => {
       // Actualizar punteros de continuidad (Fase C)
       _updateContext(finalResult);
 
+      // Loguear evento (Fase E)
+      _logEvent({
+        query: val,
+        matchedIntent: finalResult.type,
+        hadResult: true,
+        fallbackUsed: false,
+      });
+
       const targetState = finalResult.mood === 'excited' ? 'excited' : 'success';
 
       if (finalResult.type === 'special') {
@@ -1094,6 +1148,14 @@ export const IaMascot = (() => {
     } else {
       _context.turns.push({ role: 'bot', text: '', result: null });
       if (_context.turns.length > CONTEXT_MAX * 2) _context.turns = _context.turns.slice(-CONTEXT_MAX * 2);
+
+      // Loguear evento fallback (Fase E)
+      _logEvent({
+        query: val,
+        matchedIntent: 'fallback',
+        hadResult: false,
+        fallbackUsed: true,
+      });
 
       // Fallback multinivel (Fase D)
       const norm = val.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
@@ -1561,5 +1623,16 @@ export const IaMascot = (() => {
     });
   }
 
-  return { init, openPanel, closePanel, setState: _setState, say };
+  const api = { init, openPanel, closePanel, setState: _setState, say };
+
+  // Exponer métricas en DEV (Fase E)
+  if (import.meta.env.DEV) {
+    api.metrics = {
+      get: _getMetrics,
+      clear: _clearMetrics,
+      log: _logEvent,
+    };
+  }
+
+  return api;
 })();

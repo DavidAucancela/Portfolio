@@ -598,19 +598,19 @@ body[data-theme="sec"] .jotai-mascot {
   flex-direction: column;
 }
 
-/* Mobile: mostrar encima del panel */
+/* Mobile: mostrar encima del panel, respetando safe-area */
 @media (max-width: 768px) {
   .jotai-commands-modal {
-    top: auto;
+    top: calc(env(safe-area-inset-top, 0px) + 0.75rem);
     right: auto;
-    bottom: 100%;
+    bottom: auto;
     left: 50%;
     transform: translateX(-50%);
     margin-right: 0;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0;
     width: 90vw;
     max-width: 280px;
-    max-height: 60vh;
+    max-height: calc(60vh - env(safe-area-inset-top, 0px));
   }
 }
 

@@ -407,6 +407,17 @@ const MODE_HELLO = {
   sec: 'Modo .sec — labs de HackTheBox y seguridad.',
 };
 
+/* Microcopy variado para estado "pensando" (Fase E) */
+const THINKING_MESSAGES = [
+  'Pensando…',
+  'Un momento…',
+  'Procesando…',
+  'Analizando…',
+  'Buscando…',
+  'Consultando…',
+  'Investigando…',
+];
+
 export const IaMascot = (() => {
   /* UI refs */
   let _panel      = null;
@@ -436,6 +447,39 @@ export const IaMascot = (() => {
   let _pendingKB    = null;  // KB diferida en touch: se inicia al abrir el chat
   let _queryId      = 0;
   const _pending    = new Map(); // id → { resolve, timer }
+
+  /* Métricas locales (Fase E) — ring-buffer en localStorage */
+  const METRICS_KEY = 'jotai-metrics';
+  const METRICS_MAX = 200;
+
+  function _logEvent(event) {
+    try {
+      const metrics = JSON.parse(localStorage.getItem(METRICS_KEY) || '[]');
+      metrics.push({
+        ...event,
+        timestamp: new Date().toISOString(),
+      });
+      // Ring-buffer: mantener solo los últimos METRICS_MAX eventos
+      if (metrics.length > METRICS_MAX) {
+        metrics.splice(0, metrics.length - METRICS_MAX);
+      }
+      localStorage.setItem(METRICS_KEY, JSON.stringify(metrics));
+    } catch (e) {
+      // Ignorar errores de storage
+    }
+  }
+
+  function _getMetrics() {
+    try {
+      return JSON.parse(localStorage.getItem(METRICS_KEY) || '[]');
+    } catch {
+      return [];
+    }
+  }
+
+  function _clearMetrics() {
+    localStorage.removeItem(METRICS_KEY);
+  }
 
   /* ── WORKER ─────────────────────────────────────────────────── */
 
@@ -945,6 +989,12 @@ export const IaMascot = (() => {
 
   function _getSuggestedChips(result) {
     if (!result) return [];
+
+    // Fase D: usar chipContext estructurado si existe
+    if (result.chipContext && result.chipContext.chips) {
+      return result.chipContext.chips.slice(0, 3);
+    }
+
     if (result.type === 'project') {
       const chips = [];
       if (result.data?.repoUrl) chips.push('Ver repositorio');
@@ -957,12 +1007,10 @@ export const IaMascot = (() => {
     }
     if (result.type === 'special') {
       if (result.mood === 'excited') return ['Ver proyectos', '¿Cómo contactarlo?'];
-      // Para listas de proyectos
+      // Fallback a substrings si no hay chipContext (legacy)
       const t = result.text || '';
       if (t.includes('recientes') || t.includes('reciente')) return ['¿En qué es pro?', '¿Quién es Jonathan?'];
       if (t.includes('destacados') || t.includes('destacado')) return ['Proyectos recientes', '¿En qué es pro?', 'Todos'];
-      if (t.includes('proyectos') && t.includes('total')) return ['Proyectos recientes', '¿En qué es pro?'];
-      if (t.includes('destaca') || t.includes('avanzado')) return ['Ver proyectos', '¿Cómo contactarlo?'];
     }
     return [];
   }
@@ -1026,7 +1074,9 @@ export const IaMascot = (() => {
     _addUserMessage(val);
     _hideHint();
     _setState('thinking');
-    _setStatus('Pensando…');
+    // Microcopy variado (Fase E)
+    const thinkingMsg = THINKING_MESSAGES[Math.floor(Math.random() * THINKING_MESSAGES.length)];
+    _setStatus(thinkingMsg);
     _addLoadingDots();
 
     // 1. Keywords / intent (síncrono, siempre disponible) — pasa contexto
@@ -1076,6 +1126,14 @@ export const IaMascot = (() => {
       // Actualizar punteros de continuidad (Fase C)
       _updateContext(finalResult);
 
+      // Loguear evento (Fase E)
+      _logEvent({
+        query: val,
+        matchedIntent: finalResult.type,
+        hadResult: true,
+        fallbackUsed: false,
+      });
+
       const targetState = finalResult.mood === 'excited' ? 'excited' : 'success';
 
       if (finalResult.type === 'special') {
@@ -1091,11 +1149,38 @@ export const IaMascot = (() => {
       _context.turns.push({ role: 'bot', text: '', result: null });
       if (_context.turns.length > CONTEXT_MAX * 2) _context.turns = _context.turns.slice(-CONTEXT_MAX * 2);
 
+      // Loguear evento fallback (Fase E)
+      _logEvent({
+        query: val,
+        matchedIntent: 'fallback',
+        hadResult: false,
+        fallbackUsed: true,
+      });
+
+      // Fallback multinivel (Fase D)
+      const norm = val.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+      const fallbackResult = IAAssistant.getFallback(norm, kwResult?.entities || []);
+
       _setState('talking');
-      await _typewriterBotMessage(
-        'No encontré resultados. Prueba con un proyecto (UBApp, LLM Observatory…) ' +
-        'o una tecnología (Django, React, Docker…).'
-      );
+      let fallbackMsg = '';
+
+      if (fallbackResult.level === 1) {
+        // Nivel 1: encontró con query expandida
+        const best = fallbackResult.candidates[0];
+        fallbackMsg = `Hmm, no lo encontré literal, pero creo que buscas algo relacionado con **${best.data.name || best.data.title}**. ¿Es eso?`;
+      } else if (fallbackResult.level === 2) {
+        // Nivel 2: encontró por categoría/tags
+        const cats = fallbackResult.candidates.map(c => c.data.name || c.data.title).join(', ');
+        fallbackMsg = `No encontré exactamente eso, pero Jonathan trabaja con **${cats}**. ¿Quizás uno de estos?`;
+      } else {
+        // Nivel 3: exploratoria (sin candidatos técnicos)
+        const projNames = fallbackResult.featuredProjects
+          .map(p => p.data.title)
+          .join(', ') || 'varios proyectos';
+        fallbackMsg = `No encontré "**${val}**" en su portfolio. Pero Jonathan trabaja en **${projNames}** y otros. ¿Quieres saber más?`;
+      }
+
+      await _typewriterBotMessage(fallbackMsg);
       _setState('confused');
       setTimeout(() => _addChips(_getConfusedChips()), 200);
     }
@@ -1538,5 +1623,16 @@ export const IaMascot = (() => {
     });
   }
 
-  return { init, openPanel, closePanel, setState: _setState, say };
+  const api = { init, openPanel, closePanel, setState: _setState, say };
+
+  // Exponer métricas en DEV (Fase E)
+  if (import.meta.env.DEV) {
+    api.metrics = {
+      get: _getMetrics,
+      clear: _clearMetrics,
+      log: _logEvent,
+    };
+  }
+
+  return api;
 })();

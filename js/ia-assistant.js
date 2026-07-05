@@ -563,12 +563,36 @@ function _query(input, context = {}) {
   const norm   = _norm(input);
   const intent = _detectIntent(norm);
 
-  if (intent === 'list_projects') return { type: 'special', text: _respListProjects() };
-  if (intent === 'list_skills')   return { type: 'special', text: _respListSkills() };
-  if (intent === 'personal')      return { type: 'special', text: _respPersonal() };
-  if (intent === 'contact')       return { type: 'special', text: _respContact() };
-  if (intent === 'experience')    return { type: 'special', text: _respExperience() };
-  if (intent === 'education')     return { type: 'special', text: _respEducation() };
+  if (intent === 'list_projects') return {
+    type: 'special',
+    text: _respListProjects(),
+    chipContext: { category: 'projects', chips: ['¿En qué es pro?', 'Proyectos por modo'] },
+  };
+  if (intent === 'list_skills') return {
+    type: 'special',
+    text: _respListSkills(),
+    chipContext: { category: 'skills', chips: ['Ver proyectos', 'Más detalles'] },
+  };
+  if (intent === 'personal') return {
+    type: 'special',
+    text: _respPersonal(),
+    chipContext: { category: 'profile', chips: ['Experiencia', '¿Cómo contactar?', 'Stack'] },
+  };
+  if (intent === 'contact') return {
+    type: 'special',
+    text: _respContact(),
+    chipContext: { category: 'contact', chips: ['¿Quién es?', 'Ver proyectos'] },
+  };
+  if (intent === 'experience') return {
+    type: 'special',
+    text: _respExperience(),
+    chipContext: { category: 'experience', chips: ['Formación', 'Ver proyectos', '¿Quién es?'] },
+  };
+  if (intent === 'education') return {
+    type: 'special',
+    text: _respEducation(),
+    chipContext: { category: 'education', chips: ['Experiencia profesional', 'Certificaciones', 'Proyectos'] },
+  };
 
   // ── Resolución de continuidad (follow-up questions sobre el contexto anterior)
   // Si el patrón matchea y tenemos contexto, resolver directamente sin pasar por scoring
@@ -594,6 +618,65 @@ function _query(input, context = {}) {
   return { type: 'search', candidates, entities };
 }
 
+// ── FALLBACK MULTINIVEL (Fase D) ──────────────────────────────────────────────
+
+function getFallback(norm, entities) {
+  // Nivel 1: reintenta con query expandida (detecta más palabras clave)
+  const expandedNorm = _norm(expandQuery(norm));
+  const expandedEntities = _extractEntities(expandedNorm);
+  let candidates = _scoreKeywordCandidates(expandedNorm, expandedEntities);
+
+  // Si hay candidatos con score medio (≥0.3), devolverlos
+  if (candidates.some(c => c.keywordScore >= 0.3)) {
+    return { level: 1, candidates };
+  }
+
+  // Nivel 2: búsqueda por categoría/tags (match parcial flexible)
+  if (entities.length > 0) {
+    const catCandidates = [];
+    _kb.forEach(doc => {
+      if (doc.type !== 'project' && doc.type !== 'skill') return;
+      const docTags = new Set([
+        ...(doc.data.tags || []),
+        ...(doc.data.category ? [doc.data.category] : []),
+      ].map(t => _norm(t)));
+
+      let overlap = 0;
+      entities.forEach(e => {
+        if (docTags.has(_norm(e))) overlap++;
+      });
+
+      if (overlap > 0) {
+        catCandidates.push({
+          id: doc.id,
+          type: doc.type,
+          data: doc.data,
+          tagScore: overlap / entities.length,
+          keywordScore: 0,
+        });
+      }
+    });
+
+    // Ordenar por tagScore y devolver si hay hits
+    catCandidates.sort((a, b) => b.tagScore - a.tagScore);
+    if (catCandidates.length > 0) {
+      return { level: 2, candidates: catCandidates.slice(0, 3) };
+    }
+  }
+
+  // Nivel 3: respuesta exploratoria (sin candidatos técnicos)
+  // Buscar items destacados o aleatorios por categoría
+  const allProjects = _kb.filter(d => d.type === 'project' && d.data.featured);
+  const allSkills = _kb.filter(d => d.type === 'skill').slice(0, 3);
+
+  return {
+    level: 3,
+    suggestion: 'exploratoria',
+    featuredProjects: allProjects.slice(0, 2),
+    sampleSkills: allSkills,
+  };
+}
+
 // ── PUBLIC API ───────────────────────────────────────────────────────────────
 // El rendering lo hace ia-mascot.js; aquí solo cargamos la KB.
 
@@ -606,4 +689,4 @@ async function init() {
 }
 
 // Expone query() y getKB() para ia-mascot.js, expandQuery para Fase C, rankHybrid para scoring
-export const IAAssistant = { init, query: _query, getKB: () => _kb, expandQuery, rankHybrid };
+export const IAAssistant = { init, query: _query, getKB: () => _kb, expandQuery, rankHybrid, getFallback };

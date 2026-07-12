@@ -18,6 +18,38 @@
   },
   "timeline": [
     {
+      "role": "Junior Developer",
+      "type": "Empleo",
+      "project": "Dirección de Sistemas Digitales — UTE",
+      "projectSlug": null,
+      "description": "Desarrollo backend y optimización de procesos académico-administrativos sobre Banner ERP: reportes en .NET conectados a Oracle Database, tuning de consultas SQL/PL-SQL y mantenimiento de sistemas legacy.",
+      "period": "May 2026 — Presente"
+    },
+    {
+      "role": "Desarrollador Backend",
+      "type": "Open Source",
+      "project": "whisperX — Local AI Service",
+      "projectSlug": "whisperx",
+      "description": "Microservicio FastAPI que centraliza transcripción, traducción y diarización de audio, y embeddings vía OpenAI, consumido por otros proyectos del ecosistema.",
+      "period": "Jul 2026"
+    },
+    {
+      "role": "Desarrollador Python + IA",
+      "type": "Personal",
+      "project": "Visual QC Inspector",
+      "projectSlug": "visual-qc-inspector",
+      "description": "Sistema de inspección de calidad visual en tiempo real con Claude Vision: evalúa frames de webcam contra criterios en YAML y emite veredictos PASS/WARN/FAIL con evidencia auditable.",
+      "period": "Jul 2026"
+    },
+    {
+      "role": "Desarrollador Full Stack",
+      "type": "Personal",
+      "project": "XV Años — Tammy",
+      "projectSlug": "xv-tammy",
+      "description": "Sistema de invitaciones digitales con QR y control de acceso en tiempo real para una quinceañera. Stack: Next.js, Supabase, Tailwind.",
+      "period": "Jun 2026 — Jul 2026"
+    },
+    {
       "role": "Desarrollador Full Stack",
       "type": "Titulación",
       "project": "UBApp — Universal Box",

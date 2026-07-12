@@ -676,11 +676,15 @@
       "Ruff",
       "ESLint"
     ],
-    "image": "public/images/projects/code-Review/codereview-01.png",
+    "image": "public/images/projects/code-Review/codereviewx-01.webp",
     "images": [
-      "public/images/projects/code-Review/codereview-01.png",
-      "public/images/projects/code-Review/codereview-02.png",
-      "public/images/projects/code-Review/codereview-03.png"
+      "public/images/projects/code-Review/codereviewx-01.webp",
+      "public/images/projects/code-Review/codereviewx-02.webp",
+      "public/images/projects/code-Review/codereviewx-03.webp",
+      "public/images/projects/code-Review/codereviewx-04.webp",
+      "public/images/projects/code-Review/codereviewx-05.webp",
+      "public/images/projects/code-Review/codereviewx-06.webp",
+      "public/images/projects/code-Review/codereviewx-07.webp"
     ],
     "liveUrl": null,
     "repoUrl": "https://github.com/DavidAucancela/CodeReviewX-",
@@ -773,6 +777,169 @@
           "label": "Comentarios",
           "value": "Inline por línea"
         }
+      ]
+    }
+  },
+  {
+    "id": "project-017",
+    "slug": "whisperx",
+    "title": "whisperX — Local AI Service",
+    "description": "Microservicio FastAPI que centraliza transcripción, traducción y diarización de audio, y generación de embeddings vía OpenAI — consumido por otros proyectos en lugar de llamar a OpenAI directamente.",
+    "longDescription": "Servicio interno que actúa como capa de control entre los proyectos del portfolio (Next.js, NestJS, n8n) y la API de OpenAI. Expone endpoints de transcripción y traducción de audio, generación de embeddings (individual y batch), y diarización local de hablantes con pyannote.audio — sin depender de un servicio externo de terceros. Incluye caché por hash de contenido, rate limiting, autenticación por API key propia y observabilidad de costo/tokens/latencia integrada con LLM Observatory.",
+    "tags": ["FastAPI", "OpenAI API", "pyannote.audio", "Docker", "Embeddings"],
+    "image": "public/images/projects/whisperx/whisperx-01.webp",
+    "images": [
+      "public/images/projects/whisperx/whisperx-01.webp",
+      "public/images/projects/whisperx/whisperx-02.webp",
+      "public/images/projects/whisperx/whisperx-03.webp",
+      "public/images/projects/whisperx/whisperx-04.webp",
+      "public/images/projects/whisperx/whisperx-05.webp",
+      "public/images/projects/whisperx/whisperx-06.webp"
+    ],
+    "liveUrl": null,
+    "repoUrl": "https://github.com/DavidAucancela/whisperX",
+    "featured": false,
+    "date": "2026-07",
+    "techStack": {
+      "ia": [
+        "OpenAI Whisper (transcripción/traducción)",
+        "OpenAI Embeddings API",
+        "pyannote.audio (diarización local)"
+      ],
+      "backend": [
+        "Python",
+        "FastAPI + Uvicorn",
+        "Caché por hash de audio",
+        "Rate limiting + API key propia"
+      ],
+      "tools": [
+        "Docker (multi-stage, usuario no-root)",
+        "ffmpeg",
+        "39 tests (OpenAI mockeado)"
+      ]
+    },
+    "process": {
+      "overview": "Microservicio que centraliza toda interacción con OpenAI para audio y embeddings, dando control sobre validación, caché, logging y costos a los demás proyectos del ecosistema.",
+      "pasos": [
+        {
+          "id": "problema",
+          "resumen": "Varios proyectos (Next.js, NestJS, n8n) necesitaban transcribir audio o generar embeddings, cada uno llamando directamente a OpenAI. Esto duplicaba lógica de validación, no permitía cachear resultados repetidos y dificultaba medir costo real por proyecto.",
+          "puntos": [
+            "Llamadas directas a OpenAI duplicadas en varios repos",
+            "Sin caché — el mismo audio se transcribía más de una vez",
+            "Sin visibilidad centralizada de costo/tokens por cliente",
+            "Necesidad de diarización (quién habla cuándo) sin depender de un servicio pago externo"
+          ]
+        },
+        {
+          "id": "arquitectura",
+          "resumen": "Servicio FastAPI con endpoints /transcribe, /translate, /embeddings y /embeddings/batch. Cada request pasa por autenticación con API key propia, rate limiting y verificación de caché antes de llamar a OpenAI.",
+          "puntos": [
+            "Fases incrementales: setup → audio → embeddings → caché → seguridad → tests → Docker → diarización",
+            "Caché por hash del contenido — evita retranscribir o reembeber el mismo input",
+            "Logging y reintentos automáticos ante fallos transitorios de la API externa",
+            "Health check con verificación real de conectividad a OpenAI (?deep=true)"
+          ]
+        },
+        {
+          "id": "diarizacion",
+          "resumen": "La diarización (identificación de hablantes) corre localmente con pyannote.audio en vez de depender de un servicio externo, usando ffmpeg para normalizar cualquier formato de audio de entrada.",
+          "puntos": [
+            "pyannote.audio descarga el modelo una vez y lo cachea en un volumen Docker persistente",
+            "ffmpeg decodifica cualquier formato de audio antes del análisis",
+            "Parámetro diarize=true opcional en /transcribe — no afecta el flujo simple",
+            "Requiere token de HuggingFace solo si se usa diarización"
+          ]
+        },
+        {
+          "id": "seguridad",
+          "resumen": "El servicio corre como usuario no-root en una imagen Docker multi-stage, con API key propia por cliente y rate limiting para evitar abuso.",
+          "puntos": [
+            "Imagen multi-stage: build separado del runtime final, sin herramientas de compilación en producción",
+            "39 tests automatizados con las llamadas a OpenAI mockeadas",
+            "Rate limiting por API key para evitar sobrecostos por abuso",
+            "Observabilidad de costo/tokens/latencia integrada con LLM Observatory"
+          ]
+        }
+      ],
+      "resultado": "Microservicio en producción que reemplaza las llamadas directas a OpenAI en los demás proyectos, con caché, diarización local y observabilidad de costos centralizada.",
+      "metricas": [
+        { "label": "Tests", "value": "39" },
+        { "label": "Fases completadas", "value": "7" },
+        { "label": "Endpoints", "value": "6+" }
+      ]
+    }
+  },
+  {
+    "id": "project-019",
+    "slug": "visual-qc-inspector",
+    "title": "Visual QC Inspector",
+    "description": "Sistema de inspección de calidad visual en tiempo real: la webcam captura frames, Claude Vision los evalúa contra criterios de inspección escritos en YAML, y emite veredictos PASS/WARN/FAIL con evidencia auditable.",
+    "longDescription": "Sistema de control de calidad que no usa reglas de visión por computadora hardcodeadas: los criterios de inspección se escriben en lenguaje natural dentro de perfiles YAML, y Claude Vision evalúa cada frame capturado contra ese criterio. Cualquier persona puede agregar un producto nuevo a inspeccionar (PCBs, packaging, etiquetas, etc.) sin tocar una línea de Python. Cada sesión genera evidencia auditable: frames guardados, registro en SQLite y un reporte HTML final.",
+    "tags": ["Claude Vision", "Python", "OpenCV", "SQLite", "YAML"],
+    "image": "public/images/projects/visual-qc-inspector/visual-qc-inspector-02.webp",
+    "images": [
+      "public/images/projects/visual-qc-inspector/visual-qc-inspector-02.webp"
+    ],
+    "liveUrl": null,
+    "repoUrl": "https://github.com/DavidAucancela/visual-qc-inspector",
+    "featured": false,
+    "date": "2026-07",
+    "techStack": {
+      "ia": [
+        "Claude Vision (evaluación de frames)",
+        "Prompts de criterios en lenguaje natural"
+      ],
+      "backend": [
+        "Python",
+        "OpenCV (captura de webcam)",
+        "SQLite (registro de sesiones)"
+      ],
+      "tools": [
+        "Perfiles de inspección en YAML",
+        "Reporte HTML por sesión",
+        "Modo interactivo por teclado"
+      ]
+    },
+    "process": {
+      "overview": "Sistema de inspección visual donde el criterio de calidad es texto en lenguaje natural (YAML), no código. Claude Vision evalúa cada frame en vivo y emite un veredicto auditable.",
+      "pasos": [
+        {
+          "id": "problema",
+          "resumen": "Los sistemas de visión por computadora tradicionales requieren entrenar o programar reglas específicas por producto — costoso de mantener cuando el catálogo de defectos cambia. Se necesitaba una forma de definir criterios de inspección sin tocar código.",
+          "puntos": [
+            "Reglas de visión clásicas no escalan a productos nuevos sin reprogramar",
+            "Definir un criterio de inspección requería conocimiento técnico de CV",
+            "Faltaba evidencia auditable de por qué un producto pasó o falló",
+            "Necesidad de operar en tiempo real con una webcam estándar"
+          ]
+        },
+        {
+          "id": "arquitectura",
+          "resumen": "OpenCV captura frames de la webcam; cada frame se envía a Claude Vision junto con el criterio de inspección del perfil YAML activo. Claude devuelve un veredicto estructurado (PASS/WARN/FAIL) con la razón.",
+          "puntos": [
+            "Perfiles YAML declaran el producto y los criterios de inspección en texto libre",
+            "Disparo de análisis manual (tecla SPACE) o por imagen individual (--image)",
+            "SQLite registra cada inspección: veredicto, timestamp, perfil usado",
+            "Cambio de perfil en caliente (tecla P) sin reiniciar la sesión"
+          ]
+        },
+        {
+          "id": "evidencia",
+          "resumen": "Cada sesión de inspección queda documentada: los frames evaluados se guardan, el veredicto se registra en SQLite, y un reporte HTML resume la sesión completa al finalizar.",
+          "puntos": [
+            "Frames guardados como evidencia junto a cada veredicto",
+            "Reporte HTML generado on-demand (tecla R) o al finalizar la sesión (Q)",
+            "Panel de defectos visual durante la inspección (tecla D)",
+            "Casos de uso probados: PCBs, packaging, control de etiquetas"
+          ]
+        }
+      ],
+      "resultado": "Sistema funcional de inspección de calidad donde agregar un producto nuevo es escribir un YAML, no programar un clasificador — con evidencia auditable por sesión.",
+      "metricas": [
+        { "label": "Veredictos", "value": "PASS/WARN/FAIL" },
+        { "label": "Perfiles", "value": "YAML" },
+        { "label": "Evidencia", "value": "Auditable" }
       ]
     }
   }

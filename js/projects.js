@@ -61,6 +61,9 @@ const SLUG_MAP = {
   'project-014': 'dualface',
   'project-015': 'codereviewx',
   'project-016': 'portfolio-trimodal',
+  'project-017': 'whisperx',
+  'project-018': 'xv-tammy',
+  'project-019': 'visual-qc-inspector',
 };
 
 /* ────────────────────────────────────────────────────

@@ -15,6 +15,8 @@
   { "name": "MySQL", "category": "database", "level": 4 },
   { "name": "Redis", "category": "database", "level": 4 },
   { "name": "Microsoft SQL Server", "category": "database", "level": 3 },
+  { "name": "Oracle Database", "category": "database", "level": 3 },
+  { "name": "PL/SQL", "category": "database", "level": 3 },
 
   { "name": "Docker", "category": "devops", "level": 4 },
   { "name": "Kubernetes", "category": "devops", "level": 2 },
@@ -32,5 +34,7 @@
   { "name": "OpenAI API", "category": "ai", "level": 4 },
   { "name": "Claude", "category": "ai", "level": 3 },
   { "name": "Cursor", "category": "ai", "level": 4 },
-  { "name": "TensorFlow", "category": "ai", "level": 3 }
+  { "name": "TensorFlow", "category": "ai", "level": 3 },
+
+  { "name": "Obsidian", "category": "productivity", "level": 4 }
 ]

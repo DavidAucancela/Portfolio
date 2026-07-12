@@ -1115,5 +1115,77 @@
         { "label": "Deploy", "value": "Vercel" }
       ]
     }
+  },
+  {
+    "id": "project-018",
+    "slug": "xv-tammy",
+    "title": "XV Años — Tammy",
+    "description": "Sistema de invitaciones digitales con QR y control de acceso en tiempo real para una quinceañera: landing con countdown y galería, invitación personalizada por token, escáner QR para staff y dashboard de check-in en vivo.",
+    "longDescription": "Plataforma construida para el evento de XV años de una familiar. La landing pública muestra countdown, galería, mensajes y ubicación del evento. Cada invitado recibe un link con token único (/i/[token]) que genera su QR de invitación. El día del evento, el staff usa un escáner QR (/scan) para registrar el ingreso, y un dashboard (/admin) muestra el check-in en tiempo real vía Supabase Realtime. El acceso de staff es por magic link (email OTP), sin contraseñas.",
+    "tags": ["Next.js", "Supabase", "Tailwind", "Framer Motion"],
+    "image": "public/images/projects/xv-tammy/xv-tammy-01.webp",
+    "images": [
+      "public/images/projects/xv-tammy/xv-tammy-01.webp",
+      "public/images/projects/xv-tammy/xv-tammy-02.webp"
+    ],
+    "liveUrl": "https://xv-tammy-production.up.railway.app/",
+    "repoUrl": "https://github.com/DavidAucancela/XV-Tammy",
+    "featured": false,
+    "date": "2026-06",
+    "techStack": {
+      "frontend": [
+        "Next.js 15 (App Router)",
+        "Tailwind CSS v4",
+        "Framer Motion v12",
+        "html5-qrcode (scanner)"
+      ],
+      "backend": [
+        "Supabase (PostgreSQL + Realtime)",
+        "qrcode (generación server-side)",
+        "Magic link / email OTP"
+      ],
+      "tools": [
+        "Railway (deploy)"
+      ]
+    },
+    "process": {
+      "overview": "Sistema de invitaciones digitales con control de acceso por QR, pensado para que el staff en la puerta del evento pueda validar invitados en tiempo real sin papel.",
+      "pasos": [
+        {
+          "id": "problema",
+          "resumen": "Una fiesta de XV años necesita invitaciones personalizadas, confirmación de asistencia (RSVP) y control de acceso confiable el día del evento — sin depender de listas en papel ni de que el staff reconozca a cada invitado.",
+          "puntos": [
+            "Invitaciones físicas no permiten confirmar asistencia de forma centralizada",
+            "Control de acceso manual es lento y propenso a errores en la puerta",
+            "Se necesitaba un panel en vivo para que la organización viera el aforo en tiempo real"
+          ]
+        },
+        {
+          "id": "invitacion",
+          "resumen": "Cada invitado recibe un link único (/i/[token]) con su invitación personalizada y un código QR generado server-side. El invitado puede confirmar o declinar su asistencia (RSVP) desde ahí.",
+          "puntos": [
+            "Token único por invitado — invitación no adivinable ni reutilizable por terceros",
+            "QR generado como PNG en el servidor (endpoint /api/qr)",
+            "POST /api/rsvp registra la confirmación o rechazo de asistencia"
+          ]
+        },
+        {
+          "id": "checkin",
+          "resumen": "El día del evento, el staff escanea el QR de cada invitado desde /scan; el ingreso se registra al instante y el dashboard /admin refleja el check-in en tiempo real gracias a Supabase Realtime.",
+          "puntos": [
+            "Scanner QR con html5-qrcode desde cualquier dispositivo con cámara",
+            "POST /api/checkin registra el ingreso del invitado",
+            "Dashboard /admin con check-in en vivo vía Supabase Realtime",
+            "Acceso de staff protegido por login con magic link (sin contraseñas)"
+          ]
+        }
+      ],
+      "resultado": "Plataforma en producción usada el día del evento para invitaciones, RSVP y control de acceso con check-in en tiempo real.",
+      "metricas": [
+        { "label": "Rutas", "value": "7" },
+        { "label": "Auth", "value": "Magic link" },
+        { "label": "Realtime", "value": "Sí" }
+      ]
+    }
   }
 ]

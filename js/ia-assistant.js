@@ -343,7 +343,7 @@ function _respListSkills() {
 function _respExperience() {
   if (!_personal || !_personal.timeline) return 'Un momento, estoy cargando los datos…';
   const work = _personal.timeline.filter(t =>
-    ['Freelance', 'Cliente', 'Hackathon', 'Internship'].includes(t.type)
+    ['Empleo', 'Freelance', 'Cliente', 'Hackathon', 'Internship'].includes(t.type)
   );
   if (!work.length) return 'Jonathan aún no ha documentado experiencia profesional.';
   const lines = work

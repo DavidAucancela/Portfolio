@@ -45,6 +45,7 @@ css/
   sec-terminal.css            # Terminal interactiva del hero en modo .sec
   pdf-modal.css               # Modal fullscreen visor de PDF (CV + links externos)
   ia-mascot.css               # JotAI widget flotante: trigger, panel de chat, tour, estados
+  section-divider.css         # Divisor animado entre secciones (partículas + glow al hover)
   themes/
     dev.css                   # Overrides modo .dev (azul, tipografía display)
     ia.css                    # Overrides modo .ia (púrpura, gradientes)
@@ -71,6 +72,7 @@ js/
   command-palette.js          # CommandPalette — buscador global estilo Spotlight/VS Code
   sec-terminal.js             # SecTerminal — terminal interactiva en hero modo .sec
   pdf-modal.js                # PDFModal — visor PDF inline (modal overlay con iframe)
+  section-divider.js          # SectionDivider — divisor animado entre secciones (canvas partículas)
 
 data/
   dev-projects.json           # 11 proyectos del modo .dev (cargados con fetch en runtime)

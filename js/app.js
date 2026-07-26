@@ -289,6 +289,12 @@ export function initApp() {
     contactForm.addEventListener('submit', async e => {
       e.preventDefault();
 
+      // Honeypot anti-spam: campo invisible que solo un bot llenaría
+      if (contactForm.querySelector('input[name="botcheck"]')?.checked) {
+        contactForm.reset();
+        return;
+      }
+
       const name    = document.getElementById('contact-name')?.value.trim()    || '';
       const email   = document.getElementById('contact-email')?.value.trim()   || '';
       const message = document.getElementById('contact-message')?.value.trim() || '';

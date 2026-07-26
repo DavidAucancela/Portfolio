@@ -777,3 +777,9 @@
   border-color: var(--color-accent, rgba(99,102,241,0.4));
   color: #fff;
 }
+
+/* ─── Reduced motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .pdm__backdrop { transition: none; }
+  .pdm__panel    { transition: none; }
+}

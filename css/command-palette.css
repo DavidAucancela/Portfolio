@@ -306,3 +306,10 @@
   .cmd-results     { max-height: 52vh; }
   .cmd-footer      { gap: 0.75rem; font-size: 0.62rem; }
 }
+
+/* ─── Reduced motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  .cmd-overlay { transition: none; }
+  .cmd-modal   { transition: none; }
+  .cmd-toast   { transition: none; }
+}

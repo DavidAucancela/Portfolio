@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import { resolve } from 'path'
-import { copyFileSync, mkdirSync, readdirSync, statSync } from 'fs'
+import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'fs'
 
 function copyDirRecursive(src, dest) {
   mkdirSync(dest, { recursive: true });
@@ -24,6 +24,14 @@ function copyStaticFolders() {
         copyDirRecursive(resolve(__dirname, 'data'),   resolve(__dirname, 'dist', 'data'));
         copyDirRecursive(resolve(__dirname, 'public'), resolve(__dirname, 'dist', 'public'));
         copyDirRecursive(resolve(__dirname, 'assets'), resolve(__dirname, 'dist', 'assets'));
+
+        // Archivos que deben servirse desde la raíz del sitio (no /public/)
+        ['robots.txt', 'sitemap.xml'].forEach((file) => {
+          const srcPath = resolve(__dirname, file);
+          if (existsSync(srcPath)) {
+            copyFileSync(srcPath, resolve(__dirname, 'dist', file));
+          }
+        });
       } catch (e) {
         console.warn('[copy-static-folders] Warning:', e.message);
       }
@@ -42,6 +50,11 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,
+    // Para probar api/jotai-chat.js en local: correr `vercel dev --listen 3001`
+    // en otra terminal (emula las funciones serverless) junto con `npm run dev`.
+    proxy: {
+      '/api': 'http://localhost:3001',
+    },
   },
   // Necesario para que @huggingface/transformers cargue sus WASM correctamente
   optimizeDeps: {

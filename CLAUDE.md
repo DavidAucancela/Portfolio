@@ -9,7 +9,7 @@ Portfolio personal de Jonathan Aucancela. Todo el copy de UI está en **español
 - **Bundler:** Vite (`npm run dev` / `npm run build`)
 - **Deploy:** Vercel (auto-deploy en push a `main`)
 - **Repo:** `DavidAucancela/Portfolio` en GitHub
-- **Path local:** `/Users/david/Documents/Projects/Portfolio/Portfolio`
+- **Path local:** `/Users/david/Documents/Projects/Portfolio`
 
 ## Cómo desarrollar
 ```bash
@@ -601,3 +601,13 @@ tanto responde el fallback por keywords. En desktop el comportamiento no cambia.
 archivos WASM de ONNX Runtime se resuelvan correctamente en el worker.
 Worker bundleado en `dist/assets/ia-worker-*.js` (~519KB).
 WASM del runtime en `dist/assets/ort-wasm-simd-threaded.asyncify-*.wasm` (~23MB, cacheado).
+
+## graphify
+
+This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
+
+Rules:
+- For codebase questions, first run `graphify query "<question>"` when graphify-out/graph.json exists. Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for focused concepts. These return a scoped subgraph, usually much smaller than GRAPH_REPORT.md or raw grep output.
+- If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
+- Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
+- After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).

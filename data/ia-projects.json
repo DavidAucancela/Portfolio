@@ -15,9 +15,8 @@
     "images": [
       "public/images/projects/llm observatory/dashboard.webp",
       "public/images/projects/llm observatory/landing.webp",
-      "public/images/projects/llm observatory/login.webp",
-      "public/images/projects/llm observatory/config.webp",
-      "public/images/projects/llm observatory/dashboard-light.webp",
+      "public/images/projects/llm observatory/models.webp",
+      "public/images/projects/llm observatory/dashboard-3d.webp",
       "public/images/projects/llm observatory/request.webp"
     ],
     "liveUrl": "https://llm-web-production.up.railway.app/settings",

@@ -542,6 +542,50 @@ export const IaMascot = (() => {
     });
   }
 
+  /**
+   * Llama a api/jotai-chat.js (Gemini server-side) para generar la respuesta
+   * de fallback. Devuelve null ante cualquier error/timeout — el caller cae
+   * al mensaje enlatado local (_buildCannedFallback).
+   */
+  async function _askGeminiFallback(query, fallbackResult) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+    try {
+      const res = await fetch('/api/jotai-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+        body: JSON.stringify({ query, context: fallbackResult }),
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return typeof data?.text === 'string' && data.text.trim() ? data.text.trim() : null;
+    } catch {
+      return null; // red caída, timeout, JSON inválido, etc.
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  /** Mensaje de fallback local (3 niveles) — red de seguridad si Gemini falla. */
+  function _buildCannedFallback(fallbackResult, val) {
+    if (fallbackResult.level === 1) {
+      // Nivel 1: encontró con query expandida
+      const best = fallbackResult.candidates[0];
+      return `Hmm, no lo encontré literal, pero creo que buscas algo relacionado con **${best.data.name || best.data.title}**. ¿Es eso?`;
+    }
+    if (fallbackResult.level === 2) {
+      // Nivel 2: encontró por categoría/tags
+      const cats = fallbackResult.candidates.map(c => c.data.name || c.data.title).join(', ');
+      return `No encontré exactamente eso, pero Jonathan trabaja con **${cats}**. ¿Quizás uno de estos?`;
+    }
+    // Nivel 3: exploratoria (sin candidatos técnicos)
+    const projNames = fallbackResult.featuredProjects
+      .map(p => p.data.title)
+      .join(', ') || 'varios proyectos';
+    return `No encontré "**${val}**" en su portfolio. Pero Jonathan trabaja en **${projNames}** y otros. ¿Quieres saber más?`;
+  }
+
   /* ── DOM INJECTION ──────────────────────────────────────────── */
 
   function _inject() {
@@ -1162,23 +1206,8 @@ export const IaMascot = (() => {
       const fallbackResult = IAAssistant.getFallback(norm, kwResult?.entities || []);
 
       _setState('talking');
-      let fallbackMsg = '';
-
-      if (fallbackResult.level === 1) {
-        // Nivel 1: encontró con query expandida
-        const best = fallbackResult.candidates[0];
-        fallbackMsg = `Hmm, no lo encontré literal, pero creo que buscas algo relacionado con **${best.data.name || best.data.title}**. ¿Es eso?`;
-      } else if (fallbackResult.level === 2) {
-        // Nivel 2: encontró por categoría/tags
-        const cats = fallbackResult.candidates.map(c => c.data.name || c.data.title).join(', ');
-        fallbackMsg = `No encontré exactamente eso, pero Jonathan trabaja con **${cats}**. ¿Quizás uno de estos?`;
-      } else {
-        // Nivel 3: exploratoria (sin candidatos técnicos)
-        const projNames = fallbackResult.featuredProjects
-          .map(p => p.data.title)
-          .join(', ') || 'varios proyectos';
-        fallbackMsg = `No encontré "**${val}**" en su portfolio. Pero Jonathan trabaja en **${projNames}** y otros. ¿Quieres saber más?`;
-      }
+      const fallbackMsg = (await _askGeminiFallback(val, fallbackResult))
+        || _buildCannedFallback(fallbackResult, val);
 
       await _typewriterBotMessage(fallbackMsg);
       _setState('confused');

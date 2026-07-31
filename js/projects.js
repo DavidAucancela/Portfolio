@@ -104,11 +104,42 @@ async function loadProjects(mode) {
       _renderCards(grid, _allProjects, mode);
     }
 
+    _prefetchOtherModes(mode);
+
   } catch (err) {
     console.warn('[Projects] No se pudo cargar:', err.message);
     _renderComingSoon(grid, mode);
   } finally {
     isLoading = false;
+  }
+}
+
+/* ────────────────────────────────────────────────────
+   PREFETCH EN IDLE — precarga los JSON de los otros 2 modos
+   para que el próximo switch de modo sea instantáneo (cache-hit)
+──────────────────────────────────────────────────── */
+function _prefetchOtherModes(loadedMode) {
+  const others = ['dev', 'ia', 'sec'].filter(m => m !== loadedMode && !_cache[m]);
+  if (others.length === 0) return;
+
+  const run = () => {
+    others.forEach(async m => {
+      try {
+        const res = await fetch(`data/${m}-projects.json`);
+        if (!res.ok) return;
+        const list = await res.json();
+        if (Array.isArray(list)) {
+          list.forEach(p => { if (!p.slug && p.id) p.slug = SLUG_MAP[p.id] || null; });
+          _cache[m] = list;
+        }
+      } catch (_) { /* silencioso — es solo una precarga, no crítico */ }
+    });
+  };
+
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(run, { timeout: 2000 });
+  } else {
+    setTimeout(run, 300);
   }
 }
 

@@ -10,20 +10,22 @@
   <meta name="description" content="Portfolio de Jonathan David Aucancela — Software Engineer, IA Developer y Security Researcher. Proyectos fullstack, sistemas IA y ciberseguridad." />
   <meta name="keywords" content="software engineer, fullstack developer, IA, inteligencia artificial, ciberseguridad, pentesting, Jonathan Aucancela" />
   <meta name="author" content="Jonathan David Aucancela Maguana" />
-  <link rel="canonical" href="https://davidaucancela.github.io/Portfolio/" />
+  <link rel="canonical" href="https://davidaucancela-portfolio.vercel.app/" />
 
   <!-- Open Graph -->
   <meta property="og:title"       content="Jonathan Aucancela — Portfolio" />
   <meta property="og:description" content="Software Engineer · IA Developer · Security Researcher" />
   <meta property="og:type"        content="website" />
-  <meta property="og:url"         content="https://davidaucancela.github.io/Portfolio/" />
-  <meta property="og:image"       content="assets/images/og-preview.svg" />
+  <meta property="og:url"         content="https://davidaucancela-portfolio.vercel.app/" />
+  <meta property="og:image"       content="https://davidaucancela-portfolio.vercel.app/assets/images/og-preview.png" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card"        content="summary_large_image" />
   <meta name="twitter:title"       content="Jonathan.dev — Portfolio" />
   <meta name="twitter:description" content="Software Engineer · IA Developer · Security Researcher" />
-  <meta name="twitter:image"       content="assets/images/og-preview.svg" />
+  <meta name="twitter:image"       content="https://davidaucancela-portfolio.vercel.app/assets/images/og-preview.png" />
 
   <!-- Favicon (se cambia dinámicamente por JS) -->
   <link rel="icon" href="assets/favicons/dev-favicon.svg" type="image/svg+xml" />
@@ -43,7 +45,7 @@
     "@context": "https://schema.org",
     "@type": "Person",
     "name": "Jonathan David Aucancela Maguana",
-    "url": "https://davidaucancela.github.io/Portfolio/",
+    "url": "https://davidaucancela-portfolio.vercel.app/",
     "sameAs": [
       "https://github.com/DavidAucancela",
       "https://www.linkedin.com/in/jonathan-david-aucancela/"
@@ -52,9 +54,6 @@
     "knowsAbout": ["Software Engineering", "Artificial Intelligence", "Cybersecurity"]
   }
   </script>
-
-  <!-- Umami Analytics — reemplazar data-website-id con el ID de tu sitio en umami.is -->
-  <script defer src="https://analytics.umami.is/script.js" data-website-id="REEMPLAZAR-CON-TU-ID-UMAMI"></script>
 
   <!-- Estilos — cargados por Vite desde js/main.js -->
 </head>
@@ -576,6 +575,9 @@
           <!-- Formulario -->
           <form class="contact-form animate-on-scroll from-right" id="contact-form"
                 novalidate aria-label="Formulario de contacto">
+
+            <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" aria-hidden="true"
+                   style="position:absolute; left:-9999px; width:1px; height:1px; opacity:0;" />
 
             <div class="form-group">
               <label for="contact-name" class="form-label" data-i18n="contact.name">Nombre *</label>

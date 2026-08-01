@@ -55,6 +55,7 @@ const TRANSLATIONS = {
     'projects.certificate': 'Certificado',
     'projects.prev':  'Anterior',
     'projects.next':  'Siguiente',
+    'projects.filterAll': 'Todos',
     // IA assistant
     'ia.label':       '// sistemas ia',
     'ia.title':       'Consulta mi experiencia',
@@ -153,6 +154,7 @@ const TRANSLATIONS = {
     'projects.certificate': 'Certificate',
     'projects.prev':  'Previous',
     'projects.next':  'Next',
+    'projects.filterAll': 'All',
     // IA assistant
     'ia.label':       '// ia systems',
     'ia.title':       'Ask about my experience',

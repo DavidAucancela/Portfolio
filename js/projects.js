@@ -41,8 +41,18 @@ let currentMode      = 'dev';
 let isLoading        = false;
 let _allProjects     = [];
 let _currentPage     = 1;
-const PROJECTS_PER_PAGE = 6;
+let _currentCategory = 'all';
+const PROJECTS_PER_PAGE = 5;
 const _cache         = {};
+
+/* ────────────────────────────────────────────────────
+   CATEGORÍAS DE FILTRO POR MODO — orden de los chips
+──────────────────────────────────────────────────── */
+const CATEGORY_ORDER = {
+  dev: ['Desarrollo Web', 'Computer Vision', 'Backend & Datos', 'Seguridad', 'Concursos'],
+  ia:  ['Sistemas Inteligentes', 'Visión & Audio', 'Búsqueda Semántica & RAG', 'MLOps & DevTools'],
+  sec: ['Máquinas HTB', 'Certificaciones', 'Prácticas Profesionales'],
+};
 
 const SLUG_MAP = {
   'project-001': 'ubapp',
@@ -186,13 +196,57 @@ function _scrollToProjectsTop() {
    RENDER DE CARDS CON PAGINACIÓN
 ──────────────────────────────────────────────────── */
 function _renderCards(grid, projects, mode) {
-  _currentPage = 1;
+  _currentPage     = 1;
+  _currentCategory = 'all';
+  _renderFilters(mode);
   _renderPage(grid, projects, mode);
 }
 
+/* ────────────────────────────────────────────────────
+   FILTROS DE CATEGORÍA (pills — selección única)
+──────────────────────────────────────────────────── */
+function _renderFilters(mode) {
+  const bar = document.getElementById('projects-filters');
+  if (!bar) return;
+
+  const cats = (CATEGORY_ORDER[mode] || []).filter(cat =>
+    _allProjects.some(p => p.category === cat)
+  );
+
+  if (_allProjects.length === 0 || cats.length === 0) {
+    bar.innerHTML = '';
+    return;
+  }
+
+  const chip = (cat, label) => `
+    <button type="button" class="pfilter-btn${_currentCategory === cat ? ' is-active' : ''}"
+            data-category="${cat}" role="tab" aria-selected="${_currentCategory === cat}">
+      ${label}
+    </button>`;
+
+  bar.innerHTML = chip('all', LangSwitcher.t('projects.filterAll')) +
+    cats.map(cat => chip(cat, cat)).join('');
+
+  bar.querySelectorAll('.pfilter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cat = btn.dataset.category;
+      if (cat === _currentCategory) return;
+      _currentCategory = cat;
+      _currentPage     = 1;
+      _renderFilters(mode);
+      _renderPage(document.getElementById('projects-grid'), _allProjects, mode);
+      _scrollToProjectsTop();
+    });
+  });
+}
+
 function _renderPage(grid, projects, mode) {
-  const featured = projects.filter(p => p.featured);
-  const rest      = projects.filter(p => !p.featured);
+  const filtered = _currentCategory === 'all'
+    ? projects
+    : projects.filter(p => p.category === _currentCategory);
+
+  const featured = filtered.filter(p => p.featured);
+  const rest      = filtered.filter(p => !p.featured);
   const ordered   = [...featured, ...rest];
 
   const totalPages  = Math.ceil(ordered.length / PROJECTS_PER_PAGE);
@@ -564,6 +618,9 @@ function _buildCardPlaceholder(p) {
    COMING SOON
 ──────────────────────────────────────────────────── */
 function _renderComingSoon(grid, mode) {
+  const filtersBar = document.getElementById('projects-filters');
+  if (filtersBar) filtersBar.innerHTML = '';
+
   const cs    = COMING_SOON[mode] || COMING_SOON.dev;
   const lang  = LangSwitcher.getLang();
   const isSec = mode === 'sec';
@@ -659,6 +716,7 @@ window.addEventListener('portfolio:modeChange', e => {
 window.addEventListener('portfolio:langChange', () => {
   const grid = document.getElementById('projects-grid');
   if (grid && _allProjects.length > 0) {
+    _renderFilters(currentMode);
     _renderPage(grid, _allProjects, currentMode);
   } else if (grid) {
     _renderComingSoon(grid, currentMode);

@@ -1021,7 +1021,9 @@ body[data-theme="sec"] .jotai-mascot {
 
 @media (max-width: 520px) {
   #jotai-widget {
-    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    /* margen mínimo — pegado al borde real de la pantalla, evitando el
+       hueco vacío que dejaba 1rem sumado al safe-area en móviles sin notch */
+    bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
     right: calc(1rem + env(safe-area-inset-right, 0px));
     gap: 0.5rem;
   }
@@ -1034,8 +1036,8 @@ body[data-theme="sec"] .jotai-mascot {
   /* Panel flotante por encima del avatar, no bottom-sheet */
   #jotai-panel {
     position: fixed;
-    /* flota encima del trigger (58px) + gap (0.5rem) + margen bottom del widget */
-    bottom: calc(58px + 1rem + 1rem + env(safe-area-inset-bottom, 0px));
+    /* flota encima del trigger (58px) + gap (0.5rem) + margen bottom del widget (0.5rem) */
+    bottom: calc(58px + 0.5rem + 0.5rem + env(safe-area-inset-bottom, 0px));
     right: calc(1rem + env(safe-area-inset-right, 0px));
     left: calc(1rem + env(safe-area-inset-left, 0px));
     width: auto;

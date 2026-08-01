@@ -3,6 +3,7 @@
     "id": "project-009",
     "slug": "artecuador",
     "title": "ArtEcuador",
+    "category": "Desarrollo Web",
     "description": "Catálogo web estático de artesanías ecuatorianas en un único index.html con CSS y JS inline. Sin frameworks ni dependencias de build.",
     "longDescription": "Sitio estático de una sola página con 8 secciones (cover, origen, joyería, textiles, cerámica, decoración, Arte Tigua y contacto). Sistema de diseño propio con CSS custom properties, grid responsive de 4 a 1 columna y fotos reales de productos. Contenerizado con Docker + nginx:alpine y desplegado en Railway.",
     "tags": [
@@ -110,6 +111,7 @@
   {
     "id": "project-002",
     "title": "Ideancestral",
+    "category": "Desarrollo Web",
     "description": "Plataforma de catálogo digital multiidioma para artesanos ecuatorianos con carrito de compras vía WhatsApp.",
     "longDescription": "Sistema fullstack con Vue.js 3 y Node.js/Express. Soporta 3 idiomas (ES/EN/PT), modo oscuro/claro, carrito de compras con integración WhatsApp y panel administrativo para gestión de productos sin conocimiento técnico.",
     "tags": [
@@ -222,6 +224,7 @@
   {
     "id": "project-007",
     "title": "MapCriminals",
+    "category": "Desarrollo Web",
     "description": "Mapa mundial interactivo de criminales más buscados integrando la FBI API en tiempo real, Google Trends y datos manuales por país.",
     "longDescription": "Backend Express como proxy agregador con caché por niveles (FBI 1h, Google Trends 6h). Leaflet.js con overlay estilo sala de operaciones, panel por país, filtros cruzados (nombre, crimen, nacionalidad, fuente) y soporte bilingüe ES/EN.",
     "tags": [
@@ -317,6 +320,7 @@
     "id": "project-008",
     "slug": "notes-app",
     "title": "Notes App",
+    "category": "Desarrollo Web",
     "description": "Aplicación full-stack de notas con autenticación JWT, categorías, archivado y arquitectura por capas (View → Service → Repository → ORM).",
     "longDescription": "Backend Django REST Framework con autenticación JWT (simplejwt), blacklist de refresh tokens en logout, y arquitectura estricta en capas. Frontend React 18 + Vite con contexto global de auth. Deploy con frontend en Vercel y backend en Railway.",
     "tags": [
@@ -438,6 +442,7 @@
   {
     "id": "project-004",
     "title": "Equity",
+    "category": "Backend & Datos",
     "description": "Pipeline automatizado de limpieza y carga de datos desde JSON a PostgreSQL con validación de schema y modo dry-run.",
     "longDescription": "Herramienta ETL construida con Python/Django que automatiza Extract→Transform→Load desde archivos JSON. Incluye validación de schemas, transacciones atómicas, logs de auditoría y modo dry-run para validar sin insertar.",
     "tags": [
@@ -526,6 +531,7 @@
     "id": "project-005",
     "slug": "securabank",
     "title": "SecuraBank",
+    "category": "Seguridad",
     "description": "Sistema de transacciones bancarias que implementa el OWASP Top 10: JWT, bcrypt, Helmet.js, CSRF tokens y auditoría inmutable.",
     "longDescription": "Proyecto demostrativo de seguridad bancaria con Node.js/Express. Implementa 6 categorías del OWASP Top 10: JWT con access 15min + refresh 7d, bcrypt factor 12, Helmet.js para headers, CSRF tokens en formularios y auditoría inmutable de transacciones.",
     "tags": [
@@ -622,6 +628,7 @@
     "id": "project-012",
     "slug": "gesture-control",
     "title": "Gesture Control",
+    "category": "Computer Vision",
     "description": "Detección de gestos de mano en tiempo real vía webcam que mapea gestos a atajos de teclado, clics de ratón y acciones de sistema. Clasificador híbrido rule-based + ML sklearn.",
     "longDescription": "Sistema de control por gestos con Python, OpenCV y MediaPipe Hands. Detecta 21 landmarks por mano en cada frame y los clasifica con un sistema híbrido: reglas geométricas para los gestos base (pulgar arriba/abajo, OK, mano abierta, etc.) y un clasificador sklearn RandomForest entrenable con datos propios. Las acciones (keypresses, clics, scroll) se ejecutan con debounce para evitar disparos repetidos. Configurable vía YAML sin tocar código.",
     "tags": [
@@ -730,6 +737,7 @@
   {
     "id": "project-006",
     "title": "ConQuito",
+    "category": "Concursos",
     "description": "Visualización interactiva de fundaciones de Quito para ConQuito con mapas Leaflet y estadísticas de impacto social.",
     "longDescription": "Aplicación de datos abiertos con JavaScript vanilla y Leaflet. Filtros por tipo y zona geográfica, markers personalizados, popups informativos y gráficos Chart.js. Entregada a ConQuito como herramienta de decisiones.",
     "tags": [
@@ -818,6 +826,7 @@
     "id": "project-013",
     "slug": "nunna",
     "title": "Nunna",
+    "category": "Desarrollo Web",
     "description": "Catálogo digital + experiencia inmersiva sobre los personajes tradicionales de los pases riobambeños — Diablo Huma, Curiquingue, Sacha Runa y más.",
     "longDescription": "Monorepo full-stack con Turborepo + pnpm workspaces. Next.js 15 como sitio público con SSR, NestJS como API de búsqueda semántica y webhooks, Directus como CMS headless para gestión del contenido cultural sin código, y Supabase (PostgreSQL + Prisma) como base de datos. Preservación digital del patrimonio intangible riobambeño.",
     "tags": [
@@ -932,6 +941,7 @@
     "id": "project-014",
     "slug": "dualface",
     "title": "DualFace",
+    "category": "Desarrollo Web",
     "description": "Experiencia web inmersiva de preservación cultural sobre el Diablo Huma y el Cucurucho — dos íconos del patrimonio ecuatoriano. Scroll narrativo estilo Persepolis con GSAP y audio ambiental por universo.",
     "longDescription": "Plataforma cultural con sistema de temas dual vía atributo CSS. Dos universos comparten el mismo HTML; un toggle cambia el data-theme y todo el diseño reacciona. GSAP ScrollTrigger activa capítulos narrativos con parallax en 3 capas. Tone.js reproduce audio ambiental diferenciado por universo (percusión andina vs campanas). Bilingüe ES/EN con i18n vanilla. Sin frameworks ni bundler en v1.",
     "tags": [
@@ -1042,6 +1052,7 @@
     "id": "project-016",
     "slug": "portfolio-trimodal",
     "title": "Portfolio Trimodal",
+    "category": "Desarrollo Web",
     "description": "Portfolio personal con tres modos de presentación (dev / ia / sec), canvas de partículas por modo, asistente de IA integrado con embeddings semánticos y galería fullscreen de proyectos.",
     "longDescription": "Sitio web de una sola página construido con HTML5, CSS3 y JavaScript vanilla (ES modules) bundleado con Vite. El sistema trimodal cambia contenido, paleta de colores y animaciones según el perfil seleccionado: desarrollador, IA o ciberseguridad. Incluye un widget de IA (JotAI) con búsqueda semántica usando MiniLM via Web Worker, Command Palette estilo VS Code, terminal interactiva en modo .sec y scroll-driven animations.",
     "tags": ["HTML5", "CSS3", "JavaScript", "Vite", "Vercel"],
@@ -1120,6 +1131,7 @@
     "id": "project-018",
     "slug": "xv-tammy",
     "title": "XV Años — Tammy",
+    "category": "Desarrollo Web",
     "description": "Sistema de invitaciones digitales con QR y control de acceso en tiempo real para una quinceañera: landing con countdown y galería, invitación personalizada por token, escáner QR para staff y dashboard de check-in en vivo.",
     "longDescription": "Plataforma construida para el evento de XV años de una familiar. La landing pública muestra countdown, galería, mensajes y ubicación del evento. Cada invitado recibe un link con token único (/i/[token]) que genera su QR de invitación. El día del evento, el staff usa un escáner QR (/scan) para registrar el ingreso, y un dashboard (/admin) muestra el check-in en tiempo real vía Supabase Realtime. El acceso de staff es por magic link (email OTP), sin contraseñas.",
     "tags": ["Next.js", "Supabase", "Tailwind", "Framer Motion"],

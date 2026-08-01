@@ -2,6 +2,7 @@
   {
     "id": "project-008",
     "title": "LLM Observatory",
+    "category": "MLOps & DevTools",
     "description": "Dashboard open-source de observabilidad para la API de Claude. Monitorea tokens, costo y latencia en tiempo real con un SDK wrapper drop-in de cero overhead.",
     "longDescription": "Monorepo con SDK wrapper para @anthropic-ai/sdk, backend Express + Socket.io y dashboard React. El SDK intercepta métricas async (fire & forget) sin impacto en latencia. WebSocket para live updates, alertas de presupuesto, comparación de modelos y exportación CSV.",
     "tags": [
@@ -109,6 +110,7 @@
   {
     "id": "project-001",
     "title": "UBApp",
+    "category": "Búsqueda Semántica & RAG",
     "description": "Sistema de almacenamiento de envíos con búsqueda semántica impulsada por IA, visualización geográfica y generación de documentos.",
     "longDescription": "Sistema fullstack de gestión de envíos con búsqueda semántica potenciada por OpenAI + pgvector. Incluye rastreo en tiempo real, gestión de inventario, reportes analíticos y panel de administración. Redujo el tiempo de búsqueda de 4 minutos a menos de 20 segundos.",
     "tags": [
@@ -228,6 +230,7 @@
     "id": "project-010",
     "slug": "mindlog",
     "title": "MindLog",
+    "category": "Sistemas Inteligentes",
     "description": "App móvil de diario personal con IA conversacional. Claude Haiku detecta el mood, Sonnet responde con contexto del historial vía RAG con embeddings y streaming SSE real en React Native.",
     "longDescription": "Primera app móvil del portfolio. El usuario escribe entradas libres y puede conversar con ellas: Claude recupera entradas relevantes por similitud coseno y responde con contexto acumulado del usuario. Haiku para detección de mood y actualización del perfil, Sonnet para chat y resumen diario. Streaming SSE implementado vía XHR en Expo (sin EventSource nativo).",
     "tags": [
@@ -350,6 +353,7 @@
     "id": "project-009",
     "slug": "marevitae",
     "title": "Mare Vitae",
+    "category": "Visión & Audio",
     "description": "Plataforma LMS para educación médica con transcripción automática de video mediante Whisper y gestión de contenido multirole.",
     "longDescription": "Sistema de aprendizaje online orientado a profesionales de la salud. Backend NestJS con módulos de cursos, evaluaciones y progreso. Frontend Next.js con SSR. Integración de OpenAI Whisper para transcribir clases en video automáticamente, generando subtítulos y contenido textual buscable.",
     "tags": [
@@ -459,6 +463,7 @@
     "id": "project-011",
     "slug": "whatsapp-ai-agent",
     "title": "Social Media AI Agent",
+    "category": "Sistemas Inteligentes",
     "description": "Agente conversacional en redes sociales que califica leads automáticamente con Claude Haiku, los registra en Supabase y los sincroniza con Kommo CRM usando n8n Cloud.",
     "longDescription": "Bot de Telegram construido sobre n8n Cloud. El agente recibe mensajes, extrae datos del prospecto con Claude Haiku (nombre, ciudad, motivo, marca), actualiza la conversación en Supabase a medida que avanza el flujo y crea/actualiza el lead en Kommo CRM con todos los campos calificados. Sin código — lógica 100% en workflows n8n visuales.",
     "tags": [
@@ -562,6 +567,7 @@
   {
     "id": "project-003",
     "title": "AnaOS",
+    "category": "Sistemas Inteligentes",
     "description": "Plataforma SaaS multi-tenant para gestión de cooperativas y agencias con planes de suscripción, auth completo y deploy en Railway.",
     "longDescription": "Backend ASP.NET Core (C#) + Entity Framework con 7 modelos del dominio. Frontend React + TypeScript + Vite con dashboards por rol, tres planes de suscripción (Basic, Professional, Enterprise) y flujos de pago independientes.",
     "tags": [
@@ -666,6 +672,7 @@
     "id": "project-015",
     "slug": "codereviewx",
     "title": "CodeReviewX",
+    "category": "MLOps & DevTools",
     "description": "GitHub App de revisión de código automatizada. Analiza diffs con Ruff/ESLint y Claude Sonnet, y publica comentarios inline en el PR — sin intervención humana.",
     "longDescription": "Bot desplegado como GitHub App con FastAPI + Uvicorn. Escucha eventos pull_request (opened/synchronize), verifica la firma HMAC-SHA256 del webhook y responde 200 OK inmediatamente. El análisis corre en background con asyncio: obtiene los archivos del PR, extrae contexto de cada diff, corre Ruff (Python) o ESLint (JS/TS) y envía el resultado junto con el diff a Claude Sonnet, que detecta bugs lógicos, edge cases no manejados y problemas de seguridad. Los comentarios se mapean a las líneas exactas del diff vía la GitHub API.",
     "tags": [
@@ -783,6 +790,7 @@
     "id": "project-017",
     "slug": "whisperx",
     "title": "whisperX — Local AI Service",
+    "category": "Visión & Audio",
     "description": "Microservicio FastAPI que centraliza transcripción, traducción y diarización de audio, y generación de embeddings vía OpenAI — consumido por otros proyectos en lugar de llamar a OpenAI directamente.",
     "longDescription": "Servicio interno que actúa como capa de control entre los proyectos del portfolio (Next.js, NestJS, n8n) y la API de OpenAI. Expone endpoints de transcripción y traducción de audio, generación de embeddings (individual y batch), y diarización local de hablantes con pyannote.audio — sin depender de un servicio externo de terceros. Incluye caché por hash de contenido, rate limiting, autenticación por API key propia y observabilidad de costo/tokens/latencia integrada con LLM Observatory.",
     "tags": ["FastAPI", "OpenAI API", "pyannote.audio", "Docker", "Embeddings"],
@@ -873,6 +881,7 @@
     "id": "project-019",
     "slug": "visual-qc-inspector",
     "title": "Visual QC Inspector",
+    "category": "Visión & Audio",
     "description": "Sistema de inspección de calidad visual en tiempo real: la webcam captura frames, Claude Vision los evalúa contra criterios de inspección escritos en YAML, y emite veredictos PASS/WARN/FAIL con evidencia auditable.",
     "longDescription": "Sistema de control de calidad que no usa reglas de visión por computadora hardcodeadas: los criterios de inspección se escriben en lenguaje natural dentro de perfiles YAML, y Claude Vision evalúa cada frame capturado contra ese criterio. Cualquier persona puede agregar un producto nuevo a inspeccionar (PCBs, packaging, etiquetas, etc.) sin tocar una línea de Python. Cada sesión genera evidencia auditable: frames guardados, registro en SQLite y un reporte HTML final.",
     "tags": ["Claude Vision", "Python", "OpenCV", "SQLite", "YAML"],

@@ -160,7 +160,9 @@ export const ProjectGallery = (() => {
       img.style.display = 'none';
       ph.style.display  = 'none';
       pdf.style.display = 'block';
+      pdf.classList.add('is-swapping');
       pdf.src = _src(doc.url);
+      pdf.onload = () => pdf.classList.remove('is-swapping');
 
       document.getElementById('pgal-counter').textContent =
         _docs.length > 1 ? `${_idx + 1} / ${_docs.length}` : '';
@@ -200,10 +202,12 @@ export const ProjectGallery = (() => {
       ph.style.display  = 'flex';
       ph.innerHTML      = _buildPgalPlaceholder(_p);
     };
+    img.onload = () => img.classList.remove('is-swapping');
     img.style.display = '';
     ph.style.display  = 'none';
-    img.alt           = `${_p?.title || ''} — imagen ${_idx + 1}`;
-    img.src           = _src(src);
+    img.classList.add('is-swapping');
+    img.alt = `${_p?.title || ''} — imagen ${_idx + 1}`;
+    img.src = _src(src);
 
     document.getElementById('pgal-counter').textContent =
       _images.length > 1 ? `${_idx + 1} / ${_images.length}` : '';

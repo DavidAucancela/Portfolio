@@ -126,6 +126,8 @@ function _calcXP(p) {
 /* ─────────────────────────────────────────────────────────
    HTML BUILDERS
 ───────────────────────────────────────────────────────── */
+const MAX_PHASE_POINTS = 3;
+
 function _phaseHTML(paso, idx, mode) {
   const fallback = {
     icon:   '📌',
@@ -138,6 +140,7 @@ function _phaseHTML(paso, idx, mode) {
   const color = meta.color || 'var(--color-accent)';
 
   const pointsHTML = (paso.puntos || [])
+    .slice(0, MAX_PHASE_POINTS)
     .map(pt => `<li class="pdm-phase__point">${_esc(pt)}</li>`)
     .join('');
 
@@ -253,6 +256,25 @@ const PANEL_LABELS = {
   docs:       { dev: 'Documentos',           ia: 'Documentos',         sec: 'Documentos'      },
 };
 
+/* Estado del proyecto — color + icono por valor de p.status */
+const STATUS_META = {
+  'En producción':  { icon: '🟢', color: '#22c55e' },
+  'Completado':     { icon: '✅', color: '#3b82f6' },
+  'En desarrollo':  { icon: '🛠️', color: '#f59e0b' },
+  'Archivado':      { icon: '📦', color: '#6b7280' },
+  'Certificado':    { icon: '🎓', color: '#ffce3d' },
+  'Pwned':          { icon: '🏴', color: '#9fef00' },
+};
+
+function _statusHTML(p) {
+  if (!p.status) return '';
+  const meta = STATUS_META[p.status] || { icon: '●', color: 'var(--color-accent)' };
+  return `
+    <span class="pdm__status-badge" style="color:${meta.color};border-color:${meta.color}40;background:${meta.color}18;">
+      ${meta.icon} ${_esc(p.status)}
+    </span>`;
+}
+
 const PANEL_ICONS = {
   overview:   { dev: '◈',   ia: '◈',   sec: '◈'   },
   phases:     { dev: '⚙️',  ia: '🔬',  sec: '🔍'  },
@@ -281,7 +303,7 @@ function _buildContent(p, mode) {
   const overview  = p.process?.overview || p.longDescription || p.description || '';
   const resultado = p.process?.resultado || '';
   const overviewHTML = overview ? `
-    <p class="pdm__slabel">${icon('overview')} ${lbl('overview')}</p>
+    <p class="pdm__slabel">${icon('overview')} ${lbl('overview')}${_statusHTML(p)}</p>
     <div class="pdm__overview">
       ${_esc(overview)}
       ${resultado ? `<div class="pdm__overview-result">✅ ${_esc(resultado)}</div>` : ''}

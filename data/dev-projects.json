@@ -1055,7 +1055,13 @@
     "category": "Desarrollo Web",
     "description": "Portfolio personal con tres modos de presentación (dev / ia / sec), canvas de partículas por modo, asistente de IA integrado con embeddings semánticos y galería fullscreen de proyectos.",
     "longDescription": "Sitio web de una sola página construido con HTML5, CSS3 y JavaScript vanilla (ES modules) bundleado con Vite. El sistema trimodal cambia contenido, paleta de colores y animaciones según el perfil seleccionado: desarrollador, IA o ciberseguridad. Incluye un widget de IA (JotAI) con búsqueda semántica usando MiniLM via Web Worker, Command Palette estilo VS Code, terminal interactiva en modo .sec y scroll-driven animations.",
-    "tags": ["HTML5", "CSS3", "JavaScript", "Vite", "Vercel"],
+    "tags": [
+      "HTML5",
+      "CSS3",
+      "JavaScript",
+      "Vite",
+      "Vercel"
+    ],
     "image": "public/images/projects/portfolio/portfolio-01.webp",
     "images": [
       "public/images/projects/portfolio/portfolio-01.webp",
@@ -1069,10 +1075,24 @@
     "featured": true,
     "date": "2026-06",
     "techStack": {
-      "frontend": ["HTML5", "CSS3", "JavaScript (ES Modules)"],
-      "build": ["Vite"],
-      "ia": ["Transformers.js", "MiniLM-L6-v2", "Web Worker", "IndexedDB"],
-      "deploy": ["Vercel", "GitHub Actions"]
+      "frontend": [
+        "HTML5",
+        "CSS3",
+        "JavaScript (ES Modules)"
+      ],
+      "build": [
+        "Vite"
+      ],
+      "ia": [
+        "Transformers.js",
+        "MiniLM-L6-v2",
+        "Web Worker",
+        "IndexedDB"
+      ],
+      "deploy": [
+        "Vercel",
+        "GitHub Actions"
+      ]
     },
     "process": {
       "overview": "Portfolio personal diseñado con un sistema trimodal que adapta visualmente todo el sitio (colores, animaciones, contenido) según el perfil de presentación activo: desarrollador, IA o ciberseguridad.",
@@ -1120,10 +1140,22 @@
       ],
       "resultado": "Portfolio en producción con deploy automático en Vercel vía GitHub Actions. Sistema trimodal completamente funcional con asistente de IA, galería de proyectos y experiencia de usuario diferenciada por perfil.",
       "metricas": [
-        { "label": "Módulos JS", "value": "18" },
-        { "label": "Modos", "value": "3" },
-        { "label": "Proyectos", "value": "20+" },
-        { "label": "Deploy", "value": "Vercel" }
+        {
+          "label": "Módulos JS",
+          "value": "18"
+        },
+        {
+          "label": "Modos",
+          "value": "3"
+        },
+        {
+          "label": "Proyectos",
+          "value": "20+"
+        },
+        {
+          "label": "Deploy",
+          "value": "Vercel"
+        }
       ]
     }
   },
@@ -1134,7 +1166,12 @@
     "category": "Desarrollo Web",
     "description": "Sistema de invitaciones digitales con QR y control de acceso en tiempo real para una quinceañera: landing con countdown y galería, invitación personalizada por token, escáner QR para staff y dashboard de check-in en vivo.",
     "longDescription": "Plataforma construida para el evento de XV años de una familiar. La landing pública muestra countdown, galería, mensajes y ubicación del evento. Cada invitado recibe un link con token único (/i/[token]) que genera su QR de invitación. El día del evento, el staff usa un escáner QR (/scan) para registrar el ingreso, y un dashboard (/admin) muestra el check-in en tiempo real vía Supabase Realtime. El acceso de staff es por magic link (email OTP), sin contraseñas.",
-    "tags": ["Next.js", "Supabase", "Tailwind", "Framer Motion"],
+    "tags": [
+      "Next.js",
+      "Supabase",
+      "Tailwind",
+      "Framer Motion"
+    ],
     "image": "public/images/projects/xv-tammy/xv-tammy-01.webp",
     "images": [
       "public/images/projects/xv-tammy/xv-tammy-01.webp",
@@ -1194,9 +1231,82 @@
       ],
       "resultado": "Plataforma en producción usada el día del evento para invitaciones, RSVP y control de acceso con check-in en tiempo real.",
       "metricas": [
-        { "label": "Rutas", "value": "7" },
-        { "label": "Auth", "value": "Magic link" },
-        { "label": "Realtime", "value": "Sí" }
+        {
+          "label": "Rutas",
+          "value": "7"
+        },
+        {
+          "label": "Auth",
+          "value": "Magic link"
+        },
+        {
+          "label": "Realtime",
+          "value": "Sí"
+        }
+      ]
+    }
+  },
+  {
+    "id": "project-017",
+    "slug": "lumbre",
+    "title": "Lumbre — Los secretos de la casa",
+    "description": "Juego de terror 2D en Unity 6. Un niño explora la casa de su abuela de noche con una caja de fósforos limitada: cada fósforo da luz para explorar pero acerca a algo.",
+    "longDescription": "Juego de terror atmósferico con mecánica de recursos limitados. Menú con 4 cuartos desbloqueables en secuencia, cada uno con su propia narrativa y presencia. Estudio: LAGER. WebGL en itch.io.",
+    "tags": [
+      "Unity",
+      "C#",
+      "Game Dev",
+      "Horror",
+      "WebGL"
+    ],
+    "image": null,
+    "images": [],
+    "liveUrl": "https://lager.itch.io/lumbre",
+    "repoUrl": "https://github.com/Lager-GJ/Main1Escenario",
+    "featured": true,
+    "date": "2026-01",
+    "techStack": {
+      "engine": [
+        "Unity 6 (6000.3.14f1)"
+      ],
+      "language": [
+        "C#"
+      ]
+    }
+  },
+  {
+    "id": "project-020",
+    "slug": "phone-directory",
+    "title": "Phone Directory — ASP.NET Core 8",
+    "description": "Sistema de directorio telefónico interno con gestión de extensiones por oficina. Bulk import desde Excel, REST API completa y búsqueda por departamento.",
+    "longDescription": "Full-stack con ASP.NET Core 8 Razor Pages y SQL Server. Directorio público con tabla filtrable por oficina, CRUD de extensiones con auditoría, bulk Excel import con reporte por fila, Swagger API y búsqueda HR opcional.",
+    "tags": [
+      "C#",
+      "ASP.NET Core",
+      "SQL Server",
+      "Razor Pages",
+      "Bootstrap"
+    ],
+    "image": null,
+    "images": [],
+    "liveUrl": null,
+    "repoUrl": "https://github.com/diacero/phone-directory",
+    "featured": false,
+    "date": "2025-11",
+    "techStack": {
+      "backend": [
+        "ASP.NET Core 8",
+        "C#",
+        "ADO.NET",
+        "SQL Server"
+      ],
+      "frontend": [
+        "Razor Pages",
+        "Bootstrap 5"
+      ],
+      "tools": [
+        "ClosedXML",
+        "Swagger/OpenAPI"
       ]
     }
   }

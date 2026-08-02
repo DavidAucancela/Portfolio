@@ -793,7 +793,13 @@
     "category": "Visión & Audio",
     "description": "Microservicio FastAPI que centraliza transcripción, traducción y diarización de audio, y generación de embeddings vía OpenAI — consumido por otros proyectos en lugar de llamar a OpenAI directamente.",
     "longDescription": "Servicio interno que actúa como capa de control entre los proyectos del portfolio (Next.js, NestJS, n8n) y la API de OpenAI. Expone endpoints de transcripción y traducción de audio, generación de embeddings (individual y batch), y diarización local de hablantes con pyannote.audio — sin depender de un servicio externo de terceros. Incluye caché por hash de contenido, rate limiting, autenticación por API key propia y observabilidad de costo/tokens/latencia integrada con LLM Observatory.",
-    "tags": ["FastAPI", "OpenAI API", "pyannote.audio", "Docker", "Embeddings"],
+    "tags": [
+      "FastAPI",
+      "OpenAI API",
+      "pyannote.audio",
+      "Docker",
+      "Embeddings"
+    ],
     "image": "public/images/projects/whisperx/whisperx-01.webp",
     "images": [
       "public/images/projects/whisperx/whisperx-01.webp",
@@ -871,9 +877,18 @@
       ],
       "resultado": "Microservicio en producción que reemplaza las llamadas directas a OpenAI en los demás proyectos, con caché, diarización local y observabilidad de costos centralizada.",
       "metricas": [
-        { "label": "Tests", "value": "39" },
-        { "label": "Fases completadas", "value": "7" },
-        { "label": "Endpoints", "value": "6+" }
+        {
+          "label": "Tests",
+          "value": "39"
+        },
+        {
+          "label": "Fases completadas",
+          "value": "7"
+        },
+        {
+          "label": "Endpoints",
+          "value": "6+"
+        }
       ]
     }
   },
@@ -884,7 +899,13 @@
     "category": "Visión & Audio",
     "description": "Sistema de inspección de calidad visual en tiempo real: la webcam captura frames, Claude Vision los evalúa contra criterios de inspección escritos en YAML, y emite veredictos PASS/WARN/FAIL con evidencia auditable.",
     "longDescription": "Sistema de control de calidad que no usa reglas de visión por computadora hardcodeadas: los criterios de inspección se escriben en lenguaje natural dentro de perfiles YAML, y Claude Vision evalúa cada frame capturado contra ese criterio. Cualquier persona puede agregar un producto nuevo a inspeccionar (PCBs, packaging, etiquetas, etc.) sin tocar una línea de Python. Cada sesión genera evidencia auditable: frames guardados, registro en SQLite y un reporte HTML final.",
-    "tags": ["Claude Vision", "Python", "OpenCV", "SQLite", "YAML"],
+    "tags": [
+      "Claude Vision",
+      "Python",
+      "OpenCV",
+      "SQLite",
+      "YAML"
+    ],
     "image": "public/images/projects/visual-qc-inspector/visual-qc-inspector-02.webp",
     "images": [
       "public/images/projects/visual-qc-inspector/visual-qc-inspector-02.webp"
@@ -945,9 +966,132 @@
       ],
       "resultado": "Sistema funcional de inspección de calidad donde agregar un producto nuevo es escribir un YAML, no programar un clasificador — con evidencia auditable por sesión.",
       "metricas": [
-        { "label": "Veredictos", "value": "PASS/WARN/FAIL" },
-        { "label": "Perfiles", "value": "YAML" },
-        { "label": "Evidencia", "value": "Auditable" }
+        {
+          "label": "Veredictos",
+          "value": "PASS/WARN/FAIL"
+        },
+        {
+          "label": "Perfiles",
+          "value": "YAML"
+        },
+        {
+          "label": "Evidencia",
+          "value": "Auditable"
+        }
+      ]
+    }
+  },
+  {
+    "id": "project-018",
+    "slug": "inkos",
+    "title": "In,KOS — Knowledge Operating System",
+    "description": "Motor de conocimiento independiente donde Obsidian es solo uno de los conectores. Ingesta múltiples fuentes, construye grafo de conocimiento y razona con agentes IA coordinados.",
+    "longDescription": "Sistema que responde: ¿Cómo hago que una IA piense utilizando exactamente el mismo conocimiento que tengo yo, pero mejor organizado que mi propia memoria? Stack: FastAPI, React, Neo4j, pgvector, Ollama local, MCP agents.",
+    "tags": [
+      "FastAPI",
+      "React",
+      "Neo4j",
+      "PostgreSQL",
+      "AI Agents",
+      "LLM"
+    ],
+    "image": null,
+    "images": [],
+    "liveUrl": null,
+    "repoUrl": "https://github.com/diacero/inkos",
+    "featured": true,
+    "date": "2026-02",
+    "techStack": {
+      "backend": [
+        "FastAPI",
+        "Pydantic"
+      ],
+      "frontend": [
+        "React",
+        "TypeScript",
+        "Vite",
+        "Tailwind",
+        "shadcn/ui"
+      ],
+      "ai": [
+        "Ollama",
+        "bge-m3",
+        "MCP"
+      ],
+      "data": [
+        "Neo4j",
+        "PostgreSQL",
+        "pgvector",
+        "Redis",
+        "Celery",
+        "MinIO"
+      ],
+      "infra": [
+        "Docker Compose",
+        "OpenTelemetry",
+        "Prometheus",
+        "Grafana"
+      ]
+    }
+  },
+  {
+    "id": "project-019",
+    "slug": "rep-counter",
+    "title": "@diacero/rep-counter — Contador de Repeticiones por Visión",
+    "description": "Librería TypeScript puro para contar repeticiones de ejercicio (abdominales, flexiones) usando MediaPipe BlazePose. Spike de 2 semanas, extensible y portable.",
+    "longDescription": "Núcleo sin dependencias de runtime: ángulos, suavizado, máquina de estados, validadores y calibración. Adaptador de pose MediaPipe → 17 puntos PoseFrame. Diseñado para React Native. Entregable: librería, no pantalla.",
+    "tags": [
+      "TypeScript",
+      "MediaPipe",
+      "ML Vision",
+      "React Native",
+      "Pose Detection"
+    ],
+    "image": null,
+    "images": [],
+    "liveUrl": "https://www.npmjs.com/package/@diacero/rep-counter",
+    "repoUrl": "https://github.com/diacero/rep-counter",
+    "featured": false,
+    "date": "2026-01",
+    "techStack": {
+      "core": [
+        "TypeScript"
+      ],
+      "ml": [
+        "MediaPipe BlazePose"
+      ],
+      "adapters": [
+        "React",
+        "React Native"
+      ]
+    }
+  },
+  {
+    "id": "project-021",
+    "slug": "zeroday-fitnessgame",
+    "title": "ZeroDay-FitnessGame Public",
+    "description": "La única app que te dice, con datos reales de tu cuerpo verificados por IA, si sobrevivirías a un apocalipsis zombie que empiece hoy.",
+    "longDescription": "App gamificada que combina visión por IA para medir fitness real y narrativa de supervivencia. Verifica capacidades del cuerpo contra escenarios de apocalipsis zombie con datos verificables.",
+    "tags": [
+      "AI Vision",
+      "Gamification",
+      "Fitness",
+      "ML",
+      "Mobile"
+    ],
+    "image": null,
+    "images": [],
+    "liveUrl": null,
+    "repoUrl": "https://github.com/diacero/zeroday-fitnessgame",
+    "featured": true,
+    "date": "2026-03",
+    "techStack": {
+      "ai": [
+        "MediaPipe",
+        "Custom ML models"
+      ],
+      "platform": [
+        "Mobile"
       ]
     }
   }

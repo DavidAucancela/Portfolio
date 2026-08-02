@@ -1181,12 +1181,16 @@ export const IaMascot = (() => {
 
       if (finalResult.type === 'special') {
         if (finalResult.isHtml) {
-          _addBotMessage(finalResult.text);
+          if (finalResult.text) {
+            _addBotMessage(finalResult.text);
+            _attachCtaHandlers();
+          }
           _setState(targetState);
-          _attachCtaHandlers();
         } else {
-          _setState('talking');
-          await _typewriterBotMessage(finalResult.text);
+          if (finalResult.text) {
+            _setState('talking');
+            await _typewriterBotMessage(finalResult.text);
+          }
           _setState(targetState);
         }
       } else {
@@ -1270,18 +1274,23 @@ export const IaMascot = (() => {
   /* ── CTA HANDLERS (Cambio de contexto desde respuestas) ──────── */
 
   function _attachCtaHandlers() {
-    _chat.querySelectorAll('.jotai-result__cta').forEach(btn => {
+    const ctaButtons = _chat.querySelectorAll('.jotai-result__cta');
+    if (!ctaButtons.length) return;
+
+    ctaButtons.forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
         const action = btn.getAttribute('data-action');
         if (action === 'scroll-contact') {
-          closePanel();
           const contactSection = document.querySelector('#contact');
-          if (contactSection) {
-            setTimeout(() => {
-              contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }, 100);
+          if (!contactSection) {
+            console.warn('[JotAI] Sección #contact no encontrada');
+            return;
           }
+          closePanel();
+          setTimeout(() => {
+            contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 100);
         }
       });
     });

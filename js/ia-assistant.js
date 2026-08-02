@@ -338,8 +338,9 @@ function _respContact() {
 }
 
 function _esc(s) {
-  if (!s) return '';
-  return String(s)
+  if (s === null || s === undefined) return '';
+  if (typeof s !== 'string') s = String(s);
+  return s
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
@@ -348,32 +349,43 @@ function _esc(s) {
 }
 
 function _respListProjects() {
-  if (!_projects.length) return 'Un momento, estoy cargando los datos…';
-  const sorted = [..._projects].sort((a, b) => {
+  if (!_projects || !_projects.length) return 'Un momento, estoy cargando los datos…';
+
+  const validProjects = _projects.filter(p => p && p.title);
+  if (!validProjects.length) return 'No hay proyectos disponibles por el momento.';
+
+  const sorted = [...validProjects].sort((a, b) => {
     const dateA = a.date ? new Date(a.date).getTime() : 0;
     const dateB = b.date ? new Date(b.date).getTime() : 0;
     return dateB - dateA;
   });
   const recent = sorted.slice(0, 5);
   const lines = recent
-    .map(p => `**${p.title}** — ${(p.description || '').slice(0, 85)}${(p.description || '').length > 85 ? '…' : ''}`)
+    .map(p => `**${_esc(p.title)}** — ${(p.description || '').slice(0, 85)}${(p.description || '').length > 85 ? '…' : ''}`)
     .join('\n');
   return `Los **5 proyectos más recientes** de Jonathan:\n\n${lines}\n\nPregúntame por cualquiera para ver más detalles.`;
 }
 
 function _respListSkills() {
-  if (!_skills.length) return 'Un momento, estoy cargando los datos…';
+  if (!_skills || !_skills.length) return 'Un momento, estoy cargando los datos…';
+
+  const validSkills = _skills.filter(s => s && s.name && s.category);
+  if (!validSkills.length) return 'No hay skills disponibles por el momento.';
+
   const byCat = {};
-  _skills.forEach(s => {
-    (byCat[s.category] = byCat[s.category] || []).push(`${s.name} ${'★'.repeat(s.level)}`);
+  validSkills.forEach(s => {
+    const cat = s.category || 'Otros';
+    (byCat[cat] = byCat[cat] || []).push(`${_esc(s.name)} ${'★'.repeat(Math.min(s.level || 0, 5))}`);
   });
+
   const summary = Object.entries(byCat)
     .map(([cat, items]) => {
       const top = items.slice(0, 4).join(' · ');
       const more = items.length > 4 ? ` +${items.length - 4}` : '';
-      return `**${cat}:** ${top}${more}`;
+      return `**${_esc(cat)}:** ${top}${more}`;
     })
     .join('\n');
+
   return `**Stack tecnológico de Jonathan:**\n\n${summary}\n\nPregúntame por una tecnología específica para ver detalles y en qué proyectos la usó.`;
 }
 

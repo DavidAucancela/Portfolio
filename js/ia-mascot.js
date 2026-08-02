@@ -1043,14 +1043,13 @@ export const IaMascot = (() => {
       const chips = [];
       if (result.data?.repoUrl) chips.push('Ver repositorio');
       chips.push('¿Qué stack usó?');
-      chips.push('Proyectos similares');
+      chips.push('¿Cómo contactarlo?');
       return chips.slice(0, 3);
     }
     if (result.type === 'skill') {
       return ['Ver proyectos con esta skill', '¿En qué es pro?'];
     }
     if (result.type === 'special') {
-      if (result.mood === 'excited') return ['Ver proyectos', '¿Cómo contactarlo?'];
       // Fallback a substrings si no hay chipContext (legacy)
       const t = result.text || '';
       if (t.includes('recientes') || t.includes('reciente')) return ['¿En qué es pro?', '¿Quién es Jonathan?'];
@@ -1060,7 +1059,7 @@ export const IaMascot = (() => {
   }
 
   function _getConfusedChips() {
-    return ['¿Quién es Jonathan?', 'Proyectos destacados', '¿En qué es pro?'];
+    return ['¿Quién es Jonathan?', 'Ver proyectos recientes', '¿En qué es pro?'];
   }
 
   function _addEmptyStateChips() {
@@ -1181,9 +1180,19 @@ export const IaMascot = (() => {
       const targetState = finalResult.mood === 'excited' ? 'excited' : 'success';
 
       if (finalResult.type === 'special') {
-        _setState('talking');
-        await _typewriterBotMessage(finalResult.text);
-        _setState(targetState);
+        if (finalResult.isHtml) {
+          if (finalResult.text) {
+            _addBotMessage(finalResult.text);
+            _attachCtaHandlers();
+          }
+          _setState(targetState);
+        } else {
+          if (finalResult.text) {
+            _setState('talking');
+            await _typewriterBotMessage(finalResult.text);
+          }
+          _setState(targetState);
+        }
       } else {
         _addBotMessage(_buildResultHTML(finalResult));
         _setState(targetState);
@@ -1260,6 +1269,31 @@ export const IaMascot = (() => {
     }
 
     return `<div>${_md(result.text || '')}</div>`;
+  }
+
+  /* ── CTA HANDLERS (Cambio de contexto desde respuestas) ──────── */
+
+  function _attachCtaHandlers() {
+    const ctaButtons = _chat.querySelectorAll('.jotai-result__cta');
+    if (!ctaButtons.length) return;
+
+    ctaButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const action = btn.getAttribute('data-action');
+        if (action === 'scroll-contact') {
+          const contactSection = document.querySelector('#contact');
+          if (!contactSection) {
+            console.warn('[JotAI] Sección #contact no encontrada');
+            return;
+          }
+          closePanel();
+          setTimeout(() => {
+            contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 100);
+        }
+      });
+    });
   }
 
   /* ── VIDA DEL MASCOT ────────────────────────────────────────── */

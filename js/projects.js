@@ -42,8 +42,11 @@ let isLoading        = false;
 let _allProjects     = [];
 let _currentPage     = 1;
 let _currentCategory = 'all';
-const PROJECTS_PER_PAGE = 6;
 const _cache         = {};
+
+function _getItemsPerPage() {
+  return window.innerWidth < 768 ? 4 : 6; // 4 en mobile, 6 en desktop
+}
 
 /* ────────────────────────────────────────────────────
    CATEGORÍAS DE FILTRO POR MODO — orden de los chips
@@ -249,9 +252,9 @@ function _renderPage(grid, projects, mode) {
   const rest      = filtered.filter(p => !p.featured);
   const ordered   = [...featured, ...rest];
 
-  const totalPages  = Math.ceil(ordered.length / PROJECTS_PER_PAGE);
-  const start       = (_currentPage - 1) * PROJECTS_PER_PAGE;
-  const pageItems   = ordered.slice(start, start + PROJECTS_PER_PAGE);
+  const totalPages  = Math.ceil(ordered.length / _getItemsPerPage());
+  const start       = (_currentPage - 1) * _getItemsPerPage();
+  const pageItems   = ordered.slice(start, start + _getItemsPerPage());
 
   grid.innerHTML  = '';
   grid.className  = 'projects-grid';

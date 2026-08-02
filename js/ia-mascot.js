@@ -1059,7 +1059,7 @@ export const IaMascot = (() => {
   }
 
   function _getConfusedChips() {
-    return ['¿Quién es Jonathan?', 'Proyectos destacados', '¿En qué es pro?'];
+    return ['¿Quién es Jonathan?', 'Ver proyectos recientes', '¿En qué es pro?'];
   }
 
   function _addEmptyStateChips() {

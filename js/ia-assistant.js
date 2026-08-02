@@ -348,10 +348,16 @@ function _esc(s) {
 
 function _respListProjects() {
   if (!_projects.length) return 'Un momento, estoy cargando los datos…';
-  const lines = _projects
-    .map(p => `**${p.title}** — ${(p.description || '').slice(0, 90)}${(p.description || '').length > 90 ? '…' : ''}`)
+  const sorted = [..._projects].sort((a, b) => {
+    const dateA = a.date ? new Date(a.date).getTime() : 0;
+    const dateB = b.date ? new Date(b.date).getTime() : 0;
+    return dateB - dateA;
+  });
+  const recent = sorted.slice(0, 5);
+  const lines = recent
+    .map(p => `**${p.title}** — ${(p.description || '').slice(0, 85)}${(p.description || '').length > 85 ? '…' : ''}`)
     .join('\n');
-  return `Jonathan tiene **${_projects.length} proyectos** en su portfolio:\n\n${lines}\n\nPregúntame por cualquiera para ver detalles.`;
+  return `Los **5 proyectos más recientes** de Jonathan:\n\n${lines}\n\nPregúntame por cualquiera para ver más detalles.`;
 }
 
 function _respListSkills() {
@@ -360,10 +366,14 @@ function _respListSkills() {
   _skills.forEach(s => {
     (byCat[s.category] = byCat[s.category] || []).push(`${s.name} ${'★'.repeat(s.level)}`);
   });
-  return `Stack tecnológico de Jonathan:\n\n` +
-    Object.entries(byCat)
-      .map(([cat, items]) => `**${cat}:** ${items.join(' · ')}`)
-      .join('\n');
+  const summary = Object.entries(byCat)
+    .map(([cat, items]) => {
+      const top = items.slice(0, 4).join(' · ');
+      const more = items.length > 4 ? ` +${items.length - 4}` : '';
+      return `**${cat}:** ${top}${more}`;
+    })
+    .join('\n');
+  return `**Stack tecnológico de Jonathan:**\n\n${summary}\n\nPregúntame por una tecnología específica para ver detalles y en qué proyectos la usó.`;
 }
 
 function _respExperience() {
@@ -396,7 +406,7 @@ function _detectIntent(norm) {
   if (_matchAny(norm, [
     'todos los proyectos', 'lista proyectos', 'que proyectos', 'cuantos proyectos',
     'que trabajos', 'que has hecho', 'que hiciste', 'mostrar proyectos', 'ver proyectos',
-    'tu portafolio', 'tu portfolio',
+    'tu portafolio', 'tu portfolio', 'en que es pro', 'proyectos destacados',
   ])) return 'list_projects';
 
   if (_matchAny(norm, [

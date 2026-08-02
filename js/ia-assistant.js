@@ -19,6 +19,7 @@ const _STOP = new Set([
 ]);
 
 function _norm(s) {
+  if (typeof s !== 'string') return '';
   return s.toLowerCase()
     .normalize('NFD').replace(/[̀-ͯ]/g, '')
     .replace(/[^a-z0-9\s.#]/g, ' ')

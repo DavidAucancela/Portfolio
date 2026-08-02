@@ -42,7 +42,7 @@ let isLoading        = false;
 let _allProjects     = [];
 let _currentPage     = 1;
 let _currentCategory = 'all';
-const PROJECTS_PER_PAGE = 5;
+const PROJECTS_PER_PAGE = 6;
 const _cache         = {};
 
 /* ────────────────────────────────────────────────────

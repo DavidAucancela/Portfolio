@@ -298,26 +298,52 @@ function expandQuery(text) {
 // ── RESPONSE BUILDERS ────────────────────────────────────────────────────────
 
 function _respPersonal() {
-  if (!_personal) return 'Un momento, estoy cargando los datos…';
-  return `Hola, soy el asistente de **${_personal.name}**. Aquí va su perfil:
-
-**${_personal.name}** — ${_personal.title} · ${_personal.location}
-Graduado de la **ESPOCH — Escuela Superior Politécnica de Chimborazo**.
-
-${_personal.bioShort || _personal.bio}
-
-**Áreas de enfoque:** Full Stack · DevOps · Integración IA · Seguridad Informática`;
+  if (!_personal) return { text: 'Un momento, estoy cargando los datos…' };
+  return {
+    text: `<div class="jotai-result">
+      <div class="jotai-result__title">${_esc(_personal.name)}</div>
+      <div class="jotai-result__meta">${_esc(_personal.title)} · ${_esc(_personal.location)}</div>
+      <p>Graduado de la <strong>ESPOCH</strong> — Escuela Superior Politécnica de Chimborazo.</p>
+      <p>${_esc(_personal.bioShort || _personal.bio)}</p>
+      <p><strong>Áreas de enfoque:</strong> Full Stack · DevOps · Integración IA · Seguridad Informática</p>
+      <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <button class="jotai-result__cta" data-action="scroll-contact">✉️ Enviar mensaje</button>
+      </div>
+    </div>`,
+    isHtml: true,
+  };
 }
 
 function _respContact() {
-  if (!_personal) return 'Un momento, estoy cargando los datos…';
+  if (!_personal) return { text: 'Un momento, estoy cargando los datos…' };
   const s = _personal.social || {};
-  return `Puedes contactar a **${_personal.name}** por estos canales:
+  const links = [];
+  if (_personal.email) links.push(`<a href="mailto:${_esc(_personal.email)}" class="jotai-result__link">📧 ${_esc(_personal.email)}</a>`);
+  if (s.github) links.push(`<a href="${_esc(s.github)}" target="_blank" rel="noopener" class="jotai-result__link">🐙 GitHub</a>`);
+  if (s.linkedin) links.push(`<a href="${_esc(s.linkedin)}" target="_blank" rel="noopener" class="jotai-result__link">💼 LinkedIn</a>`);
+  if (s.instagram) links.push(`<a href="${_esc(s.instagram)}" target="_blank" rel="noopener" class="jotai-result__link">📸 Instagram</a>`);
 
-📧 **Email:** ${_personal.email}
-🐙 **GitHub:** ${s.github || ''}
-💼 **LinkedIn:** ${s.linkedin || ''}
-📸 **Instagram:** ${s.instagram || ''}`;
+  return {
+    text: `<div class="jotai-result">
+      <div class="jotai-result__title">Canales de contacto</div>
+      <p>Puedes comunicarte con <strong>${_esc(_personal.name)}</strong> por:</p>
+      <div class="jotai-result__links">${links.join('')}</div>
+      <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+        <button class="jotai-result__cta" data-action="scroll-contact">✉️ Usar formulario de contacto</button>
+      </div>
+    </div>`,
+    isHtml: true,
+  };
+}
+
+function _esc(s) {
+  if (!s) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 function _respListProjects() {
@@ -573,16 +599,24 @@ function _query(input, context = {}) {
     text: _respListSkills(),
     chipContext: { category: 'skills', chips: ['Ver proyectos', 'Más detalles'] },
   };
-  if (intent === 'personal') return {
-    type: 'special',
-    text: _respPersonal(),
-    chipContext: { category: 'profile', chips: ['Experiencia', '¿Cómo contactar?', 'Stack'] },
-  };
-  if (intent === 'contact') return {
-    type: 'special',
-    text: _respContact(),
-    chipContext: { category: 'contact', chips: ['¿Quién es?', 'Ver proyectos'] },
-  };
+  if (intent === 'personal') {
+    const resp = _respPersonal();
+    return {
+      type: 'special',
+      text: resp.text,
+      isHtml: resp.isHtml,
+      chipContext: { category: 'profile', chips: ['Experiencia', '¿Cómo contactar?', 'Stack'] },
+    };
+  }
+  if (intent === 'contact') {
+    const resp = _respContact();
+    return {
+      type: 'special',
+      text: resp.text,
+      isHtml: resp.isHtml,
+      chipContext: { category: 'contact', chips: ['¿Quién es?', 'Ver proyectos'] },
+    };
+  }
   if (intent === 'experience') return {
     type: 'special',
     text: _respExperience(),

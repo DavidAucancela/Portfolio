@@ -1043,14 +1043,13 @@ export const IaMascot = (() => {
       const chips = [];
       if (result.data?.repoUrl) chips.push('Ver repositorio');
       chips.push('¿Qué stack usó?');
-      chips.push('Proyectos similares');
+      chips.push('¿Cómo contactarlo?');
       return chips.slice(0, 3);
     }
     if (result.type === 'skill') {
       return ['Ver proyectos con esta skill', '¿En qué es pro?'];
     }
     if (result.type === 'special') {
-      if (result.mood === 'excited') return ['Ver proyectos', '¿Cómo contactarlo?'];
       // Fallback a substrings si no hay chipContext (legacy)
       const t = result.text || '';
       if (t.includes('recientes') || t.includes('reciente')) return ['¿En qué es pro?', '¿Quién es Jonathan?'];
@@ -1181,9 +1180,15 @@ export const IaMascot = (() => {
       const targetState = finalResult.mood === 'excited' ? 'excited' : 'success';
 
       if (finalResult.type === 'special') {
-        _setState('talking');
-        await _typewriterBotMessage(finalResult.text);
-        _setState(targetState);
+        if (finalResult.isHtml) {
+          _addBotMessage(finalResult.text);
+          _setState(targetState);
+          _attachCtaHandlers();
+        } else {
+          _setState('talking');
+          await _typewriterBotMessage(finalResult.text);
+          _setState(targetState);
+        }
       } else {
         _addBotMessage(_buildResultHTML(finalResult));
         _setState(targetState);
@@ -1260,6 +1265,26 @@ export const IaMascot = (() => {
     }
 
     return `<div>${_md(result.text || '')}</div>`;
+  }
+
+  /* ── CTA HANDLERS (Cambio de contexto desde respuestas) ──────── */
+
+  function _attachCtaHandlers() {
+    _chat.querySelectorAll('.jotai-result__cta').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const action = btn.getAttribute('data-action');
+        if (action === 'scroll-contact') {
+          closePanel();
+          const contactSection = document.querySelector('#contact');
+          if (contactSection) {
+            setTimeout(() => {
+              contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+          }
+        }
+      });
+    });
   }
 
   /* ── VIDA DEL MASCOT ────────────────────────────────────────── */

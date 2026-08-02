@@ -874,6 +874,27 @@ body[data-theme="sec"] .jotai-mascot {
 }
 .jotai-result__link:hover { opacity: 0.75; text-decoration: underline; }
 
+.jotai-result__cta {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: var(--color-accent, #06ffa5);
+  color: var(--bg-primary, #000);
+  border: none;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+.jotai-result__cta:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+}
+.jotai-result__cta:active {
+  transform: translateY(1px);
+}
+
 /* ── QUICK REPLY CHIPS ────────────────────────────────────────── */
 .jotai-chips {
   display: flex;

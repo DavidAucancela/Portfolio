@@ -15,6 +15,7 @@
     "liveUrl": null,
     "repoUrl": null,
     "featured": false,
+    "status": "Pwned",
     "date": "2025-01",
     "lab": {
       "platform": "HackTheBox",
@@ -29,40 +30,37 @@
       ]
     },
     "process": {
-      "overview": "Starting Point — primera máquina del learning path de HackTheBox. Objetivo: comprender el flujo básico de reconocimiento y explotación de credenciales por defecto en servicios de red.",
+      "overview": "Máquina Starting Point con Telnet expuesto y credenciales por defecto — ejercicio base de reconocimiento y explotación.",
       "pasos": [
         {
           "id": "analisis",
-          "resumen": "Reconocimiento con nmap para identificar puertos abiertos y versiones de servicios. Target Linux con puerto 23 (Telnet) expuesto.",
+          "resumen": "El escaneo con nmap encuentra el puerto Telnet abierto, un servicio sin cifrado y mal asegurado.",
           "puntos": [
-            "nmap -sV -sC -p- <target_ip> para enumeración completa",
-            "Puerto 23/TCP abierto: Telnet service activo",
-            "Telnet en 2025 = misconfiguration crítica por falta de hardening",
-            "Sin autenticación o credenciales por defecto probable"
+            "Escaneo completo de puertos con nmap",
+            "Telnet activo sin cifrado",
+            "Probable uso de credenciales por defecto"
           ]
         },
         {
           "id": "desarrollo",
-          "resumen": "Intento de conexión Telnet con credenciales por defecto estándar. Usuario 'root' sin contraseña — acceso root directo al sistema.",
+          "resumen": "El usuario root sin contraseña permite acceso directo al sistema sin necesidad de escalar privilegios.",
           "puntos": [
-            "telnet <target_ip> — conexión sin cifrado al servicio",
-            "Username: root / Password: (enter) — credencial por defecto",
-            "Acceso root obtenido directamente sin escalada de privilegios",
-            "cat /root/flag.txt — flag capturada"
+            "Conexión Telnet sin cifrado",
+            "Acceso root con credencial vacía",
+            "Flag capturada directamente"
           ]
         },
         {
           "id": "seguridad",
-          "resumen": "Flag root.txt obtenida. Lección: Telnet sin autenticación o con credenciales por defecto = compromiso total garantizado.",
+          "resumen": "Telnet sin autenticación equivale a compromiso total garantizado del sistema.",
           "puntos": [
-            "Root flag capturada: HTB{...}",
-            "Mitigación: deshabilitar Telnet, usar SSH con autenticación por clave",
-            "CIS Control aplicable: inventario y control de activos de software",
-            "Telnet transmite en texto plano — interceptable con sniffing de red"
+            "Deshabilitar Telnet y usar SSH",
+            "Telnet transmite en texto plano",
+            "Revisar inventario de servicios expuestos"
           ]
         }
       ],
-      "resultado": "Máquina pwneada. Root flag obtenida mediante credenciales por defecto en Telnet.",
+      "resultado": "Máquina comprometida mediante credenciales por defecto en Telnet.",
       "metricas": [
         {
           "label": "Plataforma",
@@ -105,6 +103,7 @@
     "liveUrl": null,
     "repoUrl": null,
     "featured": false,
+    "status": "Pwned",
     "date": "2025-01",
     "lab": {
       "platform": "HackTheBox",
@@ -119,41 +118,37 @@
       ]
     },
     "process": {
-      "overview": "Starting Point — explotación de FTP con autenticación anónima habilitada. Demuestra el riesgo de servicios FTP mal configurados que exponen archivos del sistema.",
+      "overview": "Servidor FTP con login anónimo habilitado, exponiendo archivos del sistema sin necesidad de credenciales.",
       "pasos": [
         {
           "id": "analisis",
-          "resumen": "nmap revela puerto 21 (FTP) abierto con versión vsftpd. El script nmap ftp-anon confirma que el login anónimo está habilitado.",
+          "resumen": "nmap confirma FTP activo con login anónimo permitido.",
           "puntos": [
-            "nmap -sV -sC -p 21 <target_ip>",
-            "Puerto 21/TCP: vsftpd 3.0.3 activo",
-            "Script ftp-anon: Anonymous FTP login allowed",
-            "Listado de archivos accesible sin credenciales"
+            "Puerto FTP abierto",
+            "Login anónimo habilitado",
+            "Listado de archivos sin credenciales"
           ]
         },
         {
           "id": "desarrollo",
-          "resumen": "Conexión FTP con usuario anonymous. Enumeración del directorio root y descarga de flag.txt con el comando get.",
+          "resumen": "La conexión anónima permite listar y descargar la flag directamente.",
           "puntos": [
-            "ftp <target_ip> — conectar al servicio",
-            "Username: anonymous / Password: (cualquier email)",
-            "ls -la para listar archivos accesibles",
-            "get flag.txt — descarga del archivo de flag",
-            "cat flag.txt — flag obtenida"
+            "Conexión con usuario anonymous",
+            "Listado del directorio raíz",
+            "Descarga y lectura de la flag"
           ]
         },
         {
           "id": "seguridad",
-          "resumen": "Flag obtenida. Lección: FTP anónimo habilitado en producción expone todos los archivos accesibles al usuario FTP.",
+          "resumen": "El FTP anónimo en producción expone todos los archivos accesibles al servicio.",
           "puntos": [
-            "Flag capturada: HTB{...}",
-            "Mitigación: deshabilitar autenticación anónima en vsftpd.conf",
-            "FTP transmite en texto plano — usar SFTP o FTPS en su lugar",
-            "Principio de mínimo privilegio: el usuario FTP no debería acceder a /root"
+            "Deshabilitar autenticación anónima",
+            "Usar SFTP o FTPS en su lugar",
+            "Aplicar mínimo privilegio al usuario FTP"
           ]
         }
       ],
-      "resultado": "Máquina pwneada. Flag obtenida vía FTP con autenticación anónima sin necesidad de exploit.",
+      "resultado": "Máquina comprometida vía FTP anónimo, sin necesidad de exploit.",
       "metricas": [
         {
           "label": "Plataforma",
@@ -196,6 +191,7 @@
     "liveUrl": null,
     "repoUrl": null,
     "featured": false,
+    "status": "Pwned",
     "date": "2025-01",
     "lab": {
       "platform": "HackTheBox",
@@ -210,41 +206,37 @@
       ]
     },
     "process": {
-      "overview": "Starting Point — Windows con SMB shares accesibles sin autenticación. Ejercicio de enumeración SMB con smbclient para descubrir y acceder a shares expuestos.",
+      "overview": "Servidor Windows con un share SMB accesible sin autenticación, expuesto a cualquier usuario de la red.",
       "pasos": [
         {
           "id": "analisis",
-          "resumen": "nmap identifica puerto 445 (SMB) abierto en Windows. smbclient con sesión null lista los shares disponibles sin autenticación.",
+          "resumen": "nmap encuentra SMB activo; una sesión null permite listar los shares disponibles.",
           "puntos": [
-            "nmap -sV -p 445 <target_ip>",
-            "Puerto 445/TCP: Microsoft SMB activo en Windows",
-            "smbclient -L <target_ip> -N — null session para listar shares",
-            "Shares encontrados: WorkShares accesible sin contraseña"
+            "Puerto SMB abierto en Windows",
+            "Sesión null sin contraseña",
+            "Share WorkShares accesible"
           ]
         },
         {
           "id": "desarrollo",
-          "resumen": "Conexión al share WorkShares con null session. Enumeración de directorios y extracción de la flag.",
+          "resumen": "El acceso sin credenciales al share permite navegar y descargar la flag.",
           "puntos": [
-            "smbclient //<target_ip>/WorkShares -N — acceso sin contraseña",
-            "smb: ls — listado de archivos y directorios",
-            "Navegación a subdirectorio con flag.txt",
-            "get flag.txt — descarga del archivo",
-            "Archivo obtenido: flag.txt con HTB{...}"
+            "Conexión al share sin contraseña",
+            "Navegación por los directorios",
+            "Descarga de la flag"
           ]
         },
         {
           "id": "seguridad",
-          "resumen": "Flag obtenida. Lección: null sessions SMB en Windows exponen shares internos a cualquier usuario de red sin credenciales.",
+          "resumen": "Las sesiones null en SMB exponen shares internos sin necesidad de credenciales.",
           "puntos": [
-            "Flag capturada: HTB{...}",
-            "Mitigación: deshabilitar null sessions con RestrictAnonymous=2 en registry",
-            "Revisar permisos de cada share — principio de mínimo privilegio",
-            "SMB signing para prevenir relay attacks en la misma red"
+            "Deshabilitar sesiones null",
+            "Revisar permisos de cada share",
+            "Activar SMB signing"
           ]
         }
       ],
-      "resultado": "Máquina Windows pwneada. Flag obtenida vía SMB share accesible con null session.",
+      "resultado": "Máquina Windows comprometida vía share SMB accesible sin autenticación.",
       "metricas": [
         {
           "label": "Plataforma",
@@ -287,6 +279,7 @@
     "liveUrl": null,
     "repoUrl": null,
     "featured": false,
+    "status": "Pwned",
     "date": "2025-01",
     "lab": {
       "platform": "HackTheBox",
@@ -301,41 +294,37 @@
       ]
     },
     "process": {
-      "overview": "Starting Point — Redis expuesto en puerto no estándar sin autenticación. Ejercicio de enumeración de servicios en puertos altos y explotación de Redis sin requirepass configurado.",
+      "overview": "Instancia Redis expuesta a internet sin contraseña, permitiendo acceso directo a toda la base de datos en memoria.",
       "pasos": [
         {
           "id": "analisis",
-          "resumen": "nmap full port scan revela Redis en puerto 6379 accesible desde internet sin autenticación. INFO server confirma versión y configuración.",
+          "resumen": "El escaneo completo de puertos revela Redis accesible sin autenticación.",
           "puntos": [
-            "nmap -p- --min-rate 5000 <target_ip> — scan de todos los puertos",
-            "Puerto 6379/TCP: Redis 5.0.7 expuesto",
-            "redis-cli -h <target_ip> — conexión directa sin password",
-            "INFO server — dump de configuración del servidor Redis"
+            "Redis expuesto en puerto no estándar",
+            "Conexión directa sin contraseña",
+            "Configuración del servidor visible"
           ]
         },
         {
           "id": "desarrollo",
-          "resumen": "redis-cli conecta sin autenticación. KEYS * lista todas las claves. GET sobre la clave de flag retorna el valor directamente.",
+          "resumen": "Sin autenticación, es posible listar todas las claves y leer la flag directamente.",
           "puntos": [
-            "redis-cli -h <target_ip> -p 6379 — sin -a password",
-            "KEYS * — listado de todas las claves en la DB 0",
-            "SELECT 0 — cambiar a la base de datos donde está la flag",
-            "GET flag — valor de la clave flag: HTB{...}"
+            "Conexión sin contraseña",
+            "Listado de todas las claves",
+            "Lectura directa de la flag"
           ]
         },
         {
           "id": "seguridad",
-          "resumen": "Flag obtenida directamente de Redis. Lección: Redis expuesto sin auth en internet = acceso total a todos los datos en memoria.",
+          "resumen": "Redis sin autenticación expuesto a internet equivale a acceso total a los datos en memoria.",
           "puntos": [
-            "Flag capturada: HTB{...}",
-            "Mitigación: requirepass en redis.conf con contraseña fuerte",
-            "bind 127.0.0.1 — Redis solo accesible desde localhost",
-            "Firewall: puerto 6379 nunca expuesto a internet directamente",
-            "Usar stunnel o SSH tunnel para acceso remoto a Redis"
+            "Configurar contraseña fuerte",
+            "Restringir acceso a localhost",
+            "Nunca exponer el puerto a internet"
           ]
         }
       ],
-      "resultado": "Máquina pwneada. Flag extraída directamente de Redis expuesto sin autenticación.",
+      "resultado": "Máquina comprometida extrayendo la flag directamente de Redis sin autenticación.",
       "metricas": [
         {
           "label": "Plataforma",
@@ -379,42 +368,40 @@
     "liveUrl": null,
     "repoUrl": null,
     "featured": true,
+    "status": "Completado",
     "date": "2025-09",
     "process": {
-      "overview": "Prácticas institucionales en el Departamento de Tecnologías de la Información y Comunicación (DETIC) de la ESPOCH. Objetivo: diagnóstico del estado de seguridad de los sistemas, identificación de activos y evaluación de controles según ISO 27001.",
+      "overview": "La ESPOCH necesitaba conocer su estado real de seguridad; se hizo un diagnóstico de infraestructura y una evaluación de cumplimiento contra ISO 27001.",
       "pasos": [
         {
           "id": "analisis",
-          "resumen": "Inventario y diagnóstico de sistemas activos en la red institucional. Identificación de servicios expuestos, versiones de software y configuraciones de red.",
+          "resumen": "Inventario de sistemas activos y servicios expuestos en la red institucional.",
           "puntos": [
-            "Inventario de activos de hardware y software activos en la red",
-            "Escaneo de red para identificar servicios y puertos activos",
-            "Documentación de sistemas críticos y sus interdependencias",
-            "Identificación de versiones de software con soporte activo vs. obsoleto"
+            "Inventario de activos de red",
+            "Identificación de servicios expuestos",
+            "Software desactualizado detectado"
           ]
         },
         {
           "id": "desarrollo",
-          "resumen": "Análisis de vulnerabilidades con herramientas de seguridad sobre los sistemas identificados. Evaluación de configuraciones y posibles vectores de ataque internos.",
+          "resumen": "Análisis de vulnerabilidades y configuraciones sobre los sistemas identificados.",
           "puntos": [
-            "Análisis de vulnerabilidades sobre activos de la red institucional",
-            "Revisión de configuraciones de servicios críticos (web, base de datos, red)",
-            "Evaluación de controles de acceso y políticas de autenticación",
-            "Documentación de hallazgos con nivel de criticidad (alta/media/baja)"
+            "Vulnerabilidades priorizadas por criticidad",
+            "Revisión de configuraciones críticas",
+            "Evaluación de controles de acceso"
           ]
         },
         {
           "id": "seguridad",
-          "resumen": "Verificación de cumplimiento con controles del estándar ISO 27001. Análisis de brechas entre el estado actual y los requisitos de la norma.",
+          "resumen": "Comparación del estado actual contra los controles exigidos por ISO 27001.",
           "puntos": [
-            "Revisión de controles ISO 27001 aplicables a infraestructura TI",
-            "Gap analysis entre estado actual y controles requeridos por la norma",
-            "Generación de informe de hallazgos y recomendaciones de mitigación",
-            "Propuesta de medidas correctivas priorizadas por nivel de riesgo"
+            "Gap analysis contra ISO 27001",
+            "Informe de hallazgos y recomendaciones",
+            "Medidas correctivas priorizadas por riesgo"
           ]
         }
       ],
-      "resultado": "Diagnóstico completo de la infraestructura institucional. Informe de hallazgos con análisis de brecha ISO 27001 y recomendaciones de mitigación.",
+      "resultado": "Diagnóstico institucional entregado con informe de brechas ISO 27001 y recomendaciones.",
       "metricas": [
         {
           "label": "Norma",
@@ -457,42 +444,40 @@
     "liveUrl": null,
     "repoUrl": null,
     "featured": false,
+    "status": "Certificado",
     "date": "2025-01",
     "process": {
-      "overview": "Programa de certificación de Cisco Networking Academy que cubre los fundamentos esenciales de la ciberseguridad, desde tipos de amenazas hasta principios de defensa y buenas prácticas de seguridad.",
+      "overview": "Certificación de Cisco Networking Academy sobre los fundamentos esenciales de la ciberseguridad, desde amenazas comunes hasta principios de defensa.",
       "pasos": [
         {
           "id": "analisis",
-          "resumen": "Panorama de amenazas: tipos de ataques, actores maliciosos y vectores de entrada más comunes en sistemas modernos.",
+          "resumen": "Panorama de amenazas: tipos de ataques y vectores de entrada más comunes.",
           "puntos": [
-            "Tipos de malware: virus, ransomware, spyware, troyanos",
-            "Ingeniería social: phishing, pretexting, baiting",
-            "Ataques de red: MITM, DoS/DDoS, packet sniffing",
-            "Superficie de ataque y vectores de entrada más frecuentes"
+            "Tipos de malware más comunes",
+            "Ingeniería social y phishing",
+            "Ataques de red frecuentes"
           ]
         },
         {
           "id": "desarrollo",
-          "resumen": "Principios de protección de datos y sistemas: cifrado, gestión de identidades, seguridad en redes.",
+          "resumen": "Principios de protección de datos, identidad y redes.",
           "puntos": [
-            "Cifrado simétrico y asimétrico — conceptos y casos de uso",
-            "Gestión de identidad y acceso (IAM) y autenticación multifactor",
-            "Seguridad de redes: firewalls, IDS/IPS, VPN",
-            "Conceptos de seguridad en la nube y entornos híbridos"
+            "Cifrado simétrico y asimétrico",
+            "Autenticación multifactor",
+            "Seguridad de redes y firewalls"
           ]
         },
         {
           "id": "seguridad",
-          "resumen": "Respuesta a incidentes y mejores prácticas. Marco de trabajo para detección, contención y recuperación ante incidentes de seguridad.",
+          "resumen": "Marco de respuesta a incidentes y buenas prácticas de seguridad.",
           "puntos": [
-            "Ciclo de vida de respuesta a incidentes: preparación, detección, contención",
-            "Políticas de seguridad y gestión de riesgos organizacional",
-            "Mejores prácticas de higiene digital y concienciación",
-            "Certificación emitida oficialmente por Cisco Networking Academy"
+            "Ciclo de respuesta a incidentes",
+            "Gestión de riesgos organizacional",
+            "Buenas prácticas de higiene digital"
           ]
         }
       ],
-      "resultado": "Certificación obtenida. Fundamentos de ciberseguridad según el framework de Cisco NetAcad.",
+      "resultado": "Certificación obtenida en fundamentos de ciberseguridad de Cisco NetAcad.",
       "metricas": [
         {
           "label": "Emisor",
@@ -535,42 +520,40 @@
     "liveUrl": null,
     "repoUrl": null,
     "featured": false,
+    "status": "Certificado",
     "date": "2026-03",
     "process": {
-      "overview": "Certificación completada de IBM SkillsBuild en ciberseguridad aplicada. Cubre desde fundamentos hasta operaciones de seguridad, análisis de amenazas y respuesta a incidentes.",
+      "overview": "Certificación de IBM SkillsBuild en ciberseguridad aplicada, desde fundamentos hasta operaciones de seguridad y respuesta a incidentes.",
       "pasos": [
         {
           "id": "analisis",
-          "resumen": "Fundamentos de ciberseguridad y gestión de riesgos según el marco IBM. Identificación y clasificación de activos, amenazas y vulnerabilidades.",
+          "resumen": "Fundamentos de ciberseguridad y gestión de riesgos según el marco de IBM.",
           "puntos": [
-            "Conceptos esenciales de seguridad de la información",
-            "Gestión de riesgos y análisis de impacto de negocio (BIA)",
-            "Clasificación de activos y modelo de amenazas",
-            "Frameworks de referencia: NIST, ISO 27001, CIS Controls"
+            "Conceptos esenciales de seguridad",
+            "Gestión de riesgos y análisis de impacto",
+            "Clasificación de activos y amenazas"
           ]
         },
         {
           "id": "desarrollo",
-          "resumen": "Operaciones de seguridad (SOC) y análisis de amenazas. Uso de herramientas SIEM y técnicas de detección de intrusiones.",
+          "resumen": "Operaciones de seguridad y análisis de amenazas con herramientas SIEM.",
           "puntos": [
-            "Operaciones en un SOC — roles, procesos y herramientas",
-            "Análisis de logs y correlación de eventos de seguridad",
-            "Uso de SIEM para detección y alerta de amenazas",
-            "Indicadores de compromiso (IOC) y análisis de malware básico"
+            "Roles y procesos en un SOC",
+            "Análisis y correlación de logs",
+            "Detección de indicadores de compromiso"
           ]
         },
         {
           "id": "seguridad",
-          "resumen": "Respuesta a incidentes y forense digital básico. Gestión de comunicaciones y recuperación ante brechas de seguridad.",
+          "resumen": "Respuesta a incidentes y fundamentos de forense digital.",
           "puntos": [
-            "Plan de respuesta a incidentes — fases, roles y escalado",
-            "Forense digital básico: recolección y preservación de evidencia",
-            "Gestión de comunicaciones durante un incidente de seguridad",
-            "Certificación IBM SkillsBuild completada"
+            "Plan de respuesta a incidentes",
+            "Recolección y preservación de evidencia",
+            "Gestión de comunicaciones en incidentes"
           ]
         }
       ],
-      "resultado": "Certificación obtenida. Programa de ciberseguridad completado con certificado oficial IBM SkillsBuild.",
+      "resultado": "Certificación IBM SkillsBuild completada en ciberseguridad aplicada.",
       "metricas": [
         {
           "label": "Emisor",

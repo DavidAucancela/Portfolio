@@ -48,6 +48,7 @@ function _getItemsPerPage() {
   return window.innerWidth < 768 ? 4 : 6; // 4 en mobile, 6 en desktop
 }
 
+
 /* ────────────────────────────────────────────────────
    CATEGORÍAS DE FILTRO POR MODO — orden de los chips
 ──────────────────────────────────────────────────── */

@@ -1,143 +1,34 @@
 /**
  * project-detail.js
- * Panel lateral con vista gamificada del proceso de cada proyecto/lab.
- * Se abre al hacer clic en "Ver Proceso" de cualquier tarjeta.
- *
- * Gamificación:
- *  - XP bar + nivel (distinto por modo dev / ia / sec)
- *  - Quest Log: fases colapsables con XP por fase
- *  - Achievements: métricas como logros desbloqueados
- *  - Tech Arsenal: stack como equipamiento
+ * Panel con el proceso de ingeniería de cada proyecto/lab: fases, resultados
+ * y stack técnico. Se abre al hacer clic en "Ver Proceso" de cualquier tarjeta.
  */
 
 /* ─────────────────────────────────────────────────────────
    CONFIG
 ───────────────────────────────────────────────────────── */
-const XP_PER_TAG   = 25;
-const XP_PER_PHASE = 150;
-const XP_FEATURED  = 200;
-const XP_PER_TECH  = 30;
-const XP_MAX       = 2000;
+const MODE_PILL = { dev: '.dev', ia: '.ia', sec: '.sec' };
 
-const LEVEL_NAMES = {
-  dev: ['Rookie',      'Developer',  'Engineer',    'Architect',     'Mastermind'  ],
-  ia:  ['Trainee',     'ML Dev',     'AI Engineer', 'MLOps',         'AI Researcher'],
-  sec: ['Script Kiddie','Pentester', 'Red Teamer',  'Threat Hunter', 'Elite Hacker'],
-};
-
-const MODE_LABELS = {
-  dev: { pill: '⚙️ .dev',  unit: 'XP'          },
-  ia:  { pill: '🤖 .ia',   unit: 'Credits'      },
-  sec: { pill: '🔒 .sec',  unit: 'CVE Points'   },
-};
-
-/* Metadata por fase: icon, color, label y verbo según modo, XP base */
+/* Metadata por fase: nombre y color de acento — mismo vocabulario en los 3 modos */
 const PHASE_META = {
-  problema: {
-    icon:   '🎯',
-    color:  '#f59e0b',
-    labels: { dev: 'Problem Statement', ia: 'Caso de Uso',      sec: 'Scope & Target'  },
-    verbs:  { dev: 'Issue Opened',      ia: 'Prompt Defined',   sec: 'Target Locked'   },
-    xp: 150,
-  },
-  analisis: {
-    icon:   '🔍',
-    color:  '#8b5cf6',
-    labels: { dev: 'Análisis Técnico',  ia: 'Data Analysis',    sec: 'Reconnaissance'  },
-    verbs:  { dev: 'Research Done',     ia: 'Epoch 0',          sec: 'OSINT Complete'  },
-    xp: 200,
-  },
-  diseño: {
-    icon:   '📐',
-    color:  '#06b6d4',
-    labels: { dev: 'Arquitectura',      ia: 'Model Design',     sec: 'Attack Vector'   },
-    verbs:  { dev: 'Blueprint Ready',   ia: 'Architecture Set', sec: 'Vector Found'    },
-    xp: 250,
-  },
-  desarrollo: {
-    icon:   '⚙️',
-    color:  '#10b981',
-    labels: { dev: 'Desarrollo',        ia: 'Implementación',   sec: 'Exploitation'    },
-    verbs:  { dev: 'PR Merged',         ia: 'Training Done',    sec: 'Root Obtained'   },
-    xp: 400,
-  },
-  despliegue: {
-    icon:   '🚀',
-    color:  '#3b82f6',
-    labels: { dev: 'Despliegue',        ia: 'Inference Deploy', sec: 'Post-Exploit'    },
-    verbs:  { dev: 'Shipped!',          ia: 'Model Live',       sec: 'Pivoted'         },
-    xp: 300,
-  },
-  seguridad: {
-    icon:   '🛡️',
-    color:  '#ef4444',
-    labels: { dev: 'Seguridad',         ia: 'AI Safety',        sec: 'Loot & Report'   },
-    verbs:  { dev: 'Hardened',          ia: 'Aligned',          sec: 'Flag Captured'   },
-    xp: 200,
-  },
+  problema:   { label: 'Contexto',   color: '#f59e0b' },
+  analisis:   { label: 'Análisis',   color: '#8b5cf6' },
+  diseño:     { label: 'Diseño',     color: '#06b6d4' },
+  desarrollo: { label: 'Desarrollo', color: '#10b981' },
+  pruebas:    { label: 'Pruebas',    color: '#eab308' },
+  mejoras:    { label: 'Mejoras',    color: '#0ea5e9' },
+  despliegue: { label: 'Despliegue', color: '#3b82f6' },
+  seguridad:  { label: 'Seguridad',  color: '#ef4444' },
 };
-
-/* ─────────────────────────────────────────────────────────
-   HELPERS
-───────────────────────────────────────────────────────── */
-function _achievementIcon(label) {
-  const l = label.toLowerCase();
-  if (l.includes('tiempo') || l.includes('latencia') || l.includes('speed')) return '⚡';
-  if (l.includes('usuario') || l.includes('user'))                            return '👥';
-  if (l.includes('seguridad') || l.includes('owasp'))                         return '🛡️';
-  if (l.includes('módulo') || l.includes('servicio') || l.includes('service'))return '🔧';
-  if (l.includes('idioma') || l.includes('lang'))                             return '🌍';
-  if (l.includes('deploy') || l.includes('railway') || l.includes('docker')) return '🚀';
-  if (l.includes('error') || l.includes('uptime'))                            return '✅';
-  if (l.includes('mejora') || l.includes('eficien'))                          return '📈';
-  if (l.includes('overhead'))                                                  return '🪶';
-  if (l.includes('modelo') || l.includes('model'))                            return '🤖';
-  if (l.includes('flag'))                                                      return '🏴';
-  if (l.includes('plan') || l.includes('suscri'))                             return '💳';
-  if (l.includes('país') || l.includes('pais') || l.includes('country'))      return '🗺️';
-  return '🏆';
-}
-
-function _calcXP(p) {
-  const tagsXP = (p.tags?.length || 0) * XP_PER_TAG;
-  const pasos  = p.process?.pasos ?? [];
-  const labTec = p.lab?.techniques ?? [];
-  const procXP = (pasos.length > 0 ? pasos.length : (labTec.length > 0 ? 3 : 2)) * XP_PER_PHASE;
-  const featXP = p.featured ? XP_FEATURED : 0;
-
-  // Count tech stack items
-  const techItems = p.techStack
-    ? Object.values(p.techStack).flat().length
-    : 0;
-  const techXP = techItems * XP_PER_TECH;
-
-  const total   = tagsXP + procXP + featXP + techXP;
-  const percent = Math.min((total / XP_MAX) * 100, 100);
-
-  const thresholds = [0, 500, 1000, 1500, 2000];
-  let levelIdx = 0;
-  for (let i = 1; i < thresholds.length; i++) {
-    if (total >= thresholds[i]) levelIdx = i;
-  }
-
-  return { total, percent, levelIdx };
-}
 
 /* ─────────────────────────────────────────────────────────
    HTML BUILDERS
 ───────────────────────────────────────────────────────── */
 const MAX_PHASE_POINTS = 3;
 
-function _phaseHTML(paso, idx, mode) {
-  const fallback = {
-    icon:   '📌',
-    labels: { dev: paso.id, ia: paso.id, sec: paso.id },
-    verbs:  { dev: 'Completado', ia: 'Completado', sec: 'Completado' },
-  };
-  const meta  = PHASE_META[paso.id] || fallback;
-  const label = meta.labels[mode] || paso.id;
-  const verb  = meta.verbs[mode]  || 'Completado';
-  const color = meta.color || 'var(--color-accent)';
+function _phaseHTML(paso, idx) {
+  const meta  = PHASE_META[paso.id] || { label: paso.id, color: 'var(--color-accent)' };
+  const color = meta.color;
 
   const pointsHTML = (paso.puntos || [])
     .slice(0, MAX_PHASE_POINTS)
@@ -145,22 +36,13 @@ function _phaseHTML(paso, idx, mode) {
     .join('');
 
   return `
-    <div class="pdm-phase">
-      <button class="pdm-phase__header" type="button"
-              aria-expanded="false" aria-label="Expandir fase ${_esc(label)}">
+    <div class="pdm-phase" style="border-left-color:${color};">
+      <div class="pdm-phase__header">
         <span class="pdm-phase__num">0${idx + 1}</span>
-        <span class="pdm-phase__icon" aria-hidden="true"
-              style="background:${color}18;border-color:${color}40;">${meta.icon}</span>
         <div class="pdm-phase__info">
-          <div class="pdm-phase__name">${_esc(label)}</div>
-          <div class="pdm-phase__verb">✓ ${_esc(verb)}</div>
+          <div class="pdm-phase__name">${_esc(meta.label)}</div>
         </div>
-        <svg class="pdm-phase__chevron" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2.5"
-             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <polyline points="6 9 12 15 18 9"/>
-        </svg>
-      </button>
+      </div>
       <div class="pdm-phase__body">
         <div class="pdm-phase__body-inner">
           <div class="pdm-phase__content">
@@ -231,7 +113,7 @@ function _labPhases(p) {
       puntos: [
         `Plataforma: ${lab.platform}`,
         `Dificultad: ${lab.difficulty}`,
-        `Rating: ★ ${lab.rating}`,
+        `Rating: ${lab.rating}`,
         'user.txt y root.txt obtenidos',
       ],
     },
@@ -246,49 +128,129 @@ function _esc(str) {
     .replace(/"/g, '&quot;');
 }
 
+/* Un solo vocabulario de secciones — sin variación por modo */
 const PANEL_LABELS = {
-  overview:   { dev: 'Resumen del Proyecto', ia: 'Contexto',          sec: 'Objetivo'        },
-  phases:     { dev: 'Proceso',              ia: 'Pipeline',           sec: 'Metodología'     },
-  metrics:    { dev: 'Resultados',           ia: 'Métricas',           sec: 'Hallazgos'       },
-  highlights: { dev: 'Destacados',           ia: 'Aspectos Clave',     sec: 'Puntos Clave'    },
-  tech:       { dev: 'Stack Técnico',        ia: 'Stack de IA',        sec: 'Herramientas'    },
-  techFb:     { dev: 'Tecnologías',          ia: 'Tecnologías',        sec: 'Técnicas'        },
-  docs:       { dev: 'Documentos',           ia: 'Documentos',         sec: 'Documentos'      },
+  overview:   'Resumen del Proyecto',
+  phases:     'Proceso',
+  metrics:    'Resultados',
+  highlights: 'Destacados',
+  tech:       'Stack Técnico',
+  techFb:     'Tecnologías',
+  docs:       'Documentos',
 };
 
-/* Estado del proyecto — color + icono por valor de p.status */
+/* Estado del proyecto — color por valor de p.status, sin icono */
 const STATUS_META = {
-  'En producción':  { icon: '🟢', color: '#22c55e' },
-  'Completado':     { icon: '✅', color: '#3b82f6' },
-  'En desarrollo':  { icon: '🛠️', color: '#f59e0b' },
-  'Archivado':      { icon: '📦', color: '#6b7280' },
-  'Certificado':    { icon: '🎓', color: '#ffce3d' },
-  'Pwned':          { icon: '🏴', color: '#9fef00' },
+  'En producción':  { color: '#22c55e' },
+  'Completado':     { color: '#3b82f6' },
+  'En desarrollo':  { color: '#f59e0b' },
+  'Archivado':      { color: '#6b7280' },
+  'Certificado':    { color: '#ffce3d' },
+  'Pwned':          { color: '#9fef00', label: 'Resuelto' },
 };
 
 function _statusHTML(p) {
   if (!p.status) return '';
-  const meta = STATUS_META[p.status] || { icon: '●', color: 'var(--color-accent)' };
+  const meta = STATUS_META[p.status] || { color: 'var(--color-accent)' };
   return `
     <span class="pdm__status-badge" style="color:${meta.color};border-color:${meta.color}40;background:${meta.color}18;">
-      ${meta.icon} ${_esc(p.status)}
+      ${_esc(meta.label || p.status)}
     </span>`;
 }
 
-const PANEL_ICONS = {
-  overview:   { dev: '◈',   ia: '◈',   sec: '◈'   },
-  phases:     { dev: '⚙️',  ia: '🔬',  sec: '🔍'  },
-  metrics:    { dev: '📊',  ia: '📊',  sec: '📊'  },
-  highlights: { dev: '✦',   ia: '✦',   sec: '✦'   },
-  tech:       { dev: '🛠️', ia: '🤖',  sec: '🔧'  },
-  docs:       { dev: '📄',  ia: '📄',  sec: '📄'  },
-};
+/* Icono por herramienta del stack — solo devicon (logo real); sin logo, sin icono.
+   Los nombres reales traen versiones/paréntesis ("PostgreSQL 16", "Claude Vision
+   (evaluación de frames)"), así que se resuelve por patrón, no por texto exacto.
+   Orden importa: los patrones más específicos van primero. */
+const TECH_ICON_RULES = [
+  // frontend frameworks
+  [/next\.?js/,                 'devicon-nextjs-plain'],
+  [/nuxt/,                      'devicon-nuxtjs-plain colored'],
+  [/vue/,                       'devicon-vuejs-plain colored'],
+  [/react native|expo router|expo sdk/, 'devicon-react-original colored'],
+  [/react/,                     'devicon-react-original colored'],
+  [/angular/,                   'devicon-angularjs-plain colored'],
+  [/svelte/,                    'devicon-svelte-plain colored'],
+  [/\baxios\b/,                 'devicon-axios-plain colored'],
+  [/\bexpo\b/,                  'devicon-expo-original colored', true],
+  [/zustand/,                   'devicon-zustand-plain colored'],
+  [/typescript/,                'devicon-typescript-plain colored'],
+  [/javascript|vanilla js/,     'devicon-javascript-plain colored'],
+  [/html5?\b/,                  'devicon-html5-plain colored'],
+  [/css3?\b/,                   'devicon-css3-plain colored'],
+  [/tailwind/,                  'devicon-tailwindcss-original colored'],
+  [/bootstrap/,                 'devicon-bootstrap-plain colored'],
+  [/^vite\b|vite \d/,           'devicon-vitejs-plain colored'],
+  [/chart\.?js/,                'devicon-chartjs-plain colored'],
+  [/redux/,                     'devicon-redux-original colored'],
+  [/d3\.?js/,                   'devicon-d3js-plain colored'],
+  [/three\.?js/,                'devicon-threejs-original colored', true],
+  // backend
+  [/node\.?js/,                 'devicon-nodejs-plain colored'],
+  [/express/,                   'devicon-express-original colored', true],
+  [/nestjs|nest\.js/,           'devicon-nestjs-original colored'],
+  [/django/,                    'devicon-django-plain colored'],
+  [/flask/,                     'devicon-flask-original colored', true],
+  [/fastapi/,                   'devicon-fastapi-plain colored'],
+  [/asp\.net|\.net\b|entity framework/, 'devicon-dotnetcore-plain colored'],
+  [/\bc#|csharp/,               'devicon-csharp-plain colored'],
+  [/\bpython\b/,                'devicon-python-plain colored'],
+  [/\bphp\b/,                   'devicon-php-plain colored'],
+  [/\bjava\b/,                  'devicon-java-plain colored'],
+  [/socket\.?io/,               'devicon-socketio-original colored', true],
+  [/prisma/,                    'devicon-prisma-original colored'],
+  [/graphql/,                   'devicon-graphql-plain colored'],
+  // data / storage
+  [/postgresql|pgvector|\bpg\b/,'devicon-postgresql-plain colored'],
+  [/mysql/,                     'devicon-mysql-original colored'],
+  [/mongodb/,                   'devicon-mongodb-plain colored'],
+  [/sql server|sqlserver/,      'devicon-microsoftsqlserver-plain colored'],
+  [/sqlite/,                    'devicon-sqlite-plain colored'],
+  [/redis/,                     'devicon-redis-plain colored'],
+  [/neo4j/,                     'devicon-neo4j-plain colored'],
+  [/supabase/,                  'devicon-supabase-plain colored'],
+  [/firebase/,                  'devicon-firebase-plain colored'],
+  // ML / data science
+  [/opencv/,                    'devicon-opencv-plain colored'],
+  [/tensorflow/,                'devicon-tensorflow-original colored'],
+  [/pytorch/,                   'devicon-pytorch-original colored'],
+  [/sklearn|scikit-?learn/,     'devicon-scikitlearn-plain colored'],
+  [/pandas/,                    'devicon-pandas-plain colored'],
+  [/numpy/,                     'devicon-numpy-plain colored'],
+  [/jupyter/,                   'devicon-jupyter-plain colored'],
+  // infra / devops
+  [/docker/,                    'devicon-docker-plain colored'],
+  [/kubernetes|k8s/,            'devicon-kubernetes-plain colored'],
+  [/nginx/,                     'devicon-nginx-original colored'],
+  [/git(hub)? actions/,         'devicon-githubactions-plain colored'],
+  [/github/,                    'devicon-github-original colored', true],
+  [/gitlab/,                    'devicon-gitlab-plain colored'],
+  [/\bgit\b/,                   'devicon-git-plain colored'],
+  [/vercel/,                    'devicon-vercel-original colored', true],
+  [/opentelemetry/,             'devicon-opentelemetry-plain colored'],
+  [/prometheus/,                'devicon-prometheus-original colored'],
+  [/grafana/,                   'devicon-grafana-plain colored'],
+  [/linux/,                     'devicon-linux-plain colored', true],
+  [/windows/,                   'devicon-windows8-original colored'],
+  [/swagger|openapi/,           'devicon-swagger-plain colored'],
+  [/postman/,                   'devicon-postman-plain colored'],
+  [/jest\b/,                    'devicon-jest-plain colored'],
+  [/eslint/,                    'devicon-eslint-plain colored'],
+  [/unity/,                     'devicon-unity-plain colored', true],
+];
+
+function _techIconHTML(name) {
+  const s = String(name).toLowerCase().trim();
+  const rule = TECH_ICON_RULES.find(([re]) => re.test(s));
+  if (!rule) return '';
+  const [, cls, invert] = rule;
+  return `<i class="${cls}${invert ? ' pdm-tech-chip__icon--invert' : ''} pdm-tech-chip__icon" aria-hidden="true"></i>`;
+}
 
 function _buildContent(p, mode) {
   const isLab = mode === 'sec' && !!p.lab;
 
-  const lbl  = m => PANEL_LABELS[m]?.[mode] || PANEL_LABELS[m]?.dev || '';
-  const icon = m => PANEL_ICONS[m]?.[mode]  || '';
+  const lbl = m => PANEL_LABELS[m] || '';
 
   /* ── Phases ── */
   const pasos = p.process?.pasos?.length > 0
@@ -296,23 +258,23 @@ function _buildContent(p, mode) {
     : (isLab ? _labPhases(p) : _syntheticPhases(p));
 
   const phasesHTML = pasos
-    .map((paso, i) => _phaseHTML(paso, i, mode))
+    .map((paso, i) => _phaseHTML(paso, i))
     .join('');
 
   /* ── Overview ── */
   const overview  = p.process?.overview || p.longDescription || p.description || '';
   const resultado = p.process?.resultado || '';
   const overviewHTML = overview ? `
-    <p class="pdm__slabel">${icon('overview')} ${lbl('overview')}${_statusHTML(p)}</p>
+    <p class="pdm__slabel">${lbl('overview')}${_statusHTML(p)}</p>
     <div class="pdm__overview">
       ${_esc(overview)}
-      ${resultado ? `<div class="pdm__overview-result">✅ ${_esc(resultado)}</div>` : ''}
+      ${resultado ? `<div class="pdm__overview-result">${_esc(resultado)}</div>` : ''}
     </div>` : '';
 
   /* ── Metrics ── */
   const metricas = p.process?.metricas || [];
   const metricsHTML = metricas.length > 0 ? `
-    <p class="pdm__slabel">${icon('metrics')} ${lbl('metrics')}</p>
+    <p class="pdm__slabel">${lbl('metrics')}</p>
     <div class="pdm-achievements">
       ${metricas.map(m => `
         <div class="pdm-achievement">
@@ -324,7 +286,7 @@ function _buildContent(p, mode) {
   /* ── Highlights ── */
   const highlights = p.highlights || [];
   const highlightsHTML = (!metricas.length && highlights.length > 0) ? `
-    <p class="pdm__slabel">${icon('highlights')} ${lbl('highlights')}</p>
+    <p class="pdm__slabel">${lbl('highlights')}</p>
     <ul class="pdm-highlights">
       ${highlights.map(h => `<li class="pdm-highlight">${_esc(h)}</li>`).join('')}
     </ul>` : '';
@@ -338,21 +300,21 @@ function _buildContent(p, mode) {
         <div class="pdm-tech-group">
           <div class="pdm-tech-group__label">${_esc(group)}</div>
           <div class="pdm-tech-chips">
-            ${arr.map(t => `<span class="pdm-tech-chip">${_esc(t)}</span>`).join('')}
+            ${arr.map(t => `<span class="pdm-tech-chip">${_techIconHTML(t)}${_esc(t)}</span>`).join('')}
           </div>
         </div>`).join('');
 
     if (groups) {
       techHTML = `
-        <p class="pdm__slabel">${icon('tech')} ${lbl('tech')}</p>
+        <p class="pdm__slabel">${lbl('tech')}</p>
         ${groups}`;
     }
   } else if ((p.tags || []).length > 0) {
     techHTML = `
-      <p class="pdm__slabel">${icon('tech')} ${lbl('techFb')}</p>
+      <p class="pdm__slabel">${lbl('techFb')}</p>
       <div class="pdm-tech-group">
         <div class="pdm-tech-chips">
-          ${p.tags.map(t => `<span class="pdm-tech-chip">${_esc(t)}</span>`).join('')}
+          ${p.tags.map(t => `<span class="pdm-tech-chip">${_techIconHTML(t)}${_esc(t)}</span>`).join('')}
         </div>
       </div>`;
   }
@@ -386,7 +348,7 @@ function _buildContent(p, mode) {
   /* ── Documents ── */
   const docs = p.docs || [];
   const docsHTML = docs.length > 0 ? `
-    <p class="pdm__slabel">${icon('docs')} ${lbl('docs')}</p>
+    <p class="pdm__slabel">${lbl('docs')}</p>
     <div class="pdm__docs">
       ${docs.map((d, i) => {
         const encodedUrl = d.url.split('/').map(encodeURIComponent).join('/');
@@ -404,20 +366,9 @@ function _buildContent(p, mode) {
       }).join('')}
     </div>` : '';
 
-  /* ── Lab banner (sec mode) ── */
-  const pwnedBanner = isLab ? `
-    <div class="pdm__pwned-banner">
-      <span class="pdm__pwned-icon">🏴‍☠️</span>
-      <div>
-        <div class="pdm__pwned-title">MACHINE PWNED — ${_esc(p.lab.difficulty.toUpperCase())}</div>
-        <div class="pdm__pwned-sub">${_esc(p.lab.platform)} · ${_esc(p.lab.os)} · ★ ${_esc(p.lab.rating)}</div>
-      </div>
-    </div>` : '';
-
   return `
-    ${pwnedBanner}
     ${overviewHTML}
-    <p class="pdm__slabel">${icon('phases')} ${lbl('phases')}</p>
+    <p class="pdm__slabel">${lbl('phases')}</p>
     ${phasesHTML}
     ${metricsHTML}
     ${highlightsHTML}
@@ -466,18 +417,6 @@ function _inject() {
         </div>
         <h2 class="pdm__title" id="pdm-title"></h2>
         <p  class="pdm__desc"  id="pdm-desc"></p>
-        <div class="pdm__level-row">
-          <span class="pdm__level-badge" id="pdm-level"></span>
-          <div class="pdm__xp-wrap">
-            <div class="pdm__xp-label">
-              <span id="pdm-xp-cur">0 XP</span>
-              <span id="pdm-xp-max">/ ${XP_MAX} XP</span>
-            </div>
-            <div class="pdm__xp-track">
-              <div class="pdm__xp-fill" id="pdm-xp-fill"></div>
-            </div>
-          </div>
-        </div>
       </header>
       <div class="pdm__scroll">
         <div class="pdm__body" id="pdm-body"></div>
@@ -502,11 +441,6 @@ function _open(p, mode) {
 
   _prevFocus = document.activeElement;
 
-  const xp        = _calcXP(p);
-  const ml        = MODE_LABELS[mode] || MODE_LABELS.dev;
-  const levels    = LEVEL_NAMES[mode] || LEVEL_NAMES.dev;
-  const levelName = levels[xp.levelIdx] ?? levels[0];
-
   /* Hero image */
   const hero = document.getElementById('pdm-hero');
   if (hero) {
@@ -520,34 +454,13 @@ function _open(p, mode) {
   }
 
   /* Header */
-  document.getElementById('pdm-mode-pill').textContent = ml.pill;
+  document.getElementById('pdm-mode-pill').textContent = MODE_PILL[mode] || '';
   document.getElementById('pdm-title').textContent     = p.title;
   document.getElementById('pdm-desc').textContent      = p.description || '';
-  document.getElementById('pdm-level').textContent     = `Lv.${xp.levelIdx + 1} ${levelName}`;
-  document.getElementById('pdm-xp-cur').textContent    = `${xp.total} ${ml.unit}`;
-  document.getElementById('pdm-xp-max').textContent    = `/ ${XP_MAX} ${ml.unit}`;
 
   /* Body */
   const body = document.getElementById('pdm-body');
   body.innerHTML = _buildContent(p, mode);
-
-  /* Phase toggle handlers */
-  _el.querySelectorAll('.pdm-phase__header').forEach(btn => {
-    btn.addEventListener('click', _togglePhase);
-    btn.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        _togglePhase({ currentTarget: btn });
-      }
-    });
-  });
-
-  /* Auto-expand first phase */
-  const firstPhase = _el.querySelector('.pdm-phase');
-  if (firstPhase) {
-    firstPhase.classList.add('is-expanded');
-    firstPhase.querySelector('.pdm-phase__header')?.setAttribute('aria-expanded', 'true');
-  }
 
   /* Show */
   _el.setAttribute('aria-hidden', 'false');
@@ -562,12 +475,6 @@ function _open(p, mode) {
   /* Scroll to top */
   const scroll = _el.querySelector('.pdm__scroll');
   if (scroll) scroll.scrollTop = 0;
-
-  /* Animate XP bar */
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    const fill = document.getElementById('pdm-xp-fill');
-    if (fill) fill.style.width = `${xp.percent}%`;
-  }));
 
   /* Stagger entrada de secciones del body */
   Array.from(body.children).forEach((el, i) => {
@@ -590,22 +497,6 @@ function _close() {
   _el.setAttribute('aria-hidden', 'true');
   document.body.style.overflow = '';
   _prevFocus?.focus();
-}
-
-function _togglePhase(e) {
-  const header = e.currentTarget;
-  const phase  = header.closest('.pdm-phase');
-  const isOpen = phase.classList.contains('is-expanded');
-
-  _el.querySelectorAll('.pdm-phase.is-expanded').forEach(ph => {
-    ph.classList.remove('is-expanded');
-    ph.querySelector('.pdm-phase__header')?.setAttribute('aria-expanded', 'false');
-  });
-
-  if (!isOpen) {
-    phase.classList.add('is-expanded');
-    header.setAttribute('aria-expanded', 'true');
-  }
 }
 
 /* ─────────────────────────────────────────────────────────

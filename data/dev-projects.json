@@ -126,7 +126,7 @@
     ],
     "liveUrl": "https://ideancestral-production.up.railway.app/",
     "repoUrl": "https://github.com/DavidAucancela/IDEANCESTRAL",
-    "featured": true,
+    "featured": false,
     "status": "En producción",
     "date": "2026-02",
     "techStack": {
@@ -229,7 +229,7 @@
       "public/images/projects/mapcriminals/reporte.webp"
     ],
     "liveUrl": "https://mapcriminalscode-production.up.railway.app/",
-    "repoUrl": "https://github.com/DavidAucancela/MapCriminalsCode",
+    "repoUrl": "https://github.com/DavidAucancela/Map_Criminals_Code",
     "featured": false,
     "status": "En producción",
     "date": "2025-12",
@@ -490,7 +490,7 @@
         },
         {
           "label": "Modo dry-run",
-          "value": "✓"
+          "value": "Sí"
         },
         {
           "label": "Transacciones",
@@ -637,7 +637,7 @@
       "overview": "Se buscó controlar la computadora sin tocarla: la webcam detecta gestos de mano y los traduce en atajos de teclado, clics y scroll.",
       "pasos": [
         {
-          "id": "deteccion",
+          "id": "analisis",
           "resumen": "MediaPipe detecta hasta 2 manos en tiempo real y extrae los puntos clave de cada dedo por frame.",
           "puntos": [
             "Detección de hasta 2 manos en vivo",
@@ -646,7 +646,7 @@
           ]
         },
         {
-          "id": "clasificacion",
+          "id": "diseño",
           "resumen": "Clasificador híbrido: reglas geométricas para los gestos base y un modelo ML opcional entrenable con datos propios.",
           "puntos": [
             "9 gestos base reconocidos",
@@ -655,7 +655,7 @@
           ]
         },
         {
-          "id": "acciones",
+          "id": "desarrollo",
           "resumen": "Cada gesto se traduce en una acción de sistema con debounce para evitar disparos repetidos.",
           "puntos": [
             "Atajos de teclado y combos",
@@ -664,7 +664,7 @@
           ]
         },
         {
-          "id": "configuracion",
+          "id": "despliegue",
           "resumen": "Todo se personaliza en archivos YAML, sin tocar el código.",
           "puntos": [
             "Configuración de cámara en YAML",
@@ -806,7 +806,7 @@
       "public/images/projects/nunna/nunna-08.webp"
     ],
     "repoUrl": "https://github.com/DavidAucancela/Nunna",
-    "featured": false,
+    "featured": true,
     "status": "En producción",
     "date": "2026-06",
     "techStack": {
@@ -840,7 +840,7 @@
           ]
         },
         {
-          "id": "arquitectura",
+          "id": "diseño",
           "resumen": "Monorepo con sitio público en Next.js y API en NestJS, compartiendo tipos y componentes.",
           "puntos": [
             "Next.js con SSR para SEO",
@@ -849,7 +849,7 @@
           ]
         },
         {
-          "id": "cms",
+          "id": "desarrollo",
           "resumen": "Directus como CMS headless para que el equipo cultural gestione contenido sin tocar código.",
           "puntos": [
             "Gestión visual de seres y tradiciones",
@@ -936,7 +936,7 @@
       "overview": "Dos íconos culturales ecuatorianos necesitaban una narrativa digital rigurosa sin mezclarse entre sí; se diseñó una experiencia con temas duales y scroll cinematográfico.",
       "pasos": [
         {
-          "id": "concepto",
+          "id": "problema",
           "resumen": "El Diablo Huma y el Cucurucho son dos mundos culturales distintos; el reto era narrarlos juntos sin mezclarlos.",
           "puntos": [
             "4 capítulos narrativos por universo",
@@ -945,7 +945,7 @@
           ]
         },
         {
-          "id": "sistema-dual",
+          "id": "diseño",
           "resumen": "Un solo atributo controla toda la paleta visual, permitiendo cambiar de universo al instante.",
           "puntos": [
             "Paletas distintas por universo",
@@ -954,7 +954,7 @@
           ]
         },
         {
-          "id": "scroll-narrativo",
+          "id": "desarrollo",
           "resumen": "El scroll activa cada capítulo como una escena fija con parallax en varias capas.",
           "puntos": [
             "Escenas fijas mientras el usuario scrollea",
@@ -963,7 +963,7 @@
           ]
         },
         {
-          "id": "i18n-audio",
+          "id": "mejoras",
           "resumen": "Todo el texto pasa por un sistema de traducción ES/EN; el audio ambiental carga solo si el usuario lo activa.",
           "puntos": [
             "Traducción completa ES/EN",
@@ -996,7 +996,7 @@
   {
     "id": "project-016",
     "slug": "portfolio-trimodal",
-    "title": "Portfolio Trimodal",
+    "title": "Portfolio",
     "category": "Desarrollo Web",
     "description": "Portfolio personal con tres modos de presentación (dev / ia / sec), canvas de partículas por modo, asistente de IA integrado con embeddings semánticos y galería fullscreen de proyectos.",
     "longDescription": "Portfolio personal que se adapta a tres perfiles (dev, IA, ciberseguridad), con asistente de IA integrado que responde preguntas sobre los proyectos.",
@@ -1015,9 +1015,9 @@
       "public/images/projects/portfolio/portfolio-07.webp",
       "public/images/projects/portfolio/portfolio-09.webp"
     ],
-    "liveUrl": "https://davidaucancela.github.io/Portfolio/",
+    "liveUrl": "https://davidaucancela-portfolio.vercel.app/",
     "repoUrl": "https://github.com/DavidAucancela/Portfolio",
-    "featured": true,
+    "featured": false,
     "status": "En producción",
     "date": "2026-06",
     "techStack": {
@@ -1044,7 +1044,7 @@
       "overview": "Un portfolio único no reflejaba bien perfiles tan distintos (dev, IA, seguridad); se construyó un sistema que cambia contenido y estilo según el perfil activo.",
       "pasos": [
         {
-          "id": "arquitectura",
+          "id": "diseño",
           "resumen": "Sistema de tres modos con módulos independientes coordinados por eventos.",
           "puntos": [
             "Tres modos con estilos y contenido propios",
@@ -1053,7 +1053,7 @@
           ]
         },
         {
-          "id": "visual",
+          "id": "desarrollo",
           "resumen": "Animaciones y partículas de fondo distintas para cada modo.",
           "puntos": [
             "Partículas temáticas por modo",
@@ -1062,7 +1062,7 @@
           ]
         },
         {
-          "id": "ia",
+          "id": "mejoras",
           "resumen": "Asistente JotAI que responde preguntas sobre los proyectos con búsqueda semántica.",
           "puntos": [
             "Widget animado con estados visuales",
@@ -1071,7 +1071,7 @@
           ]
         },
         {
-          "id": "ux",
+          "id": "pruebas",
           "resumen": "Buscador global, terminal temática y galería de proyectos con vista de documentos.",
           "puntos": [
             "Buscador global tipo Cmd+K",
@@ -1104,7 +1104,7 @@
   {
     "id": "project-018",
     "slug": "xv-tammy",
-    "title": "XV Años — Tammy",
+    "title": "XV Tammy",
     "category": "Desarrollo Web",
     "description": "Sistema de invitaciones digitales con QR y control de acceso en tiempo real para una quinceañera: landing con countdown y galería, invitación personalizada por token, escáner QR para staff y dashboard de check-in en vivo.",
     "longDescription": "Sistema de invitaciones digitales con QR para un evento de XV años, que permite validar el ingreso de invitados en tiempo real sin listas en papel.",
@@ -1153,7 +1153,7 @@
           ]
         },
         {
-          "id": "invitacion",
+          "id": "desarrollo",
           "resumen": "Cada invitado recibe un link único con su invitación y QR, donde puede confirmar o declinar asistencia.",
           "puntos": [
             "Link único e intransferible por invitado",
@@ -1162,7 +1162,7 @@
           ]
         },
         {
-          "id": "checkin",
+          "id": "despliegue",
           "resumen": "El staff escanea el QR en la puerta y el dashboard refleja el ingreso al instante.",
           "puntos": [
             "Escaneo de QR desde cualquier celular",
@@ -1191,7 +1191,7 @@
   {
     "id": "project-017",
     "slug": "lumbre",
-    "title": "Lumbre — Los secretos de la casa",
+    "title": "Lumbre",
     "description": "Juego de terror 2D en Unity 6. Un niño explora la casa de su abuela de noche con una caja de fósforos limitada: cada fósforo da luz para explorar pero acerca a algo.",
     "longDescription": "Juego de terror atmosférico donde cada fósforo limitado ilumina el camino pero también acerca al peligro. Publicado en itch.io.",
     "tags": [
@@ -1201,10 +1201,15 @@
       "Horror",
       "WebGL"
     ],
-    "image": null,
-    "images": [],
+    "image": "public/images/projects/lumbre/lumbre-01.webp",
+    "images": [
+      "public/images/projects/lumbre/lumbre-01.webp",
+      "public/images/projects/lumbre/lumbre-02.webp",
+      "public/images/projects/lumbre/lumbre-03.webp",
+      "public/images/projects/lumbre/lumbre-04.webp"
+    ],
     "liveUrl": "https://lager.itch.io/lumbre",
-    "repoUrl": "https://github.com/Lager-GJ/Main1Escenario",
+    "repoUrl": "https://github.com/Lager-GJ/main",
     "featured": true,
     "status": "En producción",
     "date": "2026-01",
@@ -1220,7 +1225,7 @@
   {
     "id": "project-020",
     "slug": "phone-directory",
-    "title": "Phone Directory — ASP.NET Core 8",
+    "title": "NexoCorp",
     "description": "Sistema de directorio telefónico interno con gestión de extensiones por oficina. Bulk import desde Excel, REST API completa y búsqueda por departamento.",
     "longDescription": "Directorio telefónico interno para consultar y administrar extensiones por oficina, con importación masiva desde Excel.",
     "tags": [
@@ -1233,7 +1238,7 @@
     "image": null,
     "images": [],
     "liveUrl": null,
-    "repoUrl": "https://github.com/diacero/phone-directory",
+    "repoUrl": "https://github.com/DavidAucancela/NexoCorp-Directorio",
     "featured": false,
     "status": "Completado",
     "date": "2025-11",

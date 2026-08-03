@@ -1505,6 +1505,8 @@ ul, ol { list-style: none; }
   margin-top: 0;
   padding-top: 0;
   order: -1;
+  flex-wrap: nowrap;
+  overflow: hidden;
 }
 
 .project-card--fullbleed .tag {
@@ -1514,6 +1516,8 @@ ul, ol { list-style: none; }
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .project-card--fullbleed .card-title {

@@ -20,7 +20,7 @@
       "public/images/projects/llm observatory/dashboard-3d.webp",
       "public/images/projects/llm observatory/request.webp"
     ],
-    "liveUrl": "https://llm-web-production.up.railway.app/settings",
+    "liveUrl": "https://llm-web-production.up.railway.app/",
     "repoUrl": "https://github.com/DavidAucancela/llm-observatory",
     "featured": true,
     "status": "En producción",
@@ -90,7 +90,7 @@
         },
         {
           "label": "TTFT tracking",
-          "value": "✓ Streaming"
+          "value": "Streaming"
         },
         {
           "label": "Modelos comparados",
@@ -357,7 +357,7 @@
       "public/images/projects/marevitae/marevitae-05.webp"
     ],
     "liveUrl": "https://www.marevitaeint.com/",
-    "repoUrl": "https://github.com/DavidAucancela/MareVitae",
+    "repoUrl": "https://github.com/Andorasoft/Mare-Vitae-International",
     "featured": false,
     "status": "En producción",
     "date": "2025-09",
@@ -666,7 +666,7 @@
     ],
     "liveUrl": null,
     "repoUrl": "https://github.com/DavidAucancela/CodeReviewX-",
-    "featured": true,
+    "featured": false,
     "status": "Completado",
     "date": "2026-05",
     "techStack": {
@@ -704,7 +704,7 @@
           ]
         },
         {
-          "id": "arquitectura",
+          "id": "diseño",
           "resumen": "El webhook responde de inmediato mientras el análisis corre en segundo plano y comenta directamente en el PR.",
           "puntos": [
             "Respuesta inmediata al webhook",
@@ -713,7 +713,7 @@
           ]
         },
         {
-          "id": "ia",
+          "id": "desarrollo",
           "resumen": "Claude Sonnet analiza el diff y detecta bugs, vulnerabilidades y problemas de diseño que el linter no ve.",
           "puntos": [
             "Detecta bugs lógicos reales",
@@ -722,7 +722,7 @@
           ]
         },
         {
-          "id": "github-app",
+          "id": "despliegue",
           "resumen": "Instalable en cualquier repositorio sin configuración extra, con verificación de origen en cada webhook.",
           "puntos": [
             "Instalación sin configuración extra",
@@ -755,7 +755,7 @@
   {
     "id": "project-017",
     "slug": "whisperx",
-    "title": "whisperX — Local AI Service",
+    "title": "WhisperX",
     "category": "Visión & Audio",
     "description": "Microservicio FastAPI que centraliza transcripción, traducción y diarización de audio, y generación de embeddings vía OpenAI — consumido por otros proyectos en lugar de llamar a OpenAI directamente.",
     "longDescription": "Microservicio que centraliza la transcripción de audio y generación de embeddings para todos los proyectos del portfolio, con caché y control de costos.",
@@ -811,7 +811,7 @@
           ]
         },
         {
-          "id": "arquitectura",
+          "id": "diseño",
           "resumen": "Servicio central con autenticación propia, límite de uso y caché antes de llamar a OpenAI.",
           "puntos": [
             "Caché por contenido para evitar reprocesos",
@@ -820,7 +820,7 @@
           ]
         },
         {
-          "id": "diarizacion",
+          "id": "desarrollo",
           "resumen": "La identificación de quién habla corre localmente, sin depender de un servicio externo de pago.",
           "puntos": [
             "Identificación de hablantes local",
@@ -907,7 +907,7 @@
           ]
         },
         {
-          "id": "arquitectura",
+          "id": "diseño",
           "resumen": "La webcam captura frames y Claude Vision los evalúa contra el criterio de inspección definido en texto.",
           "puntos": [
             "Criterios definidos en texto simple",
@@ -916,7 +916,7 @@
           ]
         },
         {
-          "id": "evidencia",
+          "id": "pruebas",
           "resumen": "Cada inspección queda documentada con frames, registro y un reporte final.",
           "puntos": [
             "Frames guardados como evidencia",
@@ -945,7 +945,7 @@
   {
     "id": "project-018",
     "slug": "inkos",
-    "title": "In,KOS — Knowledge Operating System",
+    "title": "KOS",
     "description": "Motor de conocimiento independiente donde Obsidian es solo uno de los conectores. Ingesta múltiples fuentes, construye grafo de conocimiento y razona con agentes IA coordinados.",
     "longDescription": "Motor de conocimiento personal que organiza información de múltiples fuentes en un grafo y razona sobre ella con agentes de IA.",
     "tags": [
@@ -956,13 +956,19 @@
       "AI Agents",
       "LLM"
     ],
-    "image": null,
-    "images": [],
+    "image": "public/images/projects/inkos/inkos-03.webp",
+    "images": [
+      "public/images/projects/inkos/inkos-03.webp",
+      "public/images/projects/inkos/inkos-05.webp",
+      "public/images/projects/inkos/inkos-01.webp",
+      "public/images/projects/inkos/inkos-02.webp",
+      "public/images/projects/inkos/inkos-04.webp"
+    ],
     "liveUrl": null,
-    "repoUrl": "https://github.com/diacero/inkos",
+    "repoUrl": "https://github.com/DavidAucancela/KOS",
     "featured": true,
     "status": "En desarrollo",
-    "date": "2026-02",
+    "date": "2026-07",
     "techStack": {
       "backend": [
         "FastAPI",
@@ -994,12 +1000,63 @@
         "Prometheus",
         "Grafana"
       ]
+    },
+    "process": {
+      "overview": "Motor de conocimiento personal que unifica múltiples fuentes en un grafo consultable por agentes de IA, con corrección manual asistida.",
+      "pasos": [
+        {
+          "id": "analisis",
+          "resumen": "Obsidian por sí solo no bastaba como fuente única de conocimiento; se definió un modelo de grafo capaz de integrar múltiples orígenes.",
+          "puntos": [
+            "Entidades del grafo: Person, Project, Technology, Concept, Document, Task, Organization, Event, Skill",
+            "Obsidian como uno más de los conectores, no como núcleo del sistema",
+            "Razonamiento sobre el grafo delegado a agentes de IA coordinados"
+          ]
+        },
+        {
+          "id": "desarrollo",
+          "resumen": "Backend en FastAPI con Neo4j como grafo y PostgreSQL/pgvector para datos y embeddings; frontend en React con chat y editor visual del grafo.",
+          "puntos": [
+            "Ingesta y embeddings con Ollama + bge-m3",
+            "Chat con respuestas citadas por fuente del conocimiento indexado",
+            "Editor de grafo con vista de nodos y vista de tabla"
+          ]
+        },
+        {
+          "id": "pruebas",
+          "resumen": "Validación del pipeline con consultas reales y corrección manual de nodos protegida ante la siguiente sincronización.",
+          "puntos": [
+            "Consultas con nivel de confianza y citas por fuente",
+            "Corrección y rechazo de relaciones mal etiquetadas por nodo",
+            "Monitoreo de latencia por servicio: PostgreSQL, Redis, Neo4j, MinIO, Ollama"
+          ]
+        },
+        {
+          "id": "mejoras",
+          "resumen": "Iteración sobre la calidad del grafo: deduplicación de conceptos y ajuste de relaciones entre nodos.",
+          "puntos": [
+            "Ordenamiento de nodos por cantidad de relaciones para priorizar revisión",
+            "Panel de estado del sistema por servicio con latencia en vivo",
+            "Corrección manual de nombres canónicos de nodos"
+          ]
+        },
+        {
+          "id": "despliegue",
+          "resumen": "En desarrollo activo; pensado para self-hosting con Docker Compose y observabilidad integrada, sin demo pública todavía.",
+          "puntos": [
+            "Stack completo vía Docker Compose",
+            "OpenTelemetry, Prometheus y Grafana para monitoreo",
+            "Sin URL pública mientras continúa el desarrollo"
+          ]
+        }
+      ],
+      "resultado": "Grafo de conocimiento consultable con corrección asistida y trazabilidad de fuentes en cada respuesta."
     }
   },
   {
     "id": "project-019",
     "slug": "rep-counter",
-    "title": "@diacero/rep-counter — Contador de Repeticiones por Visión",
+    "title": "Rep-Counter",
     "description": "Librería TypeScript puro para contar repeticiones de ejercicio (abdominales, flexiones) usando MediaPipe BlazePose. Spike de 2 semanas, extensible y portable.",
     "longDescription": "Librería que cuenta repeticiones de ejercicio con visión por computadora, pensada para integrarse en apps de React Native.",
     "tags": [
@@ -1011,10 +1068,10 @@
     ],
     "image": null,
     "images": [],
-    "liveUrl": "https://www.npmjs.com/package/@diacero/rep-counter",
-    "repoUrl": "https://github.com/diacero/rep-counter",
+    "liveUrl": null,
+    "repoUrl": "https://github.com/DavidAucancela/Abs-PushUp-Counter",
     "featured": false,
-    "status": "En producción",
+    "status": "Completado",
     "date": "2026-01",
     "techStack": {
       "core": [
@@ -1032,7 +1089,7 @@
   {
     "id": "project-021",
     "slug": "zeroday-fitnessgame",
-    "title": "ZeroDay-FitnessGame Public",
+    "title": "ZeroDay",
     "description": "La única app que te dice, con datos reales de tu cuerpo verificados por IA, si sobrevivirías a un apocalipsis zombie que empiece hoy.",
     "longDescription": "App gamificada que mide el fitness real del usuario con IA y lo confronta con escenarios de supervivencia tipo apocalipsis zombie.",
     "tags": [
@@ -1045,8 +1102,8 @@
     "image": null,
     "images": [],
     "liveUrl": null,
-    "repoUrl": "https://github.com/diacero/zeroday-fitnessgame",
-    "featured": true,
+    "repoUrl": "https://github.com/DavidAucancela/ZeroDay-FitnessGame",
+    "featured": false,
     "status": "En desarrollo",
     "date": "2026-03",
     "techStack": {

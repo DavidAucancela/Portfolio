@@ -67,6 +67,7 @@ export const ProjectGallery = (() => {
                 <polyline points="15 18 9 12 15 6"/>
               </svg>
             </button>
+            <div class="pgal__backdrop" id="pgal-backdrop" aria-hidden="true"></div>
             <div class="pgal__img-wrap">
               <img class="pgal__img" id="pgal-img" src="" alt="" />
               <div class="pgal__placeholder" id="pgal-placeholder" aria-hidden="true"></div>
@@ -152,8 +153,10 @@ export const ProjectGallery = (() => {
     const img = document.getElementById('pgal-img');
     const ph  = document.getElementById('pgal-placeholder');
     const pdf = document.getElementById('pgal-pdf');
+    const bg  = document.getElementById('pgal-backdrop');
 
     if (_isDocsMode()) {
+      if (bg) bg.classList.remove('is-visible');
       _idx = Math.max(0, Math.min(idx, _docs.length - 1));
       const doc = _docs[_idx];
 
@@ -190,6 +193,7 @@ export const ProjectGallery = (() => {
       img.style.display = 'none';
       ph.style.display  = 'flex';
       ph.innerHTML      = _buildPgalPlaceholder(_p);
+      if (bg) bg.classList.remove('is-visible');
       document.getElementById('pgal-counter').textContent = '';
       return;
     }
@@ -201,6 +205,7 @@ export const ProjectGallery = (() => {
       img.style.display = 'none';
       ph.style.display  = 'flex';
       ph.innerHTML      = _buildPgalPlaceholder(_p);
+      if (bg) bg.classList.remove('is-visible');
     };
     img.onload = () => img.classList.remove('is-swapping');
     img.style.display = '';
@@ -208,6 +213,11 @@ export const ProjectGallery = (() => {
     img.classList.add('is-swapping');
     img.alt = `${_p?.title || ''} — imagen ${_idx + 1}`;
     img.src = _src(src);
+
+    if (bg) {
+      bg.style.backgroundImage = `url("${_src(src)}")`;
+      bg.classList.add('is-visible');
+    }
 
     document.getElementById('pgal-counter').textContent =
       _images.length > 1 ? `${_idx + 1} / ${_images.length}` : '';
@@ -232,40 +242,6 @@ export const ProjectGallery = (() => {
   function _prev() { _goTo(_idx - 1); }
   function _next() { _goTo(_idx + 1); }
 
-  /* ── Phase toggles (same accordion logic as project-detail.js) ── */
-  function _attachPhaseToggles() {
-    const info = document.getElementById('pgal-info');
-    if (!info) return;
-
-    info.querySelectorAll('.pdm-phase__header').forEach((header, i) => {
-      const phase = header.closest('.pdm-phase');
-
-      header.addEventListener('click', () => {
-        const isOpen = phase.classList.contains('is-expanded');
-        info.querySelectorAll('.pdm-phase.is-expanded').forEach(ph => {
-          ph.classList.remove('is-expanded');
-          ph.querySelector('.pdm-phase__header')?.setAttribute('aria-expanded', 'false');
-        });
-        if (!isOpen) {
-          phase.classList.add('is-expanded');
-          header.setAttribute('aria-expanded', 'true');
-        }
-      });
-
-      header.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          header.click();
-        }
-      });
-
-      if (i === 0) {
-        phase.classList.add('is-expanded');
-        header.setAttribute('aria-expanded', 'true');
-      }
-    });
-  }
-
   /* ── Open ── */
   function open(p, mode, startIndex = 0) {
     _p    = p;
@@ -284,7 +260,6 @@ export const ProjectGallery = (() => {
     document.getElementById('pgal-title').textContent = p.title || '';
 
     document.getElementById('pgal-info').innerHTML = ProjectDetail.buildContent(p, mode);
-    _attachPhaseToggles();
 
     if (_isDocsMode()) {
       _renderDocTabs();

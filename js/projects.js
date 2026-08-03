@@ -345,11 +345,11 @@ function _buildCard(p, mode) {
       })()
     : '';
 
-  // Tags (máx 4 visibles)
-  const tagsHTML = p.tags.slice(0, 4)
+  // Tags (máx 3 visibles — una sola línea, deja ver el título)
+  const tagsHTML = p.tags.slice(0, 3)
     .map(t => `<span class="tag">${t}</span>`)
-    .join('') + (p.tags.length > 4
-      ? `<span class="tag tag--more">+${p.tags.length - 4}</span>`
+    .join('') + (p.tags.length > 3
+      ? `<span class="tag tag--more">+${p.tags.length - 3}</span>`
       : '');
 
   // Badges sobre la imagen

@@ -72,18 +72,18 @@
   border-color: var(--color-accent, #6366f1);
 }
 
-/* ── Body: vertical stack (image top + info bottom) always ── */
+/* ── Body: 2-column row (image-left + info-right) ── */
 .pgal__body {
   flex: 1;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   min-height: 0;
   overflow: hidden;
 }
 
-/* ── Top block: image viewer + filmstrip ── */
+/* ── Left column: image viewer + filmstrip ── */
 .pgal__left {
-  flex: 0 0 auto;
+  flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -92,14 +92,30 @@
 
 /* ── Main image area ── */
 .pgal__main {
-  height: min(48vh, 460px);
-  flex: 0 0 auto;
+  flex: 1;
   display: flex;
   align-items: stretch;
   min-height: 0;
   position: relative;
   background: #04040a;
+  overflow: hidden;
 }
+
+/* Blurred cover fill of the same image — kills the empty side bars left by
+   object-fit:contain without cropping or distorting the real screenshot */
+.pgal__backdrop {
+  position: absolute;
+  inset: -20px;
+  background-size: cover;
+  background-position: center;
+  filter: blur(32px) saturate(1.3) brightness(0.45);
+  transform: scale(1.1);
+  opacity: 0;
+  transition: opacity 0.35s ease, background-image 0.1s;
+  z-index: 0;
+}
+
+.pgal__backdrop.is-visible { opacity: 1; }
 
 .pgal__img-wrap {
   flex: 1;
@@ -108,6 +124,8 @@
   justify-content: center;
   overflow: hidden;
   padding: 1rem 3.75rem;
+  position: relative;
+  z-index: 1;
 }
 
 .pgal__img {
@@ -120,6 +138,7 @@
   display: block;
   opacity: 1;
   transform: scale(1);
+  box-shadow: 0 12px 48px rgba(0,0,0,0.5);
   transition: opacity 0.32s ease, transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -296,17 +315,14 @@
 .pgal__thumb.is-active { border-color: var(--color-accent, #6366f1); }
 .pgal__thumb--error { opacity: 0.4; }
 
-/* ── Info panel (bottom block) — "system info" scroll pane ── */
+/* ── Info panel (right column) — "system info" scroll pane ── */
 .pgal__info {
   position: relative;
-  flex: 1;
-  min-height: 0;
-  width: 100%;
-  max-width: 720px;
-  margin: 0 auto;
+  width: clamp(320px, 38vw, 480px);
   overflow-y: auto;
-  padding: 1.25rem 1.5rem 2.5rem;
-  border-top: 1px solid var(--border-color, rgba(255,255,255,0.08));
+  padding: 1.25rem 1.5rem 2rem;
+  border-left: 1px solid var(--border-color, rgba(255,255,255,0.06));
+  flex-shrink: 0;
   background: var(--bg-secondary, #0e0e18);
   scrollbar-width: thin;
   scrollbar-color: var(--color-accent, rgba(99,102,241,0.55)) transparent;
@@ -321,19 +337,6 @@
 }
 .pgal__info::-webkit-scrollbar-thumb:hover {
   background: var(--color-accent, #6366f1);
-}
-
-/* fade hint at the top edge signalling scrollable "system" content below */
-.pgal__info::before {
-  content: '';
-  position: sticky;
-  top: 0;
-  display: block;
-  height: 14px;
-  margin: -1.25rem -1.5rem 0.25rem;
-  background: linear-gradient(to bottom, var(--bg-secondary, #0e0e18), transparent);
-  pointer-events: none;
-  z-index: 1;
 }
 
 /* ── 0 or 1 items: hide arrows and filmstrip ── */
@@ -404,14 +407,17 @@
   align-items: center;
 }
 
-/* ── Mobile tweaks (layout is already vertical by default) ── */
+/* ── Mobile: stack vertically ── */
 @media (max-width: 768px) {
-  .pgal__main { height: 34vh; }
+  .pgal__body { flex-direction: column; }
 
   .pgal__info {
+    width: auto;
+    max-height: 42vh;
+    border-left: none;
+    border-top: 1px solid var(--border-color, rgba(255,255,255,0.06));
     padding: 1rem 1rem 1.5rem;
   }
-  .pgal__info::before { margin: -1rem -1rem 0.25rem; }
 
   .pgal__header { height: 48px; padding: 0 0.75rem; }
   .pgal__title { font-size: 0.8rem; }

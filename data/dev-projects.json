@@ -1235,8 +1235,14 @@
       "Razor Pages",
       "Bootstrap"
     ],
-    "image": null,
-    "images": [],
+    "image": "public/images/projects/nexocorp/nexocorp-01.webp",
+    "images": [
+      "public/images/projects/nexocorp/nexocorp-01.webp",
+      "public/images/projects/nexocorp/nexocorp-02.webp",
+      "public/images/projects/nexocorp/nexocorp-03.webp",
+      "public/images/projects/nexocorp/nexocorp-04.webp",
+      "public/images/projects/nexocorp/nexocorp-05.webp"
+    ],
     "liveUrl": null,
     "repoUrl": "https://github.com/DavidAucancela/NexoCorp-Directorio",
     "featured": false,

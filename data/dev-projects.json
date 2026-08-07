@@ -1114,10 +1114,13 @@
       "Tailwind",
       "Framer Motion"
     ],
-    "image": "public/images/projects/xv-tammy/xv-tammy-01.webp",
+    "image": "public/images/projects/xv-tammy/xv-tammy-02.webp",
     "images": [
-      "public/images/projects/xv-tammy/xv-tammy-01.webp",
-      "public/images/projects/xv-tammy/xv-tammy-02.webp"
+      "public/images/projects/xv-tammy/xv-tammy-02.webp",
+      "public/images/projects/xv-tammy/xv-tammy-03.webp",
+      "public/images/projects/xv-tammy/xv-tammy-04.webp",
+      "public/images/projects/xv-tammy/xv-tammy-05.webp",
+      "public/images/projects/xv-tammy/xv-tammy-01.webp"
     ],
     "liveUrl": "https://xv-tammy-production.up.railway.app/",
     "repoUrl": "https://github.com/DavidAucancela/XV-Tammy",

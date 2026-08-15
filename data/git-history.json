@@ -1,0 +1,179 @@
+{
+  "weeks": 12,
+  "days": [
+    {
+      "date": "2026-05-25",
+      "count": 7
+    },
+    {
+      "date": "2026-05-31",
+      "count": 7
+    },
+    {
+      "date": "2026-06-03",
+      "count": 3
+    },
+    {
+      "date": "2026-06-04",
+      "count": 12
+    },
+    {
+      "date": "2026-06-05",
+      "count": 5
+    },
+    {
+      "date": "2026-06-06",
+      "count": 1
+    },
+    {
+      "date": "2026-06-07",
+      "count": 5
+    },
+    {
+      "date": "2026-06-08",
+      "count": 3
+    },
+    {
+      "date": "2026-06-09",
+      "count": 8
+    },
+    {
+      "date": "2026-06-10",
+      "count": 11
+    },
+    {
+      "date": "2026-06-11",
+      "count": 1
+    },
+    {
+      "date": "2026-06-12",
+      "count": 2
+    },
+    {
+      "date": "2026-06-14",
+      "count": 1
+    },
+    {
+      "date": "2026-06-15",
+      "count": 4
+    },
+    {
+      "date": "2026-06-16",
+      "count": 2
+    },
+    {
+      "date": "2026-06-17",
+      "count": 1
+    },
+    {
+      "date": "2026-06-29",
+      "count": 8
+    },
+    {
+      "date": "2026-07-01",
+      "count": 2
+    },
+    {
+      "date": "2026-07-02",
+      "count": 2
+    },
+    {
+      "date": "2026-07-03",
+      "count": 2
+    },
+    {
+      "date": "2026-07-04",
+      "count": 8
+    },
+    {
+      "date": "2026-07-12",
+      "count": 1
+    },
+    {
+      "date": "2026-07-31",
+      "count": 2
+    },
+    {
+      "date": "2026-08-01",
+      "count": 1
+    },
+    {
+      "date": "2026-08-02",
+      "count": 1
+    },
+    {
+      "date": "2026-08-03",
+      "count": 2
+    },
+    {
+      "date": "2026-08-04",
+      "count": 1
+    },
+    {
+      "date": "2026-08-05",
+      "count": 1
+    },
+    {
+      "date": "2026-08-06",
+      "count": 1
+    },
+    {
+      "date": "2026-08-10",
+      "count": 2
+    }
+  ],
+  "totalCommits": 107,
+  "totalCommitsAllTime": 175,
+  "totalProjects": 33,
+  "prs": [
+    {
+      "number": 36,
+      "title": "feat(projects): screenshots de NexoCorp y XV Tammy en modo .dev",
+      "date": "2026-08-06",
+      "hash": "3dc4a30"
+    },
+    {
+      "number": 35,
+      "title": "feat(projects): agregar screenshots de NexoCorp en modo .dev",
+      "date": "2026-08-05",
+      "hash": "c4fc41e"
+    },
+    {
+      "number": 34,
+      "title": "fix: sincronizar package-lock.json con package.json",
+      "date": "2026-08-04",
+      "hash": "9775b8d"
+    },
+    {
+      "number": 33,
+      "title": "feat: rediseñar panel de detalle sin gamificación + correcciones de contenido",
+      "date": "2026-08-03",
+      "hash": "98751f5"
+    },
+    {
+      "number": 32,
+      "title": "Feature/projects filters categories",
+      "date": "2026-08-03",
+      "hash": "2505486"
+    },
+    {
+      "number": 31,
+      "title": "feat(jotai): mejorar conversión y comandos",
+      "date": "2026-08-02",
+      "hash": "015daa9"
+    },
+    {
+      "number": 30,
+      "title": "feat(projects): filtros por categoría, paginación de 5 y fix de grid mobile",
+      "date": "2026-08-01",
+      "hash": "d3caed9"
+    },
+    {
+      "number": 29,
+      "title": "Feature/jotai gemini fallback",
+      "date": "2026-07-31",
+      "hash": "2973752"
+    }
+  ],
+  "generatedAt": "2026-08-15T18:10:51.948Z"
+}

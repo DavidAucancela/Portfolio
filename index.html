@@ -238,6 +238,66 @@
 
         </div>
 
+        <!-- Actividad de Git — solo visible en modo .dev -->
+        <div class="git-activity" id="git-activity" role="region" aria-label="Actividad de Git">
+          <div class="git-activity__bar" aria-hidden="true">
+            <span class="git-activity__dot" style="background:#ff5f57"></span>
+            <span class="git-activity__dot" style="background:#ffbd2e"></span>
+            <span class="git-activity__dot" style="background:#28ca41"></span>
+            <span class="git-activity__title">github.com/DavidAucancela</span>
+          </div>
+          <div class="git-activity__body">
+            <span class="git-activity__section-label" id="git-activity-heatmap-label">Commits por semana · últimas 12 semanas</span>
+            <div class="git-activity__row">
+              <div class="git-activity__chart">
+                <div class="git-activity__months" id="git-activity-months"></div>
+                <div class="git-activity__chart-row">
+                  <div class="git-activity__weekdays">
+                    <span></span><span>Lun</span><span></span><span>Mié</span><span></span><span>Vie</span><span></span>
+                  </div>
+                  <div class="git-activity__grid" id="git-activity-grid"></div>
+                </div>
+              </div>
+
+              <div class="git-activity__stats">
+                <div class="git-activity__stat">
+                  <span class="git-activity__stat-value" id="git-activity-stat-prs">—</span>
+                  <span class="git-activity__stat-label">Pull requests</span>
+                </div>
+                <div class="git-activity__stat">
+                  <span class="git-activity__stat-value" id="git-activity-stat-commits">—</span>
+                  <span class="git-activity__stat-label">Commits</span>
+                </div>
+                <div class="git-activity__stat">
+                  <span class="git-activity__stat-value" id="git-activity-stat-projects">—</span>
+                  <span class="git-activity__stat-label">Proyectos</span>
+                </div>
+              </div>
+            </div>
+            <span class="git-activity__total" id="git-activity-total">Cargando…</span>
+
+            <div class="git-activity__divider"></div>
+
+            <span class="git-activity__section-label">Pull requests recientes</span>
+            <ul class="git-activity__pr-list" id="git-activity-prs"></ul>
+          </div>
+        </div>
+
+        <!-- Total de tokens de LLM Observatory — solo visible en modo .ia -->
+        <div class="ia-tokens" id="ia-tokens" role="region" aria-label="Tokens procesados por LLM Observatory">
+          <div class="ia-tokens__bar" aria-hidden="true">
+            <span class="ia-tokens__dot" style="background:#ff5f57"></span>
+            <span class="ia-tokens__dot" style="background:#ffbd2e"></span>
+            <span class="ia-tokens__dot" style="background:#28ca41"></span>
+            <span class="ia-tokens__title">llm-observatory · stats</span>
+          </div>
+          <div class="ia-tokens__body">
+            <span class="ia-tokens__label">Tokens procesados</span>
+            <span class="ia-tokens__value" id="ia-tokens-value">···</span>
+            <span class="ia-tokens__status" id="ia-tokens-status">conectando…</span>
+          </div>
+        </div>
+
         <!-- Terminal interactiva — solo visible en modo .sec -->
         <div class="sec-terminal" id="sec-terminal" role="region" aria-label="Terminal interactiva">
           <div class="sec-terminal__bar" aria-hidden="true">

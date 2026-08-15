@@ -133,7 +133,18 @@
   font-family: inherit;
   font-size: inherit;
   caret-color: #00ff41;
+  caret-shape: block;
+  animation: sec-caret-blink 1s step-end infinite;
   min-width: 0;
+}
+
+@keyframes sec-caret-blink {
+  0%, 100% { caret-color: #00ff41; }
+  50%      { caret-color: transparent; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sec-terminal__input { animation: none; }
 }
 
 .sec-terminal__input::placeholder { color: rgba(0, 255, 65, 0.2); }

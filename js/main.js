@@ -22,6 +22,8 @@ import { SecTerminal } from './sec-terminal.js';
 import { PDFModal } from './pdf-modal.js';
 import { IaMascot } from './ia-mascot.js';
 import { SectionDivider } from './section-divider.js';
+import { GitHistory } from './git-history.js';
+import { IaTokensWidget } from './ia-tokens-widget.js';
 
 // CSS imports — Vite los bundlea automáticamente
 import '../css/main.css';
@@ -35,6 +37,8 @@ import '../css/sec-terminal.css';
 import '../css/pdf-modal.css';
 import '../css/ia-mascot.css';
 import '../css/section-divider.css';
+import '../css/git-history.css';
+import '../css/ia-tokens-widget.css';
 
 // Vercel Analytics y Speed Insights — solo activos en producción
 injectAnalytics();
@@ -57,4 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
   PDFModal.init();
   IaMascot.init();
   SectionDivider.init();
+  GitHistory.init();
+  IaTokensWidget.init();
 });

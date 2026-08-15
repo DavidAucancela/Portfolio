@@ -44,12 +44,38 @@ const PROJECT_DETAILS = {
     'Comply:   SRI + Contraloría General requirements',
     'Impact:   $2.3M in transparent fund tracking',
   ],
+  'skills.md': [
+    '# Skills — Security & Development',
+    'Offensive:  OSINT, pentesting, SAST/DAST, OWASP Top 10',
+    'Defensive:  Zero-trust design, RBAC, audit logging',
+    'Stack:      Node.js, Python, Docker, Kali Linux',
+    'Certs:      HackTheBox labs, practical writeups',
+  ],
+  'contact.md': [
+    '# Contact',
+    'Email:     jonathan_jd@outlook.com',
+    'LinkedIn:  linkedin.com/in/jonathan-david-aucancela',
+    "Hint:      try 'ping linkedin' for a direct link",
+  ],
 };
+
+const COMMANDS = [
+  'help', 'whoami', 'neofetch', 'history', 'whois',
+  'ls', 'ls projects', 'ping linkedin', 'clear', 'exit',
+];
 
 export const SecTerminal = (() => {
   let _booted  = false;
   let _history = [];
   let _histIdx = -1;
+  const _sessionStart = Date.now();
+
+  function _uptimeString() {
+    const secs = Math.floor((Date.now() - _sessionStart) / 1000);
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m}m ${s}s`;
+  }
 
   /* ── Public API ───────────────────────────────────── */
   function init() {
@@ -191,6 +217,32 @@ export const SecTerminal = (() => {
         _histIdx = -1;
         input.value = '';
       }
+      return;
+    }
+
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      _autocomplete(input);
+    }
+  }
+
+  /* ── Autocompletado (Tab) ─────────────────────────── */
+  function _autocomplete(input) {
+    const val = input.value;
+
+    if (val.startsWith('cat ')) {
+      const partial = val.slice(4);
+      const matches = Object.keys(PROJECT_DETAILS).filter(f => f.startsWith(partial));
+      if (matches.length === 1) input.value = `cat ${matches[0]}`;
+      return;
+    }
+
+    const matches = COMMANDS.filter(c => c.startsWith(val));
+    if (matches.length === 1) {
+      input.value = matches[0];
+    } else if (matches.length > 1 && val) {
+      _printLine(`jonathan@sec:~$ ${val}`, 'cmd');
+      _printLine(matches.join('  '), 'muted');
     }
   }
 
@@ -202,12 +254,17 @@ export const SecTerminal = (() => {
         _printLines([
           'Available commands:',
           '  whoami           — identity & clearance info',
+          '  neofetch         — system summary (ASCII)',
+          '  history          — show command history',
+          '  whois            — lookup this session',
           '  ls               — list security projects',
           '  ls projects      — same as ls',
-          '  cat <file>.md    — read project details',
+          '  cat <file>.md    — read project/skill/contact details',
           '  ping linkedin    — network reachability check',
           '  clear            — clear terminal output',
           '  exit             — terminate session',
+          '',
+          "Tip: press Tab to autocomplete commands and files.",
         ], 'muted');
         break;
 
@@ -220,6 +277,37 @@ export const SecTerminal = (() => {
           'Skills:    Zero-trust · SAST/DAST · OSINT',
           'Stack:     Node.js · Python · Docker · Kali',
           'Contact:   jonathan_jd@outlook.com',
+        ], 'output');
+        break;
+
+      case cmd === 'neofetch':
+        _printLines([
+          '     /\\      jonathan@sec',
+          '    /  \\     ────────────────────',
+          '   / /\\ \\    OS:      SecureShell v2.4',
+          '  / ____ \\   Uptime:  ' + _uptimeString() + '',
+          ' /_/    \\_\\  Shell:   bash 5.2',
+          '             Clearance: ALPHA',
+          '             Skills:  Zero-trust · OSINT · SAST/DAST',
+        ], 'output');
+        break;
+
+      case cmd === 'history':
+        if (_history.length <= 1) {
+          _printLine('(no previous commands)', 'muted');
+        } else {
+          _printLines(
+            _history.slice(1).map((c, i) => `  ${_history.length - 1 - i}  ${c}`),
+            'output'
+          );
+        }
+        break;
+
+      case cmd === 'whois':
+        _printLines([
+          `session:  jonathan@sec — ${new Date().toLocaleTimeString('es-EC')}`,
+          'origin:   this browser tab',
+          'purpose:  portfolio demo terminal (read-only)',
         ], 'output');
         break;
 

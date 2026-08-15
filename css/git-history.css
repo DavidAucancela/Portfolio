@@ -1,0 +1,289 @@
+/* ============================================================
+   GIT ACTIVITY — Heatmap de commits + historial de PRs (modo .dev)
+   ============================================================ */
+
+/* ─── Oculto en todos los modos excepto .dev ─── */
+.git-activity {
+  display: none;
+}
+
+/* ─── Layout: container pasa a grid 2 columnas en desktop ─── */
+[data-theme="dev"] #hero .container {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+/* ─── Panel visible en modo .dev — mismo chrome que .sec-terminal ─── */
+[data-theme="dev"] .git-activity {
+  --git-cell-size: 16px;
+  display: flex;
+  flex-direction: column;
+  width: min(500px, 44vw);
+  background: rgba(10, 10, 26, 0.94);
+  border: 1px solid rgba(59, 130, 246, 0.22);
+  border-radius: 10px;
+  box-shadow:
+    0 0 0 1px rgba(59, 130, 246, 0.06),
+    0 24px 64px rgba(0, 0, 0, 0.75),
+    0 0 48px rgba(59, 130, 246, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  overflow: hidden;
+  animation: gitActivityEnter 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.3s;
+  opacity: 0;
+}
+
+@keyframes gitActivityEnter {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+/* ─── Barra de título (idéntica a .sec-terminal__bar) ─── */
+.git-activity__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.8rem;
+  background: rgba(59, 130, 246, 0.05);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.12);
+  flex-shrink: 0;
+}
+
+.git-activity__dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.git-activity__title {
+  flex: 1;
+  text-align: center;
+  font-size: 0.67rem;
+  color: rgba(59, 130, 246, 0.55);
+  letter-spacing: 0.06em;
+  user-select: none;
+}
+
+/* ─── Cuerpo ─── */
+.git-activity__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 1.15rem 1.25rem 1.3rem;
+}
+
+.git-activity__section-label {
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  color: rgba(226, 232, 240, 0.42);
+  text-transform: uppercase;
+}
+
+/* ─── Chart: meses arriba, días a la izquierda, grid de celdas ─── */
+.git-activity__chart {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.git-activity__months {
+  display: grid;
+  gap: 4px;
+  margin-left: 26px; /* alinea con el ancho de .git-activity__weekdays */
+  height: 12px;
+}
+
+.git-activity__month-label {
+  font-size: 0.62rem;
+  color: rgba(148, 163, 184, 0.55);
+  white-space: nowrap;
+}
+
+.git-activity__chart-row {
+  display: flex;
+  gap: 6px;
+}
+
+/* ─── Fila exterior: chart de commits + cards de stats ─── */
+.git-activity__row {
+  display: flex;
+  align-items: stretch;
+  gap: 1.1rem;
+}
+
+.git-activity__stats {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 108px;
+}
+
+.git-activity__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  background: rgba(59, 130, 246, 0.06);
+  border: 1px solid rgba(59, 130, 246, 0.14);
+}
+
+.git-activity__stat-value {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #60a5fa;
+  line-height: 1.1;
+}
+
+.git-activity__stat-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: rgba(148, 163, 184, 0.6);
+}
+
+.git-activity__weekdays {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 22px;
+  flex-shrink: 0;
+}
+
+.git-activity__weekdays span {
+  height: var(--git-cell-size);
+  font-size: 0.6rem;
+  line-height: var(--git-cell-size);
+  color: rgba(148, 163, 184, 0.5);
+}
+
+.git-activity__grid {
+  display: grid;
+  gap: 4px;
+}
+
+.git-activity__day {
+  width: var(--git-cell-size);
+  height: var(--git-cell-size);
+  border-radius: 3px;
+  background: rgba(148, 163, 184, 0.1);
+}
+
+.git-activity__day--empty  { background: transparent; }
+.git-activity__day--l0     { background: rgba(148, 163, 184, 0.1); }
+.git-activity__day--l1     { background: rgba(59, 130, 246, 0.35); }
+.git-activity__day--l2     { background: rgba(59, 130, 246, 0.58); }
+.git-activity__day--l3     { background: rgba(59, 130, 246, 0.82); }
+.git-activity__day--l4     { background: #3b82f6; box-shadow: 0 0 6px rgba(59, 130, 246, 0.7); }
+
+.git-activity__total {
+  font-size: 0.72rem;
+  color: rgba(226, 232, 240, 0.5);
+  letter-spacing: 0.02em;
+}
+
+.git-activity__divider {
+  height: 1px;
+  background: rgba(59, 130, 246, 0.14);
+  margin: 0.2rem 0;
+}
+
+/* ─── Historial de PRs ─── */
+.git-activity__pr-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  max-height: 148px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.25) transparent;
+}
+
+.git-activity__pr-list::-webkit-scrollbar       { width: 3px; }
+.git-activity__pr-list::-webkit-scrollbar-track { background: transparent; }
+.git-activity__pr-list::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.25); border-radius: 2px; }
+
+.git-activity__pr-empty {
+  font-size: 0.72rem;
+  color: rgba(226, 232, 240, 0.4);
+}
+
+.git-activity__pr-link {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.28rem 0.4rem;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.git-activity__pr-link:hover {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+.git-activity__pr-num {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #60a5fa;
+}
+
+.git-activity__pr-title {
+  flex: 1;
+  font-size: 0.74rem;
+  color: rgba(226, 232, 240, 0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.git-activity__pr-date {
+  flex-shrink: 0;
+  font-size: 0.66rem;
+  color: rgba(148, 163, 184, 0.55);
+}
+
+/* ─── Ocultar hero-bg-text (</>) para que no se mezcle con el panel ─── */
+[data-theme="dev"] #hero-bg-text {
+  display: none;
+}
+
+/* ─── Tablet / Mobile ─── */
+@media (max-width: 960px) {
+  [data-theme="dev"] #hero .container {
+    grid-template-columns: 1fr;
+  }
+
+  [data-theme="dev"] .git-activity {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  [data-theme="dev"] .git-activity {
+    --git-cell-size: 12px;
+  }
+
+  .git-activity__row {
+    flex-direction: column;
+  }
+
+  .git-activity__stats {
+    flex-direction: row;
+  }
+
+  .git-activity__stat {
+    flex: 1;
+  }
+}

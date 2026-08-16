@@ -119,13 +119,23 @@
     },
     {
       "date": "2026-08-10",
-      "count": 2
+      "count": 1
+    },
+    {
+      "date": "2026-08-15",
+      "count": 1
     }
   ],
   "totalCommits": 107,
   "totalCommitsAllTime": 175,
   "totalProjects": 33,
   "prs": [
+    {
+      "number": 37,
+      "title": "Chore/trayectoria y plan",
+      "date": "2026-08-10",
+      "hash": "775a016"
+    },
     {
       "number": 36,
       "title": "feat(projects): screenshots de NexoCorp y XV Tammy en modo .dev",
@@ -167,13 +177,7 @@
       "title": "feat(projects): filtros por categoría, paginación de 5 y fix de grid mobile",
       "date": "2026-08-01",
       "hash": "d3caed9"
-    },
-    {
-      "number": 29,
-      "title": "Feature/jotai gemini fallback",
-      "date": "2026-07-31",
-      "hash": "2973752"
     }
   ],
-  "generatedAt": "2026-08-15T18:10:51.948Z"
+  "generatedAt": "2026-08-16T05:51:14.580Z"
 }

@@ -64,6 +64,7 @@ export const GitHistory = (() => {
           fetch('/api/github-contributions').catch(() => null),
           fetch('/api/github-stats').catch(() => null),
         ]);
+        if (!localRes.ok) throw new Error(`data/git-history.json respondió ${localRes.status}`);
         const local = await localRes.json();
         const gh    = ghRes    ? await ghRes.json().catch(() => null)    : null;
         const stats = statsRes ? await statsRes.json().catch(() => null) : null;
@@ -101,7 +102,8 @@ export const GitHistory = (() => {
           }));
 
       _renderPRs(livePRs);
-    } catch {
+    } catch (err) {
+      console.error('[git-history] Error:', err.message);
       _rendered = false; // permite reintentar si el usuario vuelve a entrar a .dev
     }
   }

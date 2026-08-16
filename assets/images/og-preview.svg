@@ -1,0 +1,73 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#0a0a1a"/>
+      <stop offset="100%" stop-color="#0d0d2b"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#0066FF"/>
+      <stop offset="100%" stop-color="#3385FF"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Grid lines -->
+  <g stroke="rgba(255,255,255,0.03)" stroke-width="1">
+    <line x1="0" y1="126" x2="1200" y2="126"/>
+    <line x1="0" y1="252" x2="1200" y2="252"/>
+    <line x1="0" y1="378" x2="1200" y2="378"/>
+    <line x1="0" y1="504" x2="1200" y2="504"/>
+    <line x1="240" y1="0" x2="240" y2="630"/>
+    <line x1="480" y1="0" x2="480" y2="630"/>
+    <line x1="720" y1="0" x2="720" y2="630"/>
+    <line x1="960" y1="0" x2="960" y2="630"/>
+  </g>
+
+  <!-- Accent bar left -->
+  <rect x="0" y="0" width="5" height="630" fill="url(#accent)"/>
+
+  <!-- Decorative circles -->
+  <circle cx="1050" cy="120" r="180" fill="rgba(0,102,255,0.04)" stroke="rgba(0,102,255,0.08)" stroke-width="1"/>
+  <circle cx="1050" cy="120" r="120" fill="rgba(0,102,255,0.04)" stroke="rgba(0,102,255,0.06)" stroke-width="1"/>
+  <circle cx="1050" cy="120" r="60"  fill="rgba(0,102,255,0.06)"/>
+
+  <!-- Badge -->
+  <rect x="80" y="160" width="210" height="34" rx="17" fill="rgba(0,102,255,0.12)" stroke="rgba(0,102,255,0.3)" stroke-width="1"/>
+  <circle cx="101" cy="177" r="5" fill="#0066FF"/>
+  <text x="116" y="182" font-family="monospace" font-size="13" fill="#6699FF" letter-spacing="1">Software Engineer</text>
+
+  <!-- Name -->
+  <text x="80" y="280" font-family="Arial Black, sans-serif" font-size="88" font-weight="900" fill="white">Jonathan</text>
+  <text x="80" y="370" font-family="Arial Black, sans-serif" font-size="88" font-weight="900" fill="url(#accent)">.dev</text>
+
+  <!-- Tagline -->
+  <text x="80" y="430" font-family="Arial, sans-serif" font-size="22" fill="rgba(255,255,255,0.5)">Fullstack · IA Developer · Security Researcher</text>
+
+  <!-- Divider -->
+  <rect x="80" y="460" width="120" height="2" rx="1" fill="url(#accent)"/>
+
+  <!-- Stack pills -->
+  <rect x="80"  y="480" width="90"  height="26" rx="13" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <text x="125" y="498" font-family="monospace" font-size="12" fill="rgba(255,255,255,0.6)" text-anchor="middle">Django</text>
+
+  <rect x="182" y="480" width="90"  height="26" rx="13" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <text x="227" y="498" font-family="monospace" font-size="12" fill="rgba(255,255,255,0.6)" text-anchor="middle">Angular</text>
+
+  <rect x="284" y="480" width="90"  height="26" rx="13" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <text x="329" y="498" font-family="monospace" font-size="12" fill="rgba(255,255,255,0.6)" text-anchor="middle">Vue.js</text>
+
+  <rect x="386" y="480" width="100" height="26" rx="13" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <text x="436" y="498" font-family="monospace" font-size="12" fill="rgba(255,255,255,0.6)" text-anchor="middle">OpenAI</text>
+
+  <rect x="498" y="480" width="90"  height="26" rx="13" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+  <text x="543" y="498" font-family="monospace" font-size="12" fill="rgba(255,255,255,0.6)" text-anchor="middle">Docker</text>
+
+  <!-- URL -->
+  <text x="80" y="580" font-family="monospace" font-size="16" fill="rgba(255,255,255,0.25)" letter-spacing="2">davidaucancela.github.io/Portfolio</text>
+</svg>

@@ -68,7 +68,8 @@ function countTotalProjects(cwd) {
       const list = JSON.parse(readFileSync(resolve(cwd, 'data', file), 'utf-8'));
       return sum + (Array.isArray(list) ? list.length : 0);
     }, 0);
-  } catch {
+  } catch (e) {
+    console.warn('[git-history] Warning: no se pudo contar proyectos —', e.message);
     return 0;
   }
 }

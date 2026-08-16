@@ -73,8 +73,8 @@ export default async function handler(req, res) {
       return;
     }
 
-    const days = calendar.weeks.flatMap((w) =>
-      w.contributionDays.map((d) => ({ date: d.date, count: d.contributionCount }))
+    const days = (calendar.weeks || []).flatMap((w) =>
+      (w.contributionDays || []).map((d) => ({ date: d.date, count: d.contributionCount }))
     );
 
     res.status(200).json({
@@ -83,7 +83,8 @@ export default async function handler(req, res) {
       username,
       mock: false,
     });
-  } catch {
+  } catch (err) {
+    console.error('[github-contributions] Error:', err.message);
     res.status(200).json({ days: [], totalContributions: null, mock: true });
   } finally {
     clearTimeout(timeout);

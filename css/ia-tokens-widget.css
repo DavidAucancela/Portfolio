@@ -19,7 +19,7 @@
 [data-theme="ia"] .ia-tokens {
   display: flex;
   flex-direction: column;
-  width: min(420px, 40vw);
+  width: min(420px, 42vw);
   background: rgba(13, 2, 33, 0.94);
   border: 1px solid rgba(177, 78, 255, 0.28);
   border-radius: 10px;
@@ -106,6 +106,71 @@
   font-size: 0.66rem;
   color: rgba(6, 255, 165, 0.6);
   letter-spacing: 0.02em;
+}
+
+.ia-tokens__divider {
+  width: 100%;
+  height: 1px;
+  background: rgba(177, 78, 255, 0.18);
+  margin: 0.3rem 0;
+}
+
+/* ─── Desglose por proyecto (misma receta que .git-activity__pr-*) ─── */
+.ia-tokens__project-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  max-height: 148px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(177, 78, 255, 0.3) transparent;
+}
+
+.ia-tokens__project-list::-webkit-scrollbar       { width: 3px; }
+.ia-tokens__project-list::-webkit-scrollbar-track { background: transparent; }
+.ia-tokens__project-list::-webkit-scrollbar-thumb { background: rgba(177, 78, 255, 0.3); border-radius: 2px; }
+
+.ia-tokens__project-empty {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  color: rgba(232, 213, 255, 0.4);
+}
+
+.ia-tokens__project {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.28rem 0.4rem;
+  border-radius: 5px;
+}
+
+.ia-tokens__project-name {
+  flex: 1;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.74rem;
+  color: rgba(232, 213, 255, 0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ia-tokens__project-tokens {
+  flex-shrink: 0;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #06ffa5;
+}
+
+.ia-tokens__project-requests {
+  flex-shrink: 0;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.64rem;
+  color: rgba(148, 163, 184, 0.6);
 }
 
 /* ─── Ocultar hero-bg-text ({}) para que no se mezcle con el panel ─── */

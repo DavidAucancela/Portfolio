@@ -171,6 +171,13 @@
   [data-theme="sec"] .sec-terminal__input {
     font-size: 1rem;
   }
+
+  /* Mismo padding horizontal que .git-activity__body / .ia-tokens__body en mobile — simetría entre modos */
+  .sec-terminal__body,
+  .sec-terminal__prompt-row {
+    padding-left: 1.3rem;
+    padding-right: 1.3rem;
+  }
 }
 
 @media (max-width: 480px) {

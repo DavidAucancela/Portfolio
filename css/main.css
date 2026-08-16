@@ -1907,10 +1907,11 @@ ul, ol { list-style: none; }
 
 .footer__inner {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  text-align: center;
 }
 
 .footer__copy {
@@ -2058,7 +2059,14 @@ ul, ol { list-style: none; }
   .navbar__links  { display: none; }
   .navbar__hamburger { display: flex; }
 
-  /* Hero */
+  /* Hero — más aire arriba (separar el título del navbar) y abajo (separar
+     el widget del modo del borde inferior) cuando el contenido no entra en
+     un solo viewport y `align-items:center` deja de centrar de verdad. */
+  .hero-section {
+    padding-top: calc(var(--mode-bar-height) + var(--nav-height) + 2rem);
+    padding-bottom: 3rem;
+  }
+
   .hero-cta-group { flex-direction: column; }
   .hero-cta-group .btn { width: 100%; justify-content: center; }
 
@@ -2075,9 +2083,6 @@ ul, ol { list-style: none; }
   .timeline::before { left: 12px; }
   .timeline-dot { left: 3px; }
   .timeline-item { padding-left: 40px; gap: 1rem; }
-
-  /* Footer */
-  .footer__inner { flex-direction: column; text-align: center; }
 }
 
 @media (max-width: 480px) {
@@ -2520,29 +2525,6 @@ ul, ol { list-style: none; }
   user-select: none;
   line-height: 1;
   transition: color 0.4s ease;
-}
-
-.hero-scroll-hint {
-  margin-top: 4rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.hero-scroll-line {
-  width: 1px;
-  height: 40px;
-  background: linear-gradient(to bottom, var(--color-accent), transparent);
-  transition: background 0.4s ease;
-}
-
-.hero-scroll-label {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  font-family: var(--font-display);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  transition: color 0.3s ease;
 }
 
 /* ─────────────────────────────────────────────────────────────

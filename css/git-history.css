@@ -203,6 +203,11 @@
   [data-theme="dev"] .git-activity {
     width: 100%;
   }
+
+  /* Mismo padding que .ia-tokens__body / .sec-terminal__prompt-row en mobile — simetría entre modos */
+  .git-activity__body {
+    padding: 1.2rem 1.3rem;
+  }
 }
 
 @media (max-width: 480px) {

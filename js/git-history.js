@@ -1,5 +1,5 @@
 /* ============================================================
-   GIT HISTORY — Heatmap de actividad + historial de PRs (modo .dev)
+   GIT HISTORY — Heatmap de actividad + stats (modo .dev)
    ============================================================ */
 
 const WEEKS = 12;
@@ -20,18 +20,6 @@ function _levelFor(count) {
   if (count <= 3) return 2;
   if (count <= 6) return 3;
   return 4;
-}
-
-function _timeAgo(dateStr) {
-  const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / DAY_MS);
-  if (days <= 0) return 'hoy';
-  if (days === 1) return 'hace 1 día';
-  if (days < 30) return `hace ${days} días`;
-  const months = Math.floor(days / 30);
-  if (months === 1) return 'hace 1 mes';
-  if (months < 12) return `hace ${months} meses`;
-  const years = Math.floor(months / 12);
-  return years === 1 ? 'hace 1 año' : `hace ${years} años`;
 }
 
 export const GitHistory = (() => {
@@ -86,22 +74,6 @@ export const GitHistory = (() => {
         totalCommits:  liveStats?.totalCommits ?? _data.local.totalCommitsAllTime ?? null,
         totalProjects: _data.local.totalProjects ?? null,
       });
-
-      const livePRs = liveStats?.prs?.length
-        ? liveStats.prs.map((pr) => ({
-            number: pr.number,
-            title: pr.title,
-            date: pr.mergedAt,
-            url: pr.url,
-          }))
-        : (_data.local.prs || []).map((pr) => ({
-            number: pr.number,
-            title: pr.title,
-            date: pr.date,
-            url: `https://github.com/DavidAucancela/Portfolio/pull/${pr.number}`,
-          }));
-
-      _renderPRs(livePRs);
     } catch (err) {
       console.error('[git-history] Error:', err.message);
       _rendered = false; // permite reintentar si el usuario vuelve a entrar a .dev
@@ -185,47 +157,6 @@ export const GitHistory = (() => {
         ? `Contribuciones en GitHub (@${data.username}) · por semana`
         : 'Commits por semana · últimas 12 semanas';
     }
-  }
-
-  function _renderPRs(prs) {
-    const list = document.getElementById('git-activity-prs');
-    if (!list) return;
-    list.innerHTML = '';
-
-    if (!prs.length) {
-      const li = document.createElement('li');
-      li.className = 'git-activity__pr-empty';
-      li.textContent = 'Sin historial de PRs disponible.';
-      list.appendChild(li);
-      return;
-    }
-
-    prs.forEach((pr) => {
-      const li = document.createElement('li');
-      li.className = 'git-activity__pr';
-
-      const a = document.createElement('a');
-      a.href = pr.url || `https://github.com/DavidAucancela/Portfolio/pull/${pr.number}`;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      a.className = 'git-activity__pr-link';
-
-      const num = document.createElement('span');
-      num.className = 'git-activity__pr-num';
-      num.textContent = `#${pr.number}`;
-
-      const title = document.createElement('span');
-      title.className = 'git-activity__pr-title';
-      title.textContent = pr.title || '(sin título)';
-
-      const date = document.createElement('span');
-      date.className = 'git-activity__pr-date';
-      date.textContent = _timeAgo(pr.date);
-
-      a.append(num, title, date);
-      li.appendChild(a);
-      list.appendChild(li);
-    });
   }
 
   return { init };

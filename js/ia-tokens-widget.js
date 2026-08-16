@@ -47,56 +47,19 @@ export const IaTokensWidget = (() => {
         valueEl.textContent = '···';
         valueEl.classList.remove('ia-tokens__value--live');
         if (statusEl) statusEl.textContent = 'sincronizando…';
-        _renderProjects([]);
         return;
       }
 
       valueEl.classList.add('ia-tokens__value--live');
       _countUp(valueEl, data.totalTokens);
       if (statusEl) statusEl.textContent = 'en vivo · LLM Observatory';
-      _renderProjects(data.projects || []);
     } catch (err) {
       console.error('[ia-tokens-widget] Error:', err.message);
       valueEl.textContent = '—';
       valueEl.classList.remove('ia-tokens__value--live');
       if (statusEl) statusEl.textContent = 'sin conexión';
-      _renderProjects([]);
       _loaded = false; // permite reintentar al reentrar al modo .ia
     }
-  }
-
-  function _renderProjects(projects) {
-    const list = document.getElementById('ia-tokens-projects');
-    if (!list) return;
-    list.innerHTML = '';
-
-    if (!projects.length) {
-      const li = document.createElement('li');
-      li.className = 'ia-tokens__project-empty';
-      li.textContent = 'Sin desglose por proyecto disponible.';
-      list.appendChild(li);
-      return;
-    }
-
-    projects.forEach((p) => {
-      const li = document.createElement('li');
-      li.className = 'ia-tokens__project';
-
-      const name = document.createElement('span');
-      name.className = 'ia-tokens__project-name';
-      name.textContent = p.name;
-
-      const tokens = document.createElement('span');
-      tokens.className = 'ia-tokens__project-tokens';
-      tokens.textContent = `${p.totalTokens.toLocaleString('es-EC')} tok`;
-
-      const requests = document.createElement('span');
-      requests.className = 'ia-tokens__project-requests';
-      requests.textContent = `${p.requests} req`;
-
-      li.append(name, tokens, requests);
-      list.appendChild(li);
-    });
   }
 
   return { init };

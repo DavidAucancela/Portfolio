@@ -19,7 +19,7 @@
 [data-theme="ia"] .ia-tokens {
   display: flex;
   flex-direction: column;
-  width: min(420px, 40vw);
+  width: min(420px, 42vw);
   background: rgba(13, 2, 33, 0.94);
   border: 1px solid rgba(177, 78, 255, 0.28);
   border-radius: 10px;

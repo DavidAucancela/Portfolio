@@ -41,7 +41,7 @@ export const IaTokensWidget = (() => {
 
     try {
       const res  = await fetch('/api/llm-stats');
-      const data = await res.json();
+      const data = (await res.json()) || {};
 
       if (data.mock || !Number.isFinite(data.totalTokens)) {
         valueEl.textContent = '···';
@@ -53,7 +53,8 @@ export const IaTokensWidget = (() => {
       valueEl.classList.add('ia-tokens__value--live');
       _countUp(valueEl, data.totalTokens);
       if (statusEl) statusEl.textContent = 'en vivo · LLM Observatory';
-    } catch {
+    } catch (err) {
+      console.error('[ia-tokens-widget] Error:', err.message);
       valueEl.textContent = '—';
       valueEl.classList.remove('ia-tokens__value--live');
       if (statusEl) statusEl.textContent = 'sin conexión';

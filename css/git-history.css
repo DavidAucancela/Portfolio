@@ -1,5 +1,5 @@
 /* ============================================================
-   GIT ACTIVITY — Heatmap de commits + historial de PRs (modo .dev)
+   GIT ACTIVITY — Heatmap de commits + stats (modo .dev)
    ============================================================ */
 
 /* ─── Oculto en todos los modos excepto .dev ─── */
@@ -187,71 +187,6 @@
   font-size: 0.72rem;
   color: rgba(226, 232, 240, 0.5);
   letter-spacing: 0.02em;
-}
-
-.git-activity__divider {
-  height: 1px;
-  background: rgba(59, 130, 246, 0.14);
-  margin: 0.2rem 0;
-}
-
-/* ─── Historial de PRs ─── */
-.git-activity__pr-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  max-height: 148px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(59, 130, 246, 0.25) transparent;
-}
-
-.git-activity__pr-list::-webkit-scrollbar       { width: 3px; }
-.git-activity__pr-list::-webkit-scrollbar-track { background: transparent; }
-.git-activity__pr-list::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.25); border-radius: 2px; }
-
-.git-activity__pr-empty {
-  font-size: 0.72rem;
-  color: rgba(226, 232, 240, 0.4);
-}
-
-.git-activity__pr-link {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-  padding: 0.28rem 0.4rem;
-  border-radius: 5px;
-  text-decoration: none;
-  transition: background 0.15s ease;
-}
-
-.git-activity__pr-link:hover {
-  background: rgba(59, 130, 246, 0.1);
-}
-
-.git-activity__pr-num {
-  flex-shrink: 0;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #60a5fa;
-}
-
-.git-activity__pr-title {
-  flex: 1;
-  font-size: 0.74rem;
-  color: rgba(226, 232, 240, 0.8);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.git-activity__pr-date {
-  flex-shrink: 0;
-  font-size: 0.66rem;
-  color: rgba(148, 163, 184, 0.55);
 }
 
 /* ─── Ocultar hero-bg-text (</>) para que no se mezcle con el panel ─── */

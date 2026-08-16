@@ -68,7 +68,8 @@ export default async function handler(req, res) {
       totalCommits,
       mock: false,
     });
-  } catch {
+  } catch (err) {
+    console.error('[github-stats] Error:', err.message);
     res.status(200).json({ prs: [], totalMerged: null, totalCommits: null, mock: true });
   } finally {
     clearTimeout(timeout);

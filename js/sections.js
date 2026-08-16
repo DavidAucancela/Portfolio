@@ -20,12 +20,8 @@ import { LangSwitcher } from './lang.js';
     dev: {
       headline:    { es: 'Software Engineer & Fullstack Developer',        en: 'Software Engineer & Fullstack Developer' },
       text1:       {
-        es: 'Ingeniero de software enfocado en construir sistemas robustos y aplicaciones escalables. Especializado en desarrollo fullstack con Django, Angular, Vue.js y Node.js — desde la arquitectura REST hasta el despliegue en contenedores.',
-        en: 'Software engineer focused on building robust systems and scalable applications. Specialized in fullstack development with Django, Angular, Vue.js and Node.js — from REST architecture to container deployment.',
-      },
-      text2:       {
-        es: 'Me apasiona resolver problemas complejos con soluciones elegantes. Cada proyecto es una oportunidad de aplicar buenas prácticas: código limpio, pruebas, CI/CD y seguridad desde el diseño.',
-        en: 'I am passionate about solving complex problems with elegant solutions. Every project is an opportunity to apply best practices: clean code, testing, CI/CD and security by design.',
+        es: 'Construyo sistemas pensando en quien los va a mantener el día de mañana (probablemente yo mismo). Priorizo claridad sobre complejidad, y escalabilidad sobre atajos.',
+        en: 'I build systems with whoever\'s going to maintain them tomorrow in mind (probably myself). I prioritize clarity over complexity, and scalability over shortcuts.',
       },
       focusCard: {
         icon:  '🏗️',
@@ -43,12 +39,8 @@ import { LangSwitcher } from './lang.js';
     ia: {
       headline:    { es: 'IA Developer & AI Systems Builder', en: 'IA Developer & AI Systems Builder' },
       text1:       {
-        es: 'Exploro la frontera de la inteligencia artificial aplicada. Trabajo con LLMs, sistemas RAG, embeddings vectoriales y agentes para construir soluciones que piensan, responden y aprenden del contexto.',
-        en: 'I explore the frontier of applied artificial intelligence. I work with LLMs, RAG systems, vector embeddings and agents to build solutions that think, respond and learn from context.',
-      },
-      text2:       {
-        es: 'Mi enfoque está en la IA aplicada a problemas reales: desde asistentes conversacionales hasta búsqueda semántica con pgvector. No solo uso IA — la integro en arquitecturas de producción.',
-        en: 'My focus is on AI applied to real problems: from conversational assistants to semantic search with pgvector. I don\'t just use AI — I integrate it into production architectures.',
+        es: 'Integro IA de punta a punta en producción, no como feature decorativa sino como núcleo del sistema. Me interesa lo que pasa después del prompt: retrieval, costos, latencia, observabilidad.',
+        en: 'I integrate AI end-to-end in production, not as a decorative feature but as the system\'s core. I care about what happens after the prompt: retrieval, cost, latency, observability.',
       },
       focusCard: {
         icon:  '🧠',
@@ -66,12 +58,8 @@ import { LangSwitcher } from './lang.js';
     sec: {
       headline:    { es: 'Security Researcher & Ethical Hacker', en: 'Security Researcher & Ethical Hacker' },
       text1:       {
-        es: 'Especialista en ciberseguridad con mentalidad de hacker ético. Analizo, pruebo y protejo sistemas aplicando el OWASP Top 10. El primer paso para defender un sistema es saber exactamente cómo romperlo.',
-        en: 'Cybersecurity specialist with an ethical hacker mindset. I analyze, test and protect systems applying the OWASP Top 10. The first step to defending a system is knowing exactly how to break it.',
-      },
-      text2:       {
-        es: 'Diseño la seguridad desde la primera línea de código, no como un parche posterior. Threat modeling, auditorías de código y pentesting en entornos controlados forman parte de mi proceso.',
-        en: 'I design security from the first line of code, not as an afterthought. Threat modeling, code audits and pentesting in controlled environments are part of my process.',
+        es: 'Pienso como atacante para defender mejor: el primer paso para proteger un sistema es saber exactamente cómo romperlo.',
+        en: 'I think like an attacker to defend better: the first step to protecting a system is knowing exactly how to break it.',
       },
       focusCard: {
         icon:  '🔒',
@@ -1010,13 +998,12 @@ import { LangSwitcher } from './lang.js';
 
     const headline = typeof data.headline === 'object' ? (data.headline[lang] || data.headline.es) : data.headline;
     const text1    = typeof data.text1    === 'object' ? (data.text1[lang]    || data.text1.es)    : data.text1;
-    const text2    = typeof data.text2    === 'object' ? (data.text2[lang]    || data.text2.es)    : data.text2;
 
     // Actualizar headline
     const headlineEl = document.getElementById('about-headline');
     if (headlineEl) _fadeSwap(headlineEl, headline);
 
-    // Texto 1 — con efecto decode en modo sec
+    // Texto — con efecto decode en modo sec
     const text1El = document.getElementById('about-mode-text');
     if (text1El) {
       if (mode === 'sec') {
@@ -1025,10 +1012,6 @@ import { LangSwitcher } from './lang.js';
         _fadeSwap(text1El, text1);
       }
     }
-
-    // Texto 2
-    const text2El = document.getElementById('about-text2');
-    if (text2El) _fadeSwap(text2El, text2);
 
     // Focus card
     const cardEl = document.getElementById('about-focus-card');
@@ -1240,7 +1223,15 @@ import { LangSwitcher } from './lang.js';
     const steps   = 2;
     const delay   = 12;
     const stepMs  = 40;
-    let output    = '';
+
+    // Cada índice escribe solo su propia posición — evita que el orden real
+    // de ejecución de los setTimeout (no garantizado entre espacios y letras
+    // con distinto offset) corrompa el string compartido.
+    const display = finalText.split('');
+    function render() {
+      if (animId !== _decodeAnimId) return;
+      el.textContent = display.join('');
+    }
 
     el.style.opacity = '0';
     setTimeout(() => {
@@ -1248,27 +1239,20 @@ import { LangSwitcher } from './lang.js';
       el.style.opacity = '1';
 
       finalText.split('').forEach((char, i) => {
-        if (char === ' ' || char === '\n') {
-          setTimeout(() => {
-            if (animId !== _decodeAnimId) return;
-            output += char;
-            el.textContent = output + finalText.slice(output.length);
-          }, i * delay);
-          return;
-        }
+        if (char === ' ' || char === '\n') return; // ya está correcto en `display`, nada que animar
 
         for (let s = 0; s < steps; s++) {
           setTimeout(() => {
             if (animId !== _decodeAnimId) return;
-            const randomChar = chars[Math.floor(Math.random() * chars.length)];
-            el.textContent   = output + randomChar + finalText.slice(output.length + 1);
+            display[i] = chars[Math.floor(Math.random() * chars.length)];
+            render();
           }, i * delay + s * stepMs);
         }
 
         setTimeout(() => {
           if (animId !== _decodeAnimId) return;
-          output += char;
-          el.textContent = output + finalText.slice(output.length);
+          display[i] = char;
+          render();
         }, i * delay + steps * stepMs);
       });
     }, 150);

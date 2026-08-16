@@ -122,4 +122,9 @@
   [data-theme="ia"] .ia-tokens {
     width: 100%;
   }
+
+  /* Mismo padding que .git-activity__body / .sec-terminal__prompt-row en mobile — simetría entre modos */
+  .ia-tokens__body {
+    padding: 1.2rem 1.3rem;
+  }
 }

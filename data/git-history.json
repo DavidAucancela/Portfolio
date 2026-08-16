@@ -127,13 +127,25 @@
     },
     {
       "date": "2026-08-16",
-      "count": 1
+      "count": 2
     }
   ],
-  "totalCommits": 108,
-  "totalCommitsAllTime": 176,
+  "totalCommits": 109,
+  "totalCommitsAllTime": 177,
   "totalProjects": 33,
   "prs": [
+    {
+      "number": 39,
+      "title": "fix(hero): completar y pulir widgets del hero por modo",
+      "date": "2026-08-16",
+      "hash": "390a907"
+    },
+    {
+      "number": 38,
+      "title": "feat(hero): agregar widgets extra por modo (git activity, tokens IA, terminal sec)",
+      "date": "2026-08-15",
+      "hash": "829805d"
+    },
     {
       "number": 37,
       "title": "Chore/trayectoria y plan",
@@ -169,19 +181,7 @@
       "title": "Feature/projects filters categories",
       "date": "2026-08-03",
       "hash": "2505486"
-    },
-    {
-      "number": 31,
-      "title": "feat(jotai): mejorar conversión y comandos",
-      "date": "2026-08-02",
-      "hash": "015daa9"
-    },
-    {
-      "number": 30,
-      "title": "feat(projects): filtros por categoría, paginación de 5 y fix de grid mobile",
-      "date": "2026-08-01",
-      "hash": "d3caed9"
     }
   ],
-  "generatedAt": "2026-08-16T06:01:31.239Z"
+  "generatedAt": "2026-08-16T19:41:50.664Z"
 }

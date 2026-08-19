@@ -27,7 +27,13 @@ function _norm(s) {
 }
 
 function _matchAny(norm, terms) {
-  return terms.some(t => norm.includes(_norm(t)));
+  // length>=3 evita falsos positivos de substring con keywords/fragmentos
+  // cortos (ej. "js" adentro de "next.js", "go" adentro de "algo") — los
+  // términos de _detectIntent son frases largas, así que no las afecta.
+  return terms.some(t => {
+    const nt = _norm(t);
+    return nt.length >= 3 && norm.includes(nt);
+  });
 }
 
 // ── STATE ────────────────────────────────────────────────────────────────────
@@ -104,8 +110,11 @@ function _projectKeywords(p) {
   if (p.slug) words.add(p.slug.toLowerCase());
   const titleSquish = (p.title || '').toLowerCase().replace(/\s+/g, '');
   words.add(titleSquish);
-  // Title words + description + tags
-  _kwFromText(p.title, p.description).forEach(w => words.add(w));
+  // Title words + tags. La descripción NO entra acá a propósito: es prosa
+  // libre y cualquier palabra común no filtrada por _STOP (ej. "algo", "cada")
+  // termina siendo un "keyword" que matchea casi cualquier query. La
+  // similitud con la descripción ya la cubre _projectEmbedText() vía semántica.
+  _kwFromText(p.title).forEach(w => words.add(w));
   (p.tags || []).forEach(t => _kwFromText(t).forEach(w => words.add(w)));
   // Add lab fields for .sec projects
   if (p.lab) {

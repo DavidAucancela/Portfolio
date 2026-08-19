@@ -746,7 +746,7 @@ export const IaMascot = (() => {
         _handleSend(cmd);
       }
     });
-    _sendBtn.addEventListener('click', _handleSend);
+    _sendBtn.addEventListener('click', () => _handleSend());
     _input.addEventListener('keydown', e => {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); _handleSend(); }
     });

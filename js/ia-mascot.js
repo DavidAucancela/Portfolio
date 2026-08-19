@@ -11,6 +11,7 @@
 import { IAAssistant } from './ia-assistant.js';
 import { IaTour }      from './ia-tour.js';
 import { IaBubble }    from './ia-bubble.js';
+import { track }       from '@vercel/analytics';
 
 /* ── CONFIGURACIÓN ────────────────────────────────────────────── */
 
@@ -543,11 +544,11 @@ export const IaMascot = (() => {
   }
 
   /**
-   * Llama a api/jotai-chat.js (Gemini server-side) para generar la respuesta
+   * Llama a api/jotai-chat.js (OpenAI server-side) para generar la respuesta
    * de fallback. Devuelve null ante cualquier error/timeout — el caller cae
    * al mensaje enlatado local (_buildCannedFallback).
    */
-  async function _askGeminiFallback(query, fallbackResult) {
+  async function _askAiFallback(query, fallbackResult) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 8000);
     try {
@@ -567,7 +568,7 @@ export const IaMascot = (() => {
     }
   }
 
-  /** Mensaje de fallback local (3 niveles) — red de seguridad si Gemini falla. */
+  /** Mensaje de fallback local (3 niveles) — red de seguridad si la IA falla. */
   function _buildCannedFallback(fallbackResult, val) {
     if (fallbackResult.level === 1) {
       // Nivel 1: encontró con query expandida
@@ -1176,6 +1177,7 @@ export const IaMascot = (() => {
         hadResult: true,
         fallbackUsed: false,
       });
+      track('jotai_query', { resolved: 'local' });
 
       const targetState = finalResult.mood === 'excited' ? 'excited' : 'success';
 
@@ -1215,8 +1217,9 @@ export const IaMascot = (() => {
       const fallbackResult = IAAssistant.getFallback(norm, kwResult?.entities || []);
 
       _setState('talking');
-      const fallbackMsg = (await _askGeminiFallback(val, fallbackResult))
-        || _buildCannedFallback(fallbackResult, val);
+      const aiMsg = await _askAiFallback(val, fallbackResult);
+      const fallbackMsg = aiMsg || _buildCannedFallback(fallbackResult, val);
+      track('jotai_query', { resolved: aiMsg ? 'ai_fallback' : 'canned_fallback' });
 
       await _typewriterBotMessage(fallbackMsg);
       _setState('confused');

@@ -127,8 +127,10 @@
 
 .git-activity__stat {
   display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
   padding: 0.4rem 0.6rem;
   border-radius: 6px;
   background: rgba(59, 130, 246, 0.06);
@@ -140,12 +142,14 @@
   font-weight: 700;
   color: #60a5fa;
   line-height: 1.1;
+  white-space: nowrap;
 }
 
 .git-activity__stat-label {
   font-size: 0.62rem;
   letter-spacing: 0.03em;
   text-transform: uppercase;
+  text-align: right;
   color: rgba(148, 163, 184, 0.6);
 }
 
@@ -223,7 +227,16 @@
     flex-direction: row;
   }
 
+  /* Cajas angostas (1/3 del ancho) — número y label vuelven a apilarse
+     y centrarse en vez de compartir una fila estrecha */
   .git-activity__stat {
     flex: 1;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+  }
+
+  .git-activity__stat-label {
+    text-align: center;
   }
 }

@@ -140,7 +140,7 @@ export const IaTokensWidget = (() => {
       list.innerHTML = items.map((p) => `
         <li class="ia-tokens__project-item">
           <button type="button" class="ia-tokens__project-link" data-slug="${p.slug}">
-            <span class="ia-tokens__project-title">${p.title}</span>
+            <span class="ia-tokens__project-title">${_escapeHtml(p.title)}</span>
             <span class="ia-tokens__project-date">${_monthLabel(p.date)}</span>
           </button>
         </li>

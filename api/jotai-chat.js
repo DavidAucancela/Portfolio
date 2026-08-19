@@ -1,9 +1,20 @@
 // Vercel serverless function (Node runtime, ESM).
-// Genera la respuesta de fallback de JotAI vía Gemini, server-side, para no
-// exponer GEMINI_API_KEY al cliente. Único caller: js/ia-mascot.js (_askGeminiFallback).
+// Genera la respuesta de fallback de JotAI vía OpenAI, server-side, para no
+// exponer OPENAI_API_KEY al cliente. Único caller: js/ia-mascot.js (_askGeminiFallback).
+//
+// La llamada pasa por MonitoredOpenAI (@llm-observatory/sdk) — a diferencia de
+// Gemini, esta clase sí está en la versión publicada en npm (v1.0.0) — y
+// reporta tokens/costo/latencia/prompt al mismo LLM Observatory que usa
+// api/llm-stats.js (LLM_OBSERVATORY_API_URL / _API_TOKEN), sin exponer nada
+// nuevo al cliente. Si el reporte falla, la respuesta de OpenAI no se ve
+// afectada (ver waitUntil abajo).
 
-const MODEL = 'gemini-2.5-flash'; // verificar disponibilidad del modelo en la cuenta al desplegar
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+import llmObservatory from '@llm-observatory/sdk';
+import { waitUntil } from '@vercel/functions';
+
+const { MonitoredOpenAI } = llmObservatory;
+
+const MODEL = 'gpt-5.4-mini';
 const MAX_QUERY_LENGTH = 300;
 const REQUEST_TIMEOUT_MS = 8000;
 
@@ -61,35 +72,45 @@ export default async function handler(req, res) {
     return;
   }
 
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     res.status(500).json({ error: 'missing_api_key' });
     return;
   }
 
-  const prompt = `${SYSTEM_INSTRUCTION}\n\nCONTEXTO:\n${buildContextBlock(context)}\n\nPREGUNTA DEL USUARIO:\n${query.trim()}`;
+  const prompt = `CONTEXTO:\n${buildContextBlock(context)}\n\nPREGUNTA DEL USUARIO:\n${query.trim()}`;
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const client = new MonitoredOpenAI({
+    apiKey,
+    observatoryUrl: process.env.LLM_OBSERVATORY_API_URL,
+    observatoryToken: process.env.LLM_OBSERVATORY_API_TOKEN,
+    tags: { source: 'portfolio-jotai' },
+  });
+
+  const genPromise = client.chat.completions.create({
+    model: MODEL,
+    messages: [
+      { role: 'system', content: SYSTEM_INSTRUCTION },
+      { role: 'user', content: prompt },
+    ],
+    max_completion_tokens: 220,
+    temperature: 0.5,
+  });
+
+  // El POST a LLM Observatory va fire-and-forget dentro del SDK (pensado para
+  // servers long-running); en una función serverless el runtime puede
+  // congelarla apenas se manda la respuesta. waitUntil + un margen corto le
+  // da chance de completar sin bloquear ni condicionar la respuesta al cliente
+  // — si igual no llega a tiempo, la request a OpenAI no se ve afectada.
+  waitUntil(genPromise.catch(() => {}).then(() => new Promise((r) => setTimeout(r, 400))));
+
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error('timeout')), REQUEST_TIMEOUT_MS);
+  });
 
   try {
-    const response = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      signal: controller.signal,
-      body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-        generationConfig: { maxOutputTokens: 220, temperature: 0.5 },
-      }),
-    });
-
-    if (!response.ok) {
-      res.status(502).json({ error: 'gemini_error' });
-      return;
-    }
-
-    const data = await response.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    const response = await Promise.race([genPromise, timeoutPromise]);
+    const text = response?.choices?.[0]?.message?.content?.trim();
 
     if (!text) {
       res.status(502).json({ error: 'empty_response' });
@@ -98,8 +119,6 @@ export default async function handler(req, res) {
 
     res.status(200).json({ text });
   } catch (err) {
-    res.status(502).json({ error: err.name === 'AbortError' ? 'timeout' : 'request_failed' });
-  } finally {
-    clearTimeout(timeout);
+    res.status(502).json({ error: err.message === 'timeout' ? 'timeout' : 'request_failed' });
   }
 }

@@ -108,6 +108,141 @@
   letter-spacing: 0.02em;
 }
 
+/* ─── Botón "Ver más" — expande el historial de PRs/proyectos ─── */
+.ia-tokens__more-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.3rem;
+  padding: 0;
+  background: none;
+  border: none;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  color: rgba(6, 255, 165, 0.75);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.ia-tokens__more-btn:hover,
+.ia-tokens__more-btn:focus-visible {
+  color: #06ffa5;
+}
+
+.ia-tokens__more-icon {
+  font-size: 0.6rem;
+  transition: transform 0.2s ease;
+}
+
+.ia-tokens__more-btn[aria-expanded="true"] .ia-tokens__more-icon {
+  transform: rotate(180deg);
+}
+
+/* ─── Panel de historial (PRs de llm-observatory + proyectos de IA) ─── */
+.ia-tokens__history {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  width: 100%;
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(177, 78, 255, 0.14);
+  animation: iaTokensHistoryIn 0.25s ease both;
+}
+
+/* `display:flex` (arriba) le gana al `display:none` del UA stylesheet para
+   [hidden] por orden de cascada — hace falta este override explícito. */
+.ia-tokens__history[hidden] {
+  display: none;
+}
+
+@keyframes iaTokensHistoryIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ia-tokens__history-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.ia-tokens__history-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(232, 213, 255, 0.4);
+}
+
+.ia-tokens__pr-list,
+.ia-tokens__project-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 140px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(177, 78, 255, 0.25) transparent;
+}
+
+.ia-tokens__pr-list::-webkit-scrollbar,
+.ia-tokens__project-list::-webkit-scrollbar { width: 3px; }
+.ia-tokens__pr-list::-webkit-scrollbar-thumb,
+.ia-tokens__project-list::-webkit-scrollbar-thumb { background: rgba(177, 78, 255, 0.25); border-radius: 2px; }
+
+.ia-tokens__history-empty {
+  font-size: 0.68rem;
+  color: rgba(232, 213, 255, 0.35);
+  font-style: italic;
+}
+
+.ia-tokens__pr-link,
+.ia-tokens__project-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.3rem 0.4rem;
+  border-radius: 5px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.ia-tokens__pr-link:hover,
+.ia-tokens__project-link:hover {
+  background: rgba(177, 78, 255, 0.08);
+}
+
+.ia-tokens__pr-title,
+.ia-tokens__project-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.7rem;
+  color: rgba(232, 213, 255, 0.8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+
+.ia-tokens__pr-date,
+.ia-tokens__project-date {
+  flex-shrink: 0;
+  font-size: 0.62rem;
+  color: rgba(6, 255, 165, 0.55);
+  white-space: nowrap;
+}
+
 /* ─── Ocultar hero-bg-text ({}) para que no se mezcle con el panel ─── */
 [data-theme="ia"] #hero-bg-text {
   display: none;

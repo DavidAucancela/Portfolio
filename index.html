@@ -285,6 +285,33 @@
             <span class="ia-tokens__label">Tokens procesados · total (todos los proyectos)</span>
             <span class="ia-tokens__value" id="ia-tokens-value">···</span>
             <span class="ia-tokens__status" id="ia-tokens-status">conectando…</span>
+
+            <button
+              type="button"
+              class="ia-tokens__more-btn"
+              id="ia-tokens-more-btn"
+              aria-expanded="false"
+              aria-controls="ia-tokens-history"
+            >
+              <span>Ver más</span>
+              <span class="ia-tokens__more-icon" aria-hidden="true">▾</span>
+            </button>
+
+            <div class="ia-tokens__history" id="ia-tokens-history" hidden>
+              <div class="ia-tokens__history-group">
+                <span class="ia-tokens__history-label">Actividad reciente · llm-observatory</span>
+                <ul class="ia-tokens__pr-list" id="ia-tokens-pr-list">
+                  <li class="ia-tokens__history-empty">Cargando…</li>
+                </ul>
+              </div>
+
+              <div class="ia-tokens__history-group">
+                <span class="ia-tokens__history-label">Proyectos de IA</span>
+                <ul class="ia-tokens__project-list" id="ia-tokens-project-list">
+                  <li class="ia-tokens__history-empty">Cargando…</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
 

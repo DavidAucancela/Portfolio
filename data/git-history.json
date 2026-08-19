@@ -127,17 +127,23 @@
     },
     {
       "date": "2026-08-18",
-      "count": 4
+      "count": 5
     },
     {
       "date": "2026-08-19",
-      "count": 5
+      "count": 8
     }
   ],
-  "totalCommits": 112,
-  "totalCommitsAllTime": 187,
+  "totalCommits": 116,
+  "totalCommitsAllTime": 191,
   "totalProjects": 33,
   "prs": [
+    {
+      "number": 41,
+      "title": "feat(jotai): fallback vía OpenAI + observabilidad real en LLM Observatory",
+      "date": "2026-08-18",
+      "hash": "d2d8dc8"
+    },
     {
       "number": 40,
       "title": "fix(hero/about/footer): pulir simetría mobile, copy y bug de decode",
@@ -179,13 +185,7 @@
       "title": "fix: sincronizar package-lock.json con package.json",
       "date": "2026-08-04",
       "hash": "9775b8d"
-    },
-    {
-      "number": 33,
-      "title": "feat: rediseñar panel de detalle sin gamificación + correcciones de contenido",
-      "date": "2026-08-03",
-      "hash": "98751f5"
     }
   ],
-  "generatedAt": "2026-08-19T13:53:31.609Z"
+  "generatedAt": "2026-08-19T13:53:47.186Z"
 }

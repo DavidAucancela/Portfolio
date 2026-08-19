@@ -127,6 +127,24 @@
     },
     {
       "date": "2026-08-18",
+      "count": 5
+    },
+    {
+      "date": "2026-08-19",
+      "count": 8
+    }
+  ],
+  "totalCommits": 116,
+  "totalCommitsAllTime": 191,
+  "totalProjects": 33,
+  "prs": [
+    {
+      "number": 41,
+      "title": "feat(jotai): fallback vía OpenAI + observabilidad real en LLM Observatory",
+      "date": "2026-08-18",
+      "hash": "d2d8dc8"
+    },
+    {
       "count": 4
     },
     {
@@ -179,6 +197,9 @@
       "title": "fix: sincronizar package-lock.json con package.json",
       "date": "2026-08-04",
       "hash": "9775b8d"
+    }
+  ],
+  "generatedAt": "2026-08-19T13:53:47.186Z"
     },
     {
       "number": 33,

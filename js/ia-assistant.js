@@ -429,6 +429,7 @@ function _detectIntent(norm) {
     'todos los proyectos', 'lista proyectos', 'que proyectos', 'cuantos proyectos',
     'que trabajos', 'que has hecho', 'que hiciste', 'mostrar proyectos', 'ver proyectos',
     'tu portafolio', 'tu portfolio', 'en que es pro', 'proyectos destacados',
+    'ultimos proyectos', 'proyectos recientes', 'proyectos mas recientes',
   ])) return 'list_projects';
 
   if (_matchAny(norm, [
@@ -613,6 +614,20 @@ function _query(input, context = {}) {
 
   const norm   = _norm(input);
   const intent = _detectIntent(norm);
+
+  // list_projects/list_skills matchean por frases cortas ("que tecnologias",
+  // "en que es pro") que pueden aparecer dentro de una pregunta sobre algo
+  // puntual (ej. "en qué tecnologías está hecho ubapp"). Si la query también
+  // nombra algo específico del KB, priorizar esa búsqueda sobre el listado
+  // genérico — si no, un query totalmente genérico ("que tecnologias sabes")
+  // no matchea nada específico y cae al listado como antes.
+  if (intent === 'list_projects' || intent === 'list_skills') {
+    const entities = _extractEntities(norm);
+    const candidates = _scoreKeywordCandidates(norm, entities);
+    if (candidates.length > 0) {
+      return { type: 'search', candidates, entities };
+    }
+  }
 
   if (intent === 'list_projects') return {
     type: 'special',

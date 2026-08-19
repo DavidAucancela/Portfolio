@@ -123,13 +123,27 @@
     },
     {
       "date": "2026-08-16",
-      "count": 2
+      "count": 3
+    },
+    {
+      "date": "2026-08-18",
+      "count": 4
+    },
+    {
+      "date": "2026-08-19",
+      "count": 3
     }
   ],
-  "totalCommits": 102,
-  "totalCommitsAllTime": 177,
+  "totalCommits": 110,
+  "totalCommitsAllTime": 185,
   "totalProjects": 33,
   "prs": [
+    {
+      "number": 40,
+      "title": "fix(hero/about/footer): pulir simetría mobile, copy y bug de decode",
+      "date": "2026-08-16",
+      "hash": "6c61ab0"
+    },
     {
       "number": 39,
       "title": "fix(hero): completar y pulir widgets del hero por modo",
@@ -171,13 +185,7 @@
       "title": "feat: rediseñar panel de detalle sin gamificación + correcciones de contenido",
       "date": "2026-08-03",
       "hash": "98751f5"
-    },
-    {
-      "number": 32,
-      "title": "Feature/projects filters categories",
-      "date": "2026-08-03",
-      "hash": "2505486"
     }
   ],
-  "generatedAt": "2026-08-19T04:40:30.790Z"
+  "generatedAt": "2026-08-19T13:30:41.783Z"
 }

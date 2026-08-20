@@ -34,6 +34,18 @@ Entry: `js/main.js` → imports all modules → calls `.init()` on each.
 
 Project data loaded at runtime via `fetch(`data/${mode}-projects.json`)` — not bundled.
 
+## JotAI search gotchas
+
+Fixed bugs worth not reintroducing (see CLAUDE.md's "Ranking híbrido" section for detail):
+- `rankHybrid()` (`ia-assistant.js`) uses raw keyword/semantic/tag scores directly — don't add
+  min-max normalization within the candidate pool, it defeats the acceptance threshold on small pools.
+- `_matchAny()` requires `term.length >= 3` for substring matching — don't drop that guard, short
+  keywords (`"js"`) will false-match inside unrelated longer tokens (`"next.js"`).
+- `_projectKeywords()` intentionally excludes `p.description` from the keyword index — free-text
+  prose words become false-positive exact-match keywords. Semantic search covers that instead.
+- `_sendBtn.addEventListener('click', _handleSend)` broke Send (passed the click `PointerEvent`
+  as the message text) — always wrap: `addEventListener('click', () => _handleSend())`.
+
 ## Adding a project
 
 1. Add entry to the appropriate JSON in `data/` (`dev-projects.json`, `ia-projects.json`, or `sec-projects.json`)

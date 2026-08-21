@@ -101,7 +101,7 @@ public/                       # Servido con prefijo /public/ en Vite
 `vite.config.js` tiene `publicDir: false` y un plugin custom que copia `public/` → `dist/public/`,
 por eso las rutas de imágenes son `"public/images/..."` (no `"/images/..."`).
 
-**Vercel Analytics:** `@vercel/analytics` y `@vercel/speed-insights` inyectados en `index.html`. No eliminar — registran métricas de producción en el dashboard de Vercel.
+**Vercel Analytics:** `@vercel/analytics` y `@vercel/speed-insights` inyectados en `index.html`. No eliminar — registran métricas de producción en el dashboard de Vercel. `ia-mascot.js` manda además el evento custom `track('jotai_query', { resolved: 'local' | 'ai_fallback' | 'canned_fallback' })` junto a cada `_logEvent` — da el ratio real de cuántas queries resuelve la búsqueda local sin necesitar el fallback de IA (eventos custom requieren plan Pro de Vercel para verse en el dashboard).
 
 **Patrón de módulos:** IIFE exportado como objeto con API pública:
 ```js
@@ -545,10 +545,37 @@ Estado `talking` activo mientras el typewriter escribe (boca se mueve en CSS).
 ### Motor NLP híbrido
 - **Siempre disponible:** búsqueda por keywords + intent detection (síncrona)
 - **Cuando el worker está listo:** búsqueda semántica con `Xenova/all-MiniLM-L6-v2` (384 dims)
-- **Umbral semántico:** `score ≥ 0.32` para aceptar resultado del worker
-- **Intent detection short-circuits:** `personal`, `contact`, `list_projects`, `list_skills`
-  → respuesta inmediata sin semántica
+- **Umbral semántico:** `SEMANTIC_THRESHOLD = 0.10` en `ia-mascot.js` — piso bajo a propósito,
+  es solo para entrar al pool de `rankHybrid`; el filtro real de calidad pasa ahí (ver abajo)
+- **Intent detection short-circuits:** `personal`, `contact`, `experience`, `education` siempre;
+  `list_projects`/`list_skills` **solo si la query no matchea también una entidad específica del
+  KB por keyword** — si matchea (ej. "en qué tecnologías está hecho ubapp?" contiene la frase
+  gatillo "que tecnologias"), se prioriza la búsqueda puntual sobre el listado genérico
+  (`_query()` en `ia-assistant.js`)
 - **Status bar:** muestra progreso real de descarga/indexado; `"Listo (caché ⚡)"` en visitas siguientes
+
+### Ranking híbrido (`rankHybrid()` en `ia-assistant.js`)
+Combina `keywordScore` (Jaccard-like, overlap/queryTokens.length + bonus por slug/título exacto),
+`semanticScore` (cosine similarity cruda del worker) y `tagScore` (overlap de entidades vs tags),
+con pesos **0.45 / 0.30 / 0.15** + `contextBoost` **0.10**. El mejor candidato necesita
+`finalScore ≥ 0.15` para aceptarse; si no, devuelve `null` → dispara el fallback de IA.
+
+**Los tres scores se usan tal cual (sin renormalizar min-max dentro del pool).** Hubo un bug
+real donde se normalizaba min-max sobre el pool de candidatos antes de aplicar los pesos — con
+pools chicos (2-5 candidatos, el caso típico) eso manda siempre al mejor candidato a ~1.0 sin
+importar qué tan débil sea en términos absolutos, así que un query sin relación real con el KB
+(ruido semántico ~0.2-0.35 de similitud cruda) terminaba "ganándole" al umbral de aceptación
+solo por ser el menos malo del lote. No reintroducir esa normalización.
+
+**Trampas del matching por keyword** (`_scoreKeywordCandidates` + `_matchAny`), ya corregidas —
+tenerlas presentes al tocar esta lógica:
+- `_projectKeywords(p)` **no** indexa `p.description` como keywords — es prosa libre y cualquier
+  palabra común no filtrada por `_STOP` (ej. "algo") terminaba siendo un "keyword" que matcheaba
+  casi cualquier query. La similitud con la descripción la cubre la búsqueda semántica
+  (`_projectEmbedText`), no el índice de keywords.
+- `_matchAny(norm, terms)` exige `término.length >= 3` para el match por substring — sin ese piso,
+  keywords cortos como `"js"` matcheaban dentro de cualquier token que los contuviera (`"next.js"`
+  "contiene" `"js"`, haciendo que esa query devolviera Node.js, Vue.js y otros proyectos ajenos).
 
 ### Knowledge Base
 La KB se construye dinámicamente en `ia-assistant.js`:
@@ -556,6 +583,33 @@ La KB se construye dinámicamente en `ia-assistant.js`:
   `sec-projects.json`, `skills.json` → 25 proyectos + 29 skills + 2 docs especiales
 - Docs `project` y `skill` tienen campo `text` para embedding
 - Se emite `jotai:kb-ready` con los docs embeddables cuando la carga termina
+
+### Fallback de IA (`api/jotai-chat.js`)
+Cuando ni keywords ni semántica encuentran nada (`rankHybrid` devuelve `null`), en vez del
+mensaje enlatado local (`_buildCannedFallback`) se intenta primero una respuesta generada por
+IA — `_askAiFallback(query, fallbackResult)` en `ia-mascot.js` llama a este endpoint server-side
+para no exponer la API key al cliente.
+
+- **Proveedor:** OpenAI (`gpt-5.4-mini`) vía `MonitoredOpenAI` de `@llm-observatory/sdk` — key en
+  `OPENAI_API_KEY` (Vercel: Production + Preview + **Development**, esta última hace falta
+  aparte para que `vercel dev` la levante; también sirve en `.env.local`)
+- **Por qué OpenAI y no Gemini:** se intentó primero Gemini, pero `MonitoredGemini` solo existe
+  en el `main` sin publicar de `@llm-observatory/sdk` (el paquete en npm, v1.0.0, solo trae
+  `MonitoredAnthropic`/`MonitoredOpenAI`) — si esa librería publica una versión con soporte
+  Gemini, se puede reconsiderar
+- **Observabilidad:** cada llamada reporta tokens/costo/latencia/prompt a LLM Observatory (mismo
+  backend que lee `api/llm-stats.js` — ver abajo), taggeada `{ source: 'portfolio-jotai' }` para
+  distinguirla en el dashboard. Env vars `LLM_OBSERVATORY_API_URL`/`_API_TOKEN` — si faltan, el
+  reporte falla en silencio y la respuesta de OpenAI no se ve afectada
+- **Contrato:** `SYSTEM_INSTRUCTION` obliga a responder solo con lo que venga en el `CONTEXTO`
+  (candidatos del fallback multinivel) — nunca inventa datos que no estén ahí
+- Si Gemini/OpenAI falla o da timeout (8s), cae al mensaje enlatado local — el fallback nunca
+  rompe el chat
+
+### `api/llm-stats.js` — widget de tokens del hero (modo `.ia`)
+Proxy server-to-server hacia el mismo LLM Observatory (org-wide, no solo JotAI) para el widget
+`ia-tokens-widget.js` del hero — trae el total agregado de tokens de todos los proyectos
+monitoreados. Sin relación directa con el fallback de JotAI más allá de compartir backend.
 
 ### Tour guiado (`ia-tour.js`) — trayectoria + los 3 MODOS
 5 pasos globales (no por modo): los pasos de modo **cambian de modo de verdad**

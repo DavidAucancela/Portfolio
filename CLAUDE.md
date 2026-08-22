@@ -357,12 +357,6 @@ Visor inline de PDF — modal fullscreen que renderiza el documento en un `<ifra
   ocultar el texto con CSS en viewports muy pequeños si se necesita en el futuro
 - **Gallery mobile:** `.pgal__info` en ≤768px aumentó de `max-height: 32vh` a `42vh`
 
-## Pendientes manuales (no automatizables)
-1. **og:image PNG real** — screenshot 1200×630px del portfolio →
-   `assets/images/og-preview.png` → actualizar `og:image` y `twitter:image` en `index.html`
-2. **URL canónica** — actualizar `<link rel="canonical">`, `og:url` y JSON-LD `url`
-   en `index.html` con el dominio Vercel real (actualmente apunta a GitHub Pages)
-
 ## JotAI — Mascot Widget (`ia-mascot.js` + `ia-bubble.js` + `ia-mascot.css` + `ia-worker.js` + `ia-tour.js`)
 
 Widget flotante `position: fixed; bottom: 1.5rem; right: 1.5rem` visible en **todos los modos**.

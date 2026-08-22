@@ -139,7 +139,7 @@
   transform: rotate(180deg);
 }
 
-/* ─── Panel de historial (PRs de llm-observatory + proyectos de IA) ─── */
+/* ─── Panel de historial (proyectos de IA) ─── */
 .ia-tokens__history {
   display: flex;
   flex-direction: column;
@@ -176,7 +176,6 @@
   color: rgba(232, 213, 255, 0.4);
 }
 
-.ia-tokens__pr-list,
 .ia-tokens__project-list {
   display: flex;
   flex-direction: column;
@@ -190,9 +189,7 @@
   scrollbar-color: rgba(177, 78, 255, 0.25) transparent;
 }
 
-.ia-tokens__pr-list::-webkit-scrollbar,
 .ia-tokens__project-list::-webkit-scrollbar { width: 3px; }
-.ia-tokens__pr-list::-webkit-scrollbar-thumb,
 .ia-tokens__project-list::-webkit-scrollbar-thumb { background: rgba(177, 78, 255, 0.25); border-radius: 2px; }
 
 .ia-tokens__history-empty {
@@ -201,7 +198,6 @@
   font-style: italic;
 }
 
-.ia-tokens__pr-link,
 .ia-tokens__project-link {
   display: flex;
   align-items: center;
@@ -218,12 +214,10 @@
   transition: background 0.15s ease;
 }
 
-.ia-tokens__pr-link:hover,
 .ia-tokens__project-link:hover {
   background: rgba(177, 78, 255, 0.08);
 }
 
-.ia-tokens__pr-title,
 .ia-tokens__project-title {
   flex: 1;
   min-width: 0;
@@ -235,7 +229,6 @@
   text-align: left;
 }
 
-.ia-tokens__pr-date,
 .ia-tokens__project-date {
   flex-shrink: 0;
   font-size: 0.62rem;

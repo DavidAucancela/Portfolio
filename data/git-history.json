@@ -123,39 +123,49 @@
     },
     {
       "date": "2026-08-16",
-      "count": 3
+      "count": 2
     },
     {
       "date": "2026-08-18",
-      "count": 5
+      "count": 1
     },
     {
       "date": "2026-08-19",
-      "count": 8
+      "count": 2
+    },
+    {
+      "date": "2026-08-20",
+      "count": 2
     }
   ],
-  "totalCommits": 116,
-  "totalCommitsAllTime": 191,
+  "totalCommits": 107,
+  "totalCommitsAllTime": 182,
   "totalProjects": 33,
   "prs": [
+    {
+      "number": 44,
+      "title": "docs: documentar fallback de IA, LLM Observatory y fixes de ranking de JotAI",
+      "date": "2026-08-20",
+      "hash": "9d27538"
+    },
+    {
+      "number": 43,
+      "title": "fix(jotai): priorizar entidad específica sobre intent genérico",
+      "date": "2026-08-19",
+      "hash": "ca9a078"
+    },
+    {
+      "number": 42,
+      "title": "Feat/hero mode widgets",
+      "date": "2026-08-19",
+      "hash": "98241a9"
+    },
     {
       "number": 41,
       "title": "feat(jotai): fallback vía OpenAI + observabilidad real en LLM Observatory",
       "date": "2026-08-18",
       "hash": "d2d8dc8"
     },
-    {
-      "count": 4
-    },
-    {
-      "date": "2026-08-19",
-      "count": 3
-    }
-  ],
-  "totalCommits": 110,
-  "totalCommitsAllTime": 185,
-  "totalProjects": 33,
-  "prs": [
     {
       "number": 40,
       "title": "fix(hero/about/footer): pulir simetría mobile, copy y bug de decode",
@@ -179,34 +189,7 @@
       "title": "Chore/trayectoria y plan",
       "date": "2026-08-10",
       "hash": "775a016"
-    },
-    {
-      "number": 36,
-      "title": "feat(projects): screenshots de NexoCorp y XV Tammy en modo .dev",
-      "date": "2026-08-06",
-      "hash": "3dc4a30"
-    },
-    {
-      "number": 35,
-      "title": "feat(projects): agregar screenshots de NexoCorp en modo .dev",
-      "date": "2026-08-05",
-      "hash": "c4fc41e"
-    },
-    {
-      "number": 34,
-      "title": "fix: sincronizar package-lock.json con package.json",
-      "date": "2026-08-04",
-      "hash": "9775b8d"
     }
   ],
-  "generatedAt": "2026-08-19T13:53:47.186Z"
-    },
-    {
-      "number": 33,
-      "title": "feat: rediseñar panel de detalle sin gamificación + correcciones de contenido",
-      "date": "2026-08-03",
-      "hash": "98751f5"
-    }
-  ],
-  "generatedAt": "2026-08-19T13:30:41.783Z"
+  "generatedAt": "2026-08-22T04:01:11.127Z"
 }

@@ -59,8 +59,10 @@ export function navigateToProject(slug) {
   });
 
   // After scroll, highlight the card
+  // Scopeado a #projects: otros elementos (botón que disparó la navegación,
+  // items de la trayectoria) también llevan data-slug y son falsos positivos.
   setTimeout(() => {
-    const card = document.querySelector(`[data-slug="${slug}"]`);
+    const card = document.querySelector(`#projects [data-slug="${slug}"]`);
     if (!card) return;
     card.scrollIntoView({ behavior: 'smooth', block: 'center' });
     card.classList.add('project-card--highlight');

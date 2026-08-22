@@ -39,9 +39,22 @@ function _countUp(el, to, suffix = '', duration = 1200) {
   requestAnimationFrame(tick);
 }
 
+// Compacta: 128430 → "128,4K tokens". Fallback simple si Intl no soporta 'compact'.
+function _formatTokens(n) {
+  try {
+    return new Intl.NumberFormat('es-EC', { notation: 'compact', maximumFractionDigits: 1 })
+      .format(n) + ' tokens';
+  } catch {
+    return n.toLocaleString('es-EC') + ' tokens';
+  }
+}
+
 export const IaTokensWidget = (() => {
   let _loaded = false;
   let _historyLoaded = false;
+  // Desglose por proyecto (GET /api/llm-stats → projects[]), llenado en _onEnterIa().
+  // Cada entrada: { name: token_name en Observatory, totalTokens }.
+  let _projectBreakdown = [];
 
   function init() {
     window.addEventListener('portfolio:modeChange', (e) => {
@@ -95,14 +108,29 @@ export const IaTokensWidget = (() => {
         return;
       }
 
-      list.innerHTML = items.map((p) => `
+      list.innerHTML = items.map((p) => {
+        // Match explícito por p.observatoryToken (nombre exacto del token en
+        // Observatory) — evita matchear por título, que es frágil y puede
+        // pegarle a un proyecto equivocado en silencio. Acepta un nombre único
+        // o un array (proyectos que reportan bajo más de un token, ej. uno por
+        // provider) — en ese caso suma los tokens de todos los que matcheen.
+        const names  = Array.isArray(p.observatoryToken) ? p.observatoryToken : [p.observatoryToken];
+        const rows   = names.filter(Boolean)
+          .map((name) => _projectBreakdown.find((row) => row.name === name))
+          .filter(Boolean);
+        const meta = rows.length
+          ? _formatTokens(rows.reduce((sum, row) => sum + row.totalTokens, 0))
+          : _monthLabel(p.date);
+
+        return `
         <li class="ia-tokens__project-item">
           <button type="button" class="ia-tokens__project-link" data-slug="${p.slug}">
             <span class="ia-tokens__project-title">${_escapeHtml(p.title)}</span>
-            <span class="ia-tokens__project-date">${_monthLabel(p.date)}</span>
+            <span class="ia-tokens__project-tokens">${_escapeHtml(meta)}</span>
           </button>
         </li>
-      `).join('');
+      `;
+      }).join('');
 
       list.querySelectorAll('.ia-tokens__project-link').forEach((btn) => {
         btn.addEventListener('click', () => navigateToProject(btn.dataset.slug));
@@ -124,6 +152,8 @@ export const IaTokensWidget = (() => {
     try {
       const res  = await fetch('/api/llm-stats');
       const data = (await res.json()) || {};
+
+      if (Array.isArray(data.projects)) _projectBreakdown = data.projects;
 
       if (data.mock || !Number.isFinite(data.totalTokens)) {
         valueEl.textContent = '···';

@@ -388,6 +388,12 @@ const SEMANTIC_THRESHOLD = 0.10; // piso de inclusión en pool para rankHybrid (
 const WELCOME_TEXT = '¡Bienvenido! Soy JotAI y estoy aquí para guiarte.';
 const WELCOME_KEY  = 'jotai-welcomed';
 
+/* Aviso de los 3 modos — 1× para siempre (no por sesión): encadenado tras la
+   bienvenida vía onHidden. Muchos usuarios no notan que el portfolio tiene
+   3 modos completos (dev/ia/sec), no solo un toggle de color. */
+const MODES_INTRO_TEXT = '¿Viste que hay 3 modos arriba? .dev, .ia y .sec cambian todo el contenido, no solo el color.';
+const MODES_INTRO_KEY  = 'jotai-modes-intro-seen';
+
 /* Nudges contextuales — sutiles, con cooldown y presupuesto por sesión */
 const NUDGE_DWELL_MS    = 8000;   // tiempo en una sección antes del tip
 const NUDGE_COOLDOWN_MS = 45000;  // silencio mínimo entre globos (global)
@@ -1489,11 +1495,38 @@ export const IaMascot = (() => {
   }
 
   /* Entrada: sin animación de asomo — solo el globo de bienvenida (1×/sesión).
-     El avatar aparece estático en su sitio. */
+     El avatar aparece estático en su sitio. Al ocultarse, encadena el aviso
+     de los 3 modos (1× para siempre) si todavía no se mostró. */
   function _entrance() {
     if (_welcomed()) return;
     _markWelcomed();
-    setTimeout(() => say(WELCOME_TEXT, { duration: 4500, mood: 'greeting' }), 900);
+    setTimeout(() => say(WELCOME_TEXT, {
+      duration: 4500,
+      mood: 'greeting',
+      onHidden: _maybeIntroduceModes,
+    }), 900);
+  }
+
+  function _introducedModes() {
+    try { return !!localStorage.getItem(MODES_INTRO_KEY); } catch { return false; }
+  }
+
+  function _maybeIntroduceModes() {
+    if (_introducedModes()) return;
+    if (say(MODES_INTRO_TEXT, { duration: 6500, mood: 'pointing' })) {
+      try { localStorage.setItem(MODES_INTRO_KEY, '1'); } catch { /* privado */ }
+      _pulseModeBar();
+    }
+  }
+
+  /* Pulso sutil en los chips del mode-bar, sincronizado con el globo de
+     arriba — conecta visualmente el mensaje (junto a JotAI) con la barra
+     real (arriba de la página). */
+  function _pulseModeBar() {
+    const chips = document.querySelector('.mode-bar__chips');
+    if (!chips) return;
+    chips.classList.add('mode-bar__chips--pulse');
+    setTimeout(() => chips.classList.remove('mode-bar__chips--pulse'), 4800);
   }
 
   /* ── SPEECH BUBBLE (presencia proactiva) ───────────────────── */

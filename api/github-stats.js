@@ -5,18 +5,10 @@
 // requieren auth para repos públicos, así que funciona sin configurar nada.
 // Si se define GITHUB_TOKEN igual se usa, para evitar el rate-limit bajo
 // (10 req/min) de la Search API sin autenticar.
-// Callers: js/git-history.js (repo default) y js/ia-tokens-widget.js
-// (?repo=DavidAucancela/llm-observatory, historial del panel "Ver más").
+// Caller: js/git-history.js (repo default, historial del panel "Ver más").
 
 const REQUEST_TIMEOUT_MS = 6000;
 const DEFAULT_REPO = 'DavidAucancela/Portfolio';
-
-// Allow-list — evita que el endpoint se use como proxy abierto hacia
-// cualquier repo de GitHub vía ?repo=.
-const ALLOWED_REPOS = new Set([
-  DEFAULT_REPO,
-  'DavidAucancela/llm-observatory',
-]);
 
 function authHeaders(token) {
   return {
@@ -38,10 +30,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  const requestedRepo = typeof req.query.repo === 'string' ? req.query.repo : null;
-  const repo  = requestedRepo && ALLOWED_REPOS.has(requestedRepo)
-    ? requestedRepo
-    : (process.env.GITHUB_REPO || DEFAULT_REPO);
+  const repo  = process.env.GITHUB_REPO || DEFAULT_REPO;
   const token = process.env.GITHUB_TOKEN;
   const headers = authHeaders(token);
 

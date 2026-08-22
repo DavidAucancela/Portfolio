@@ -270,6 +270,26 @@
               </div>
             </div>
             <span class="git-activity__total" id="git-activity-total">Cargando…</span>
+
+            <button
+              type="button"
+              class="git-activity__more-btn"
+              id="git-activity-more-btn"
+              aria-expanded="false"
+              aria-controls="git-activity-history"
+            >
+              <span>Ver más</span>
+              <span class="git-activity__more-icon" aria-hidden="true">▾</span>
+            </button>
+
+            <div class="git-activity__history" id="git-activity-history" hidden>
+              <div class="git-activity__history-group">
+                <span class="git-activity__history-label">Historial de pull requests</span>
+                <ul class="git-activity__pr-list" id="git-activity-pr-list">
+                  <li class="git-activity__history-empty">Cargando…</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -298,13 +318,6 @@
             </button>
 
             <div class="ia-tokens__history" id="ia-tokens-history" hidden>
-              <div class="ia-tokens__history-group">
-                <span class="ia-tokens__history-label">Actividad reciente · llm-observatory</span>
-                <ul class="ia-tokens__pr-list" id="ia-tokens-pr-list">
-                  <li class="ia-tokens__history-empty">Cargando…</li>
-                </ul>
-              </div>
-
               <div class="ia-tokens__history-group">
                 <span class="ia-tokens__history-label">Proyectos de IA</span>
                 <ul class="ia-tokens__project-list" id="ia-tokens-project-list">

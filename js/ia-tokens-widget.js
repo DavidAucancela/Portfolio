@@ -4,8 +4,6 @@
 
 import { navigateToProject } from './app.js';
 
-const LLM_OBSERVATORY_REPO = 'DavidAucancela/llm-observatory';
-
 // Subset de SLUG_MAP (js/projects.js) — solo los ids de ia-projects.json
 // que no traen `slug` explícito en el JSON. Mantener en sync si cambian.
 const SLUG_MAP = {
@@ -13,17 +11,6 @@ const SLUG_MAP = {
   'project-003': 'anaos',
   'project-008': 'llm-observatory',
 };
-
-function _timeAgo(isoDate) {
-  const diffMs = Date.now() - new Date(isoDate).getTime();
-  const days = Math.floor(diffMs / (24 * 60 * 60 * 1000));
-  if (days <= 0) return 'hoy';
-  if (days === 1) return 'ayer';
-  if (days < 30) return `hace ${days}d`;
-  const months = Math.floor(days / 30);
-  if (months < 12) return `hace ${months}m`;
-  return `hace ${Math.floor(months / 12)}a`;
-}
 
 function _escapeHtml(str) {
   const div = document.createElement('div');
@@ -84,36 +71,7 @@ export const IaTokensWidget = (() => {
 
     if (!expanded && !_historyLoaded) {
       _historyLoaded = true;
-      _loadPrHistory();
       _loadProjectHistory();
-    }
-  }
-
-  async function _loadPrHistory() {
-    const list = document.getElementById('ia-tokens-pr-list');
-    if (!list) return;
-
-    try {
-      const res  = await fetch(`/api/github-stats?repo=${encodeURIComponent(LLM_OBSERVATORY_REPO)}`);
-      const data = (await res.json()) || {};
-      const prs  = Array.isArray(data.prs) ? data.prs.slice(0, 5) : [];
-
-      if (data.mock || prs.length === 0) {
-        list.innerHTML = '<li class="ia-tokens__history-empty">Sin actividad reciente disponible</li>';
-        return;
-      }
-
-      list.innerHTML = prs.map((pr) => `
-        <li class="ia-tokens__pr-item">
-          <a href="${pr.url}" target="_blank" rel="noopener noreferrer" class="ia-tokens__pr-link">
-            <span class="ia-tokens__pr-title">#${pr.number} ${_escapeHtml(pr.title)}</span>
-            <span class="ia-tokens__pr-date">${_timeAgo(pr.mergedAt)}</span>
-          </a>
-        </li>
-      `).join('');
-    } catch (err) {
-      console.error('[ia-tokens-widget] Error cargando PRs:', err.message);
-      list.innerHTML = '<li class="ia-tokens__history-empty">Sin conexión</li>';
     }
   }
 

@@ -13,18 +13,45 @@ function _isoDate(d) {
   return d.toISOString().slice(0, 10);
 }
 
-/** Bucket de intensidad 0-4 según cantidad de commits del día. */
-function _levelFor(count) {
+function _timeAgo(isoDate) {
+  const diffMs = Date.now() - new Date(isoDate).getTime();
+  const days = Math.floor(diffMs / DAY_MS);
+  if (days <= 0) return 'hoy';
+  if (days === 1) return 'ayer';
+  if (days < 30) return `hace ${days}d`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `hace ${months}m`;
+  return `hace ${Math.floor(months / 12)}a`;
+}
+
+function _escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+/**
+ * Bucket de intensidad 0-4 según cantidad de commits/contribuciones del día,
+ * relativo al máximo del propio rango mostrado (como GitHub, que calcula
+ * cuartiles sobre los datos del usuario en vez de usar umbrales fijos —
+ * con umbrales fijos, un usuario con días de 10-20 contribuciones termina
+ * con casi toda la grilla en el nivel más alto y no se distinguen los
+ * días de más/menos actividad entre sí).
+ */
+function _levelFor(count, max) {
   if (count <= 0) return 0;
-  if (count === 1) return 1;
-  if (count <= 3) return 2;
-  if (count <= 6) return 3;
+  if (max <= 1) return 4;
+  const ratio = count / max;
+  if (ratio <= 0.25) return 1;
+  if (ratio <= 0.5) return 2;
+  if (ratio <= 0.75) return 3;
   return 4;
 }
 
 export const GitHistory = (() => {
   let _rendered = false;
   let _data = null;
+  let _historyLoaded = false;
 
   function init() {
     window.addEventListener('portfolio:modeChange', (e) => {
@@ -36,6 +63,49 @@ export const GitHistory = (() => {
         _onEnterDev();
       }
     }, 120);
+
+    document.getElementById('git-activity-more-btn')
+      ?.addEventListener('click', _toggleHistory);
+  }
+
+  function _toggleHistory() {
+    const btn   = document.getElementById('git-activity-more-btn');
+    const panel = document.getElementById('git-activity-history');
+    if (!btn || !panel) return;
+
+    const expanded = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', String(!expanded));
+    panel.hidden = expanded;
+    btn.querySelector('span:last-child').textContent = expanded ? '▾' : '▴';
+    btn.querySelector('span:first-child').textContent = expanded ? 'Ver más' : 'Ver menos';
+
+    if (!expanded && !_historyLoaded) {
+      _historyLoaded = true;
+      _renderPrHistory();
+    }
+  }
+
+  function _renderPrHistory() {
+    const list = document.getElementById('git-activity-pr-list');
+    if (!list) return;
+
+    const prs = _data?.stats && !_data.stats.mock && Array.isArray(_data.stats.prs)
+      ? _data.stats.prs.slice(0, 5)
+      : [];
+
+    if (prs.length === 0) {
+      list.innerHTML = '<li class="git-activity__history-empty">Sin actividad reciente disponible</li>';
+      return;
+    }
+
+    list.innerHTML = prs.map((pr) => `
+      <li class="git-activity__pr-item">
+        <a href="${pr.url}" target="_blank" rel="noopener noreferrer" class="git-activity__pr-link">
+          <span class="git-activity__pr-title">#${pr.number} ${_escapeHtml(pr.title)}</span>
+          <span class="git-activity__pr-date">${_timeAgo(pr.mergedAt)}</span>
+        </a>
+      </li>
+    `).join('');
   }
 
   async function _onEnterDev() {
@@ -108,6 +178,9 @@ export const GitHistory = (() => {
     const start = new Date(today.getTime() - (WEEKS * 7 - 1) * DAY_MS);
     start.setDate(start.getDate() - start.getDay());
 
+    // Máximo dentro del rango mostrado — base para los cuartiles de _levelFor.
+    const maxCount = Math.max(0, ...Array.from(counts.values()));
+
     grid.innerHTML = '';
     grid.style.gridTemplateColumns = `repeat(${WEEKS}, var(--git-cell-size))`;
     grid.style.gridTemplateRows    = `repeat(7, var(--git-cell-size))`;
@@ -140,7 +213,7 @@ export const GitHistory = (() => {
           const iso   = _isoDate(day);
           const count = counts.get(iso) || 0;
           const noun  = data.source === 'github' ? 'contribución' : 'commit';
-          cell.className = `git-activity__day git-activity__day--l${_levelFor(count)}`;
+          cell.className = `git-activity__day git-activity__day--l${_levelFor(count, maxCount)}`;
           cell.title = `${iso}: ${count} ${noun}${count === 1 ? '' : 's'}`;
         }
         grid.appendChild(cell);

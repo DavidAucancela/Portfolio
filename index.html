@@ -87,13 +87,19 @@
   ════════════════════════════════════════════════════ -->
 
   <!-- Mode Bar — selector de modo encima del navbar -->
-  <div id="mode-bar" class="mode-bar" role="toolbar" aria-label="Selector de modo">
+  <div id="mode-bar" class="mode-bar" role="toolbar" aria-label="Selector de modo — 3 modos disponibles">
     <div class="mode-bar__inner">
-      <span class="mode-bar__label">modo:</span>
+      <span class="mode-bar__label">3 modos</span>
       <div class="mode-bar__chips">
-        <button class="mode-bar-chip" data-mode-option="dev" aria-label=".dev — Modo desarrollador">.dev</button>
-        <button class="mode-bar-chip" data-mode-option="ia"  aria-label=".ia — Modo inteligencia artificial">.ia</button>
-        <button class="mode-bar-chip" data-mode-option="sec" aria-label=".sec — Modo ciberseguridad">.sec</button>
+        <button class="mode-bar-chip active" data-mode-option="dev" aria-label=".dev — Modo desarrollador: proyectos full-stack">.dev</button>
+        <button class="mode-bar-chip" data-mode-option="ia" aria-label=".ia — Modo inteligencia artificial: proyectos con LLMs y ML">.ia</button>
+        <button class="mode-bar-chip" data-mode-option="sec" aria-label=".sec — Modo ciberseguridad: labs y pentesting">.sec</button>
+      </div>
+
+      <div id="mode-bar-hint" class="mode-bar-hint" role="status" aria-live="polite" hidden>
+        <span class="mode-bar-hint__arrow" aria-hidden="true"></span>
+        <p class="mode-bar-hint__text">Este portfolio tiene <strong>3 modos</strong> — cambian todo el contenido, no solo el color. Probá uno ↑</p>
+        <button type="button" class="mode-bar-hint__close" aria-label="Cerrar aviso">✕</button>
       </div>
     </div>
   </div>

@@ -68,17 +68,26 @@ const VALID_MODES   = Object.keys(MODES);
 const STORAGE_KEY   = 'portfolio-mode';
 const DEFAULT_MODE  = 'dev';
 
+/* Hint de descubrimiento del mode-bar (1ª visita, ver más abajo) */
+const HINT_KEY           = 'portfolio-modebar-hint-seen';
+const HINT_DELAY_MS      = 1200;
+const HINT_AUTOHIDE_MS   = 7000;
+
 /* Estado interno */
 let currentMode = DEFAULT_MODE;
 let isTransitioning = false;
+let hintShowTimer = null;
+let hintHideTimer = null;
+let hintResolved  = false; // true una vez mostrado+descartado, o si ya estaba visto
 
 /* ────────────────────────────────────────────────────
    INICIALIZACIÓN
 ──────────────────────────────────────────────────── */
 function init() {
   const mode = _detectInitialMode();
+  _bindEvents(); // primero: registra el listener que sincroniza el estado activo
   _applyMode(mode, false); // false = sin animación al cargar
-  _bindEvents();
+  _maybeShowIntroHint();
 }
 
 /**
@@ -354,23 +363,36 @@ function _bindEvents() {
     btn.addEventListener('click', (e) => {
       const mode = e.currentTarget.dataset.modeOption;
       _closeDropdown();
+      _dismissIntroHint();
       switchMode(mode);
     });
   });
 
-  // Cerrar dropdown al hacer click fuera
+  // Cerrar el hint con su botón ✕
+  const hintClose = document.querySelector('.mode-bar-hint__close');
+  if (hintClose) hintClose.addEventListener('click', _dismissIntroHint);
+
+  // Cerrar dropdown al hacer click fuera / hint al hacer click fuera del mode-bar
   document.addEventListener('click', (e) => {
     const dropdown    = document.getElementById('mode-dropdown');
     const logoSuffix  = document.getElementById('logo-suffix');
-    if (!dropdown || !logoSuffix) return;
-    if (!dropdown.contains(e.target) && !logoSuffix.contains(e.target)) {
+    if (dropdown && logoSuffix &&
+        !dropdown.contains(e.target) && !logoSuffix.contains(e.target)) {
       _closeDropdown();
+    }
+
+    const modeBar = document.getElementById('mode-bar');
+    if (modeBar && !modeBar.contains(e.target)) {
+      _dismissIntroHint();
     }
   });
 
-  // Teclado: Esc cierra el dropdown
+  // Teclado: Esc cierra el dropdown y el hint
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') _closeDropdown();
+    if (e.key === 'Escape') {
+      _closeDropdown();
+      _dismissIntroHint();
+    }
   });
 
   // Cambio de hash en la URL (navegación directa)
@@ -420,6 +442,51 @@ function _updateDropdownActive(activeMode) {
     btn.classList.toggle('active', isActive);
     btn.setAttribute('aria-current', isActive ? 'true' : 'false');
   });
+}
+
+/* ────────────────────────────────────────────────────
+   HINT DE DESCUBRIMIENTO DEL MODE-BAR (1ª visita)
+   Muchos usuarios no notan que el portfolio tiene 3 modos —
+   se muestra una sola vez (localStorage, para siempre) apuntando
+   al mode-bar, y se descarta con cualquier interacción.
+──────────────────────────────────────────────────── */
+function _maybeShowIntroHint() {
+  let seen = false;
+  try { seen = !!localStorage.getItem(HINT_KEY); } catch { /* modo privado */ }
+  if (seen) { hintResolved = true; return; }
+
+  hintShowTimer = setTimeout(_showIntroHint, HINT_DELAY_MS);
+}
+
+function _showIntroHint() {
+  const hint  = document.getElementById('mode-bar-hint');
+  const chips = document.querySelector('.mode-bar__chips');
+  if (!hint) return;
+
+  hint.hidden = false;
+  requestAnimationFrame(() => hint.classList.add('is-visible'));
+  if (chips) chips.classList.add('mode-bar__chips--pulse');
+
+  hintHideTimer = setTimeout(_dismissIntroHint, HINT_AUTOHIDE_MS);
+}
+
+function _dismissIntroHint() {
+  if (hintResolved) return;
+  hintResolved = true;
+
+  clearTimeout(hintShowTimer);
+  clearTimeout(hintHideTimer);
+
+  const hint  = document.getElementById('mode-bar-hint');
+  const chips = document.querySelector('.mode-bar__chips');
+  if (chips) chips.classList.remove('mode-bar__chips--pulse');
+
+  if (hint && hint.classList.contains('is-visible')) {
+    hint.classList.remove('is-visible');
+    setTimeout(() => { hint.hidden = true; }, 350);
+  }
+
+  try { localStorage.setItem(HINT_KEY, '1'); } catch { /* modo privado */ }
 }
 
 /* ────────────────────────────────────────────────────

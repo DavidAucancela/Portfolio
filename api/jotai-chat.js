@@ -2,12 +2,14 @@
 // Genera la respuesta de fallback de JotAI vía OpenAI, server-side, para no
 // exponer OPENAI_API_KEY al cliente. Único caller: js/ia-mascot.js (_askGeminiFallback).
 //
-// La llamada pasa por MonitoredOpenAI (@llm-observatory/sdk) — a diferencia de
-// Gemini, esta clase sí está en la versión publicada en npm (v1.0.0) — y
-// reporta tokens/costo/latencia/prompt al mismo LLM Observatory que usa
-// api/llm-stats.js (LLM_OBSERVATORY_API_URL / _API_TOKEN), sin exponer nada
-// nuevo al cliente. Si el reporte falla, la respuesta de OpenAI no se ve
-// afectada (ver waitUntil abajo).
+// La llamada pasa por MonitoredOpenAI (@llm-observatory/sdk ^1.1.0 — desde
+// esa versión el SDK manda prompt_full/response_full completos, no solo el
+// prompt_preview de 200 chars de la v1.0.0 original) y reporta tokens/costo/
+// latencia/prompt completo al mismo LLM Observatory que usa api/llm-stats.js
+// (LLM_OBSERVATORY_API_URL / _API_TOKEN), sin exponer nada nuevo al cliente.
+// tags.resolved distingue esta rama (ai_fallback) de los matches locales
+// (ver api/jotai-log.js, tags.resolved: 'local'). Si el reporte falla, la
+// respuesta de OpenAI no se ve afectada (ver waitUntil abajo).
 
 import llmObservatory from '@llm-observatory/sdk';
 import { waitUntil } from '@vercel/functions';
@@ -84,7 +86,7 @@ export default async function handler(req, res) {
     apiKey,
     observatoryUrl: process.env.LLM_OBSERVATORY_API_URL,
     observatoryToken: process.env.LLM_OBSERVATORY_API_TOKEN,
-    tags: { source: 'portfolio-jotai' },
+    tags: { source: 'portfolio-jotai', resolved: 'ai_fallback' },
   });
 
   const genPromise = client.chat.completions.create({

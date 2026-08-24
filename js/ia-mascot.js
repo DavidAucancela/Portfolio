@@ -840,6 +840,7 @@ export const IaMascot = (() => {
   function openPanel() {
     if (_isOpen) return;
     _isOpen = true;
+    track('jotai_panel_open');
     if (_pendingKB) {
       _initWorker(_pendingKB); // touch: descarga del modelo diferida hasta aquí
       _pendingKB = null;
@@ -1111,6 +1112,7 @@ export const IaMascot = (() => {
   async function _handleSend(prefilledText = null) {
     const val = prefilledText !== null ? prefilledText : _input.value.trim();
     if (!val || _sendBtn.disabled) return;
+    const _sendStart = performance.now();
 
     if (prefilledText === null) {
       _input.value = '';
@@ -1184,6 +1186,22 @@ export const IaMascot = (() => {
         fallbackUsed: false,
       });
       track('jotai_query', { resolved: 'local' });
+
+      // Historial completo de JotAI en LLM Observatory (server-side, fire-and-forget) —
+      // ver api/jotai-log.js. ai_fallback/canned_fallback ya se reportan solos
+      // desde api/jotai-chat.js vía MonitoredOpenAI; no duplicar acá.
+      const intentLabel = finalResult.type === 'project' ? (finalResult.data?.title || 'project')
+        : finalResult.type === 'skill' ? (finalResult.data?.name || 'skill')
+        : (finalResult.type || 'special');
+      fetch('/api/jotai-log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: val,
+          matchedIntent: intentLabel,
+          latencyMs: performance.now() - _sendStart,
+        }),
+      }).catch(() => {});
 
       const targetState = finalResult.mood === 'excited' ? 'excited' : 'success';
 
@@ -1580,6 +1598,15 @@ export const IaMascot = (() => {
     }
   }
 
+  /* Emite el dwell de sección para observabilidad (js/analytics.js) —
+     incondicional, independiente del presupuesto/cooldown de _maybeNudge
+     (si dependiera del nudge, esos gates silenciarían la telemetría). */
+  function _emitSectionDwell(id) {
+    window.dispatchEvent(new CustomEvent('portfolio:sectionDwell', {
+      detail: { section: id, mode: document.body.dataset.theme || 'dev' },
+    }));
+  }
+
   /* Tip de sección tras permanecer NUDGE_DWELL_MS en ella.
      Detección: banda central del viewport (rootMargin -40 %) — funciona
      también con secciones más altas que la pantalla. */
@@ -1600,7 +1627,10 @@ export const IaMascot = (() => {
           if (currentId === id) return;
           currentId = id;
           clearTimeout(dwellTimer);
-          dwellTimer = setTimeout(() => _maybeNudge(id, SECTION_TIPS[id]), NUDGE_DWELL_MS);
+          dwellTimer = setTimeout(() => {
+            _emitSectionDwell(id);
+            _maybeNudge(id, SECTION_TIPS[id]);
+          }, NUDGE_DWELL_MS);
         } else if (currentId === id) {
           currentId = null;
           clearTimeout(dwellTimer);

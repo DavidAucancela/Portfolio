@@ -20,6 +20,7 @@
 import { ThemeSwitcher } from './theme-switcher.js';
 import { LangSwitcher } from './lang.js';
 import { PDFModal } from './pdf-modal.js';
+import { track } from '@vercel/analytics';
 
 /* ────────────────────────────────────────────────────
    CONSTANTES
@@ -335,6 +336,7 @@ export function initApp() {
 
         if (data.success) {
           _showFeedback(LangSwitcher.t('form.success'), 'success');
+          track('contact_submit');
           contactForm.reset();
         } else {
           throw new Error(data.message || 'Error al enviar');
@@ -459,9 +461,10 @@ export function initApp() {
       if (detail?.mode) _updateCvUrl(detail.mode);
     });
 
-    cvBtn.addEventListener('click', () =>
-      PDFModal.open(cvBtn.dataset.pdfUrl, cvBtn.dataset.pdfLabel)
-    );
+    cvBtn.addEventListener('click', () => {
+      track('cv_view', { mode: ThemeSwitcher.getCurrentMode() });
+      PDFModal.open(cvBtn.dataset.pdfUrl, cvBtn.dataset.pdfLabel);
+    });
   }
 
 } // end initApp

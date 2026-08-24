@@ -73,6 +73,7 @@ js/
   sec-terminal.js             # SecTerminal — terminal interactiva en hero modo .sec
   pdf-modal.js                # PDFModal — visor PDF inline (modal overlay con iframe)
   section-divider.js          # SectionDivider — divisor animado entre secciones (canvas partículas)
+  analytics.js                 # Analytics — sink de eventos custom hacia Vercel Analytics
 
 data/
   dev-projects.json           # 11 proyectos del modo .dev (cargados con fetch en runtime)
@@ -101,7 +102,17 @@ public/                       # Servido con prefijo /public/ en Vite
 `vite.config.js` tiene `publicDir: false` y un plugin custom que copia `public/` → `dist/public/`,
 por eso las rutas de imágenes son `"public/images/..."` (no `"/images/..."`).
 
-**Vercel Analytics:** `@vercel/analytics` y `@vercel/speed-insights` inyectados en `index.html`. No eliminar — registran métricas de producción en el dashboard de Vercel. `ia-mascot.js` manda además el evento custom `track('jotai_query', { resolved: 'local' | 'ai_fallback' | 'canned_fallback' })` junto a cada `_logEvent` — da el ratio real de cuántas queries resuelve la búsqueda local sin necesitar el fallback de IA (eventos custom requieren plan Pro de Vercel para verse en el dashboard).
+**Vercel Analytics:** `@vercel/analytics` y `@vercel/speed-insights` inyectados en `js/main.js` (`injectAnalytics()`/`injectSpeedInsights()`). No eliminar — registran métricas de producción en el dashboard de Vercel (eventos custom requieren plan Pro para verse ahí). `ia-mascot.js` manda el evento `track('jotai_query', { resolved: 'local' | 'ai_fallback' | 'canned_fallback' })` junto a cada `_logEvent` — da el ratio real de cuántas queries resuelve la búsqueda local sin necesitar el fallback de IA.
+
+**`js/analytics.js`:** sink centralizado de observabilidad de interacción — escucha los `CustomEvent`s ya emitidos por otros módulos (ver "Eventos custom usados" abajo) y los traduce a `track()` de Vercel Analytics, sin importar/acoplarse a esos módulos:
+```js
+'mode_change'          // portfolio:modeChange        → { mode }
+'project_open'         // portfolio:projectOpen       → { project, mode }
+'command_palette_open' // command-palette:opened      → (sin payload)
+'section_dwell'        // portfolio:sectionDwell      → { section, mode }
+```
+Además, tracking inline en su módulo de origen (un solo consumer, no amerita evento propio):
+`jotai_panel_open` (`ia-mascot.js` `openPanel()`), `cv_view` (`app.js`, botón CV), `contact_submit` (`app.js`, submit exitoso del form).
 
 **Patrón de módulos:** IIFE exportado como objeto con API pública:
 ```js
@@ -125,6 +136,9 @@ window.dispatchEvent(new CustomEvent('portfolio:modeChange', { detail: { mode } 
 'command-palette:opened'    // notificación: la palette se abrió (teclado/botón/evento)
 'portfolio:projectOpen'     // gallery de proyecto abierta  → detail: { project, mode }
 'portfolio:projectClose'    // gallery de proyecto cerrada → detail: { project, mode }
+'portfolio:sectionDwell'    // 8s+ de permanencia en una sección → detail: { section, mode }
+                             // (ia-mascot.js _initNudges — incondicional, no gateado por
+                             // el presupuesto/cooldown de los nudges de UI)
 ```
 
 **Scroll-driven Animations (`animations.css`):**
@@ -587,18 +601,40 @@ para no exponer la API key al cliente.
 - **Proveedor:** OpenAI (`gpt-5.4-mini`) vía `MonitoredOpenAI` de `@llm-observatory/sdk` — key en
   `OPENAI_API_KEY` (Vercel: Production + Preview + **Development**, esta última hace falta
   aparte para que `vercel dev` la levante; también sirve en `.env.local`)
-- **Por qué OpenAI y no Gemini:** se intentó primero Gemini, pero `MonitoredGemini` solo existe
-  en el `main` sin publicar de `@llm-observatory/sdk` (el paquete en npm, v1.0.0, solo trae
-  `MonitoredAnthropic`/`MonitoredOpenAI`) — si esa librería publica una versión con soporte
-  Gemini, se puede reconsiderar
-- **Observabilidad:** cada llamada reporta tokens/costo/latencia/prompt a LLM Observatory (mismo
-  backend que lee `api/llm-stats.js` — ver abajo), taggeada `{ source: 'portfolio-jotai' }` para
-  distinguirla en el dashboard. Env vars `LLM_OBSERVATORY_API_URL`/`_API_TOKEN` — si faltan, el
-  reporte falla en silencio y la respuesta de OpenAI no se ve afectada
+- **Por qué OpenAI y no Gemini:** se intentó primero Gemini, pero en su momento `MonitoredGemini`
+  solo existía en el `main` sin publicar de `@llm-observatory/sdk` — ya no aplica (ver nota de
+  versión abajo) pero no se reconsideró el proveedor
+- **`@llm-observatory/sdk` en `^1.1.0`:** hasta esta versión, el paquete publicado en npm (v1.0.0)
+  solo mandaba `prompt_preview` (200 chars) a Observatory — el historial completo
+  (`prompt_full`/`system_prompt`/`response_full`/`tool_calls`/`stop_reason`) y `MonitoredGemini`
+  solo existían en el `main` del repo del SDK, sin publicar. Se republicó como v1.1.0 (bump desde
+  `main`, sin las clases `MonitoredGrok`/`MonitoredKimi` que en ese momento seguían en una branch
+  de feature sin mergear) — instalar directo desde GitHub con `github:owner/repo#path:subdir` **no
+  funciona en la práctica**: probado en 4 variantes de sintaxis, npm nunca extrae el subdirectorio
+  y termina instalando el monorepo completo como si fuera el paquete (bug/limitación real del
+  fetch de npm, más allá de que `npm-package-arg` parsee el campo `gitSubdir` correctamente en
+  aislado — no usar esa ruta, republicar a npm es la única opción confiable).
+- **Observabilidad:** cada llamada reporta tokens/costo/latencia/prompt completo a LLM Observatory
+  (mismo backend que lee `api/llm-stats.js` — ver abajo), taggeada
+  `{ source: 'portfolio-jotai', resolved: 'ai_fallback' }`. Env vars `LLM_OBSERVATORY_API_URL`/
+  `_API_TOKEN` — si faltan, el reporte falla en silencio y la respuesta de OpenAI no se ve
+  afectada. Los matches locales de JotAI (sin llamada a LLM) se reportan aparte desde
+  `api/jotai-log.js` — ver "Historial de JotAI" abajo
 - **Contrato:** `SYSTEM_INSTRUCTION` obliga a responder solo con lo que venga en el `CONTEXTO`
   (candidatos del fallback multinivel) — nunca inventa datos que no estén ahí
 - Si Gemini/OpenAI falla o da timeout (8s), cae al mensaje enlatado local — el fallback nunca
   rompe el chat
+
+### Historial de JotAI en LLM Observatory (`api/jotai-log.js`)
+Complementa el reporte automático de `api/jotai-chat.js`: cubre el único camino de JotAI que
+antes no dejaba rastro en ningún lado — las consultas que `rankHybrid()` resuelve localmente
+(keywords/semántica), sin llamar nunca a un LLM. `ia-mascot.js` (`_handleSend`, rama de match
+local) manda un POST fire-and-forget con `{ query, matchedIntent, latencyMs }`; el endpoint
+relaya server-side a `POST {LLM_OBSERVATORY_API_URL}/api/metrics` con `provider: 'openai'`
+(nominal, el enum lo exige) y `model: 'jotai-local-match'` (deliberadamente no-facturable y
+distinguible en el dashboard), `cost_usd`/tokens en 0, y `tags: { source: 'portfolio-jotai',
+resolved: 'local', intent }`. No se usa para las ramas `ai_fallback`/`canned_fallback` — esas ya
+quedan cubiertas por `api/jotai-chat.js` (evita filas duplicadas por una misma consulta).
 
 ### `api/llm-stats.js` — widget de tokens del hero (modo `.ia`)
 Proxy server-to-server hacia el mismo LLM Observatory (org-wide, no solo JotAI) para el widget

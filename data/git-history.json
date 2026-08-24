@@ -2,10 +2,6 @@
   "weeks": 12,
   "days": [
     {
-      "date": "2026-05-31",
-      "count": 7
-    },
-    {
       "date": "2026-06-03",
       "count": 3
     },
@@ -139,17 +135,29 @@
     },
     {
       "date": "2026-08-21",
-      "count": 1
+      "count": 3
     },
     {
       "date": "2026-08-22",
-      "count": 2
+      "count": 4
     }
   ],
-  "totalCommits": 110,
-  "totalCommitsAllTime": 185,
+  "totalCommits": 107,
+  "totalCommitsAllTime": 189,
   "totalProjects": 33,
   "prs": [
+    {
+      "number": 45,
+      "title": "docs: limpiar pendientes manuales resueltos en CLAUDE.md",
+      "date": "2026-08-21",
+      "hash": "99d9277"
+    },
+    {
+      "number": 46,
+      "title": "Feat/hero widgets history panels",
+      "date": "2026-08-21",
+      "hash": "dacb0b7"
+    },
     {
       "number": 44,
       "title": "docs: documentar fallback de IA, LLM Observatory y fixes de ranking de JotAI",
@@ -185,19 +193,7 @@
       "title": "fix(hero): completar y pulir widgets del hero por modo",
       "date": "2026-08-16",
       "hash": "390a907"
-    },
-    {
-      "number": 38,
-      "title": "feat(hero): agregar widgets extra por modo (git activity, tokens IA, terminal sec)",
-      "date": "2026-08-15",
-      "hash": "829805d"
-    },
-    {
-      "number": 37,
-      "title": "Chore/trayectoria y plan",
-      "date": "2026-08-10",
-      "hash": "775a016"
     }
   ],
-  "generatedAt": "2026-08-22T06:18:46.592Z"
+  "generatedAt": "2026-08-24T04:38:01.828Z"
 }

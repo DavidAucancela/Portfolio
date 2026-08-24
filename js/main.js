@@ -24,6 +24,7 @@ import { IaMascot } from './ia-mascot.js';
 import { SectionDivider } from './section-divider.js';
 import { GitHistory } from './git-history.js';
 import { IaTokensWidget } from './ia-tokens-widget.js';
+import { Analytics } from './analytics.js';
 
 // CSS imports — Vite los bundlea automáticamente
 import '../css/main.css';
@@ -63,4 +64,5 @@ document.addEventListener('DOMContentLoaded', () => {
   SectionDivider.init();
   GitHistory.init();
   IaTokensWidget.init();
+  Analytics.init();
 });

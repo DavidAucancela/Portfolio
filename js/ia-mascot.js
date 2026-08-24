@@ -388,6 +388,12 @@ const SEMANTIC_THRESHOLD = 0.10; // piso de inclusión en pool para rankHybrid (
 const WELCOME_TEXT = '¡Bienvenido! Soy JotAI y estoy aquí para guiarte.';
 const WELCOME_KEY  = 'jotai-welcomed';
 
+/* Aviso de los 3 modos — 1× para siempre (no por sesión): encadenado tras la
+   bienvenida vía onHidden. Muchos usuarios no notan que el portfolio tiene
+   3 modos completos (dev/ia/sec), no solo un toggle de color. */
+const MODES_INTRO_TEXT = '¿Viste que hay 3 modos arriba? .dev, .ia y .sec cambian todo el contenido, no solo el color.';
+const MODES_INTRO_KEY  = 'jotai-modes-intro-seen';
+
 /* Nudges contextuales — sutiles, con cooldown y presupuesto por sesión */
 const NUDGE_DWELL_MS    = 8000;   // tiempo en una sección antes del tip
 const NUDGE_COOLDOWN_MS = 45000;  // silencio mínimo entre globos (global)
@@ -834,6 +840,7 @@ export const IaMascot = (() => {
   function openPanel() {
     if (_isOpen) return;
     _isOpen = true;
+    track('jotai_panel_open');
     if (_pendingKB) {
       _initWorker(_pendingKB); // touch: descarga del modelo diferida hasta aquí
       _pendingKB = null;
@@ -1105,6 +1112,7 @@ export const IaMascot = (() => {
   async function _handleSend(prefilledText = null) {
     const val = prefilledText !== null ? prefilledText : _input.value.trim();
     if (!val || _sendBtn.disabled) return;
+    const _sendStart = performance.now();
 
     if (prefilledText === null) {
       _input.value = '';
@@ -1178,6 +1186,22 @@ export const IaMascot = (() => {
         fallbackUsed: false,
       });
       track('jotai_query', { resolved: 'local' });
+
+      // Historial completo de JotAI en LLM Observatory (server-side, fire-and-forget) —
+      // ver api/jotai-log.js. ai_fallback/canned_fallback ya se reportan solos
+      // desde api/jotai-chat.js vía MonitoredOpenAI; no duplicar acá.
+      const intentLabel = finalResult.type === 'project' ? (finalResult.data?.title || 'project')
+        : finalResult.type === 'skill' ? (finalResult.data?.name || 'skill')
+        : (finalResult.type || 'special');
+      fetch('/api/jotai-log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: val,
+          matchedIntent: intentLabel,
+          latencyMs: performance.now() - _sendStart,
+        }),
+      }).catch(() => {});
 
       const targetState = finalResult.mood === 'excited' ? 'excited' : 'success';
 
@@ -1489,11 +1513,38 @@ export const IaMascot = (() => {
   }
 
   /* Entrada: sin animación de asomo — solo el globo de bienvenida (1×/sesión).
-     El avatar aparece estático en su sitio. */
+     El avatar aparece estático en su sitio. Al ocultarse, encadena el aviso
+     de los 3 modos (1× para siempre) si todavía no se mostró. */
   function _entrance() {
     if (_welcomed()) return;
     _markWelcomed();
-    setTimeout(() => say(WELCOME_TEXT, { duration: 4500, mood: 'greeting' }), 900);
+    setTimeout(() => say(WELCOME_TEXT, {
+      duration: 4500,
+      mood: 'greeting',
+      onHidden: _maybeIntroduceModes,
+    }), 900);
+  }
+
+  function _introducedModes() {
+    try { return !!localStorage.getItem(MODES_INTRO_KEY); } catch { return false; }
+  }
+
+  function _maybeIntroduceModes() {
+    if (_introducedModes()) return;
+    if (say(MODES_INTRO_TEXT, { duration: 6500, mood: 'pointing' })) {
+      try { localStorage.setItem(MODES_INTRO_KEY, '1'); } catch { /* privado */ }
+      _pulseModeBar();
+    }
+  }
+
+  /* Pulso sutil en los chips del mode-bar, sincronizado con el globo de
+     arriba — conecta visualmente el mensaje (junto a JotAI) con la barra
+     real (arriba de la página). */
+  function _pulseModeBar() {
+    const chips = document.querySelector('.mode-bar__chips');
+    if (!chips) return;
+    chips.classList.add('mode-bar__chips--pulse');
+    setTimeout(() => chips.classList.remove('mode-bar__chips--pulse'), 4800);
   }
 
   /* ── SPEECH BUBBLE (presencia proactiva) ───────────────────── */
@@ -1547,6 +1598,15 @@ export const IaMascot = (() => {
     }
   }
 
+  /* Emite el dwell de sección para observabilidad (js/analytics.js) —
+     incondicional, independiente del presupuesto/cooldown de _maybeNudge
+     (si dependiera del nudge, esos gates silenciarían la telemetría). */
+  function _emitSectionDwell(id) {
+    window.dispatchEvent(new CustomEvent('portfolio:sectionDwell', {
+      detail: { section: id, mode: document.body.dataset.theme || 'dev' },
+    }));
+  }
+
   /* Tip de sección tras permanecer NUDGE_DWELL_MS en ella.
      Detección: banda central del viewport (rootMargin -40 %) — funciona
      también con secciones más altas que la pantalla. */
@@ -1567,7 +1627,10 @@ export const IaMascot = (() => {
           if (currentId === id) return;
           currentId = id;
           clearTimeout(dwellTimer);
-          dwellTimer = setTimeout(() => _maybeNudge(id, SECTION_TIPS[id]), NUDGE_DWELL_MS);
+          dwellTimer = setTimeout(() => {
+            _emitSectionDwell(id);
+            _maybeNudge(id, SECTION_TIPS[id]);
+          }, NUDGE_DWELL_MS);
         } else if (currentId === id) {
           currentId = null;
           clearTimeout(dwellTimer);

@@ -26,7 +26,7 @@
   },
   "dependencies": {
     "@huggingface/transformers": "^4.2.0",
-    "@llm-observatory/sdk": "^1.0.0",
+    "@llm-observatory/sdk": "^1.1.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/functions": "^3.9.3",
     "@vercel/speed-insights": "^2.0.0",

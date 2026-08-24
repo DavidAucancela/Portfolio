@@ -217,74 +217,8 @@ ul, ol { list-style: none; }
   border-color: var(--color-accent);
 }
 
-/* ─── Hint de descubrimiento (1ª visita) ──────────────────────── */
-.mode-bar-hint {
-  position: absolute;
-  top: 100%;
-  right: var(--container-padding);
-  margin-top: 10px;
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  max-width: 280px;
-  padding: 10px 12px;
-  background: var(--bg-card);
-  border: 1px solid var(--color-accent);
-  border-radius: var(--border-radius-sm);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 0 3px rgba(var(--color-accent-rgb, 59,130,246), 0.12);
-  opacity: 0;
-  transform: translateY(-6px);
-  pointer-events: none;
-  transition: opacity 0.35s ease, transform 0.35s ease;
-}
-
-.mode-bar-hint[hidden] { display: none; }
-
-.mode-bar-hint.is-visible {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
-}
-
-.mode-bar-hint__arrow {
-  position: absolute;
-  top: -6px;
-  right: 28px;
-  width: 11px;
-  height: 11px;
-  background: var(--bg-card);
-  border-left: 1px solid var(--color-accent);
-  border-top: 1px solid var(--color-accent);
-  transform: rotate(45deg);
-}
-
-.mode-bar-hint__text {
-  flex: 1;
-  font-size: 12.5px;
-  line-height: 1.45;
-  color: var(--text-primary);
-}
-
-.mode-bar-hint__text strong { color: var(--color-accent); }
-
-.mode-bar-hint__close {
-  flex-shrink: 0;
-  width: 18px;
-  height: 18px;
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  font-size: 13px;
-  line-height: 1;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-.mode-bar-hint__close:hover {
-  color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.08);
-}
-
+/* ─── Pulso sutil al presentar los modos (disparado por JotAI,
+   ver ia-mascot.js _pulseModeBar) ──────────────────────────────── */
 .mode-bar__chips--pulse {
   border-radius: 999px;
   animation: mode-bar-pulse 1.6s ease-in-out 3;
@@ -295,16 +229,7 @@ ul, ol { list-style: none; }
   50%      { box-shadow: 0 0 0 6px rgba(var(--color-accent-rgb, 59,130,246), 0); }
 }
 
-@media (max-width: 480px) {
-  .mode-bar-hint {
-    right: var(--container-padding);
-    left: var(--container-padding);
-    max-width: none;
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .mode-bar-hint { transition: none; }
   .mode-bar__chips--pulse { animation: none; }
 }
 

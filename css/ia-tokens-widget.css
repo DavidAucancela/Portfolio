@@ -12,11 +12,12 @@
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 2.5rem;
-  align-items: center;
+  align-items: start;
 }
 
 /* ─── Panel visible en modo .ia — mismo chrome que .sec-terminal ─── */
 [data-theme="ia"] .ia-tokens {
+  position: relative;
   display: flex;
   flex-direction: column;
   width: min(420px, 42vw);
@@ -39,6 +40,116 @@
 @keyframes iaTokensEnter {
   from { opacity: 0; transform: translateY(16px) scale(0.97); }
   to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+/* ═══ Estados colapsado / expandido ═══════════════════════ */
+
+[data-theme="ia"] .ia-tokens[data-widget-state="collapsed"] {
+  width: min(300px, 32vw);
+}
+
+.ia-tokens[data-widget-state="collapsed"] .ia-tokens__body { display: none; }
+.ia-tokens[data-widget-state="expanded"]  .ia-tokens__summary { display: none; }
+
+.ia-tokens[data-widget-state="expanded"] .ia-tokens__body {
+  animation: itBodyReveal 0.5s ease both;
+}
+
+@keyframes itBodyReveal {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Cara compacta (solo colapsado): total de tokens ─── */
+.ia-tokens__summary {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 1.2rem 1.3rem 1.4rem;
+  background: none;
+  border: none;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.ia-tokens__summary-hint {
+  margin-top: 0.3rem;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  color: rgba(6, 255, 165, 0.75);
+  transition: color 0.2s ease;
+}
+
+.ia-tokens__summary:hover .ia-tokens__summary-hint,
+.ia-tokens__summary:focus-visible .ia-tokens__summary-hint {
+  color: #06ffa5;
+}
+
+/* ─── Overlay de la animación: red neuronal mini → macro ─── */
+.ia-tokens__intro {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: none;
+  overflow: hidden;
+  pointer-events: none;
+  background: rgba(13, 2, 33, 0.97);
+}
+
+.ia-tokens__intro.is-playing { display: grid; place-items: center; }
+
+.it-intro__net {
+  width: 82%;
+  height: 74%;
+  transform: scale(0.32);
+  animation: itIntroGrow 0.95s cubic-bezier(0.16, 1, 0.3, 1) 0.28s forwards;
+}
+
+@keyframes itIntroGrow { to { transform: scale(1); } }
+
+.it-intro__net .it-edge {
+  stroke: rgba(177, 78, 255, 0.55);
+  stroke-width: 1;
+  stroke-dasharray: 140;
+  stroke-dashoffset: 140;
+  animation: itIntroDraw 0.5s ease both;
+}
+
+@keyframes itIntroDraw { to { stroke-dashoffset: 0; } }
+
+.it-intro__net .it-node {
+  fill: #b14eff;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: itIntroNode 0.4s ease both;
+}
+
+@keyframes itIntroNode {
+  from { opacity: 0; transform: scale(0.2); }
+  60%  { opacity: 1; transform: scale(1.35); filter: drop-shadow(0 0 5px #b14eff); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Filas de proyecto entran escalonadas (delay inline por JS) */
+.ia-tokens__project-item {
+  animation: itRowIn 0.4s ease both;
+}
+
+@keyframes itRowIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="ia"] .ia-tokens { transition: none; }
+  .ia-tokens__intro { display: none !important; }
+  .ia-tokens[data-widget-state="expanded"] .ia-tokens__body { animation: none; }
+  .ia-tokens__project-item { animation: none; }
 }
 
 /* ─── Barra de título (idéntica a .sec-terminal__bar) ─── */
@@ -247,7 +358,8 @@
     grid-template-columns: 1fr;
   }
 
-  [data-theme="ia"] .ia-tokens {
+  [data-theme="ia"] .ia-tokens,
+  [data-theme="ia"] .ia-tokens[data-widget-state="collapsed"] {
     width: 100%;
   }
 

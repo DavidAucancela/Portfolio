@@ -12,11 +12,12 @@
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 2.5rem;
-  align-items: center;
+  align-items: start;
 }
 
 /* ─── Terminal visible en modo .sec ─── */
 [data-theme="sec"] .sec-terminal {
+  position: relative;
   display: flex;
   flex-direction: column;
   width: min(440px, 40vw);
@@ -42,6 +43,77 @@
 @keyframes terminalEnter {
   from { opacity: 0; transform: translateY(16px) scale(0.97); }
   to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+/* ═══ Estados: compuerta colapsada ⇄ terminal expandida ═══ */
+
+[data-theme="sec"] .sec-terminal[data-widget-state="collapsed"] {
+  min-height: 0;
+  max-height: none;
+  width: min(360px, 34vw);
+}
+
+.sec-terminal[data-widget-state="collapsed"] .sec-terminal__body,
+.sec-terminal[data-widget-state="collapsed"] .sec-terminal__prompt-row { display: none; }
+.sec-terminal[data-widget-state="expanded"]  .sec-terminal__gate { display: none; }
+
+/* ─── Compuerta: "Presiona ENTER para acceder" ─── */
+.sec-terminal__gate {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 1rem 1.05rem;
+  background: none;
+  border: none;
+  font-family: inherit;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  color: #00ff41;
+  cursor: pointer;
+}
+
+.sec-terminal__gate kbd {
+  font-family: inherit;
+  font-size: 0.72rem;
+  padding: 0.1rem 0.4rem;
+  border: 1px solid rgba(0, 255, 65, 0.4);
+  border-radius: 4px;
+  color: #00ff41;
+}
+
+.sec-terminal__gate-caret {
+  width: 9px;
+  height: 1.1em;
+  background: #00ff41;
+  animation: sec-gate-blink 1s step-end infinite;
+}
+
+@keyframes sec-gate-blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
+
+/* ─── Animación de intrusión (glitch antes del boot) ─── */
+.sec-terminal__body.is-intruding {
+  animation: sec-intrude-flicker 0.11s steps(2) infinite;
+}
+
+@keyframes sec-intrude-flicker {
+  0%   { background: transparent; }
+  50%  { background: rgba(60, 0, 0, 0.4); }
+}
+
+.sec-terminal__scramble {
+  color: rgba(0, 255, 65, 0.32);
+  letter-spacing: 0.12em;
+  word-break: break-all;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="sec"] .sec-terminal { transition: none; }
+  .sec-terminal__gate-caret { animation: none; }
+  .sec-terminal__body.is-intruding { animation: none; }
 }
 
 /* ─── Barra de título ─── */
@@ -165,6 +237,12 @@
     min-height: 200px;
     max-height: 260px;
     font-size: 0.76rem;
+  }
+
+  [data-theme="sec"] .sec-terminal[data-widget-state="collapsed"] {
+    width: 100%;
+    min-height: 0;
+    max-height: none;
   }
 
   /* ≥16px en el input: evita el zoom automático de iOS Safari al enfocar */

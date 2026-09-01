@@ -64,10 +64,22 @@ const COMMANDS = [
   'ls', 'ls projects', 'ping linkedin', 'clear', 'exit',
 ];
 
+const HEX_CHARS = '0123456789abcdefABCDEF ';
+const INTRUSION_MS = 1150;
+
+function _randomHex(n) {
+  let s = '';
+  for (let i = 0; i < n; i++) s += HEX_CHARS[Math.floor(Math.random() * HEX_CHARS.length)];
+  return s;
+}
+
 export const SecTerminal = (() => {
+  const _reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let _booted  = false;
   let _history = [];
   let _histIdx = -1;
+  let _intrusionTimers = [];
+  let _scrambleIv = null;
   const _sessionStart = Date.now();
 
   function _uptimeString() {
@@ -86,20 +98,98 @@ export const SecTerminal = (() => {
       input.addEventListener('keydown', _onKeyDown);
     }
 
-    // Clic en cualquier parte de la terminal → foco al input
-    terminal?.addEventListener('click', () => input?.focus());
+    // Clic en cualquier parte de la terminal expandida → foco al input
+    terminal?.addEventListener('click', () => {
+      if (terminal.dataset.widgetState === 'expanded') input?.focus();
+    });
 
-    // Escuchar cambios de modo
+    // Compuerta colapsada: click / Enter / Espacio (el <button> ya mapea
+    // teclado a click) abre la terminal con la animación de intrusión.
+    document.getElementById('sec-terminal-gate')
+      ?.addEventListener('click', _enter);
+
+    // Escuchar cambios de modo → siempre arranca colapsada
     window.addEventListener('portfolio:modeChange', e => {
       if (e.detail.mode === 'sec') _onEnterSec();
     });
 
     // Fallback: si la página carga ya en modo sec
     setTimeout(() => {
-      if (document.body.getAttribute('data-theme') === 'sec' && !_booted) {
-        _onEnterSec();
-      }
+      if (document.body.getAttribute('data-theme') === 'sec') _onEnterSec();
     }, 120);
+  }
+
+  /* ── Estados: compuerta ⇄ terminal ────────────────── */
+  function _onEnterSec() {
+    _collapse();
+  }
+
+  function _collapse() {
+    const root = document.getElementById('sec-terminal');
+    if (!root) return;
+    _intrusionTimers.forEach(clearTimeout);
+    _intrusionTimers = [];
+    clearInterval(_scrambleIv);
+    _scrambleIv = null;
+    root.dataset.widgetState = 'collapsed';
+    root.querySelector('.sec-terminal__body')?.classList.remove('is-intruding');
+    document.getElementById('sec-terminal-gate')?.setAttribute('aria-expanded', 'false');
+    _booted = false;
+  }
+
+  function _enter() {
+    const root = document.getElementById('sec-terminal');
+    if (!root || root.dataset.widgetState === 'expanded') return;
+    root.dataset.widgetState = 'expanded';
+    document.getElementById('sec-terminal-gate')?.setAttribute('aria-expanded', 'true');
+
+    const boot = () => {
+      if (_booted) return;
+      _booted = true;
+      _runBoot();
+      setTimeout(() => document.getElementById('sec-terminal-input')?.focus(), 700);
+    };
+
+    if (_reduced) { boot(); return; }
+    _runIntrusion(boot);
+  }
+
+  /* ── Animación de intrusión (glitch → ACCESS GRANTED) ── */
+  function _runIntrusion(done) {
+    const body = document.getElementById('sec-terminal-body');
+    if (!body) { done(); return; }
+    body.innerHTML = '';
+    body.classList.add('is-intruding');
+
+    const steps = [
+      { text: '>> injecting payload ...',                 type: 'error',  delay: 60  },
+      { text: 'SCANNING PORTS  [####################]',    type: 'muted',  delay: 220 },
+      { text: 'EXPLOIT CVE-2026-31337 ... delivered',      type: 'error',  delay: 400 },
+      { text: 'bypassing firewall rules ........... OK',   type: 'muted',  delay: 600 },
+      { text: 'privilege escalation → root shell',         type: 'error',  delay: 780 },
+      { text: '[ ACCESS GRANTED ]',                        type: 'accent', delay: 960 },
+    ];
+    steps.forEach((s) => {
+      _intrusionTimers.push(setTimeout(() => _printLine(s.text, s.type), s.delay));
+    });
+
+    let scrambleN = 0;
+    _scrambleIv = setInterval(() => {
+      const l = document.createElement('div');
+      l.className = 'sec-terminal__line sec-terminal__scramble';
+      l.textContent = _randomHex(40);
+      body.appendChild(l);
+      body.scrollTop = body.scrollHeight;
+      if (++scrambleN > 9) { clearInterval(_scrambleIv); _scrambleIv = null; }
+    }, 75);
+
+    _intrusionTimers.push(setTimeout(() => {
+      clearInterval(_scrambleIv);
+      _scrambleIv = null;
+      body.classList.remove('is-intruding');
+      body.innerHTML = '';
+      done();
+    }, INTRUSION_MS));
   }
 
   /**
@@ -125,15 +215,6 @@ export const SecTerminal = (() => {
       if (i >= cmd.length) { clearInterval(iv); setTimeout(run, 350); return; }
       input.value = cmd.slice(0, ++i);
     }, 85);
-  }
-
-  /* ── Entrada al modo .sec ─────────────────────────── */
-  function _onEnterSec() {
-    if (!_booted) {
-      _booted = true;
-      _runBoot();
-    }
-    setTimeout(() => document.getElementById('sec-terminal-input')?.focus(), 1300);
   }
 
   /* ── Secuencia de arranque ────────────────────────── */
@@ -349,7 +430,7 @@ export const SecTerminal = (() => {
         setTimeout(() => {
           const body = document.getElementById('sec-terminal-body');
           if (body) body.innerHTML = '';
-          _booted = false;
+          _collapse(); // vuelve a la compuerta "Presiona ENTER"
         }, 2200);
         break;
 

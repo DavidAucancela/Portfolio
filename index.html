@@ -234,14 +234,31 @@
         </div>
 
         <!-- Actividad de Git — solo visible en modo .dev -->
-        <div class="git-activity" id="git-activity" role="region" aria-label="Actividad de Git">
+        <div class="git-activity" id="git-activity" role="region" aria-label="Actividad de Git" data-widget-state="collapsed">
           <div class="git-activity__bar" aria-hidden="true">
             <span class="git-activity__dot" style="background:#ff5f57"></span>
             <span class="git-activity__dot" style="background:#ffbd2e"></span>
             <span class="git-activity__dot" style="background:#28ca41"></span>
             <span class="git-activity__title">github.com/DavidAucancela</span>
           </div>
-          <div class="git-activity__body">
+
+          <!-- Cara compacta — visible solo colapsado -->
+          <button
+            type="button"
+            class="git-activity__summary"
+            id="git-activity-summary"
+            aria-expanded="false"
+            aria-controls="git-activity-body"
+          >
+            <span class="git-activity__summary-value" id="git-activity-face-prs">—</span>
+            <span class="git-activity__summary-label">Pull requests</span>
+            <span class="git-activity__summary-hint">Ver más <span aria-hidden="true">▾</span></span>
+          </button>
+
+          <!-- Overlay de la animación de expansión -->
+          <div class="git-activity__intro" id="git-activity-intro" aria-hidden="true"></div>
+
+          <div class="git-activity__body" id="git-activity-body">
             <span class="git-activity__section-label" id="git-activity-heatmap-label">Commits por semana · últimas 12 semanas</span>
             <div class="git-activity__row">
               <div class="git-activity__chart">
@@ -271,18 +288,7 @@
             </div>
             <span class="git-activity__total" id="git-activity-total">Cargando…</span>
 
-            <button
-              type="button"
-              class="git-activity__more-btn"
-              id="git-activity-more-btn"
-              aria-expanded="false"
-              aria-controls="git-activity-history"
-            >
-              <span>Ver más</span>
-              <span class="git-activity__more-icon" aria-hidden="true">▾</span>
-            </button>
-
-            <div class="git-activity__history" id="git-activity-history" hidden>
+            <div class="git-activity__history" id="git-activity-history">
               <div class="git-activity__history-group">
                 <span class="git-activity__history-label">Historial de pull requests</span>
                 <ul class="git-activity__pr-list" id="git-activity-pr-list">
@@ -290,52 +296,80 @@
                 </ul>
               </div>
             </div>
+
+            <button
+              type="button"
+              class="git-activity__more-btn"
+              id="git-activity-more-btn"
+            >
+              <span>Ver menos</span>
+              <span class="git-activity__more-icon" aria-hidden="true">▴</span>
+            </button>
           </div>
         </div>
 
         <!-- Total de tokens de LLM Observatory — solo visible en modo .ia -->
-        <div class="ia-tokens" id="ia-tokens" role="region" aria-label="Tokens procesados por LLM Observatory">
+        <div class="ia-tokens" id="ia-tokens" role="region" aria-label="Tokens procesados por LLM Observatory" data-widget-state="collapsed">
           <div class="ia-tokens__bar" aria-hidden="true">
             <span class="ia-tokens__dot" style="background:#ff5f57"></span>
             <span class="ia-tokens__dot" style="background:#ffbd2e"></span>
             <span class="ia-tokens__dot" style="background:#28ca41"></span>
             <span class="ia-tokens__title">llm-observatory · stats</span>
           </div>
-          <div class="ia-tokens__body">
+
+          <!-- Cara compacta — visible solo colapsado -->
+          <button
+            type="button"
+            class="ia-tokens__summary"
+            id="ia-tokens-summary"
+            aria-expanded="false"
+            aria-controls="ia-tokens-body"
+          >
             <span class="ia-tokens__label">Tokens procesados · total (todos los proyectos)</span>
             <span class="ia-tokens__value" id="ia-tokens-value">···</span>
             <span class="ia-tokens__status" id="ia-tokens-status">conectando…</span>
+            <span class="ia-tokens__summary-hint">Ver más <span aria-hidden="true">▾</span></span>
+          </button>
 
-            <button
-              type="button"
-              class="ia-tokens__more-btn"
-              id="ia-tokens-more-btn"
-              aria-expanded="false"
-              aria-controls="ia-tokens-history"
-            >
-              <span>Ver más</span>
-              <span class="ia-tokens__more-icon" aria-hidden="true">▾</span>
-            </button>
+          <!-- Overlay de la animación de expansión -->
+          <div class="ia-tokens__intro" id="ia-tokens-intro" aria-hidden="true"></div>
 
-            <div class="ia-tokens__history" id="ia-tokens-history" hidden>
+          <div class="ia-tokens__body" id="ia-tokens-body">
+            <div class="ia-tokens__history" id="ia-tokens-history">
               <div class="ia-tokens__history-group">
-                <span class="ia-tokens__history-label">Proyectos de IA</span>
+                <span class="ia-tokens__history-label">Proyectos de IA · tokens por proyecto</span>
                 <ul class="ia-tokens__project-list" id="ia-tokens-project-list">
                   <li class="ia-tokens__history-empty">Cargando…</li>
                 </ul>
               </div>
             </div>
+
+            <button
+              type="button"
+              class="ia-tokens__more-btn"
+              id="ia-tokens-more-btn"
+            >
+              <span>Ver menos</span>
+              <span class="ia-tokens__more-icon" aria-hidden="true">▴</span>
+            </button>
           </div>
         </div>
 
         <!-- Terminal interactiva — solo visible en modo .sec -->
-        <div class="sec-terminal" id="sec-terminal" role="region" aria-label="Terminal interactiva">
+        <div class="sec-terminal" id="sec-terminal" role="region" aria-label="Terminal interactiva" data-widget-state="collapsed">
           <div class="sec-terminal__bar" aria-hidden="true">
             <span class="sec-terminal__dot" style="background:#ff5f57"></span>
             <span class="sec-terminal__dot" style="background:#ffbd2e"></span>
             <span class="sec-terminal__dot" style="background:#28ca41"></span>
             <span class="sec-terminal__title">bash — jonathan@sec</span>
           </div>
+
+          <!-- Compuerta colapsada — pulsa ENTER para abrir la terminal -->
+          <button type="button" class="sec-terminal__gate" id="sec-terminal-gate" aria-expanded="false" aria-controls="sec-terminal-body">
+            <span class="sec-terminal__gate-text">Presiona <kbd>ENTER</kbd> para acceder</span>
+            <span class="sec-terminal__gate-caret" aria-hidden="true"></span>
+          </button>
+
           <div class="sec-terminal__body" id="sec-terminal-body" aria-live="polite" aria-atomic="false"></div>
           <div class="sec-terminal__prompt-row">
             <span class="sec-terminal__ps1" aria-hidden="true">jonathan@sec:~$&nbsp;</span>

@@ -1,5 +1,12 @@
 /* ============================================================
    GIT HISTORY — Heatmap de actividad + stats (modo .dev)
+
+   Dos estados (data-widget-state en #git-activity):
+   - collapsed: solo el nº de Pull requests (cara compacta)
+   - expanded : heatmap ("mapa de PR") + stats + historial de PRs
+
+   La transición reproduce una animación tipo "commit → cloud →
+   monitoreo" (_runIntro) antes de revelar el cuerpo.
    ============================================================ */
 
 const WEEKS = 12;
@@ -8,6 +15,8 @@ const MONTH_LABELS = [
   'ene', 'feb', 'mar', 'abr', 'may', 'jun',
   'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
 ];
+
+const INTRO_MS = 1200;
 
 function _isoDate(d) {
   return d.toISOString().slice(0, 10);
@@ -49,40 +58,157 @@ function _levelFor(count, max) {
 }
 
 export const GitHistory = (() => {
-  let _rendered = false;
+  const _reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let _fetched = false;
   let _data = null;
-  let _historyLoaded = false;
+  let _expandRendered = false;
+  let _introTimer = null;
 
   function init() {
     window.addEventListener('portfolio:modeChange', (e) => {
-      if (e.detail.mode === 'dev') _onEnterDev();
+      if (e.detail.mode === 'dev') {
+        _collapse();
+        _onEnterDev();
+      }
     });
 
     setTimeout(() => {
-      if (document.body.getAttribute('data-theme') === 'dev' && !_rendered) {
+      if (document.body.getAttribute('data-theme') === 'dev' && !_fetched) {
         _onEnterDev();
       }
     }, 120);
 
+    document.getElementById('git-activity-summary')
+      ?.addEventListener('click', _expand);
     document.getElementById('git-activity-more-btn')
-      ?.addEventListener('click', _toggleHistory);
+      ?.addEventListener('click', _collapse);
+    document.getElementById('git-activity')
+      ?.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') _collapse();
+      });
   }
 
-  function _toggleHistory() {
-    const btn   = document.getElementById('git-activity-more-btn');
-    const panel = document.getElementById('git-activity-history');
-    if (!btn || !panel) return;
+  /* ── Estados ──────────────────────────────────────── */
+  function _expand() {
+    const root = document.getElementById('git-activity');
+    if (!root || root.dataset.widgetState === 'expanded') return;
+    root.dataset.widgetState = 'expanded';
+    document.getElementById('git-activity-summary')
+      ?.setAttribute('aria-expanded', 'true');
 
-    const expanded = btn.getAttribute('aria-expanded') === 'true';
-    btn.setAttribute('aria-expanded', String(!expanded));
-    panel.hidden = expanded;
-    btn.querySelector('span:last-child').textContent = expanded ? '▾' : '▴';
-    btn.querySelector('span:first-child').textContent = expanded ? 'Ver más' : 'Ver menos';
+    const reveal = () => {
+      if (!_expandRendered && _data) {
+        _expandRendered = true;
+        _renderDeferred();
+      }
+    };
 
-    if (!expanded && !_historyLoaded) {
-      _historyLoaded = true;
-      _renderPrHistory();
+    if (_reduced || !_data) { reveal(); return; }
+    _runIntro(reveal);
+  }
+
+  function _collapse() {
+    const root = document.getElementById('git-activity');
+    if (!root) return;
+    root.dataset.widgetState = 'collapsed';
+    document.getElementById('git-activity-summary')
+      ?.setAttribute('aria-expanded', 'false');
+    _clearIntro();
+  }
+
+  /* ── Animación de intro: commit → cloud → monitoreo ── */
+  function _runIntro(done) {
+    const intro = document.getElementById('git-activity-intro');
+    if (!intro) { done(); return; }
+
+    intro.innerHTML = `
+      <div class="ga-intro__code">
+        <span class="ga-intro__line">$ git add --all</span>
+        <span class="ga-intro__line">$ git commit -m "feat: ship it"</span>
+        <span class="ga-intro__line">$ git push origin main</span>
+      </div>
+      <svg class="ga-intro__wire" viewBox="0 0 200 44" aria-hidden="true">
+        <path class="ga-intro__path" d="M8 34 C 60 34, 90 10, 150 10" fill="none"/>
+        <circle class="ga-intro__packet" r="4"/>
+        <g class="ga-intro__cloud" transform="translate(150 2)">
+          <path d="M4 16 a7 7 0 0 1 3 -13 a9 9 0 0 1 17 3 a6 6 0 0 1 -1 10 z"/>
+        </g>
+      </svg>
+      <div class="ga-intro__monitor"><span></span></div>
+    `;
+    intro.classList.add('is-playing');
+
+    _introTimer = setTimeout(() => {
+      _clearIntro();
+      done();
+    }, INTRO_MS);
+  }
+
+  function _clearIntro() {
+    clearTimeout(_introTimer);
+    _introTimer = null;
+    const intro = document.getElementById('git-activity-intro');
+    if (intro) {
+      intro.classList.remove('is-playing');
+      intro.innerHTML = '';
     }
+  }
+
+  /* ── Fetch de datos (al entrar al modo .dev) ──────── */
+  async function _onEnterDev() {
+    if (_fetched) {
+      if (document.getElementById('git-activity')?.dataset.widgetState === 'expanded') {
+        _expandRendered = true;
+        _renderDeferred();
+      }
+      return;
+    }
+    _fetched = true;
+
+    const el = document.getElementById('git-activity');
+    if (!el) return;
+
+    try {
+      const [localRes, ghRes, statsRes] = await Promise.all([
+        fetch('data/git-history.json'),
+        fetch('/api/github-contributions').catch(() => null),
+        fetch('/api/github-stats').catch(() => null),
+      ]);
+      if (!localRes.ok) throw new Error(`data/git-history.json respondió ${localRes.status}`);
+      const local = await localRes.json();
+      const gh    = ghRes    ? await ghRes.json().catch(() => null)    : null;
+      const stats = statsRes ? await statsRes.json().catch(() => null) : null;
+      _data = { local, gh, stats };
+
+      const liveStats = _data.stats && !_data.stats.mock ? _data.stats : null;
+      _renderStats({
+        totalPRs:      liveStats?.totalMerged ?? _data.local.prs?.length ?? null,
+        prsIsExact:    Boolean(liveStats),
+        totalCommits:  liveStats?.totalCommits ?? _data.local.totalCommitsAllTime ?? null,
+        totalProjects: _data.local.totalProjects ?? null,
+      });
+
+      // Si el usuario ya expandió antes de que llegaran los datos, renderiza ya.
+      if (el.dataset.widgetState === 'expanded' && !_expandRendered) {
+        _expandRendered = true;
+        _renderDeferred();
+      }
+    } catch (err) {
+      console.error('[git-history] Error:', err.message);
+      _fetched = false; // permite reintentar si el usuario vuelve a entrar a .dev
+    }
+  }
+
+  /* ── Render diferido: heatmap + historial de PRs ──── */
+  function _renderDeferred() {
+    if (!_data) return;
+    const useGh = _data.gh && !_data.gh.mock && Array.isArray(_data.gh.days) && _data.gh.days.length;
+    _renderHeatmap(
+      useGh
+        ? { days: _data.gh.days, total: _data.gh.totalContributions, source: 'github', username: _data.gh.username }
+        : { days: _data.local.days, total: _data.local.totalCommits, source: 'local' }
+    );
+    _renderPrHistory();
   }
 
   function _renderPrHistory() {
@@ -108,56 +234,15 @@ export const GitHistory = (() => {
     `).join('');
   }
 
-  async function _onEnterDev() {
-    if (_rendered) return;
-    _rendered = true;
-
-    const el = document.getElementById('git-activity');
-    if (!el) return;
-
-    try {
-      if (!_data) {
-        const [localRes, ghRes, statsRes] = await Promise.all([
-          fetch('data/git-history.json'),
-          fetch('/api/github-contributions').catch(() => null),
-          fetch('/api/github-stats').catch(() => null),
-        ]);
-        if (!localRes.ok) throw new Error(`data/git-history.json respondió ${localRes.status}`);
-        const local = await localRes.json();
-        const gh    = ghRes    ? await ghRes.json().catch(() => null)    : null;
-        const stats = statsRes ? await statsRes.json().catch(() => null) : null;
-        _data = { local, gh, stats };
-      }
-
-      const useGh = _data.gh && !_data.gh.mock && Array.isArray(_data.gh.days) && _data.gh.days.length;
-      _renderHeatmap(
-        useGh
-          ? { days: _data.gh.days, total: _data.gh.totalContributions, source: 'github', username: _data.gh.username }
-          : { days: _data.local.days, total: _data.local.totalCommits, source: 'local' }
-      );
-
-      const liveStats = _data.stats && !_data.stats.mock ? _data.stats : null;
-
-      _renderStats({
-        totalPRs:      liveStats?.totalMerged ?? _data.local.prs?.length ?? null,
-        prsIsExact:    Boolean(liveStats),
-        totalCommits:  liveStats?.totalCommits ?? _data.local.totalCommitsAllTime ?? null,
-        totalProjects: _data.local.totalProjects ?? null,
-      });
-    } catch (err) {
-      console.error('[git-history] Error:', err.message);
-      _rendered = false; // permite reintentar si el usuario vuelve a entrar a .dev
-    }
-  }
-
   function _renderStats({ totalPRs, prsIsExact, totalCommits, totalProjects }) {
+    const faceEl     = document.getElementById('git-activity-face-prs');
     const prsEl      = document.getElementById('git-activity-stat-prs');
     const commitsEl  = document.getElementById('git-activity-stat-commits');
     const projectsEl = document.getElementById('git-activity-stat-projects');
 
-    if (prsEl) {
-      prsEl.textContent = Number.isFinite(totalPRs) ? `${totalPRs}${prsIsExact ? '' : '+'}` : '—';
-    }
+    const prsText = Number.isFinite(totalPRs) ? `${totalPRs}${prsIsExact ? '' : '+'}` : '—';
+    if (faceEl) faceEl.textContent = prsText;
+    if (prsEl)  prsEl.textContent  = prsText;
     if (commitsEl)  commitsEl.textContent  = Number.isFinite(totalCommits)  ? String(totalCommits)  : '—';
     if (projectsEl) projectsEl.textContent = Number.isFinite(totalProjects) ? String(totalProjects) : '—';
   }

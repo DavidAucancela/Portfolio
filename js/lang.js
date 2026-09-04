@@ -101,6 +101,54 @@ const TRANSLATIONS = {
     // Footer
     'footer.copy':    '© 2026 Jonathan Aucancela.',
     'footer.mode':    'Modo:',
+    // Mode bar
+    'modebar.label':      '3 modos',
+    'modebar.aria':       'Selector de modo — 3 modos disponibles',
+    'modebar.dev.aria':   '.dev — Modo desarrollador: proyectos full-stack',
+    'modebar.ia.aria':    '.ia — Modo inteligencia artificial: proyectos con LLMs y ML',
+    'modebar.sec.aria':   '.sec — Modo ciberseguridad: labs y pentesting',
+    // Hero · widget de actividad de Git (modo .dev)
+    'gitw.aria':          'Actividad de Git',
+    'gitw.summaryLabel':  'Pull requests',
+    'gitw.more':          'Ver más',
+    'gitw.less':          'Ver menos',
+    'gitw.heatmapLabel':  'Commits por semana · últimas 12 semanas',
+    'gitw.statPrs':       'Pull requests',
+    'gitw.statCommits':   'Commits',
+    'gitw.statProjects':  'Proyectos',
+    'gitw.loading':       'Cargando…',
+    'gitw.prHistory':     'Historial de pull requests',
+    'gitw.day.mon':       'Lun',
+    'gitw.day.wed':       'Mié',
+    'gitw.day.fri':       'Vie',
+    'gitw.noActivity':    'Sin actividad reciente disponible',
+    'gitw.today':         'hoy',
+    'gitw.yesterday':     'ayer',
+    'gitw.contribsSuffix':      'contribuciones',
+    'gitw.commitsRepoSuffix':   'commits (solo este repo)',
+    'gitw.weeksSuffix':        'últimas 12 semanas',
+    'gitw.contribSingular':    'contribución',
+    'gitw.contribPlural':      'contribuciones',
+    'gitw.commitSingular':     'commit',
+    'gitw.commitPlural':       'commits',
+    // Hero · widget de tokens de LLM Observatory (modo .ia)
+    'iaw.aria':           'Tokens procesados por LLM Observatory',
+    'iaw.label':          'Tokens procesados · total (todos los proyectos)',
+    'iaw.more':           'Ver más',
+    'iaw.less':           'Ver menos',
+    'iaw.projectsLabel':  'Proyectos de IA · tokens por proyecto',
+    'iaw.loading':        'Cargando…',
+    'iaw.status.connecting': 'conectando…',
+    'iaw.status.syncing':    'sincronizando…',
+    'iaw.status.live':       'en vivo · LLM Observatory',
+    'iaw.status.offline':    'sin conexión',
+    'iaw.noProjects':     'Sin proyectos disponibles',
+    'iaw.offline':        'Sin conexión',
+    'iaw.tokensSuffix':   'tokens',
+    // Hero · compuerta de la terminal (modo .sec)
+    'secterm.aria':       'Terminal interactiva',
+    'secterm.gatePre':    'Presiona',
+    'secterm.gatePost':   'para acceder',
     // Lang button
     'lang.btn':       'EN',
   },
@@ -200,6 +248,54 @@ const TRANSLATIONS = {
     // Footer
     'footer.copy':    '© 2026 Jonathan Aucancela.',
     'footer.mode':    'Mode:',
+    // Mode bar
+    'modebar.label':      '3 modes',
+    'modebar.aria':       'Mode selector — 3 modes available',
+    'modebar.dev.aria':   '.dev — Developer mode: full-stack projects',
+    'modebar.ia.aria':    '.ia — Artificial intelligence mode: LLM and ML projects',
+    'modebar.sec.aria':   '.sec — Cybersecurity mode: labs and pentesting',
+    // Hero · Git activity widget (.dev mode)
+    'gitw.aria':          'Git activity',
+    'gitw.summaryLabel':  'Pull requests',
+    'gitw.more':          'See more',
+    'gitw.less':          'See less',
+    'gitw.heatmapLabel':  'Commits per week · last 12 weeks',
+    'gitw.statPrs':       'Pull requests',
+    'gitw.statCommits':   'Commits',
+    'gitw.statProjects':  'Projects',
+    'gitw.loading':       'Loading…',
+    'gitw.prHistory':     'Pull request history',
+    'gitw.day.mon':       'Mon',
+    'gitw.day.wed':       'Wed',
+    'gitw.day.fri':       'Fri',
+    'gitw.noActivity':    'No recent activity available',
+    'gitw.today':         'today',
+    'gitw.yesterday':     'yesterday',
+    'gitw.contribsSuffix':      'contributions',
+    'gitw.commitsRepoSuffix':   'commits (this repo only)',
+    'gitw.weeksSuffix':        'last 12 weeks',
+    'gitw.contribSingular':    'contribution',
+    'gitw.contribPlural':      'contributions',
+    'gitw.commitSingular':     'commit',
+    'gitw.commitPlural':       'commits',
+    // Hero · LLM Observatory tokens widget (.ia mode)
+    'iaw.aria':           'Tokens processed by LLM Observatory',
+    'iaw.label':          'Tokens processed · total (all projects)',
+    'iaw.more':           'See more',
+    'iaw.less':           'See less',
+    'iaw.projectsLabel':  'AI projects · tokens per project',
+    'iaw.loading':        'Loading…',
+    'iaw.status.connecting': 'connecting…',
+    'iaw.status.syncing':    'syncing…',
+    'iaw.status.live':       'live · LLM Observatory',
+    'iaw.status.offline':    'offline',
+    'iaw.noProjects':     'No projects available',
+    'iaw.offline':        'No connection',
+    'iaw.tokensSuffix':   'tokens',
+    // Hero · terminal gate (.sec mode)
+    'secterm.aria':       'Interactive terminal',
+    'secterm.gatePre':    'Press',
+    'secterm.gatePost':   'to enter',
     // Lang button
     'lang.btn':       'ES',
   },
@@ -236,6 +332,12 @@ function _apply(lang) {
   document.querySelectorAll('[data-i18n-ph]').forEach(el => {
     const key = el.dataset.i18nPh;
     if (dict[key]) el.placeholder = dict[key];
+  });
+
+  // aria-label con data-i18n-aria
+  document.querySelectorAll('[data-i18n-aria]').forEach(el => {
+    const key = el.dataset.i18nAria;
+    if (dict[key]) el.setAttribute('aria-label', dict[key]);
   });
 
   document.documentElement.lang = lang;

@@ -10,6 +10,7 @@
    ============================================================ */
 
 import { navigateToProject } from './app.js';
+import { LangSwitcher } from './lang.js';
 
 // Subset de SLUG_MAP (js/projects.js) — solo los ids de ia-projects.json
 // que no traen `slug` explícito en el JSON. Mantener en sync si cambian.
@@ -21,6 +22,13 @@ const SLUG_MAP = {
 
 const INTRO_MS = 1300;
 
+const MONTHS_ES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+const MONTHS_EN = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+
+function _locale() {
+  return LangSwitcher.getLang() === 'es' ? 'es-EC' : 'en-US';
+}
+
 function _escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
@@ -29,9 +37,9 @@ function _escapeHtml(str) {
 
 function _monthLabel(dateStr) {
   const [y, m] = (dateStr || '').split('-');
-  const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+  const months = LangSwitcher.getLang() === 'es' ? MONTHS_ES : MONTHS_EN;
   const idx = Number(m) - 1;
-  return Number.isInteger(idx) && MONTHS[idx] ? `${MONTHS[idx]} ${y}` : '';
+  return Number.isInteger(idx) && months[idx] ? `${months[idx]} ${y}` : '';
 }
 
 function _countUp(el, to, suffix = '', duration = 1200) {
@@ -42,7 +50,7 @@ function _countUp(el, to, suffix = '', duration = 1200) {
     const t = Math.min((now - start) / duration, 1);
     const eased = 1 - Math.pow(1 - t, 3);
     const value = Math.round(from + (to - from) * eased);
-    el.textContent = value.toLocaleString('es-EC') + suffix;
+    el.textContent = value.toLocaleString(_locale()) + suffix;
     if (t < 1) requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
@@ -50,11 +58,12 @@ function _countUp(el, to, suffix = '', duration = 1200) {
 
 // Compacta: 128430 → "128,4K tokens". Fallback simple si Intl no soporta 'compact'.
 function _formatTokens(n) {
+  const suffix = ' ' + LangSwitcher.t('iaw.tokensSuffix');
   try {
-    return new Intl.NumberFormat('es-EC', { notation: 'compact', maximumFractionDigits: 1 })
-      .format(n) + ' tokens';
+    return new Intl.NumberFormat(_locale(), { notation: 'compact', maximumFractionDigits: 1 })
+      .format(n) + suffix;
   } catch {
-    return n.toLocaleString('es-EC') + ' tokens';
+    return n.toLocaleString(_locale()) + suffix;
   }
 }
 
@@ -66,6 +75,18 @@ export const IaTokensWidget = (() => {
   // Desglose por proyecto (GET /api/llm-stats → projects[]), llenado en _onEnterIa().
   // Cada entrada: { name: token_name en Observatory, totalTokens }.
   let _projectBreakdown = [];
+  // Estado del status pill (clave i18n) + total en vivo para re-formatear al
+  // cambiar de idioma sin re-disparar la animación de count-up.
+  let _statusKey = 'iaw.status.connecting';
+  let _totalTokens = null;
+
+  /** Reaplica el texto del status pill según el idioma activo. */
+  function _applyStatus() {
+    const statusEl = document.getElementById('ia-tokens-status');
+    if (!statusEl) return;
+    statusEl.removeAttribute('data-i18n');
+    statusEl.textContent = LangSwitcher.t(_statusKey);
+  }
 
   function init() {
     window.addEventListener('portfolio:modeChange', (e) => {
@@ -89,6 +110,17 @@ export const IaTokensWidget = (() => {
       ?.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') _collapse();
       });
+
+    // Re-render de las partes dinámicas al cambiar de idioma (los <span>
+    // estáticos los reetiqueta LangSwitcher vía data-i18n).
+    window.addEventListener('portfolio:langChange', () => {
+      _applyStatus();
+      const valueEl = document.getElementById('ia-tokens-value');
+      if (valueEl && Number.isFinite(_totalTokens)) {
+        valueEl.textContent = _totalTokens.toLocaleString(_locale());
+      }
+      if (_historyLoaded) _loadProjectHistory();
+    });
   }
 
   /* ── Estados ──────────────────────────────────────── */
@@ -187,7 +219,7 @@ export const IaTokensWidget = (() => {
         .slice(0, 5);
 
       if (items.length === 0) {
-        list.innerHTML = '<li class="ia-tokens__history-empty">Sin proyectos disponibles</li>';
+        list.innerHTML = `<li class="ia-tokens__history-empty">${LangSwitcher.t('iaw.noProjects')}</li>`;
         return;
       }
 
@@ -220,7 +252,7 @@ export const IaTokensWidget = (() => {
       });
     } catch (err) {
       console.error('[ia-tokens-widget] Error cargando proyectos:', err.message);
-      list.innerHTML = '<li class="ia-tokens__history-empty">Sin conexión</li>';
+      list.innerHTML = `<li class="ia-tokens__history-empty">${LangSwitcher.t('iaw.offline')}</li>`;
     }
   }
 
@@ -228,8 +260,7 @@ export const IaTokensWidget = (() => {
     if (_loaded) return;
     _loaded = true;
 
-    const valueEl  = document.getElementById('ia-tokens-value');
-    const statusEl = document.getElementById('ia-tokens-status');
+    const valueEl = document.getElementById('ia-tokens-value');
     if (!valueEl) return;
 
     try {
@@ -241,18 +272,24 @@ export const IaTokensWidget = (() => {
       if (data.mock || !Number.isFinite(data.totalTokens)) {
         valueEl.textContent = '···';
         valueEl.classList.remove('ia-tokens__value--live');
-        if (statusEl) statusEl.textContent = 'sincronizando…';
+        _totalTokens = null;
+        _statusKey = 'iaw.status.syncing';
+        _applyStatus();
         return;
       }
 
       valueEl.classList.add('ia-tokens__value--live');
+      _totalTokens = data.totalTokens;
       _countUp(valueEl, data.totalTokens);
-      if (statusEl) statusEl.textContent = 'en vivo · LLM Observatory';
+      _statusKey = 'iaw.status.live';
+      _applyStatus();
     } catch (err) {
       console.error('[ia-tokens-widget] Error:', err.message);
       valueEl.textContent = '—';
       valueEl.classList.remove('ia-tokens__value--live');
-      if (statusEl) statusEl.textContent = 'sin conexión';
+      _totalTokens = null;
+      _statusKey = 'iaw.status.offline';
+      _applyStatus();
       _loaded = false; // permite reintentar al reentrar al modo .ia
     }
   }

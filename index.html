@@ -87,13 +87,13 @@
   ════════════════════════════════════════════════════ -->
 
   <!-- Mode Bar — selector de modo encima del navbar -->
-  <div id="mode-bar" class="mode-bar" role="toolbar" aria-label="Selector de modo — 3 modos disponibles">
+  <div id="mode-bar" class="mode-bar" role="toolbar" data-i18n-aria="modebar.aria" aria-label="Selector de modo — 3 modos disponibles">
     <div class="mode-bar__inner">
-      <span class="mode-bar__label">3 modos</span>
+      <span class="mode-bar__label" data-i18n="modebar.label">3 modos</span>
       <div class="mode-bar__chips">
-        <button class="mode-bar-chip active" data-mode-option="dev" aria-label=".dev — Modo desarrollador: proyectos full-stack">.dev</button>
-        <button class="mode-bar-chip" data-mode-option="ia" aria-label=".ia — Modo inteligencia artificial: proyectos con LLMs y ML">.ia</button>
-        <button class="mode-bar-chip" data-mode-option="sec" aria-label=".sec — Modo ciberseguridad: labs y pentesting">.sec</button>
+        <button class="mode-bar-chip active" data-mode-option="dev" data-i18n-aria="modebar.dev.aria" aria-label=".dev — Modo desarrollador: proyectos full-stack">.dev</button>
+        <button class="mode-bar-chip" data-mode-option="ia" data-i18n-aria="modebar.ia.aria" aria-label=".ia — Modo inteligencia artificial: proyectos con LLMs y ML">.ia</button>
+        <button class="mode-bar-chip" data-mode-option="sec" data-i18n-aria="modebar.sec.aria" aria-label=".sec — Modo ciberseguridad: labs y pentesting">.sec</button>
       </div>
     </div>
   </div>
@@ -234,7 +234,7 @@
         </div>
 
         <!-- Actividad de Git — solo visible en modo .dev -->
-        <div class="git-activity" id="git-activity" role="region" aria-label="Actividad de Git" data-widget-state="collapsed">
+        <div class="git-activity" id="git-activity" role="region" data-i18n-aria="gitw.aria" aria-label="Actividad de Git" data-widget-state="collapsed">
           <div class="git-activity__bar" aria-hidden="true">
             <span class="git-activity__dot" style="background:#ff5f57"></span>
             <span class="git-activity__dot" style="background:#ffbd2e"></span>
@@ -251,21 +251,21 @@
             aria-controls="git-activity-body"
           >
             <span class="git-activity__summary-value" id="git-activity-face-prs">—</span>
-            <span class="git-activity__summary-label">Pull requests</span>
-            <span class="git-activity__summary-hint">Ver más <span aria-hidden="true">▾</span></span>
+            <span class="git-activity__summary-label" data-i18n="gitw.summaryLabel">Pull requests</span>
+            <span class="git-activity__summary-hint"><span data-i18n="gitw.more">Ver más</span> <span aria-hidden="true">▾</span></span>
           </button>
 
           <!-- Overlay de la animación de expansión -->
           <div class="git-activity__intro" id="git-activity-intro" aria-hidden="true"></div>
 
           <div class="git-activity__body" id="git-activity-body">
-            <span class="git-activity__section-label" id="git-activity-heatmap-label">Commits por semana · últimas 12 semanas</span>
+            <span class="git-activity__section-label" id="git-activity-heatmap-label" data-i18n="gitw.heatmapLabel">Commits por semana · últimas 12 semanas</span>
             <div class="git-activity__row">
               <div class="git-activity__chart">
                 <div class="git-activity__months" id="git-activity-months"></div>
                 <div class="git-activity__chart-row">
                   <div class="git-activity__weekdays">
-                    <span></span><span>Lun</span><span></span><span>Mié</span><span></span><span>Vie</span><span></span>
+                    <span></span><span data-i18n="gitw.day.mon">Lun</span><span></span><span data-i18n="gitw.day.wed">Mié</span><span></span><span data-i18n="gitw.day.fri">Vie</span><span></span>
                   </div>
                   <div class="git-activity__grid" id="git-activity-grid"></div>
                 </div>
@@ -274,25 +274,25 @@
               <div class="git-activity__stats">
                 <div class="git-activity__stat">
                   <span class="git-activity__stat-value" id="git-activity-stat-prs">—</span>
-                  <span class="git-activity__stat-label">Pull requests</span>
+                  <span class="git-activity__stat-label" data-i18n="gitw.statPrs">Pull requests</span>
                 </div>
                 <div class="git-activity__stat">
                   <span class="git-activity__stat-value" id="git-activity-stat-commits">—</span>
-                  <span class="git-activity__stat-label">Commits</span>
+                  <span class="git-activity__stat-label" data-i18n="gitw.statCommits">Commits</span>
                 </div>
                 <div class="git-activity__stat">
                   <span class="git-activity__stat-value" id="git-activity-stat-projects">—</span>
-                  <span class="git-activity__stat-label">Proyectos</span>
+                  <span class="git-activity__stat-label" data-i18n="gitw.statProjects">Proyectos</span>
                 </div>
               </div>
             </div>
-            <span class="git-activity__total" id="git-activity-total">Cargando…</span>
+            <span class="git-activity__total" id="git-activity-total" data-i18n="gitw.loading">Cargando…</span>
 
             <div class="git-activity__history" id="git-activity-history">
               <div class="git-activity__history-group">
-                <span class="git-activity__history-label">Historial de pull requests</span>
+                <span class="git-activity__history-label" data-i18n="gitw.prHistory">Historial de pull requests</span>
                 <ul class="git-activity__pr-list" id="git-activity-pr-list">
-                  <li class="git-activity__history-empty">Cargando…</li>
+                  <li class="git-activity__history-empty" data-i18n="gitw.loading">Cargando…</li>
                 </ul>
               </div>
             </div>
@@ -302,14 +302,14 @@
               class="git-activity__more-btn"
               id="git-activity-more-btn"
             >
-              <span>Ver menos</span>
+              <span data-i18n="gitw.less">Ver menos</span>
               <span class="git-activity__more-icon" aria-hidden="true">▴</span>
             </button>
           </div>
         </div>
 
         <!-- Total de tokens de LLM Observatory — solo visible en modo .ia -->
-        <div class="ia-tokens" id="ia-tokens" role="region" aria-label="Tokens procesados por LLM Observatory" data-widget-state="collapsed">
+        <div class="ia-tokens" id="ia-tokens" role="region" data-i18n-aria="iaw.aria" aria-label="Tokens procesados por LLM Observatory" data-widget-state="collapsed">
           <div class="ia-tokens__bar" aria-hidden="true">
             <span class="ia-tokens__dot" style="background:#ff5f57"></span>
             <span class="ia-tokens__dot" style="background:#ffbd2e"></span>
@@ -325,10 +325,10 @@
             aria-expanded="false"
             aria-controls="ia-tokens-body"
           >
-            <span class="ia-tokens__label">Tokens procesados · total (todos los proyectos)</span>
+            <span class="ia-tokens__label" data-i18n="iaw.label">Tokens procesados · total (todos los proyectos)</span>
             <span class="ia-tokens__value" id="ia-tokens-value">···</span>
-            <span class="ia-tokens__status" id="ia-tokens-status">conectando…</span>
-            <span class="ia-tokens__summary-hint">Ver más <span aria-hidden="true">▾</span></span>
+            <span class="ia-tokens__status" id="ia-tokens-status" data-i18n="iaw.status.connecting">conectando…</span>
+            <span class="ia-tokens__summary-hint"><span data-i18n="iaw.more">Ver más</span> <span aria-hidden="true">▾</span></span>
           </button>
 
           <!-- Overlay de la animación de expansión -->
@@ -337,9 +337,9 @@
           <div class="ia-tokens__body" id="ia-tokens-body">
             <div class="ia-tokens__history" id="ia-tokens-history">
               <div class="ia-tokens__history-group">
-                <span class="ia-tokens__history-label">Proyectos de IA · tokens por proyecto</span>
+                <span class="ia-tokens__history-label" data-i18n="iaw.projectsLabel">Proyectos de IA · tokens por proyecto</span>
                 <ul class="ia-tokens__project-list" id="ia-tokens-project-list">
-                  <li class="ia-tokens__history-empty">Cargando…</li>
+                  <li class="ia-tokens__history-empty" data-i18n="iaw.loading">Cargando…</li>
                 </ul>
               </div>
             </div>
@@ -349,14 +349,14 @@
               class="ia-tokens__more-btn"
               id="ia-tokens-more-btn"
             >
-              <span>Ver menos</span>
+              <span data-i18n="iaw.less">Ver menos</span>
               <span class="ia-tokens__more-icon" aria-hidden="true">▴</span>
             </button>
           </div>
         </div>
 
         <!-- Terminal interactiva — solo visible en modo .sec -->
-        <div class="sec-terminal" id="sec-terminal" role="region" aria-label="Terminal interactiva" data-widget-state="collapsed">
+        <div class="sec-terminal" id="sec-terminal" role="region" data-i18n-aria="secterm.aria" aria-label="Terminal interactiva" data-widget-state="collapsed">
           <div class="sec-terminal__bar" aria-hidden="true">
             <span class="sec-terminal__dot" style="background:#ff5f57"></span>
             <span class="sec-terminal__dot" style="background:#ffbd2e"></span>
@@ -366,7 +366,7 @@
 
           <!-- Compuerta colapsada — pulsa ENTER para abrir la terminal -->
           <button type="button" class="sec-terminal__gate" id="sec-terminal-gate" aria-expanded="false" aria-controls="sec-terminal-body">
-            <span class="sec-terminal__gate-text">Presiona <kbd>ENTER</kbd> para acceder</span>
+            <span class="sec-terminal__gate-text"><span data-i18n="secterm.gatePre">Presiona</span> <kbd>ENTER</kbd> <span data-i18n="secterm.gatePost">para acceder</span></span>
             <span class="sec-terminal__gate-caret" aria-hidden="true"></span>
           </button>
 

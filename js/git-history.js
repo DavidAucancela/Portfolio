@@ -9,28 +9,40 @@
    monitoreo" (_runIntro) antes de revelar el cuerpo.
    ============================================================ */
 
+import { LangSwitcher } from './lang.js';
+
 const WEEKS = 12;
 const DAY_MS = 24 * 60 * 60 * 1000;
-const MONTH_LABELS = [
+const MONTH_LABELS_ES = [
   'ene', 'feb', 'mar', 'abr', 'may', 'jun',
   'jul', 'ago', 'sep', 'oct', 'nov', 'dic',
 ];
+const MONTH_LABELS_EN = [
+  'jan', 'feb', 'mar', 'apr', 'may', 'jun',
+  'jul', 'aug', 'sep', 'oct', 'nov', 'dec',
+];
 
 const INTRO_MS = 1200;
+
+function _monthLabels() {
+  return LangSwitcher.getLang() === 'es' ? MONTH_LABELS_ES : MONTH_LABELS_EN;
+}
 
 function _isoDate(d) {
   return d.toISOString().slice(0, 10);
 }
 
 function _timeAgo(isoDate) {
+  const es = LangSwitcher.getLang() === 'es';
   const diffMs = Date.now() - new Date(isoDate).getTime();
   const days = Math.floor(diffMs / DAY_MS);
-  if (days <= 0) return 'hoy';
-  if (days === 1) return 'ayer';
-  if (days < 30) return `hace ${days}d`;
+  if (days <= 0) return LangSwitcher.t('gitw.today');
+  if (days === 1) return LangSwitcher.t('gitw.yesterday');
+  if (days < 30) return es ? `hace ${days}d` : `${days}d ago`;
   const months = Math.floor(days / 30);
-  if (months < 12) return `hace ${months}m`;
-  return `hace ${Math.floor(months / 12)}a`;
+  if (months < 12) return es ? `hace ${months}m` : `${months}mo ago`;
+  const years = Math.floor(months / 12);
+  return es ? `hace ${years}a` : `${years}y ago`;
 }
 
 function _escapeHtml(str) {
@@ -86,6 +98,12 @@ export const GitHistory = (() => {
       ?.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') _collapse();
       });
+
+    // Re-render de las partes dinámicas al cambiar de idioma (los <span>
+    // estáticos los reetiqueta LangSwitcher vía data-i18n).
+    window.addEventListener('portfolio:langChange', () => {
+      if (_data && _expandRendered) _renderDeferred();
+    });
   }
 
   /* ── Estados ──────────────────────────────────────── */
@@ -220,7 +238,7 @@ export const GitHistory = (() => {
       : [];
 
     if (prs.length === 0) {
-      list.innerHTML = '<li class="git-activity__history-empty">Sin actividad reciente disponible</li>';
+      list.innerHTML = `<li class="git-activity__history-empty">${LangSwitcher.t('gitw.noActivity')}</li>`;
       return;
     }
 
@@ -282,7 +300,7 @@ export const GitHistory = (() => {
         const label = document.createElement('span');
         label.className = 'git-activity__month-label';
         label.style.gridColumn = String(col + 1);
-        label.textContent = MONTH_LABELS[month];
+        label.textContent = _monthLabels()[month];
         months.appendChild(label);
       }
 
@@ -297,23 +315,33 @@ export const GitHistory = (() => {
         } else {
           const iso   = _isoDate(day);
           const count = counts.get(iso) || 0;
-          const noun  = data.source === 'github' ? 'contribución' : 'commit';
+          const one   = count === 1;
+          const noun  = data.source === 'github'
+            ? LangSwitcher.t(one ? 'gitw.contribSingular' : 'gitw.contribPlural')
+            : LangSwitcher.t(one ? 'gitw.commitSingular' : 'gitw.commitPlural');
           cell.className = `git-activity__day git-activity__day--l${_levelFor(count, maxCount)}`;
-          cell.title = `${iso}: ${count} ${noun}${count === 1 ? '' : 's'}`;
+          cell.title = `${iso}: ${count} ${noun}`;
         }
         grid.appendChild(cell);
       }
     }
 
     if (total) {
-      const noun = data.source === 'github' ? 'contribuciones' : 'commits (solo este repo)';
-      total.textContent = `${data.total || 0} ${noun} · últimas ${WEEKS} semanas`;
+      total.removeAttribute('data-i18n');
+      const suffix = data.source === 'github'
+        ? LangSwitcher.t('gitw.contribsSuffix')
+        : LangSwitcher.t('gitw.commitsRepoSuffix');
+      total.textContent = `${data.total || 0} ${suffix} · ${LangSwitcher.t('gitw.weeksSuffix')}`;
     }
 
     if (label) {
+      label.removeAttribute('data-i18n');
+      const es = LangSwitcher.getLang() === 'es';
       label.textContent = data.source === 'github'
-        ? `Contribuciones en GitHub (@${data.username}) · por semana`
-        : 'Commits por semana · últimas 12 semanas';
+        ? (es
+            ? `Contribuciones en GitHub (@${data.username}) · por semana`
+            : `GitHub contributions (@${data.username}) · per week`)
+        : LangSwitcher.t('gitw.heatmapLabel');
     }
   }
 

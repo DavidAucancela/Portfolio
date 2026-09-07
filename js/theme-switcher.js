@@ -325,7 +325,7 @@ function _updateURL(mode) {
 ──────────────────────────────────────────────────── */
 /**
  * Emite el evento 'portfolio:modeChange' con el modo nuevo y su config.
- * Otros módulos (projects.js, animations.js) escuchan este evento.
+ * Otros módulos (projects.js, background.js) escuchan este evento.
  */
 function _emitModeChange(mode, config) {
   window.dispatchEvent(new CustomEvent('portfolio:modeChange', {

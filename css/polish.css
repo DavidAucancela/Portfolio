@@ -90,62 +90,12 @@ body::after {
 
 /* ─────────────────────────────────────────────────────────────
    4. HERO — EFECTOS AVANZADOS POR MODO
+
+   Los tres overlays que vivían aquí (.hero-section::after: grid de puntos
+   en .dev, gradiente pulsante en .ia y grain en .sec) desaparecieron con el
+   fondo unificado: el hero ya no tiene una capa de fondo propia, es solo la
+   zona de mayor intensidad del campo global (js/background.js).
    ───────────────────────────────────────────────────────────── */
-
-/* .dev — Grid de puntos sutil en el fondo */
-[data-theme="dev"] .hero-section::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(
-    circle, rgba(59,130,246,0.12) 1px, transparent 1px
-  );
-  background-size: 40px 40px;
-  pointer-events: none;
-  z-index: 0;
-  animation: gridDrift 20s linear infinite;
-}
-
-@keyframes gridDrift {
-  0%   { background-position: 0 0; }
-  100% { background-position: 40px 40px; }
-}
-
-/* .ia — Gradiente animado que pulsa */
-[data-theme="ia"] .hero-section::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    ellipse 60% 40% at 30% 60%,
-    rgba(177,78,255,0.08) 0%,
-    transparent 70%
-  ),
-  radial-gradient(
-    ellipse 50% 50% at 70% 30%,
-    rgba(6,255,165,0.06) 0%,
-    transparent 70%
-  );
-  pointer-events: none;
-  z-index: 0;
-  animation: iaPulse 6s ease-in-out infinite alternate;
-}
-
-@keyframes iaPulse {
-  0%   { opacity: 0.6; transform: scale(1); }
-  100% { opacity: 1;   transform: scale(1.05); }
-}
-
-/* .sec — Ruido/grain overlay */
-[data-theme="sec"] .hero-section::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.5;
-}
 
 /* Título del hero con gradiente animado según modo */
 .hero-title .hero-suffix {
@@ -836,8 +786,6 @@ body::after {
   body { cursor: auto; }
 
   /* Reducir efectos pesados en mobile */
-  [data-theme="dev"]  .hero-section::after { display: none; }
-  [data-theme="ia"]   .hero-section::after { animation: none; }
   [data-theme="ia"]   .about-avatar-wrap::before { display: none; }
   [data-theme="sec"]  body::after { display: none; }
 

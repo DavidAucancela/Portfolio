@@ -147,7 +147,7 @@ const TRANSLATIONS = {
     'iaw.tokensSuffix':   'tokens',
     // Hero · compuerta de la terminal (modo .sec)
     'secterm.aria':       'Terminal interactiva',
-    'secterm.gatePre':    'Presiona',
+    'secterm.gatePre':    'Click',
     'secterm.gatePost':   'para acceder',
     // Lang button
     'lang.btn':       'EN',
@@ -294,7 +294,7 @@ const TRANSLATIONS = {
     'iaw.tokensSuffix':   'tokens',
     // Hero · terminal gate (.sec mode)
     'secterm.aria':       'Interactive terminal',
-    'secterm.gatePre':    'Press',
+    'secterm.gatePre':    'Click',
     'secterm.gatePost':   'to enter',
     // Lang button
     'lang.btn':       'ES',

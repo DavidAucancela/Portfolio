@@ -186,8 +186,6 @@
          § 1 — HERO
     ══════════════════════════════════════════════ -->
     <section class="hero-section" id="hero" aria-label="Presentación">
-      <canvas id="hero-canvas" aria-hidden="true"></canvas>
-
       <div class="gradient-overlay" aria-hidden="true" style="
         position:absolute; inset:0;
         background:var(--gradient-glow);
@@ -269,6 +267,7 @@
                   </div>
                   <div class="git-activity__grid" id="git-activity-grid"></div>
                 </div>
+                <div class="git-activity__tip" id="git-activity-tip" role="tooltip" aria-hidden="true"></div>
               </div>
 
               <div class="git-activity__stats">
@@ -364,9 +363,9 @@
             <span class="sec-terminal__title">bash — jonathan@sec</span>
           </div>
 
-          <!-- Compuerta colapsada — pulsa ENTER para abrir la terminal -->
+          <!-- Compuerta colapsada — clic para abrir la terminal -->
           <button type="button" class="sec-terminal__gate" id="sec-terminal-gate" aria-expanded="false" aria-controls="sec-terminal-body">
-            <span class="sec-terminal__gate-text"><span data-i18n="secterm.gatePre">Presiona</span> <kbd>ENTER</kbd> <span data-i18n="secterm.gatePost">para acceder</span></span>
+            <span class="sec-terminal__gate-text"><span data-i18n="secterm.gatePre">Click</span> <span data-i18n="secterm.gatePost">para acceder</span></span>
             <span class="sec-terminal__gate-caret" aria-hidden="true"></span>
           </button>
 

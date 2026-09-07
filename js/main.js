@@ -6,7 +6,7 @@
 import { inject as injectAnalytics } from '@vercel/analytics';
 import { injectSpeedInsights } from '@vercel/speed-insights';
 import { ThemeSwitcher } from './theme-switcher.js';
-import { HeroAnimations } from './animations.js';
+import { PortfolioBackground } from './background.js';
 import { Sections } from './sections.js';
 import { Projects } from './projects.js';
 import { ProjectDetail } from './project-detail.js';
@@ -30,6 +30,7 @@ import { Analytics } from './analytics.js';
 import '../css/main.css';
 import '../css/sections.css';
 import '../css/polish.css';
+import '../css/background.css';
 import '../css/project-detail.css';
 import '../css/project-gallery.css';
 import '../css/trajectory.css';
@@ -48,7 +49,6 @@ injectSpeedInsights();
 document.addEventListener('DOMContentLoaded', () => {
   ThemeSwitcher.init();
   Trajectory.init();
-  HeroAnimations.init();
   Sections.init(localStorage.getItem('portfolio-mode') || 'dev');
   Projects.init();
   ProjectDetail.init();
@@ -65,4 +65,8 @@ document.addEventListener('DOMContentLoaded', () => {
   GitHistory.init();
   IaTokensWidget.init();
   Analytics.init();
+
+  // Fondo unificado — al final: mide el alto real del documento y los rects
+  // de cada sección. Después se remide solo (ResizeObserver sobre <body>).
+  PortfolioBackground.init();
 });

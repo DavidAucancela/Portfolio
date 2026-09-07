@@ -7,21 +7,35 @@
   display: none;
 }
 
-/* ─── Layout: container pasa a grid 2 columnas en desktop ─── */
+/* ─── Layout: el panel flota como componente independiente — ya NO
+   comparte fila/columna de grid con .hero-content.
+   Antes: `#hero .container { display:grid; grid-template-columns:1fr auto }`
+   ponía a ambos en la misma fila. Expandir el panel (que crece de
+   min(320px,34vw) a min(500px,44vw)) encogía la columna `1fr` y por lo
+   tanto el ancho real de .hero-content — el texto del hero se
+   re-envolvía cada vez que abrías/cerrabas el panel. Y si el panel
+   expandido resultaba más alto que .hero-content, la fila del grid
+   crecía con él y agrandaba TODO `.hero-section`, empujando el resto
+   de la página (about, section-divider, …) hacia abajo.
+   Con position:absolute el panel crece sobre un punto fijo (alineado
+   con el top de .hero-content) sin afectar el tamaño de nada más. ─── */
 [data-theme="dev"] #hero .container {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 2.5rem;
-  align-items: start;
+  position: relative;
 }
 
 /* ─── Panel visible en modo .dev — mismo chrome que .sec-terminal ─── */
 [data-theme="dev"] .git-activity {
   --git-cell-size: 16px;
-  position: relative;
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   width: min(500px, 44vw);
+  /* Techo propio con scroll interno — el panel nunca depende del alto
+     de .hero-section para caber; simplemente deja de crecer y scrollea. */
+  max-height: min(640px, calc(100vh - 200px));
   background: rgba(10, 10, 26, 0.94);
   border: 1px solid rgba(59, 130, 246, 0.22);
   border-radius: 10px;
@@ -32,10 +46,15 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   animation: gitActivityEnter 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: 0.3s;
   opacity: 0;
+  /* Ahora que expandir/colapsar es un cambio aislado (no reflowea nada
+     más), se puede animar el propio tamaño sin miedo a que el resto de
+     la página "salte" en cada frame de la transición. */
+  transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes gitActivityEnter {
@@ -254,6 +273,7 @@
 
 /* ─── Chart: meses arriba, días a la izquierda, grid de celdas ─── */
 .git-activity__chart {
+  position: relative; /* ancla .git-activity__tip */
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -346,6 +366,9 @@
   height: var(--git-cell-size);
   border-radius: 3px;
   background: rgba(148, 163, 184, 0.1);
+  outline: 1px solid transparent;
+  outline-offset: 1px;
+  transition: outline-color 0.12s ease, transform 0.12s ease;
 }
 
 .git-activity__day--empty  { background: transparent; }
@@ -354,6 +377,59 @@
 .git-activity__day--l2     { background: rgba(59, 130, 246, 0.58); }
 .git-activity__day--l3     { background: rgba(59, 130, 246, 0.82); }
 .git-activity__day--l4     { background: #3b82f6; box-shadow: 0 0 6px rgba(59, 130, 246, 0.7); }
+
+/* Realce al pasar el cursor — junto con .git-activity__tip, muestra el
+   detalle exacto del día en vez del tooltip nativo del navegador */
+.git-activity__day:not(.git-activity__day--empty):hover {
+  outline-color: rgba(226, 232, 240, 0.65);
+  transform: scale(1.22);
+}
+
+/* ─── Tooltip de celda: reemplaza el `title` nativo del navegador por
+   una tarjeta con el mismo estilo del panel — fecha + nº exacto ─── */
+.git-activity__tip {
+  position: absolute;
+  z-index: 5;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, calc(-100% - 9px));
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  background: rgba(6, 8, 20, 0.97);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-size: 0.68rem;
+  line-height: 1.4;
+  white-space: nowrap;
+  color: #cbd5e1;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.12s ease;
+}
+
+.git-activity__tip.is-visible { opacity: 1; visibility: visible; }
+
+.git-activity__tip strong {
+  color: #60a5fa;
+  font-weight: 700;
+}
+
+.git-activity__tip::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: rgba(6, 8, 20, 0.97);
+}
+
+@media (hover: none), (pointer: coarse) {
+  /* Sin cursor persistente no hay hover que lo dispare — se queda oculto */
+  .git-activity__tip { display: none; }
+}
 
 .git-activity__total {
   font-size: 0.72rem;
@@ -495,8 +571,13 @@
 
 /* ─── Tablet / Mobile ─── */
 @media (max-width: 960px) {
-  [data-theme="dev"] #hero .container {
-    grid-template-columns: 1fr;
+  /* Bajo el breakpoint el panel vuelve al flujo normal (apilado debajo
+     de .hero-content, como una sección propia) — el flotante absoluto
+     es un patrón de escritorio, en mobile ya no hace falta anclar nada. */
+  [data-theme="dev"] .git-activity {
+    position: static;
+    max-height: none;
+    overflow-y: visible;
   }
 
   [data-theme="dev"] .git-activity,

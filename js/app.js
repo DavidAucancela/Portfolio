@@ -14,7 +14,7 @@
  *  - Temas:    theme-switcher.js
  *  - Secciones: sections.js
  *  - Proyectos: projects.js
- *  - Canvas:   animations.js
+ *  - Canvas:   background.js
  */
 
 import { ThemeSwitcher } from './theme-switcher.js';

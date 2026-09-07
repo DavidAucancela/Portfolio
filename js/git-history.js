@@ -32,6 +32,11 @@ function _isoDate(d) {
   return d.toISOString().slice(0, 10);
 }
 
+/** "5 sep 2026" — usado en el tooltip de celda del heatmap */
+function _fmtDate(d) {
+  return `${d.getDate()} ${_monthLabels()[d.getMonth()]} ${d.getFullYear()}`;
+}
+
 function _timeAgo(isoDate) {
   const es = LangSwitcher.getLang() === 'es';
   const diffMs = Date.now() - new Date(isoDate).getTime();
@@ -104,6 +109,46 @@ export const GitHistory = (() => {
     window.addEventListener('portfolio:langChange', () => {
       if (_data && _expandRendered) _renderDeferred();
     });
+
+    _bindCellTooltip();
+  }
+
+  /* ── Tooltip de celda del heatmap ─────────────────────
+     Delegado en el grid (las celdas se recrean en cada _renderHeatmap,
+     un listener por celda se perdería en cada re-render). */
+  function _bindCellTooltip() {
+    const grid  = document.getElementById('git-activity-grid');
+    const tip   = document.getElementById('git-activity-tip');
+    const chart = document.querySelector('.git-activity__chart');
+    if (!grid || !tip || !chart) return;
+
+    const show = (cell) => {
+      if (!cell.dataset.date) return;
+      const [y, m, d] = cell.dataset.date.split('-').map(Number);
+      const date = new Date(y, m - 1, d);
+      tip.innerHTML = `<strong>${cell.dataset.count} ${cell.dataset.noun}</strong><br>${_fmtDate(date)} · ${_timeAgo(cell.dataset.date)}`;
+
+      const chartBox = chart.getBoundingClientRect();
+      const cellBox  = cell.getBoundingClientRect();
+      tip.style.left = `${cellBox.left - chartBox.left + cellBox.width / 2}px`;
+      tip.style.top  = `${cellBox.top  - chartBox.top}px`;
+      tip.classList.add('is-visible');
+      tip.setAttribute('aria-hidden', 'false');
+    };
+    const hide = () => {
+      tip.classList.remove('is-visible');
+      tip.setAttribute('aria-hidden', 'true');
+    };
+
+    grid.addEventListener('pointerover', (e) => {
+      const cell = e.target.closest('.git-activity__day');
+      if (cell && !cell.classList.contains('git-activity__day--empty')) show(cell);
+    });
+    grid.addEventListener('pointerout', (e) => {
+      const cell = e.target.closest('.git-activity__day');
+      if (cell && !cell.contains(e.relatedTarget)) hide();
+    });
+    grid.addEventListener('pointerleave', hide);
   }
 
   /* ── Estados ──────────────────────────────────────── */
@@ -320,7 +365,14 @@ export const GitHistory = (() => {
             ? LangSwitcher.t(one ? 'gitw.contribSingular' : 'gitw.contribPlural')
             : LangSwitcher.t(one ? 'gitw.commitSingular' : 'gitw.commitPlural');
           cell.className = `git-activity__day git-activity__day--l${_levelFor(count, maxCount)}`;
-          cell.title = `${iso}: ${count} ${noun}`;
+          // Sin `title`: el tooltip nativo del navegador duplicaría al
+          // custom de _bindCellTooltip (ver más abajo) con un delay propio
+          // que no se puede sincronizar. aria-label mantiene el dato
+          // accesible para lectores de pantalla.
+          cell.dataset.date  = iso;
+          cell.dataset.count = String(count);
+          cell.dataset.noun  = noun;
+          cell.setAttribute('aria-label', `${_fmtDate(day)}: ${count} ${noun}`);
         }
         grid.appendChild(cell);
       }

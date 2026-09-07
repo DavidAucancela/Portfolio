@@ -7,17 +7,21 @@
   display: none;
 }
 
-/* ─── Layout: container pasa a grid 2 columnas en desktop ─── */
+/* ─── Layout: el panel flota como componente independiente — ya NO
+   comparte fila/columna de grid con .hero-content (ver la nota
+   equivalente en css/git-history.css, mismo bug, misma causa). Aquí el
+   salto de tamaño era menor (240–400px de alto, siempre acotado), pero
+   el ancho seguía acoplado a .hero-content vía la columna `1fr`. ─── */
 [data-theme="sec"] #hero .container {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 2.5rem;
-  align-items: start;
+  position: relative;
 }
 
 /* ─── Terminal visible en modo .sec ─── */
 [data-theme="sec"] .sec-terminal {
-  position: relative;
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   width: min(440px, 40vw);
@@ -38,6 +42,7 @@
   animation: terminalEnter 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: 0.3s;
   opacity: 0;
+  transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes terminalEnter {
@@ -57,7 +62,7 @@
 .sec-terminal[data-widget-state="collapsed"] .sec-terminal__prompt-row { display: none; }
 .sec-terminal[data-widget-state="expanded"]  .sec-terminal__gate { display: none; }
 
-/* ─── Compuerta: "Presiona ENTER para acceder" ─── */
+/* ─── Compuerta: "Click para acceder" ─── */
 .sec-terminal__gate {
   display: flex;
   align-items: center;
@@ -71,15 +76,6 @@
   letter-spacing: 0.04em;
   color: #00ff41;
   cursor: pointer;
-}
-
-.sec-terminal__gate kbd {
-  font-family: inherit;
-  font-size: 0.72rem;
-  padding: 0.1rem 0.4rem;
-  border: 1px solid rgba(0, 255, 65, 0.4);
-  border-radius: 4px;
-  color: #00ff41;
 }
 
 .sec-terminal__gate-caret {
@@ -228,11 +224,10 @@
 
 /* ─── Tablet / Mobile ─── */
 @media (max-width: 960px) {
-  [data-theme="sec"] #hero .container {
-    grid-template-columns: 1fr;
-  }
-
+  /* El panel flotante es un patrón de escritorio; en mobile vuelve al
+     flujo normal, apilado debajo de .hero-content. */
   [data-theme="sec"] .sec-terminal {
+    position: static;
     width: 100%;
     min-height: 200px;
     max-height: 260px;

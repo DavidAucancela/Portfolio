@@ -14,6 +14,14 @@
   --bg-nav:            rgba(13, 2, 33, 0.85);
   --bg-input:          #0f0228;
 
+  /* Superficies glass — el púrpura tolera algo más de transparencia */
+  --bg-glass:          rgba(18, 4, 42, 0.55);
+  --bg-glass-hover:    rgba(28, 8, 64, 0.68);
+  --bg-glass-input:    rgba(15, 2, 40, 0.55);
+  --bg-section-alt:    rgba(17, 3, 48, 0.30);
+  --glass-blur:        16px;
+  --glass-sat:         1.4;
+
   /* Colores de acento */
   --color-accent:      #06ffa5;
   --color-accent-dim:  #00cc84;
@@ -31,7 +39,8 @@
   --text-inverse:      #0d0221;
 
   /* Gradientes */
-  --gradient-hero:     linear-gradient(135deg, #0d0221 0%, #150535 50%, #0a1525 100%);
+  /* El hero ya no tapa el fondo global: su gradiente es ahora un tinte */
+  --gradient-hero:     linear-gradient(135deg, rgba(13,2,33,0) 0%, rgba(21,5,53,0.40) 50%, rgba(10,21,37,0.52) 100%);
   --gradient-card:     linear-gradient(145deg, #12042a, #1c0840);
   --gradient-accent:   linear-gradient(90deg, #06ffa5, #b14eff);
   --gradient-glow:     radial-gradient(ellipse at 50% 0%, rgba(177,78,255,0.2) 0%, transparent 70%);

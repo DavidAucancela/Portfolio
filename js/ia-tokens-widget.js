@@ -223,7 +223,10 @@ export const IaTokensWidget = (() => {
         return;
       }
 
-      list.innerHTML = items.map((p, idx) => {
+      // Primera pasada: resuelve el total de tokens por proyecto (cuando hay
+      // match en Observatory) — necesario para escalar la barra de todos
+      // contra el mismo máximo antes de poder renderizar ninguno.
+      const resolved = items.map((p) => {
         // Match explícito por p.observatoryToken (nombre exacto del token en
         // Observatory) — evita matchear por título, que es frágil y puede
         // pegarle a un proyecto equivocado en silencio. Acepta un nombre único
@@ -233,15 +236,31 @@ export const IaTokensWidget = (() => {
         const rows   = names.filter(Boolean)
           .map((name) => _projectBreakdown.find((row) => row.name === name))
           .filter(Boolean);
-        const meta = rows.length
-          ? _formatTokens(rows.reduce((sum, row) => sum + row.totalTokens, 0))
-          : _monthLabel(p.date);
+        const tokens = rows.length ? rows.reduce((sum, row) => sum + row.totalTokens, 0) : null;
+        const meta   = tokens !== null ? _formatTokens(tokens) : _monthLabel(p.date);
+        return { p, tokens, meta };
+      });
+
+      const maxTokens = Math.max(0, ...resolved.map((r) => r.tokens || 0));
+
+      list.innerHTML = resolved.map(({ p, tokens, meta }, idx) => {
+        // Barra proporcional al total de tokens del proyecto más pesado de
+        // la lista — da una lectura visual inmediata del peso relativo,
+        // no solo el número. Sin dato de tokens (fallback a mes) no hay
+        // barra que dibujar: se oculta en vez de mostrar un 0% engañoso.
+        const pct = tokens !== null && maxTokens > 0 ? Math.max(4, Math.round((tokens / maxTokens) * 100)) : null;
+        const bar = pct !== null
+          ? `<span class="ia-tokens__project-bar"><span class="ia-tokens__project-bar-fill" style="width:${pct}%"></span></span>`
+          : '';
 
         return `
         <li class="ia-tokens__project-item" style="animation-delay:${0.06 * idx}s">
           <button type="button" class="ia-tokens__project-link" data-slug="${p.slug}">
-            <span class="ia-tokens__project-title">${_escapeHtml(p.title)}</span>
-            <span class="ia-tokens__project-tokens">${_escapeHtml(meta)}</span>
+            <span class="ia-tokens__project-row">
+              <span class="ia-tokens__project-title">${_escapeHtml(p.title)}</span>
+              <span class="ia-tokens__project-tokens">${_escapeHtml(meta)}</span>
+            </span>
+            ${bar}
           </button>
         </li>
       `;

@@ -7,20 +7,25 @@
   display: none;
 }
 
-/* ─── Layout: container pasa a grid 2 columnas en desktop ─── */
+/* ─── Layout: el panel flota como componente independiente — ya NO
+   comparte fila/columna de grid con .hero-content (ver la nota
+   equivalente en css/git-history.css, mismo bug, misma causa: un
+   grid `1fr auto` acoplaba el ancho de .hero-content y el alto de
+   .hero-section al estado del panel). ─── */
 [data-theme="ia"] #hero .container {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 2.5rem;
-  align-items: start;
+  position: relative;
 }
 
 /* ─── Panel visible en modo .ia — mismo chrome que .sec-terminal ─── */
 [data-theme="ia"] .ia-tokens {
-  position: relative;
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   width: min(420px, 42vw);
+  max-height: min(640px, calc(100vh - 200px));
   background: rgba(13, 2, 33, 0.94);
   border: 1px solid rgba(177, 78, 255, 0.28);
   border-radius: 10px;
@@ -31,10 +36,12 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   font-family: 'Orbitron', 'Space Mono', monospace;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   animation: iaTokensEnter 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: 0.3s;
   opacity: 0;
+  transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes iaTokensEnter {
@@ -311,9 +318,9 @@
 
 .ia-tokens__project-link {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.6rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.3rem;
   width: 100%;
   padding: 0.3rem 0.4rem;
   border-radius: 5px;
@@ -327,6 +334,14 @@
 
 .ia-tokens__project-link:hover {
   background: rgba(177, 78, 255, 0.08);
+}
+
+.ia-tokens__project-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  width: 100%;
 }
 
 .ia-tokens__project-title {
@@ -347,6 +362,26 @@
   white-space: nowrap;
 }
 
+/* ─── Barra de peso relativo — cuánto pesa este proyecto frente al que
+   más tokens acumula de la lista. Solo aparece cuando hay dato real de
+   Observatory (ver _loadProjectHistory: `pct !== null`) ─── */
+.ia-tokens__project-bar {
+  display: block;
+  width: 100%;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(177, 78, 255, 0.1);
+  overflow: hidden;
+}
+
+.ia-tokens__project-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #b14eff, #06ffa5);
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 /* ─── Ocultar hero-bg-text ({}) para que no se mezcle con el panel ─── */
 [data-theme="ia"] #hero-bg-text {
   display: none;
@@ -354,8 +389,12 @@
 
 /* ─── Tablet / Mobile ─── */
 @media (max-width: 960px) {
-  [data-theme="ia"] #hero .container {
-    grid-template-columns: 1fr;
+  /* El panel flotante es un patrón de escritorio; en mobile vuelve al
+     flujo normal, apilado debajo de .hero-content. */
+  [data-theme="ia"] .ia-tokens {
+    position: static;
+    max-height: none;
+    overflow-y: visible;
   }
 
   [data-theme="ia"] .ia-tokens,

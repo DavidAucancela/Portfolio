@@ -430,7 +430,7 @@ export const SecTerminal = (() => {
         setTimeout(() => {
           const body = document.getElementById('sec-terminal-body');
           if (body) body.innerHTML = '';
-          _collapse(); // vuelve a la compuerta "Presiona ENTER"
+          _collapse(); // vuelve a la compuerta "Click para acceder"
         }, 2200);
         break;
 

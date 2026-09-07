@@ -14,6 +14,15 @@
   --bg-nav:            rgba(0, 0, 0, 0.92);
   --bg-input:          #050505;
 
+  /* Superficies glass — sobre negro puro el verde de la lluvia vibra si la
+     card es muy transparente, así que aquí se sube el alfa y se baja el blur */
+  --bg-glass:          rgba(8, 8, 8, 0.72);
+  --bg-glass-hover:    rgba(15, 15, 15, 0.80);
+  --bg-glass-input:    rgba(5, 5, 5, 0.70);
+  --bg-section-alt:    rgba(5, 5, 5, 0.34);
+  --glass-blur:        10px;
+  --glass-sat:         1.1;
+
   /* Colores de acento */
   --color-accent:      #00ff41;
   --color-accent-dim:  #00cc33;
@@ -31,7 +40,8 @@
   --text-inverse:      #000000;
 
   /* Gradientes */
-  --gradient-hero:     radial-gradient(ellipse at center top, #0a1a0a 0%, #050a05 40%, #000000 100%);
+  /* El hero ya no tapa el fondo global: su gradiente es ahora un tinte */
+  --gradient-hero:     radial-gradient(ellipse at center top, rgba(10,26,10,0.55) 0%, rgba(5,10,5,0.30) 40%, rgba(0,0,0,0) 100%);
   --gradient-card:     linear-gradient(145deg, #080808, #0d0d0d);
   --gradient-accent:   linear-gradient(90deg, #00ff41, #39ff14);
   --gradient-glow:     radial-gradient(ellipse at 50% 0%, rgba(0,255,65,0.1) 0%, transparent 70%);
@@ -145,16 +155,8 @@
   transform: translateY(0);
 }
 
-/* ─── Overlay de noise/grain en modo sec ────────────────────── */
-[data-theme="sec"] .hero-section::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
-  opacity: var(--noise-opacity);
-  pointer-events: none;
-  z-index: 0;
-}
+/* El grain de .sec ya no es exclusivo del hero: ahora lo pinta #bg-canvas
+   como textura de página completa (ver css/background.css). */
 
 /* ─── Scrollbar personalizado ───────────────────────────────── */
 [data-theme="sec"]::-webkit-scrollbar { width: 6px; }

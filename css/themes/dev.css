@@ -14,6 +14,16 @@
   --bg-nav:            rgba(10, 10, 26, 0.85);
   --bg-input:          #0f0f28;
 
+  /* Superficies glass — dejan ver el fondo global a través del contenido.
+     --bg-card sigue siendo opaco: lo usan dropdowns y menús, que no deben
+     transparentarse sobre el contenido de la página. */
+  --bg-glass:          rgba(18, 18, 42, 0.58);
+  --bg-glass-hover:    rgba(30, 30, 69, 0.70);
+  --bg-glass-input:    rgba(15, 15, 40, 0.55);
+  --bg-section-alt:    rgba(17, 17, 40, 0.30);
+  --glass-blur:        14px;
+  --glass-sat:         1.35;
+
   /* Colores de acento */
   --color-accent:      #3b82f6;
   --color-accent-dim:  #1d4ed8;
@@ -31,7 +41,8 @@
   --text-inverse:      #0a0a1a;
 
   /* Gradientes */
-  --gradient-hero:     linear-gradient(135deg, #0a0a1a 0%, #111128 40%, #0d2060 100%);
+  /* El hero ya no tapa el fondo global: su gradiente es ahora un tinte */
+  --gradient-hero:     linear-gradient(135deg, rgba(10,10,26,0) 0%, rgba(17,17,40,0.35) 40%, rgba(13,32,96,0.52) 100%);
   --gradient-card:     linear-gradient(145deg, #12122a, #1a1a3e);
   --gradient-accent:   linear-gradient(90deg, #3b82f6, #60a5fa);
   --gradient-glow:     radial-gradient(ellipse at 50% 0%, rgba(59,130,246,0.15) 0%, transparent 70%);

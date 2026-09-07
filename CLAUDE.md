@@ -37,6 +37,7 @@ css/
   main.css                    # Variables CSS, reset, layout base, tipografía, hero
   sections.css                # Estilos de secciones (about, projects, skills, contact)
   animations.css              # Keyframes globales + scroll-driven animations (@supports)
+  background.css              # Canvas global (#bg-canvas) + superficies glass
   polish.css                  # jonathan-panel, trayectoria interactiva, detalles visuales
   project-detail.css          # Panel lateral de detalle (PDM) — ya no se abre desde cards
   project-gallery.css         # Gallery fullscreen (2 col: imagen/PDF izq, info der; docs mode en .sec)
@@ -59,8 +60,8 @@ js/
   projects.js                 # Renderizado de tarjetas de proyectos por modo
   project-detail.js           # buildContent(p, mode) + PDM lateral (init/open/close)
   project-gallery.js          # ProjectGallery — gallery fullscreen (open/close)
-  animations.js               # HeroAnimations: canvas de partículas/matrix/neural por modo
-  effects.js                  # SectionReveal, parallax, partículas, SectionCanvas (fondos dinámicos)
+  background.js               # PortfolioBackground: fondo unificado de toda la página (1 canvas)
+  effects.js                  # SectionReveal, parallax, cursor, scramble, contadores
   lang.js                     # LangSwitcher — internacionalización ES/EN
   section-nav.js              # Navegación lateral de secciones (dots laterales)
   ia-assistant.js             # IAAssistant — KB dinámica desde JSON + motor de query (keywords)
@@ -154,8 +155,51 @@ Los keyframes globales son: `sd-up`, `sd-left`, `sd-right`, `sd-scale`, `sd-bar`
 - Botón trigger en la navbar (antes del hamburger)
 - `_openProject(slug, preferredMode)` cambia de modo si es necesario y navega al proyecto
 
+## Widgets del hero — `.git-activity` / `.ia-tokens` / `.sec-terminal`
+
+Tres paneles, uno por modo (`git-history.js`+`.css`, `ia-tokens-widget.js`+`.css`,
+`sec-terminal.js`+`.css`), anclados arriba a la derecha del hero en desktop. Cada uno
+tiene dos estados en `data-widget-state` (`collapsed`/`expanded`, toggle vía el botón
+"Ver más"/compuerta) más una mini-animación de intro (~1.2s: commit→cloud en `.dev`,
+red neuronal mini→macro en `.ia`) antes de revelar el cuerpo expandido.
+
+**El panel es un flotante independiente — nunca un grid con `.hero-content`.**
+Hasta hace poco `#hero .container` pasaba a `display:grid; grid-template-columns:1fr
+auto` en cada modo, metiendo el widget en la misma fila que `.hero-content`. Eso
+acoplaba el estado del widget al layout del hero por dos vías a la vez: la columna
+`1fr` se encogía (y el texto del hero se re-envolvía) cada vez que el panel crecía de
+`collapsed` a `expanded`, y si el panel expandido resultaba más alto que
+`.hero-content`, la fila del grid crecía con él y agrandaba **todo** `.hero-section`,
+empujando el resto de la página hacia abajo. El fix: `#hero .container` vuelve a ser
+un contenedor normal (`position:relative`, sin grid) y cada widget es
+`position:absolute; top:0; right:0;` dentro de él — crece sobre un punto fijo
+(alineado con el top de `.hero-content`, mismo resultado visual que el `align-items:
+start` del grid viejo) sin tocar el tamaño de nada más. Techo propio con scroll
+interno (`max-height: min(640px, calc(100vh - 200px)); overflow-y:auto`) para que
+tampoco dependa del alto de `.hero-section` para caber. Ahora que expandir/colapsar
+es un cambio aislado, el ancho anima con `transition: width .45s …` sin miedo a que
+el resto de la página salte en cada frame.
+**≤960px** el flotante vuelve al flujo normal (`position:static`, ancho 100%,
+apilado debajo de `.hero-content`) — el patrón absoluto es cosa de escritorio; en
+mobile no hay columna de grid que proteger y el stack vertical ya es examen estándar.
+**Al tocar el layout de un widget nuevo, replicar este patrón — nunca volver a meter
+el panel en el grid del `.container`.**
+
+**Detalle en el estado expandido:**
+- `.git-activity` — el heatmap reemplazó el `title` nativo del navegador por un
+  tooltip propio (`.git-activity__tip`, delegado en `#git-activity-grid`, un solo
+  listener para las ~84 celdas que se recrean en cada render): fecha completa +
+  cantidad exacta + tiempo relativo, con el mismo estilo del panel en vez del
+  tooltip genérico del SO. Oculto en `pointer:coarse` (no hay hover que lo dispare).
+- `.ia-tokens` — cada proyecto de la lista lleva una barra de peso relativo
+  (`.ia-tokens__project-bar-fill`, gradiente púrpura→teal) escalada contra el
+  proyecto con más tokens de las 5 filas mostradas — lectura visual inmediata del
+  peso, no solo el número. Se oculta cuando el proyecto no matcheó ningún token en
+  Observatory (fallback a mes: no hay magnitud real que barra).
+
 **Terminal .sec (`sec-terminal.js` + `sec-terminal.css`):**
-- Solo visible en modo `.sec`, posicionada a la derecha del hero (grid 2 col en desktop)
+- Solo visible en modo `.sec`, flotante arriba a la derecha del hero (mismo patrón
+  que el resto de los widgets — ver arriba)
 - Boot sequence animado la primera vez que se activa el modo
 - Comandos: `help`, `whoami`, `ls [projects]`, `cat <file>.md`, `ping linkedin`, `clear`, `exit`
 - Historial de comandos con ↑↓
@@ -236,56 +280,89 @@ en `dev-projects.json` trae `slug: 'artecuador'` explícito; el map lo resuelve 
 'project-008' → 'llm-observatory'    'project-016' → 'portfolio-trimodal'
 ```
 
-## Fondos dinámicos de sección — `SectionCanvas` (`effects.js`)
+## Fondo unificado — `PortfolioBackground` (`js/background.js` + `css/background.css`)
 
-Módulo #11 en `effects.js`. Crea un `<canvas class="section-bg-canvas">` como primer hijo
-de cada sección (`#about`, `#projects`, `#skills`, `#contact`). Solo activo en dispositivos
-con puntero fino (`hover: hover and pointer: fine` — no mobile/touch).
+**Un solo canvas para toda la página.** Sustituye a los dos sistemas anteriores, que ya
+no existen: `#hero-canvas` + `HeroAnimations` (`js/animations.js`, eliminado) y
+`SectionCanvas` (un canvas por sección, módulo #11 de `effects.js`, eliminado).
+
+### Parallax real sin canvas gigante
+Las partículas viven en **coordenadas de documento** y se dibujan restando
+`scrollTop * factor`, sobre un canvas `position: fixed` del tamaño del viewport.
+Visualmente equivale a un canvas del alto del documento (el campo scrollea contigo),
+sin su costo: un canvas de 10.000px son ~76MB a DPR 1 y repintar 19M px por frame.
+**No sustituir esto por un canvas de altura real** — además, un canvas de viewport
+permite lo que uno gigante no: capas a distinta velocidad.
+
+```js
+const LAYER = { far: 0.45, mid: 0.75, near: 1.0 };
+```
+La capa `near` (factor 1.0) va pegada al contenido: es la única en la que un efecto
+puede quedar alineado con una card mientras se scrollea.
 
 ### Efectos por modo
-| Modo | Partículas | Spotlight |
-|------|-----------|-----------|
-| `.dev` | Nodos azules flotantes (~35), líneas entre vecinos <115px, se repelen al acercarte | Radial `rgba(59,130,246, 0.10)` |
-| `.ia` | Nodos púrpura/teal, pulsos radiales espontáneos (prob. 0.04%/frame) | Radial `rgba(177,78,255, 0.10)` |
-| `.sec` | Columnas de chars ASCII/katakana cayendo, aceleran y brillan cerca del cursor | Radial `rgba(0,255,65, 0.10)` |
+| Modo | Campo | Interacción con el cursor | Interacción con cards |
+|------|-------|---------------------------|----------------------|
+| `.dev` | Retícula técnica (paso 68px) + paquetes viajando por las aristas | Router: desvía los paquetes hacia él y revela más malla en un radio de 200px | Hover ilumina la parcela bajo la card; el click emite 4 paquetes desde su borde |
+| `.ia` | Nodos púrpura/teal en deriva + señales por las aristas | Las conexiones **nacen bajo el puntero y se disuelven al alejarse** (radio 108px en reposo → 252px bajo el cursor); los nodos se acercan a él | Al abrir un proyecto, 18 nodos se reclutan sobre el perímetro de la card y un pulso lo recorre — la respuesta "se genera" de la red. `portfolio:projectClose` los suelta |
+| `.sec` | Lluvia de chars atenuada (opacidad 0.08–0.20; antes llegaba a 0.45) + virus | Los virus huyen a <150px y se desintegran a <55px, con estallido de debris y fogonazo en la columna | — |
 
-### Stacking context (patrón idéntico al hero canvas)
+Acentos hardcoded en `ACCENT` / `ACCENT2` (mismo criterio que tenía `SectionCanvas`):
+```js
+dev: [59, 130, 246]   + [125, 211, 252] (paquetes brillantes)
+ia:  [177, 78, 255]   + [6, 255, 165]   (teal)
+sec: [0, 255, 65]     + [255, 0, 51]    (rojo de amenaza — virus)
 ```
-.section              position: relative; overflow: hidden;
-  .section-bg-canvas  position: absolute; z-index: 0;   ← canvas + spotlight
-  .container          position: relative; z-index: 1;   ← contenido encima
+
+### Zonas
+Cada sección declara su intensidad en `ZONE_INTENSITY`; el campo es continuo pero
+modula densidad/brillo según en qué sección cae cada punto. El hero es solo la zona
+más intensa (1.0), no un fondo aparte.
+
+### Stacking
 ```
+html                background-color: var(--bg-primary)   ← el color base subió aquí
+  body              background: transparent               ← si es opaco, tapa el canvas
+    #bg-canvas      position: fixed; z-index: 0
+    main, .footer   position: relative; z-index: 1
+```
+`.section--alt` usa `--bg-section-alt` (rgba con alfa ~0.30), no un color sólido.
+Los vignettes `.section::before/::after` y el `mask-image` del canvas por sección
+**se eliminaron**: existían solo para disimular la costura entre fondos independientes.
 
-### Suavizado de bordes entre secciones
-Dos mecanismos combinados para eliminar el corte duro al cruzar secciones:
-
-1. **`mask-image` en el canvas** — desvanece el canvas en el 8% superior e inferior:
-   ```css
-   mask-image: linear-gradient(to bottom, transparent 0%, black 8%, black 92%, transparent 100%);
-   ```
-
-2. **Vignettes CSS** (`::before` top / `::after` bottom) en `.section` y `.section--alt` —
-   funden el color de fondo propio de la sección en 60px en cada borde:
-   ```css
-   .section::before     { background: linear-gradient(to bottom, var(--bg-primary),   transparent); }
-   .section--alt::before { background: linear-gradient(to bottom, var(--bg-secondary), transparent); }
-   .section::after      { background: linear-gradient(to bottom, transparent, var(--bg-primary));   }
-   .section--alt::after  { background: linear-gradient(to bottom, transparent, var(--bg-secondary)); }
-   ```
-   Ambos pseudo-elementos tienen `z-index: 0` (bajo el contenido) y `pointer-events: none`.
+### Superficies glass
+`--bg-card` sigue siendo **opaco** (lo usan dropdowns y menús flotantes, que no deben
+transparentarse sobre el contenido). Las tarjetas usan variables aparte:
+`--bg-glass`, `--bg-glass-hover`, `--bg-glass-input`, `--glass-blur`, `--glass-sat`,
+definidas por tema. `background.css` las aplica a una lista explícita de superficies
+(`.about-stat`, `.skill-card`, `.lab-card`, `.about-focus-card`, `.contact-link-item`,
+`.social-link`, `.form-input`…) con `backdrop-filter`. Nunca a `.section` — sería un
+blur a pantalla completa. `.sec` lleva más alfa y menos blur: sobre negro puro el
+verde de la lluvia vibra detrás del texto.
 
 ### Performance
-- Loop `requestAnimationFrame` compartido entre todos los canvases
-- `ResizeObserver` por sección — reinicializa partículas al cambiar tamaño
-- Saltar secciones fuera del viewport (±80px) en cada frame
-- Al cambiar modo: `_teardown()` + `_setup()` con 80ms de delay para esperar el DOM
+- Un único `requestAnimationFrame` para toda la página
+- Culling por banda de viewport (±220px): fuera de ella no se integra ni se dibuja
+- Hash espacial para las conexiones de `.ia` (`buildBuckets` + `eachPair`) — el
+  código viejo hacía O(n²) *por sección*
+- **Calidad adaptativa:** si el frame time medio supera 22ms durante 45 frames,
+  baja un escalón (DPR → 0.75×, luego densidad 0.7 → 0.45). La densidad llega a
+  todos los renderers, incluido el espaciado de columnas de `.sec` (el `fillText`
+  de la lluvia es lo que domina el coste en ese modo)
+- Pausa con `document.hidden`; `prefers-reduced-motion` dibuja **un solo frame** estático
+- `vw` se mide con `documentElement.clientWidth` (excluye la barra de scroll, a
+  diferencia de `innerWidth`)
+- En táctil corre en modo **lite** (densidad reducida, sin conexiones dinámicas, sin
+  `backdrop-filter`). Antes `SectionCanvas` simplemente no arrancaba en móvil; ahora
+  este es el único fondo, así que apagarlo dejaría el hero plano
 
-### Colores de acento (hardcoded en `ACCENT_RGB`)
-```js
-dev: [59, 130, 246]   // azul
-ia:  [177, 78, 255]   // púrpura  +  ACCENT2: [6, 255, 165] (teal, 35% de nodos)
-sec: [0,  255,  65]   // verde terminal
-```
+### Trampas conocidas
+- **La lluvia de `.sec` se reparte por toda la banda visible al reciclarse**, no solo
+  por encima. Al scrollear rápido se recicla media pantalla de columnas de golpe; si
+  todas nacen arriba tardan cientos de frames en volver a entrar (~0.5px/frame) y la
+  pantalla se queda vacía. El `col.fade` tapa la aparición a media altura.
+- `scrollTop` se lee **antes** de medir las zonas en `init()`: la página puede cargar
+  ya scrolleada y los rects saldrían desplazados.
 
 ## Convenciones CSS
 - **Metodología:** BEM-like (`.section__element--modifier`)
@@ -294,8 +371,9 @@ sec: [0,  255,  65]   // verde terminal
 - `--font-mono` no existe como variable global → usar `var(--font-mono, monospace)`
 - **IDs de sección:** kebab-case (`jonathan-panel`, `sec-terminal`, `cmd-palette`)
 - **Clases de animación:** `animate-on-scroll`, `from-left`, `from-right`, `stagger-item`
-- **`.section-bg-canvas`:** canvas de fondo dinámico — `z-index: 0`, primer hijo de cada sección
-- **`.section::before/::after`:** vignettes de transición entre secciones — no usar para otro propósito
+- **`#bg-canvas`:** canvas único del fondo global — `position: fixed`, `z-index: 0`,
+  primer hijo de `<body>`. No añadir fondos propios por sección: rompen la continuidad
+- **`--bg-glass*` vs `--bg-card`:** glass para tarjetas, opaco para menús flotantes
 
 ## Imágenes
 - Las fotos del avatar cambian por modo: `AVATAR_SRC` en `app.js`

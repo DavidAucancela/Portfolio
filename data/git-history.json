@@ -2,50 +2,6 @@
   "weeks": 12,
   "days": [
     {
-      "date": "2026-06-03",
-      "count": 3
-    },
-    {
-      "date": "2026-06-04",
-      "count": 12
-    },
-    {
-      "date": "2026-06-05",
-      "count": 5
-    },
-    {
-      "date": "2026-06-06",
-      "count": 1
-    },
-    {
-      "date": "2026-06-07",
-      "count": 5
-    },
-    {
-      "date": "2026-06-08",
-      "count": 3
-    },
-    {
-      "date": "2026-06-09",
-      "count": 8
-    },
-    {
-      "date": "2026-06-10",
-      "count": 11
-    },
-    {
-      "date": "2026-06-11",
-      "count": 1
-    },
-    {
-      "date": "2026-06-12",
-      "count": 2
-    },
-    {
-      "date": "2026-06-14",
-      "count": 1
-    },
-    {
       "date": "2026-06-15",
       "count": 4
     },
@@ -139,17 +95,41 @@
     },
     {
       "date": "2026-08-22",
-      "count": 4
+      "count": 5
     },
     {
       "date": "2026-08-23",
+      "count": 2
+    },
+    {
+      "date": "2026-08-24",
       "count": 1
+    },
+    {
+      "date": "2026-08-31",
+      "count": 1
+    },
+    {
+      "date": "2026-09-03",
+      "count": 2
     }
   ],
-  "totalCommits": 108,
-  "totalCommitsAllTime": 190,
+  "totalCommits": 62,
+  "totalCommitsAllTime": 196,
   "totalProjects": 33,
   "prs": [
+    {
+      "number": 48,
+      "title": "observability tracking jotai history",
+      "date": "2026-08-24",
+      "hash": "57a9e86"
+    },
+    {
+      "number": 47,
+      "title": "Feat/mode discovery ia tokens",
+      "date": "2026-08-22",
+      "hash": "755999a"
+    },
     {
       "number": 45,
       "title": "docs: limpiar pendientes manuales resueltos en CLAUDE.md",
@@ -185,19 +165,7 @@
       "title": "feat(jotai): fallback vía OpenAI + observabilidad real en LLM Observatory",
       "date": "2026-08-18",
       "hash": "d2d8dc8"
-    },
-    {
-      "number": 40,
-      "title": "fix(hero/about/footer): pulir simetría mobile, copy y bug de decode",
-      "date": "2026-08-16",
-      "hash": "6c61ab0"
-    },
-    {
-      "number": 39,
-      "title": "fix(hero): completar y pulir widgets del hero por modo",
-      "date": "2026-08-16",
-      "hash": "390a907"
     }
   ],
-  "generatedAt": "2026-08-24T04:56:41.706Z"
+  "generatedAt": "2026-09-07T04:15:19.032Z"
 }

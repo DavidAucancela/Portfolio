@@ -5,8 +5,8 @@
    - collapsed: solo el nº de Pull requests (cara compacta)
    - expanded : heatmap ("mapa de PR") + stats + historial de PRs
 
-   La transición reproduce una animación tipo "commit → cloud →
-   monitoreo" (_runIntro) antes de revelar el cuerpo.
+   El cambio collapsed → expanded revela el cuerpo directamente,
+   sin animación de intro.
    ============================================================ */
 
 import { LangSwitcher } from './lang.js';
@@ -21,8 +21,6 @@ const MONTH_LABELS_EN = [
   'jan', 'feb', 'mar', 'apr', 'may', 'jun',
   'jul', 'aug', 'sep', 'oct', 'nov', 'dec',
 ];
-
-const INTRO_MS = 1200;
 
 function _monthLabels() {
   return LangSwitcher.getLang() === 'es' ? MONTH_LABELS_ES : MONTH_LABELS_EN;
@@ -75,11 +73,9 @@ function _levelFor(count, max) {
 }
 
 export const GitHistory = (() => {
-  const _reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let _fetched = false;
   let _data = null;
   let _expandRendered = false;
-  let _introTimer = null;
 
   function init() {
     window.addEventListener('portfolio:modeChange', (e) => {
@@ -159,15 +155,10 @@ export const GitHistory = (() => {
     document.getElementById('git-activity-summary')
       ?.setAttribute('aria-expanded', 'true');
 
-    const reveal = () => {
-      if (!_expandRendered && _data) {
-        _expandRendered = true;
-        _renderDeferred();
-      }
-    };
-
-    if (_reduced || !_data) { reveal(); return; }
-    _runIntro(reveal);
+    if (!_expandRendered && _data) {
+      _expandRendered = true;
+      _renderDeferred();
+    }
   }
 
   function _collapse() {
@@ -176,45 +167,6 @@ export const GitHistory = (() => {
     root.dataset.widgetState = 'collapsed';
     document.getElementById('git-activity-summary')
       ?.setAttribute('aria-expanded', 'false');
-    _clearIntro();
-  }
-
-  /* ── Animación de intro: commit → cloud → monitoreo ── */
-  function _runIntro(done) {
-    const intro = document.getElementById('git-activity-intro');
-    if (!intro) { done(); return; }
-
-    intro.innerHTML = `
-      <div class="ga-intro__code">
-        <span class="ga-intro__line">$ git add --all</span>
-        <span class="ga-intro__line">$ git commit -m "feat: ship it"</span>
-        <span class="ga-intro__line">$ git push origin main</span>
-      </div>
-      <svg class="ga-intro__wire" viewBox="0 0 200 44" aria-hidden="true">
-        <path class="ga-intro__path" d="M8 34 C 60 34, 90 10, 150 10" fill="none"/>
-        <circle class="ga-intro__packet" r="4"/>
-        <g class="ga-intro__cloud" transform="translate(150 2)">
-          <path d="M4 16 a7 7 0 0 1 3 -13 a9 9 0 0 1 17 3 a6 6 0 0 1 -1 10 z"/>
-        </g>
-      </svg>
-      <div class="ga-intro__monitor"><span></span></div>
-    `;
-    intro.classList.add('is-playing');
-
-    _introTimer = setTimeout(() => {
-      _clearIntro();
-      done();
-    }, INTRO_MS);
-  }
-
-  function _clearIntro() {
-    clearTimeout(_introTimer);
-    _introTimer = null;
-    const intro = document.getElementById('git-activity-intro');
-    if (intro) {
-      intro.classList.remove('is-playing');
-      intro.innerHTML = '';
-    }
   }
 
   /* ── Fetch de datos (al entrar al modo .dev) ──────── */
@@ -279,7 +231,7 @@ export const GitHistory = (() => {
     if (!list) return;
 
     const prs = _data?.stats && !_data.stats.mock && Array.isArray(_data.stats.prs)
-      ? _data.stats.prs.slice(0, 5)
+      ? _data.stats.prs.slice(0, 8)
       : [];
 
     if (prs.length === 0) {
@@ -287,14 +239,22 @@ export const GitHistory = (() => {
       return;
     }
 
-    list.innerHTML = prs.map((pr) => `
+    // `pr.repo` viene como "owner/name" (PRs de todos los repos de proyectos,
+    // no solo este) — se muestra solo el nombre del repo como etiqueta.
+    list.innerHTML = prs.map((pr) => {
+      const repoName = pr.repo ? pr.repo.split('/').pop() : '';
+      const repoTag = repoName
+        ? `<span class="git-activity__pr-repo">${_escapeHtml(repoName)}</span>`
+        : '';
+      return `
       <li class="git-activity__pr-item">
         <a href="${pr.url}" target="_blank" rel="noopener noreferrer" class="git-activity__pr-link">
-          <span class="git-activity__pr-title">#${pr.number} ${_escapeHtml(pr.title)}</span>
+          <span class="git-activity__pr-title">${repoTag}#${pr.number} ${_escapeHtml(pr.title)}</span>
           <span class="git-activity__pr-date">${_timeAgo(pr.mergedAt)}</span>
         </a>
       </li>
-    `).join('');
+    `;
+    }).join('');
   }
 
   function _renderStats({ totalPRs, prsIsExact, totalCommits, totalProjects }) {

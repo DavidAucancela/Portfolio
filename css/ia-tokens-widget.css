@@ -96,52 +96,6 @@
   color: #06ffa5;
 }
 
-/* ─── Overlay de la animación: red neuronal mini → macro ─── */
-.ia-tokens__intro {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  display: none;
-  overflow: hidden;
-  pointer-events: none;
-  background: rgba(13, 2, 33, 0.97);
-}
-
-.ia-tokens__intro.is-playing { display: grid; place-items: center; }
-
-.it-intro__net {
-  width: 82%;
-  height: 74%;
-  transform: scale(0.32);
-  animation: itIntroGrow 0.95s cubic-bezier(0.16, 1, 0.3, 1) 0.28s forwards;
-}
-
-@keyframes itIntroGrow { to { transform: scale(1); } }
-
-.it-intro__net .it-edge {
-  stroke: rgba(177, 78, 255, 0.55);
-  stroke-width: 1;
-  stroke-dasharray: 140;
-  stroke-dashoffset: 140;
-  animation: itIntroDraw 0.5s ease both;
-}
-
-@keyframes itIntroDraw { to { stroke-dashoffset: 0; } }
-
-.it-intro__net .it-node {
-  fill: #b14eff;
-  opacity: 0;
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: itIntroNode 0.4s ease both;
-}
-
-@keyframes itIntroNode {
-  from { opacity: 0; transform: scale(0.2); }
-  60%  { opacity: 1; transform: scale(1.35); filter: drop-shadow(0 0 5px #b14eff); }
-  to   { opacity: 1; transform: scale(1); }
-}
-
 /* Filas de proyecto entran escalonadas (delay inline por JS) */
 .ia-tokens__project-item {
   animation: itRowIn 0.4s ease both;
@@ -154,7 +108,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   [data-theme="ia"] .ia-tokens { transition: none; }
-  .ia-tokens__intro { display: none !important; }
   .ia-tokens[data-widget-state="expanded"] .ia-tokens__body { animation: none; }
   .ia-tokens__project-item { animation: none; }
 }

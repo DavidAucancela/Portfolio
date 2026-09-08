@@ -90,26 +90,9 @@
   50%      { opacity: 0; }
 }
 
-/* ─── Animación de intrusión (glitch antes del boot) ─── */
-.sec-terminal__body.is-intruding {
-  animation: sec-intrude-flicker 0.11s steps(2) infinite;
-}
-
-@keyframes sec-intrude-flicker {
-  0%   { background: transparent; }
-  50%  { background: rgba(60, 0, 0, 0.4); }
-}
-
-.sec-terminal__scramble {
-  color: rgba(0, 255, 65, 0.32);
-  letter-spacing: 0.12em;
-  word-break: break-all;
-}
-
 @media (prefers-reduced-motion: reduce) {
   [data-theme="sec"] .sec-terminal { transition: none; }
   .sec-terminal__gate-caret { animation: none; }
-  .sec-terminal__body.is-intruding { animation: none; }
 }
 
 /* ─── Barra de título ─── */

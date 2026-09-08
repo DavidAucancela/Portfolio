@@ -5,8 +5,8 @@
    - collapsed: solo el total de tokens (cara compacta)
    - expanded : desglose por proyecto de IA con sus tokens
 
-   La transición reproduce una animación de red neuronal
-   "mini → macro" (_runIntro) que resuelve en los nodos/proyectos.
+   El cambio collapsed → expanded revela el cuerpo directamente,
+   sin animación de intro.
    ============================================================ */
 
 import { navigateToProject } from './app.js';
@@ -19,8 +19,6 @@ const SLUG_MAP = {
   'project-003': 'anaos',
   'project-008': 'llm-observatory',
 };
-
-const INTRO_MS = 1300;
 
 const MONTHS_ES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 const MONTHS_EN = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
@@ -68,10 +66,8 @@ function _formatTokens(n) {
 }
 
 export const IaTokensWidget = (() => {
-  const _reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   let _loaded = false;
   let _historyLoaded = false;
-  let _introTimer = null;
   // Desglose por proyecto (GET /api/llm-stats → projects[]), llenado en _onEnterIa().
   // Cada entrada: { name: token_name en Observatory, totalTokens }.
   let _projectBreakdown = [];
@@ -131,15 +127,10 @@ export const IaTokensWidget = (() => {
     document.getElementById('ia-tokens-summary')
       ?.setAttribute('aria-expanded', 'true');
 
-    const reveal = () => {
-      if (!_historyLoaded) {
-        _historyLoaded = true;
-        _loadProjectHistory();
-      }
-    };
-
-    if (_reduced) { reveal(); return; }
-    _runIntro(reveal);
+    if (!_historyLoaded) {
+      _historyLoaded = true;
+      _loadProjectHistory();
+    }
   }
 
   function _collapse() {
@@ -148,59 +139,6 @@ export const IaTokensWidget = (() => {
     root.dataset.widgetState = 'collapsed';
     document.getElementById('ia-tokens-summary')
       ?.setAttribute('aria-expanded', 'false');
-    _clearIntro();
-  }
-
-  /* ── Animación de intro: red neuronal mini → macro ── */
-  function _runIntro(done) {
-    const intro = document.getElementById('ia-tokens-intro');
-    if (!intro) { done(); return; }
-
-    // Nodos pseudo-aleatorios + aristas hacia los vecinos más cercanos.
-    const W = 200, H = 120;
-    const nodes = Array.from({ length: 11 }, (_, i) => ({
-      x: 18 + Math.round(((i * 53) % (W - 36))),
-      y: 16 + Math.round(((i * 37) % (H - 32))),
-    }));
-    const edges = [];
-    nodes.forEach((a, i) => {
-      nodes.slice(i + 1).forEach((b, j) => {
-        const d = Math.hypot(a.x - b.x, a.y - b.y);
-        if (d < 62) edges.push([i, i + 1 + j]);
-      });
-    });
-
-    const edgeEls = edges.map(([a, b], k) =>
-      `<line class="it-edge" style="animation-delay:${0.05 * k}s"
-             x1="${nodes[a].x}" y1="${nodes[a].y}" x2="${nodes[b].x}" y2="${nodes[b].y}"/>`
-    ).join('');
-    const nodeEls = nodes.map((n, k) =>
-      `<circle class="it-node" style="animation-delay:${0.4 + 0.045 * k}s"
-               cx="${n.x}" cy="${n.y}" r="${k % 3 === 0 ? 4.2 : 2.8}"/>`
-    ).join('');
-
-    intro.innerHTML = `
-      <svg class="it-intro__net" viewBox="0 0 ${W} ${H}" aria-hidden="true">
-        <g class="it-intro__edges">${edgeEls}</g>
-        <g class="it-intro__nodes">${nodeEls}</g>
-      </svg>
-    `;
-    intro.classList.add('is-playing');
-
-    _introTimer = setTimeout(() => {
-      _clearIntro();
-      done();
-    }, INTRO_MS);
-  }
-
-  function _clearIntro() {
-    clearTimeout(_introTimer);
-    _introTimer = null;
-    const intro = document.getElementById('ia-tokens-intro');
-    if (intro) {
-      intro.classList.remove('is-playing');
-      intro.innerHTML = '';
-    }
   }
 
   async function _loadProjectHistory() {

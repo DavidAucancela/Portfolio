@@ -160,8 +160,9 @@ Los keyframes globales son: `sd-up`, `sd-left`, `sd-right`, `sd-scale`, `sd-bar`
 Tres paneles, uno por modo (`git-history.js`+`.css`, `ia-tokens-widget.js`+`.css`,
 `sec-terminal.js`+`.css`), anclados arriba a la derecha del hero en desktop. Cada uno
 tiene dos estados en `data-widget-state` (`collapsed`/`expanded`, toggle vía el botón
-"Ver más"/compuerta) más una mini-animación de intro (~1.2s: commit→cloud en `.dev`,
-red neuronal mini→macro en `.ia`) antes de revelar el cuerpo expandido.
+"Ver más"/compuerta). El paso `collapsed → expanded` revela el cuerpo directamente
+(la vieja animación de intro por widget — commit→cloud en `.dev`, red neuronal
+mini→macro en `.ia`, glitch de intrusión en `.sec` — se eliminó).
 
 **El panel es un flotante independiente — nunca un grid con `.hero-content`.**
 Hasta hace poco `#hero .container` pasaba a `display:grid; grid-template-columns:1fr
@@ -191,6 +192,13 @@ el panel en el grid del `.container`.**
   listener para las ~84 celdas que se recrean en cada render): fecha completa +
   cantidad exacta + tiempo relativo, con el mismo estilo del panel en vez del
   tooltip genérico del SO. Oculto en `pointer:coarse` (no hay hover que lo dispare).
+- `.git-activity` — el **historial de PRs no se limita al repo del portfolio**:
+  `api/github-stats.js` busca por `author:<username> is:pr is:merged` en toda la
+  cuenta de GitHub y filtra contra la lista de `repoUrl` de
+  `data/{dev,ia}-projects.json` → muestra los PRs mergeados de todos los repos de
+  proyectos, cada uno con una etiqueta `.git-activity__pr-repo` (nombre del repo).
+  La cara del widget (`totalMerged`) usa el `total_count` global del autor; el
+  conteo de commits (`totalCommits`) sí sigue siendo el del repo default.
 - `.ia-tokens` — cada proyecto de la lista lleva una barra de peso relativo
   (`.ia-tokens__project-bar-fill`, gradiente púrpura→teal) escalada contra el
   proyecto con más tokens de las 5 filas mostradas — lectura visual inmediata del
@@ -200,7 +208,8 @@ el panel en el grid del `.container`.**
 **Terminal .sec (`sec-terminal.js` + `sec-terminal.css`):**
 - Solo visible en modo `.sec`, flotante arriba a la derecha del hero (mismo patrón
   que el resto de los widgets — ver arriba)
-- Boot sequence animado la primera vez que se activa el modo
+- Boot sequence animado (`BOOT_LINES`) la primera vez que se abre la terminal —
+  al abrir la compuerta va directo al boot, sin la vieja animación de intrusión
 - Comandos: `help`, `whoami`, `ls [projects]`, `cat <file>.md`, `ping linkedin`, `clear`, `exit`
 - Historial de comandos con ↑↓
 - `SecTerminal.demo(cmd)` — API pública: teclea el comando en el input real

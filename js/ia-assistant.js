@@ -26,6 +26,14 @@ function _norm(s) {
     .replace(/\s+/g, ' ').trim();
 }
 
+/* Aplana campos bilingües { es, en } de los JSON de proyectos. La KB usa el
+   texto en español como forma canónica (idioma-estable: no se reconstruye al
+   cambiar el idioma de la UI). Strings planos pasan sin cambios. */
+function _flat(v) {
+  if (v && typeof v === 'object' && !Array.isArray(v)) return v.es ?? v.en ?? '';
+  return v;
+}
+
 function _matchAny(norm, terms) {
   // length>=3 evita falsos positivos de substring con keywords/fragmentos
   // cortos (ej. "js" adentro de "next.js", "go" adentro de "algo") — los
@@ -108,13 +116,13 @@ function _projectKeywords(p) {
   const words = new Set();
   // Slug and squished title (e.g. "llmobservatory" for "LLM Observatory")
   if (p.slug) words.add(p.slug.toLowerCase());
-  const titleSquish = (p.title || '').toLowerCase().replace(/\s+/g, '');
+  const titleSquish = (_flat(p.title) || '').toLowerCase().replace(/\s+/g, '');
   words.add(titleSquish);
   // Title words + tags. La descripción NO entra acá a propósito: es prosa
   // libre y cualquier palabra común no filtrada por _STOP (ej. "algo", "cada")
   // termina siendo un "keyword" que matchea casi cualquier query. La
   // similitud con la descripción ya la cubre _projectEmbedText() vía semántica.
-  _kwFromText(p.title).forEach(w => words.add(w));
+  _kwFromText(_flat(p.title)).forEach(w => words.add(w));
   (p.tags || []).forEach(t => _kwFromText(t).forEach(w => words.add(w)));
   // Add lab fields for .sec projects
   if (p.lab) {
@@ -149,7 +157,7 @@ function _skillProjects(skillName) {
       const tn = t.toLowerCase().replace(/[^a-z0-9]/g, '');
       return tn === norm || tn.includes(norm) || norm.includes(tn);
     }))
-    .map(p => p.title);
+    .map(p => _flat(p.title));
 }
 
 // ── TEXT PARA EMBEDDINGS ─────────────────────────────────────────────────────
@@ -162,14 +170,14 @@ function _projectEmbedText(p) {
   const lab = p.lab
     ? `${p.lab.platform} ${p.lab.difficulty} ${(p.lab.techniques || []).join(' ')}`
     : '';
-  const highlights = (p.highlights || []).join(' ');
+  const highlights = (_flat(p.highlights) || []).map(_flat).join(' ');
   return [
-    p.title,
-    p.description,
-    p.longDescription,
+    _flat(p.title),
+    _flat(p.description),
+    _flat(p.longDescription),
     (p.tags || []).join(' '),
     tech,
-    p.process?.overview,
+    _flat(p.process?.overview),
     lab,
     highlights,
   ].filter(Boolean).join(' ').replace(/\s+/g, ' ').slice(0, 600);
@@ -370,7 +378,10 @@ function _respListProjects() {
   });
   const recent = sorted.slice(0, 5);
   const lines = recent
-    .map(p => `**${_esc(p.title)}** — ${(p.description || '').slice(0, 85)}${(p.description || '').length > 85 ? '…' : ''}`)
+    .map(p => {
+      const desc = _flat(p.description) || '';
+      return `**${_esc(_flat(p.title))}** — ${desc.slice(0, 85)}${desc.length > 85 ? '…' : ''}`;
+    })
     .join('\n');
   return `Los **5 proyectos más recientes** de Jonathan:\n\n${lines}\n\nPregúntame por cualquiera para ver más detalles.`;
 }
@@ -481,7 +492,7 @@ function _scoreKeywordCandidates(norm, entities) {
     const keywordScore = queryTokens.length > 0 ? overlap / queryTokens.length : 0;
 
     // +1.0 flat si slug o título matchean verbatim (bonus por exactitud)
-    const titleSquish = (doc.data.title || '').toLowerCase().replace(/\s+/g, '');
+    const titleSquish = (_flat(doc.data.title) || '').toLowerCase().replace(/\s+/g, '');
     const slugMatch = (doc.data.slug || '').toLowerCase() === norm.replace(/\s+/g, '');
     const titleMatch = titleSquish === norm.replace(/\s+/g, '');
     if (slugMatch || titleMatch) overlap += 1.0;

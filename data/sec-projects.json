@@ -3,7 +3,10 @@
     "id": "lab-001",
     "title": "Meow",
     "category": "Máquinas HTB",
-    "description": "Enumeración de servicios expuestos y acceso mediante credenciales por defecto en servicio Telnet.",
+    "description": {
+      "es": "Enumeración de servicios expuestos y acceso mediante credenciales por defecto en servicio Telnet.",
+      "en": "Enumeration of exposed services and access via default credentials on a Telnet service."
+    },
     "tags": [
       "Telnet",
       "Default Credentials",
@@ -30,52 +33,88 @@
       ]
     },
     "process": {
-      "overview": "Máquina Starting Point con Telnet expuesto y credenciales por defecto — ejercicio base de reconocimiento y explotación.",
+      "overview": {
+        "es": "Máquina Starting Point con Telnet expuesto y credenciales por defecto — ejercicio base de reconocimiento y explotación.",
+        "en": "Starting Point machine with exposed Telnet and default credentials — a baseline recon and exploitation exercise."
+      },
       "pasos": [
         {
           "id": "analisis",
-          "resumen": "El escaneo con nmap encuentra el puerto Telnet abierto, un servicio sin cifrado y mal asegurado.",
-          "puntos": [
-            "Escaneo completo de puertos con nmap",
-            "Telnet activo sin cifrado",
-            "Probable uso de credenciales por defecto"
-          ]
+          "resumen": {
+            "es": "El escaneo con nmap encuentra el puerto Telnet abierto, un servicio sin cifrado y mal asegurado.",
+            "en": "The nmap scan finds the Telnet port open — an unencrypted, poorly secured service."
+          },
+          "puntos": {
+            "es": [
+              "Escaneo completo de puertos con nmap",
+              "Telnet activo sin cifrado",
+              "Probable uso de credenciales por defecto"
+            ],
+            "en": [
+              "Full port scan with nmap",
+              "Telnet active with no encryption",
+              "Likely use of default credentials"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "El usuario root sin contraseña permite acceso directo al sistema sin necesidad de escalar privilegios.",
-          "puntos": [
-            "Conexión Telnet sin cifrado",
-            "Acceso root con credencial vacía",
-            "Flag capturada directamente"
-          ]
+          "resumen": {
+            "es": "El usuario root sin contraseña permite acceso directo al sistema sin necesidad de escalar privilegios.",
+            "en": "A passwordless root user allows direct system access with no need for privilege escalation."
+          },
+          "puntos": {
+            "es": [
+              "Conexión Telnet sin cifrado",
+              "Acceso root con credencial vacía",
+              "Flag capturada directamente"
+            ],
+            "en": [
+              "Unencrypted Telnet connection",
+              "Root access with an empty credential",
+              "Flag captured directly"
+            ]
+          }
         },
         {
           "id": "seguridad",
-          "resumen": "Telnet sin autenticación equivale a compromiso total garantizado del sistema.",
-          "puntos": [
-            "Deshabilitar Telnet y usar SSH",
-            "Telnet transmite en texto plano",
-            "Revisar inventario de servicios expuestos"
-          ]
+          "resumen": {
+            "es": "Telnet sin autenticación equivale a compromiso total garantizado del sistema.",
+            "en": "Telnet with no authentication amounts to a guaranteed full system compromise."
+          },
+          "puntos": {
+            "es": [
+              "Deshabilitar Telnet y usar SSH",
+              "Telnet transmite en texto plano",
+              "Revisar inventario de servicios expuestos"
+            ],
+            "en": [
+              "Disable Telnet and use SSH",
+              "Telnet transmits in plaintext",
+              "Review the inventory of exposed services"
+            ]
+          }
         }
       ],
-      "resultado": "Máquina comprometida mediante credenciales por defecto en Telnet.",
+      "resultado": {
+        "es": "Máquina comprometida mediante credenciales por defecto en Telnet.",
+        "en": "Machine compromised via default Telnet credentials."
+      },
       "metricas": [
         {
-          "label": "Plataforma",
+          "label": { "es": "Plataforma", "en": "Platform" },
           "value": "HackTheBox"
         },
         {
-          "label": "Dificultad",
+          "label": { "es": "Dificultad", "en": "Difficulty" },
           "value": "Very Easy"
         },
         {
-          "label": "Técnica",
+          "label": { "es": "Técnica", "en": "Technique" },
           "value": "Default Creds"
         },
         {
-          "label": "Rating",
+          "label": { "es": "Rating", "en": "Rating" },
           "value": "4.6"
         }
       ]
@@ -91,7 +130,10 @@
     "id": "lab-002",
     "title": "Fawn",
     "category": "Máquinas HTB",
-    "description": "Explotación de FTP con acceso anónimo habilitado para extracción de archivos sensibles del servidor.",
+    "description": {
+      "es": "Explotación de FTP con acceso anónimo habilitado para extracción de archivos sensibles del servidor.",
+      "en": "Exploitation of FTP with anonymous access enabled to extract sensitive files from the server."
+    },
     "tags": [
       "FTP",
       "Anonymous Login",
@@ -118,52 +160,88 @@
       ]
     },
     "process": {
-      "overview": "Servidor FTP con login anónimo habilitado, exponiendo archivos del sistema sin necesidad de credenciales.",
+      "overview": {
+        "es": "Servidor FTP con login anónimo habilitado, exponiendo archivos del sistema sin necesidad de credenciales.",
+        "en": "FTP server with anonymous login enabled, exposing system files with no need for credentials."
+      },
       "pasos": [
         {
           "id": "analisis",
-          "resumen": "nmap confirma FTP activo con login anónimo permitido.",
-          "puntos": [
-            "Puerto FTP abierto",
-            "Login anónimo habilitado",
-            "Listado de archivos sin credenciales"
-          ]
+          "resumen": {
+            "es": "nmap confirma FTP activo con login anónimo permitido.",
+            "en": "nmap confirms FTP is active with anonymous login allowed."
+          },
+          "puntos": {
+            "es": [
+              "Puerto FTP abierto",
+              "Login anónimo habilitado",
+              "Listado de archivos sin credenciales"
+            ],
+            "en": [
+              "FTP port open",
+              "Anonymous login enabled",
+              "File listing with no credentials"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "La conexión anónima permite listar y descargar la flag directamente.",
-          "puntos": [
-            "Conexión con usuario anonymous",
-            "Listado del directorio raíz",
-            "Descarga y lectura de la flag"
-          ]
+          "resumen": {
+            "es": "La conexión anónima permite listar y descargar la flag directamente.",
+            "en": "The anonymous connection allows listing and downloading the flag directly."
+          },
+          "puntos": {
+            "es": [
+              "Conexión con usuario anonymous",
+              "Listado del directorio raíz",
+              "Descarga y lectura de la flag"
+            ],
+            "en": [
+              "Connection with the anonymous user",
+              "Listing of the root directory",
+              "Downloading and reading the flag"
+            ]
+          }
         },
         {
           "id": "seguridad",
-          "resumen": "El FTP anónimo en producción expone todos los archivos accesibles al servicio.",
-          "puntos": [
-            "Deshabilitar autenticación anónima",
-            "Usar SFTP o FTPS en su lugar",
-            "Aplicar mínimo privilegio al usuario FTP"
-          ]
+          "resumen": {
+            "es": "El FTP anónimo en producción expone todos los archivos accesibles al servicio.",
+            "en": "Anonymous FTP in production exposes every file accessible to the service."
+          },
+          "puntos": {
+            "es": [
+              "Deshabilitar autenticación anónima",
+              "Usar SFTP o FTPS en su lugar",
+              "Aplicar mínimo privilegio al usuario FTP"
+            ],
+            "en": [
+              "Disable anonymous authentication",
+              "Use SFTP or FTPS instead",
+              "Apply least privilege to the FTP user"
+            ]
+          }
         }
       ],
-      "resultado": "Máquina comprometida vía FTP anónimo, sin necesidad de exploit.",
+      "resultado": {
+        "es": "Máquina comprometida vía FTP anónimo, sin necesidad de exploit.",
+        "en": "Machine compromised via anonymous FTP, with no exploit needed."
+      },
       "metricas": [
         {
-          "label": "Plataforma",
+          "label": { "es": "Plataforma", "en": "Platform" },
           "value": "HackTheBox"
         },
         {
-          "label": "Dificultad",
+          "label": { "es": "Dificultad", "en": "Difficulty" },
           "value": "Very Easy"
         },
         {
-          "label": "Técnica",
+          "label": { "es": "Técnica", "en": "Technique" },
           "value": "Anon FTP"
         },
         {
-          "label": "Rating",
+          "label": { "es": "Rating", "en": "Rating" },
           "value": "4.7"
         }
       ]
@@ -179,7 +257,10 @@
     "id": "lab-003",
     "title": "Dancing",
     "category": "Máquinas HTB",
-    "description": "Acceso a shares SMB sin autenticación para obtener credenciales y flag del sistema Windows.",
+    "description": {
+      "es": "Acceso a shares SMB sin autenticación para obtener credenciales y flag del sistema Windows.",
+      "en": "Access to SMB shares without authentication to obtain credentials and the flag from the Windows system."
+    },
     "tags": [
       "SMB",
       "Anonymous Share",
@@ -206,52 +287,88 @@
       ]
     },
     "process": {
-      "overview": "Servidor Windows con un share SMB accesible sin autenticación, expuesto a cualquier usuario de la red.",
+      "overview": {
+        "es": "Servidor Windows con un share SMB accesible sin autenticación, expuesto a cualquier usuario de la red.",
+        "en": "Windows server with an SMB share accessible without authentication, exposed to any user on the network."
+      },
       "pasos": [
         {
           "id": "analisis",
-          "resumen": "nmap encuentra SMB activo; una sesión null permite listar los shares disponibles.",
-          "puntos": [
-            "Puerto SMB abierto en Windows",
-            "Sesión null sin contraseña",
-            "Share WorkShares accesible"
-          ]
+          "resumen": {
+            "es": "nmap encuentra SMB activo; una sesión null permite listar los shares disponibles.",
+            "en": "nmap finds SMB active; a null session allows listing the available shares."
+          },
+          "puntos": {
+            "es": [
+              "Puerto SMB abierto en Windows",
+              "Sesión null sin contraseña",
+              "Share WorkShares accesible"
+            ],
+            "en": [
+              "SMB port open on Windows",
+              "Null session with no password",
+              "WorkShares share accessible"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "El acceso sin credenciales al share permite navegar y descargar la flag.",
-          "puntos": [
-            "Conexión al share sin contraseña",
-            "Navegación por los directorios",
-            "Descarga de la flag"
-          ]
+          "resumen": {
+            "es": "El acceso sin credenciales al share permite navegar y descargar la flag.",
+            "en": "Credential-free access to the share allows browsing and downloading the flag."
+          },
+          "puntos": {
+            "es": [
+              "Conexión al share sin contraseña",
+              "Navegación por los directorios",
+              "Descarga de la flag"
+            ],
+            "en": [
+              "Connection to the share with no password",
+              "Browsing through the directories",
+              "Downloading the flag"
+            ]
+          }
         },
         {
           "id": "seguridad",
-          "resumen": "Las sesiones null en SMB exponen shares internos sin necesidad de credenciales.",
-          "puntos": [
-            "Deshabilitar sesiones null",
-            "Revisar permisos de cada share",
-            "Activar SMB signing"
-          ]
+          "resumen": {
+            "es": "Las sesiones null en SMB exponen shares internos sin necesidad de credenciales.",
+            "en": "Null sessions in SMB expose internal shares with no need for credentials."
+          },
+          "puntos": {
+            "es": [
+              "Deshabilitar sesiones null",
+              "Revisar permisos de cada share",
+              "Activar SMB signing"
+            ],
+            "en": [
+              "Disable null sessions",
+              "Review permissions on each share",
+              "Enable SMB signing"
+            ]
+          }
         }
       ],
-      "resultado": "Máquina Windows comprometida vía share SMB accesible sin autenticación.",
+      "resultado": {
+        "es": "Máquina Windows comprometida vía share SMB accesible sin autenticación.",
+        "en": "Windows machine compromised via an SMB share accessible without authentication."
+      },
       "metricas": [
         {
-          "label": "Plataforma",
+          "label": { "es": "Plataforma", "en": "Platform" },
           "value": "HackTheBox"
         },
         {
-          "label": "OS",
+          "label": { "es": "OS", "en": "OS" },
           "value": "Windows"
         },
         {
-          "label": "Técnica",
+          "label": { "es": "Técnica", "en": "Technique" },
           "value": "SMB Null Session"
         },
         {
-          "label": "Rating",
+          "label": { "es": "Rating", "en": "Rating" },
           "value": "4.7"
         }
       ]
@@ -267,7 +384,10 @@
     "id": "lab-004",
     "title": "Redeemer",
     "category": "Máquinas HTB",
-    "description": "Explotación de instancia Redis expuesta sin autenticación para dump de base de datos en memoria.",
+    "description": {
+      "es": "Explotación de instancia Redis expuesta sin autenticación para dump de base de datos en memoria.",
+      "en": "Exploitation of a Redis instance exposed without authentication to dump the in-memory database."
+    },
     "tags": [
       "Redis",
       "Unauthenticated Access",
@@ -294,52 +414,88 @@
       ]
     },
     "process": {
-      "overview": "Instancia Redis expuesta a internet sin contraseña, permitiendo acceso directo a toda la base de datos en memoria.",
+      "overview": {
+        "es": "Instancia Redis expuesta a internet sin contraseña, permitiendo acceso directo a toda la base de datos en memoria.",
+        "en": "Redis instance exposed to the internet with no password, allowing direct access to the entire in-memory database."
+      },
       "pasos": [
         {
           "id": "analisis",
-          "resumen": "El escaneo completo de puertos revela Redis accesible sin autenticación.",
-          "puntos": [
-            "Redis expuesto en puerto no estándar",
-            "Conexión directa sin contraseña",
-            "Configuración del servidor visible"
-          ]
+          "resumen": {
+            "es": "El escaneo completo de puertos revela Redis accesible sin autenticación.",
+            "en": "The full port scan reveals Redis accessible without authentication."
+          },
+          "puntos": {
+            "es": [
+              "Redis expuesto en puerto no estándar",
+              "Conexión directa sin contraseña",
+              "Configuración del servidor visible"
+            ],
+            "en": [
+              "Redis exposed on a non-standard port",
+              "Direct connection with no password",
+              "Server configuration visible"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "Sin autenticación, es posible listar todas las claves y leer la flag directamente.",
-          "puntos": [
-            "Conexión sin contraseña",
-            "Listado de todas las claves",
-            "Lectura directa de la flag"
-          ]
+          "resumen": {
+            "es": "Sin autenticación, es posible listar todas las claves y leer la flag directamente.",
+            "en": "With no authentication, it's possible to list every key and read the flag directly."
+          },
+          "puntos": {
+            "es": [
+              "Conexión sin contraseña",
+              "Listado de todas las claves",
+              "Lectura directa de la flag"
+            ],
+            "en": [
+              "Connection with no password",
+              "Listing of all keys",
+              "Direct reading of the flag"
+            ]
+          }
         },
         {
           "id": "seguridad",
-          "resumen": "Redis sin autenticación expuesto a internet equivale a acceso total a los datos en memoria.",
-          "puntos": [
-            "Configurar contraseña fuerte",
-            "Restringir acceso a localhost",
-            "Nunca exponer el puerto a internet"
-          ]
+          "resumen": {
+            "es": "Redis sin autenticación expuesto a internet equivale a acceso total a los datos en memoria.",
+            "en": "Redis without authentication exposed to the internet amounts to full access to the in-memory data."
+          },
+          "puntos": {
+            "es": [
+              "Configurar contraseña fuerte",
+              "Restringir acceso a localhost",
+              "Nunca exponer el puerto a internet"
+            ],
+            "en": [
+              "Configure a strong password",
+              "Restrict access to localhost",
+              "Never expose the port to the internet"
+            ]
+          }
         }
       ],
-      "resultado": "Máquina comprometida extrayendo la flag directamente de Redis sin autenticación.",
+      "resultado": {
+        "es": "Máquina comprometida extrayendo la flag directamente de Redis sin autenticación.",
+        "en": "Machine compromised by pulling the flag directly from Redis without authentication."
+      },
       "metricas": [
         {
-          "label": "Plataforma",
+          "label": { "es": "Plataforma", "en": "Platform" },
           "value": "HackTheBox"
         },
         {
-          "label": "Servicio",
+          "label": { "es": "Servicio", "en": "Service" },
           "value": "Redis 5.0.7"
         },
         {
-          "label": "Técnica",
+          "label": { "es": "Técnica", "en": "Technique" },
           "value": "No Auth DB"
         },
         {
-          "label": "Rating",
+          "label": { "es": "Rating", "en": "Rating" },
           "value": "4.6"
         }
       ]
@@ -353,9 +509,15 @@
   },
   {
     "id": "prac-001",
-    "title": "Diagnóstico de Seguridad ESPOCH",
+    "title": {
+      "es": "Diagnóstico de Seguridad ESPOCH",
+      "en": "ESPOCH Security Assessment"
+    },
     "category": "Prácticas Profesionales",
-    "description": "Diagnóstico de sistemas institucionales, análisis de infraestructura con herramientas de seguridad y verificación de controles ISO 27001 en el DETIC de la ESPOCH.",
+    "description": {
+      "es": "Diagnóstico de sistemas institucionales, análisis de infraestructura con herramientas de seguridad y verificación de controles ISO 27001 en el DETIC de la ESPOCH.",
+      "en": "Assessment of institutional systems, infrastructure analysis with security tooling and verification of ISO 27001 controls at ESPOCH's DETIC department."
+    },
     "tags": [
       "ISO 27001",
       "Auditoría",
@@ -371,59 +533,98 @@
     "status": "Completado",
     "date": "2025-09",
     "process": {
-      "overview": "La ESPOCH necesitaba conocer su estado real de seguridad; se hizo un diagnóstico de infraestructura y una evaluación de cumplimiento contra ISO 27001.",
+      "overview": {
+        "es": "La ESPOCH necesitaba conocer su estado real de seguridad; se hizo un diagnóstico de infraestructura y una evaluación de cumplimiento contra ISO 27001.",
+        "en": "ESPOCH needed to know its real security posture; an infrastructure assessment and an ISO 27001 compliance evaluation were carried out."
+      },
       "pasos": [
         {
           "id": "analisis",
-          "resumen": "Inventario de sistemas activos y servicios expuestos en la red institucional.",
-          "puntos": [
-            "Inventario de activos de red",
-            "Identificación de servicios expuestos",
-            "Software desactualizado detectado"
-          ]
+          "resumen": {
+            "es": "Inventario de sistemas activos y servicios expuestos en la red institucional.",
+            "en": "Inventory of active systems and exposed services on the institutional network."
+          },
+          "puntos": {
+            "es": [
+              "Inventario de activos de red",
+              "Identificación de servicios expuestos",
+              "Software desactualizado detectado"
+            ],
+            "en": [
+              "Network asset inventory",
+              "Identification of exposed services",
+              "Outdated software detected"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "Análisis de vulnerabilidades y configuraciones sobre los sistemas identificados.",
-          "puntos": [
-            "Vulnerabilidades priorizadas por criticidad",
-            "Revisión de configuraciones críticas",
-            "Evaluación de controles de acceso"
-          ]
+          "resumen": {
+            "es": "Análisis de vulnerabilidades y configuraciones sobre los sistemas identificados.",
+            "en": "Vulnerability and configuration analysis over the identified systems."
+          },
+          "puntos": {
+            "es": [
+              "Vulnerabilidades priorizadas por criticidad",
+              "Revisión de configuraciones críticas",
+              "Evaluación de controles de acceso"
+            ],
+            "en": [
+              "Vulnerabilities prioritized by criticality",
+              "Review of critical configurations",
+              "Assessment of access controls"
+            ]
+          }
         },
         {
           "id": "seguridad",
-          "resumen": "Comparación del estado actual contra los controles exigidos por ISO 27001.",
-          "puntos": [
-            "Gap analysis contra ISO 27001",
-            "Informe de hallazgos y recomendaciones",
-            "Medidas correctivas priorizadas por riesgo"
-          ]
+          "resumen": {
+            "es": "Comparación del estado actual contra los controles exigidos por ISO 27001.",
+            "en": "Comparison of the current state against the controls required by ISO 27001."
+          },
+          "puntos": {
+            "es": [
+              "Gap analysis contra ISO 27001",
+              "Informe de hallazgos y recomendaciones",
+              "Medidas correctivas priorizadas por riesgo"
+            ],
+            "en": [
+              "Gap analysis against ISO 27001",
+              "Report of findings and recommendations",
+              "Corrective measures prioritized by risk"
+            ]
+          }
         }
       ],
-      "resultado": "Diagnóstico institucional entregado con informe de brechas ISO 27001 y recomendaciones.",
+      "resultado": {
+        "es": "Diagnóstico institucional entregado con informe de brechas ISO 27001 y recomendaciones.",
+        "en": "Institutional assessment delivered with an ISO 27001 gap report and recommendations."
+      },
       "metricas": [
         {
-          "label": "Norma",
+          "label": { "es": "Norma", "en": "Standard" },
           "value": "ISO 27001"
         },
         {
-          "label": "Duración",
-          "value": "6 meses"
+          "label": { "es": "Duración", "en": "Duration" },
+          "value": { "es": "6 meses", "en": "6 months" }
         },
         {
-          "label": "Institución",
+          "label": { "es": "Institución", "en": "Institution" },
           "value": "ESPOCH"
         },
         {
-          "label": "Área",
+          "label": { "es": "Área", "en": "Department" },
           "value": "DETIC"
         }
       ]
     },
     "docs": [
       {
-        "label": "Constancia de Prácticas — ESPOCH DETIC",
+        "label": {
+          "es": "Constancia de Prácticas — ESPOCH DETIC",
+          "en": "Internship Certificate — ESPOCH DETIC"
+        },
         "url": "public/images/certificados/practicas_DTIC_ESPOCH.pdf"
       }
     ]
@@ -432,7 +633,10 @@
     "id": "cert-001",
     "title": "Introduction to Cybersecurity",
     "category": "Certificaciones",
-    "description": "Certificación oficial de Cisco Networking Academy sobre fundamentos de ciberseguridad: tipos de amenazas, vulnerabilidades, ataques comunes y principios de defensa.",
+    "description": {
+      "es": "Certificación oficial de Cisco Networking Academy sobre fundamentos de ciberseguridad: tipos de amenazas, vulnerabilidades, ataques comunes y principios de defensa.",
+      "en": "Official Cisco Networking Academy certification on cybersecurity fundamentals: threat types, vulnerabilities, common attacks and defense principles."
+    },
     "tags": [
       "Cisco",
       "Fundamentos",
@@ -447,68 +651,113 @@
     "status": "Certificado",
     "date": "2025-01",
     "process": {
-      "overview": "Certificación de Cisco Networking Academy sobre los fundamentos esenciales de la ciberseguridad, desde amenazas comunes hasta principios de defensa.",
+      "overview": {
+        "es": "Certificación de Cisco Networking Academy sobre los fundamentos esenciales de la ciberseguridad, desde amenazas comunes hasta principios de defensa.",
+        "en": "Cisco Networking Academy certification on the essential fundamentals of cybersecurity, from common threats to defense principles."
+      },
       "pasos": [
         {
           "id": "analisis",
-          "resumen": "Panorama de amenazas: tipos de ataques y vectores de entrada más comunes.",
-          "puntos": [
-            "Tipos de malware más comunes",
-            "Ingeniería social y phishing",
-            "Ataques de red frecuentes"
-          ]
+          "resumen": {
+            "es": "Panorama de amenazas: tipos de ataques y vectores de entrada más comunes.",
+            "en": "Threat landscape: the most common attack types and entry vectors."
+          },
+          "puntos": {
+            "es": [
+              "Tipos de malware más comunes",
+              "Ingeniería social y phishing",
+              "Ataques de red frecuentes"
+            ],
+            "en": [
+              "Most common malware types",
+              "Social engineering and phishing",
+              "Frequent network attacks"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "Principios de protección de datos, identidad y redes.",
-          "puntos": [
-            "Cifrado simétrico y asimétrico",
-            "Autenticación multifactor",
-            "Seguridad de redes y firewalls"
-          ]
+          "resumen": {
+            "es": "Principios de protección de datos, identidad y redes.",
+            "en": "Principles of data, identity and network protection."
+          },
+          "puntos": {
+            "es": [
+              "Cifrado simétrico y asimétrico",
+              "Autenticación multifactor",
+              "Seguridad de redes y firewalls"
+            ],
+            "en": [
+              "Symmetric and asymmetric encryption",
+              "Multi-factor authentication",
+              "Network security and firewalls"
+            ]
+          }
         },
         {
           "id": "seguridad",
-          "resumen": "Marco de respuesta a incidentes y buenas prácticas de seguridad.",
-          "puntos": [
-            "Ciclo de respuesta a incidentes",
-            "Gestión de riesgos organizacional",
-            "Buenas prácticas de higiene digital"
-          ]
+          "resumen": {
+            "es": "Marco de respuesta a incidentes y buenas prácticas de seguridad.",
+            "en": "Incident-response framework and security best practices."
+          },
+          "puntos": {
+            "es": [
+              "Ciclo de respuesta a incidentes",
+              "Gestión de riesgos organizacional",
+              "Buenas prácticas de higiene digital"
+            ],
+            "en": [
+              "Incident-response lifecycle",
+              "Organizational risk management",
+              "Digital hygiene best practices"
+            ]
+          }
         }
       ],
-      "resultado": "Certificación obtenida en fundamentos de ciberseguridad de Cisco NetAcad.",
+      "resultado": {
+        "es": "Certificación obtenida en fundamentos de ciberseguridad de Cisco NetAcad.",
+        "en": "Certification earned in Cisco NetAcad cybersecurity fundamentals."
+      },
       "metricas": [
         {
-          "label": "Emisor",
+          "label": { "es": "Emisor", "en": "Issuer" },
           "value": "Cisco"
         },
         {
-          "label": "Año",
+          "label": { "es": "Año", "en": "Year" },
           "value": "2025"
         },
         {
-          "label": "Estado",
-          "value": "Obtenida"
+          "label": { "es": "Estado", "en": "Status" },
+          "value": { "es": "Obtenida", "en": "Earned" }
         },
         {
-          "label": "Plataforma",
+          "label": { "es": "Plataforma", "en": "Platform" },
           "value": "NetAcad"
         }
       ]
     },
     "docs": [
       {
-        "label": "Certificado — Introduction to Cybersecurity",
+        "label": {
+          "es": "Certificado — Introduction to Cybersecurity",
+          "en": "Certificate — Introduction to Cybersecurity"
+        },
         "url": "public/images/certificados/Introduction to Cybersecurity .pdf"
       }
     ]
   },
   {
     "id": "cert-002",
-    "title": "Ciberseguridad IBM",
+    "title": {
+      "es": "Ciberseguridad IBM",
+      "en": "IBM Cybersecurity"
+    },
     "category": "Certificaciones",
-    "description": "Certificación completada en ciberseguridad por IBM SkillsBuild. Cubre operaciones de seguridad, análisis de amenazas y defensa de infraestructuras.",
+    "description": {
+      "es": "Certificación completada en ciberseguridad por IBM SkillsBuild. Cubre operaciones de seguridad, análisis de amenazas y defensa de infraestructuras.",
+      "en": "Completed cybersecurity certification by IBM SkillsBuild. Covers security operations, threat analysis and infrastructure defense."
+    },
     "tags": [
       "IBM",
       "Security Operations",
@@ -523,59 +772,98 @@
     "status": "Certificado",
     "date": "2026-03",
     "process": {
-      "overview": "Certificación de IBM SkillsBuild en ciberseguridad aplicada, desde fundamentos hasta operaciones de seguridad y respuesta a incidentes.",
+      "overview": {
+        "es": "Certificación de IBM SkillsBuild en ciberseguridad aplicada, desde fundamentos hasta operaciones de seguridad y respuesta a incidentes.",
+        "en": "IBM SkillsBuild certification in applied cybersecurity, from fundamentals to security operations and incident response."
+      },
       "pasos": [
         {
           "id": "analisis",
-          "resumen": "Fundamentos de ciberseguridad y gestión de riesgos según el marco de IBM.",
-          "puntos": [
-            "Conceptos esenciales de seguridad",
-            "Gestión de riesgos y análisis de impacto",
-            "Clasificación de activos y amenazas"
-          ]
+          "resumen": {
+            "es": "Fundamentos de ciberseguridad y gestión de riesgos según el marco de IBM.",
+            "en": "Cybersecurity fundamentals and risk management following the IBM framework."
+          },
+          "puntos": {
+            "es": [
+              "Conceptos esenciales de seguridad",
+              "Gestión de riesgos y análisis de impacto",
+              "Clasificación de activos y amenazas"
+            ],
+            "en": [
+              "Essential security concepts",
+              "Risk management and impact analysis",
+              "Asset and threat classification"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "Operaciones de seguridad y análisis de amenazas con herramientas SIEM.",
-          "puntos": [
-            "Roles y procesos en un SOC",
-            "Análisis y correlación de logs",
-            "Detección de indicadores de compromiso"
-          ]
+          "resumen": {
+            "es": "Operaciones de seguridad y análisis de amenazas con herramientas SIEM.",
+            "en": "Security operations and threat analysis with SIEM tooling."
+          },
+          "puntos": {
+            "es": [
+              "Roles y procesos en un SOC",
+              "Análisis y correlación de logs",
+              "Detección de indicadores de compromiso"
+            ],
+            "en": [
+              "SOC roles and processes",
+              "Log analysis and correlation",
+              "Detection of indicators of compromise"
+            ]
+          }
         },
         {
           "id": "seguridad",
-          "resumen": "Respuesta a incidentes y fundamentos de forense digital.",
-          "puntos": [
-            "Plan de respuesta a incidentes",
-            "Recolección y preservación de evidencia",
-            "Gestión de comunicaciones en incidentes"
-          ]
+          "resumen": {
+            "es": "Respuesta a incidentes y fundamentos de forense digital.",
+            "en": "Incident response and digital-forensics fundamentals."
+          },
+          "puntos": {
+            "es": [
+              "Plan de respuesta a incidentes",
+              "Recolección y preservación de evidencia",
+              "Gestión de comunicaciones en incidentes"
+            ],
+            "en": [
+              "Incident-response plan",
+              "Evidence collection and preservation",
+              "Communications management during incidents"
+            ]
+          }
         }
       ],
-      "resultado": "Certificación IBM SkillsBuild completada en ciberseguridad aplicada.",
+      "resultado": {
+        "es": "Certificación IBM SkillsBuild completada en ciberseguridad aplicada.",
+        "en": "IBM SkillsBuild certification completed in applied cybersecurity."
+      },
       "metricas": [
         {
-          "label": "Emisor",
+          "label": { "es": "Emisor", "en": "Issuer" },
           "value": "IBM"
         },
         {
-          "label": "Estado",
-          "value": "Obtenida"
+          "label": { "es": "Estado", "en": "Status" },
+          "value": { "es": "Obtenida", "en": "Earned" }
         },
         {
-          "label": "Año",
+          "label": { "es": "Año", "en": "Year" },
           "value": "2026"
         },
         {
-          "label": "Plataforma",
+          "label": { "es": "Plataforma", "en": "Platform" },
           "value": "SkillsBuild"
         }
       ]
     },
     "docs": [
       {
-        "label": "Certificado Final IBM SkillsBuild",
+        "label": {
+          "es": "Certificado Final IBM SkillsBuild",
+          "en": "IBM SkillsBuild Final Certificate"
+        },
         "url": "public/images/certificados/IBM_final.pdf"
       },
       {

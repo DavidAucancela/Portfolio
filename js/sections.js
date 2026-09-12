@@ -243,18 +243,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'project',
       typeLabel: 'Personal',
-      desc:      'Motor de conocimiento independiente donde Obsidian es solo uno de los conectores. Ingesta múltiples fuentes, construye un grafo de conocimiento y razona sobre él con agentes de IA coordinados.',
+      desc: { es: 'Motor de conocimiento independiente donde Obsidian es solo uno de los conectores. Ingesta múltiples fuentes, construye un grafo de conocimiento y razona sobre él con agentes de IA coordinados.',
+              en: 'Independent knowledge engine where Obsidian is just one of the connectors. Ingests multiple sources, builds a knowledge graph and reasons over it with coordinated AI agents.' },
       tags:      ['FastAPI', 'React', 'Neo4j', 'PostgreSQL', 'AI Agents', 'LLM'],
       icon:      '🧠',
-      highlights: [
+      highlights: { es: [
         'Grafo con 9 tipos de entidad (Person, Project, Technology, Concept, Document, Task, Organization, Event, Skill)',
         'Ingesta y embeddings locales con Ollama + bge-m3; chat con respuestas citadas por fuente',
         'Editor de grafo con corrección de relaciones mal etiquetadas y panel de latencia por servicio',
-      ],
+      ], en: [
+        '9-entity-type graph (Person, Project, Technology, Concept, Document, Task, Organization, Event, Skill)',
+        'Local ingestion and embeddings with Ollama + bge-m3; chat with answers cited by source',
+        'Graph editor with correction of mislabeled relationships and a per-service latency panel',
+      ] },
       metricas: [
-        { label: 'Entidades', value: '9 tipos' },
-        { label: 'Embeddings', value: 'Locales' },
-        { label: 'Estado', value: 'En desarrollo' },
+        { label: { es: 'Entidades', en: 'Entities' }, value: { es: '9 tipos', en: '9 types' } },
+        { label: { es: 'Embeddings', en: 'Embeddings' }, value: { es: 'Locales', en: 'Local' } },
+        { label: { es: 'Estado', en: 'Status' }, value: { es: 'En desarrollo', en: 'In development' } },
       ],
       github: 'https://github.com/DavidAucancela/KOS',
     },
@@ -266,18 +271,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'experience',
       typeLabel: 'Trabajo fijo',
-      desc:      'Desarrollo backend y optimización de procesos académico-administrativos sobre Banner ERP: reportes en .NET conectados a Oracle Database, tuning de consultas SQL/PL-SQL y mantenimiento de sistemas legacy.',
+      desc: { es: 'Desarrollo backend y optimización de procesos académico-administrativos sobre Banner ERP: reportes en .NET conectados a Oracle Database, tuning de consultas SQL/PL-SQL y mantenimiento de sistemas legacy.',
+              en: 'Backend development and optimization of academic-administrative processes on Banner ERP: .NET reports connected to Oracle Database, SQL/PL-SQL query tuning and legacy system maintenance.' },
       tags:      ['.NET', 'C#', 'ASP.NET Core', 'Oracle', 'PL/SQL', 'Banner ERP'],
       icon:      '🏫',
-      highlights: [
+      highlights: { es: [
         'Desarrollo de funcionalidades y reportes en .NET (C#/ASP.NET Core) conectados a Oracle Database para automatizar procesos académico-administrativos en Banner ERP',
         'Optimización de consultas SQL y procedimientos PL/SQL (BULK COLLECT, window functions) para mejorar el rendimiento de reportes críticos',
         'Debugging y mantenimiento de sistemas legacy que soportan la operación diaria de la universidad',
-      ],
+      ], en: [
+        'Built features and .NET (C#/ASP.NET Core) reports connected to Oracle Database to automate academic-administrative processes in Banner ERP',
+        'Optimized SQL queries and PL/SQL procedures (BULK COLLECT, window functions) to improve critical report performance',
+        'Debugging and maintenance of legacy systems supporting the university\'s daily operations',
+      ] },
       metricas: [
-        { label: 'Sistemas automatizados', value: '2' },
-        { label: 'Stack', value: '.NET + Oracle' },
-        { label: 'Rol', value: 'Junior Dev' },
+        { label: { es: 'Sistemas automatizados', en: 'Systems automated' }, value: '2' },
+        { label: { es: 'Stack', en: 'Stack' }, value: '.NET + Oracle' },
+        { label: { es: 'Rol', en: 'Role' }, value: 'Junior Dev' },
       ],
     },
     {
@@ -289,18 +299,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'project',
       typeLabel: 'Personal',
-      desc:      'App gamificada que mide el fitness real del usuario con visión por computadora y lo confronta con escenarios de supervivencia tipo apocalipsis zombie.',
+      desc: { es: 'App gamificada que mide el fitness real del usuario con visión por computadora y lo confronta con escenarios de supervivencia tipo apocalipsis zombie.',
+              en: 'Gamified app that measures the user\'s real fitness with computer vision and pits it against zombie-apocalypse survival scenarios.' },
       tags:      ['AI Vision', 'Gamification', 'Fitness', 'ML', 'Mobile'],
       icon:      '🧟',
-      highlights: [
+      highlights: { es: [
         'Medición de ejercicio con MediaPipe y modelos ML propios, sin entrada manual de datos',
         'Gamificación: el rendimiento físico real alimenta escenarios de supervivencia',
         'Enfoque mobile-first sobre los mismos fundamentos de pose detection que Rep-Counter',
-      ],
+      ], en: [
+        'Exercise measurement with MediaPipe and custom ML models, with no manual data entry',
+        'Gamification: real physical performance drives survival scenarios',
+        'Mobile-first approach built on the same pose-detection foundations as Rep-Counter',
+      ] },
       metricas: [
-        { label: 'Visión', value: 'MediaPipe' },
-        { label: 'Plataforma', value: 'Mobile' },
-        { label: 'Estado', value: 'En desarrollo' },
+        { label: { es: 'Visión', en: 'Vision' }, value: 'MediaPipe' },
+        { label: { es: 'Plataforma', en: 'Platform' }, value: 'Mobile' },
+        { label: { es: 'Estado', en: 'Status' }, value: { es: 'En desarrollo', en: 'In development' } },
       ],
       github: 'https://github.com/DavidAucancela/ZeroDay-FitnessGame',
     },
@@ -313,18 +328,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'project',
       typeLabel: 'Open Source',
-      desc:      'Microservicio FastAPI que centraliza transcripción, traducción y diarización de audio, y generación de embeddings vía OpenAI — consumido por otros proyectos (Next.js, NestJS, n8n) en lugar de llamar a OpenAI directamente.',
+      desc: { es: 'Microservicio FastAPI que centraliza transcripción, traducción y diarización de audio, y generación de embeddings vía OpenAI — consumido por otros proyectos (Next.js, NestJS, n8n) en lugar de llamar a OpenAI directamente.',
+              en: 'FastAPI microservice that centralizes audio transcription, translation and diarization, plus embedding generation via OpenAI — consumed by other projects (Next.js, NestJS, n8n) instead of calling OpenAI directly.' },
       tags:      ['FastAPI', 'OpenAI API', 'pyannote.audio', 'Docker', 'Embeddings'],
       icon:      '🎙️',
-      highlights: [
+      highlights: { es: [
         'Diarización local de hablantes con pyannote.audio, sin depender de un servicio externo',
         'Caché por hash de audio + rate limiting + API key propia + 39 tests con OpenAI mockeado',
         'Imagen Docker multi-stage con usuario no-root; observabilidad de costo/tokens/latencia integrada con LLM Observatory',
-      ],
+      ], en: [
+        'Local speaker diarization with pyannote.audio, with no dependency on an external service',
+        'Cache by audio hash + rate limiting + its own API key + 39 tests with OpenAI mocked',
+        'Multi-stage Docker image with a non-root user; cost/token/latency observability integrated with LLM Observatory',
+      ] },
       metricas: [
-        { label: 'Tests', value: '39' },
-        { label: 'Fases', value: '7' },
-        { label: 'Endpoints', value: '6+' },
+        { label: { es: 'Tests', en: 'Tests' }, value: '39' },
+        { label: { es: 'Fases', en: 'Phases' }, value: '7' },
+        { label: { es: 'Endpoints', en: 'Endpoints' }, value: '6+' },
       ],
       github: 'https://github.com/DavidAucancela/whisperX',
     },
@@ -337,18 +357,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'project',
       typeLabel: 'Personal',
-      desc:      'Sistema de inspección de calidad visual en tiempo real: la webcam captura frames, Claude Vision los evalúa contra criterios de inspección escritos en YAML, y emite veredictos PASS/WARN/FAIL con evidencia auditable.',
+      desc: { es: 'Sistema de inspección de calidad visual en tiempo real: la webcam captura frames, Claude Vision los evalúa contra criterios de inspección escritos en YAML, y emite veredictos PASS/WARN/FAIL con evidencia auditable.',
+              en: 'Real-time visual quality-inspection system: the webcam captures frames, Claude Vision evaluates them against inspection criteria written in YAML, and issues PASS/WARN/FAIL verdicts with auditable evidence.' },
       tags:      ['Claude Vision', 'Python', 'OpenCV', 'SQLite', 'YAML'],
       icon:      '🔍',
-      highlights: [
+      highlights: { es: [
         'Criterios de inspección 100% en lenguaje natural (perfiles YAML) — agregar un producto nuevo no requiere tocar código',
         'Evidencia auditable: frames guardados + registro en SQLite + reporte HTML por sesión',
         'Modo interactivo con hotkeys: disparo manual, cambio de perfil, screenshot y reporte on-demand',
-      ],
+      ], en: [
+        '100% natural-language inspection criteria (YAML profiles) — adding a new product requires no code changes',
+        'Auditable evidence: saved frames + SQLite log + per-session HTML report',
+        'Interactive mode with hotkeys: manual trigger, profile switch, screenshot and on-demand report',
+      ] },
       metricas: [
-        { label: 'Veredictos', value: 'PASS/WARN/FAIL' },
-        { label: 'Perfiles', value: 'YAML' },
-        { label: 'Evidencia', value: 'Auditable' },
+        { label: { es: 'Veredictos', en: 'Verdicts' }, value: 'PASS/WARN/FAIL' },
+        { label: { es: 'Perfiles', en: 'Profiles' }, value: 'YAML' },
+        { label: { es: 'Evidencia', en: 'Evidence' }, value: { es: 'Auditable', en: 'Auditable' } },
       ],
       github: 'https://github.com/DavidAucancela/visual-qc-inspector',
     },
@@ -361,18 +386,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'project',
       typeLabel: 'Personal',
-      desc:      'Sistema de invitaciones digitales con QR y control de acceso en tiempo real para una quinceañera: landing con countdown y galería, invitación personalizada por token, escáner QR para staff y dashboard de check-in en vivo.',
+      desc: { es: 'Sistema de invitaciones digitales con QR y control de acceso en tiempo real para una quinceañera: landing con countdown y galería, invitación personalizada por token, escáner QR para staff y dashboard de check-in en vivo.',
+              en: 'Digital QR-based invitation system with real-time access control for a quinceañera: landing page with countdown and gallery, per-token personalized invitation, QR scanner for staff and a live check-in dashboard.' },
       tags:      ['Next.js', 'Supabase', 'Tailwind', 'Framer Motion'],
       icon:      '🎉',
-      highlights: [
+      highlights: { es: [
         'Invitación personalizada por token con QR generado server-side',
         'Scanner QR (html5-qrcode) + dashboard de check-in en tiempo real vía Supabase Realtime',
         'Login de staff por magic link (email OTP), sin contraseñas',
-      ],
+      ], en: [
+        'Per-token personalized invitation with a server-side generated QR code',
+        'QR scanner (html5-qrcode) + real-time check-in dashboard via Supabase Realtime',
+        'Passwordless staff login via magic link (email OTP)',
+      ] },
       metricas: [
-        { label: 'Rutas', value: '7' },
-        { label: 'Auth', value: 'Magic link' },
-        { label: 'Realtime', value: 'Sí' },
+        { label: { es: 'Rutas', en: 'Routes' }, value: '7' },
+        { label: { es: 'Auth', en: 'Auth' }, value: 'Magic link' },
+        { label: { es: 'Realtime', en: 'Realtime' }, value: { es: 'Sí', en: 'Yes' } },
       ],
       github: 'https://github.com/DavidAucancela/XV-Tammy',
       demo:   'https://xv-tammy-production.up.railway.app/',
@@ -386,18 +416,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'project',
       typeLabel: 'Personal',
-      desc:      'Portfolio personal con tres modos de presentación (dev / ia / sec), canvas de partículas por modo, asistente de IA con embeddings semánticos y galería fullscreen de proyectos.',
+      desc: { es: 'Portfolio personal con tres modos de presentación (dev / ia / sec), canvas de partículas por modo, asistente de IA con embeddings semánticos y galería fullscreen de proyectos.',
+              en: 'Personal portfolio with three presentation modes (dev / ia / sec), a per-mode particle canvas, an AI assistant with semantic embeddings and a fullscreen project gallery.' },
       tags:      ['HTML5', 'CSS3', 'JavaScript', 'Vite', 'Vercel'],
       icon:      '🌐',
-      highlights: [
+      highlights: { es: [
         'Sistema trimodal: contenido, paleta y animaciones cambian según el perfil',
         'Widget de IA (JotAI) con búsqueda semántica MiniLM en Web Worker',
         'Deploy automático en Vercel vía GitHub Actions',
-      ],
+      ], en: [
+        'Three-mode system: content, palette and animations change with the active profile',
+        'AI widget (JotAI) with MiniLM semantic search running in a Web Worker',
+        'Automatic deploy to Vercel via GitHub Actions',
+      ] },
       metricas: [
-        { label: 'Modos', value: '3' },
-        { label: 'Módulos JS', value: '18' },
-        { label: 'Proyectos', value: '20+' },
+        { label: { es: 'Modos', en: 'Modes' }, value: '3' },
+        { label: { es: 'Módulos JS', en: 'JS modules' }, value: '18' },
+        { label: { es: 'Proyectos', en: 'Projects' }, value: '20+' },
       ],
       github: 'https://github.com/DavidAucancela/Portfolio',
       demo:   'https://davidaucancela.github.io/Portfolio/',
@@ -411,18 +446,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'project',
       typeLabel: 'Personal',
-      desc:      'Catálogo digital + experiencia inmersiva sobre los personajes tradicionales de los pases riobambeños — Diablo Huma, Curiquingue, Sacha Runa y más. Monorepo Turborepo con Next.js 15, NestJS, Directus y Supabase.',
+      desc: { es: 'Catálogo digital + experiencia inmersiva sobre los personajes tradicionales de los pases riobambeños — Diablo Huma, Curiquingue, Sacha Runa y más. Monorepo Turborepo con Next.js 15, NestJS, Directus y Supabase.',
+              en: 'Digital catalog + immersive experience about the traditional characters of Riobamba\'s processions — Diablo Huma, Curiquingue, Sacha Runa and more. Turborepo monorepo with Next.js 15, NestJS, Directus and Supabase.' },
       tags:      ['Next.js', 'NestJS', 'Directus', 'Supabase', 'Turborepo'],
       icon:      '🏛️',
-      highlights: [
+      highlights: { es: [
         'Monorepo Turborepo + pnpm workspaces: web (Next.js SSR) + api (NestJS)',
         'Directus como CMS headless — gestión del contenido cultural sin código',
         'Búsqueda semántica sobre el patrimonio riobambeño',
-      ],
+      ], en: [
+        'Turborepo monorepo + pnpm workspaces: web (Next.js SSR) + api (NestJS)',
+        'Directus as a headless CMS — no-code management of the cultural content',
+        'Semantic search over Riobamba\'s heritage',
+      ] },
       metricas: [
-        { label: 'Apps monorepo', value: '2' },
-        { label: 'Packages', value: '3' },
-        { label: 'CMS', value: 'Directus' },
+        { label: { es: 'Apps monorepo', en: 'Monorepo apps' }, value: '2' },
+        { label: { es: 'Packages', en: 'Packages' }, value: '3' },
+        { label: { es: 'CMS', en: 'CMS' }, value: 'Directus' },
       ],
       github: 'https://github.com/DavidAucancela/Nunna',
     },
@@ -435,18 +475,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'project',
       typeLabel: 'Cliente',
-      desc:      'Experiencia web inmersiva de preservación cultural sobre el Diablo Huma y el Cucurucho. Scroll narrativo estilo Persepolis con GSAP ScrollTrigger y audio ambiental por universo con Tone.js.',
+      desc: { es: 'Experiencia web inmersiva de preservación cultural sobre el Diablo Huma y el Cucurucho. Scroll narrativo estilo Persepolis con GSAP ScrollTrigger y audio ambiental por universo con Tone.js.',
+              en: 'Immersive cultural-preservation web experience about the Diablo Huma and the Cucurucho. Persepolis-style narrative scroll with GSAP ScrollTrigger and ambient audio per universe with Tone.js.' },
       tags:      ['HTML5', 'CSS3', 'GSAP', 'ScrollTrigger', 'Tone.js'],
       icon:      '🎭',
-      highlights: [
+      highlights: { es: [
         'Sistema de temas dual: dos universos comparten el HTML, un toggle cambia todo',
         'GSAP ScrollTrigger con capítulos narrativos y parallax en 3 capas',
         'Audio ambiental diferenciado por universo con Tone.js — cero frameworks',
-      ],
+      ], en: [
+        'Dual-theme system: two universes share the same HTML, a single toggle switches everything',
+        'GSAP ScrollTrigger with narrative chapters and 3-layer parallax',
+        'Ambient audio differentiated per universe with Tone.js — zero frameworks',
+      ] },
       metricas: [
-        { label: 'Universos', value: '2' },
-        { label: 'Capítulos', value: '8' },
-        { label: 'Frameworks', value: '0' },
+        { label: { es: 'Universos', en: 'Universes' }, value: '2' },
+        { label: { es: 'Capítulos', en: 'Chapters' }, value: '8' },
+        { label: { es: 'Frameworks', en: 'Frameworks' }, value: '0' },
       ],
       github: 'https://github.com/DavidAucancela/DualFace',
     },
@@ -459,18 +504,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'project',
       typeLabel: 'Open Source',
-      desc:      'GitHub App de revisión de código automatizada. Analiza diffs con Ruff/ESLint y Claude Sonnet, y publica comentarios inline en el PR — sin intervención humana.',
+      desc: { es: 'GitHub App de revisión de código automatizada. Analiza diffs con Ruff/ESLint y Claude Sonnet, y publica comentarios inline en el PR — sin intervención humana.',
+              en: 'Automated code-review GitHub App. Analyzes diffs with Ruff/ESLint and Claude Sonnet, and posts inline comments on the PR — with no human intervention.' },
       tags:      ['Claude API', 'FastAPI', 'GitHub App', 'Ruff', 'ESLint'],
       icon:      '🔍',
-      highlights: [
+      highlights: { es: [
         'Webhook con firma HMAC-SHA256 verificada y respuesta 200 OK en <200ms',
         'Análisis en background con asyncio: estático (Ruff/ESLint) + semántico (Claude)',
         'Comentarios inline por línea publicados directamente en el PR',
-      ],
+      ], en: [
+        'Webhook with verified HMAC-SHA256 signature and a 200 OK response in <200ms',
+        'Background analysis with asyncio: static (Ruff/ESLint) + semantic (Claude)',
+        'Inline per-line comments posted directly on the PR',
+      ] },
       metricas: [
-        { label: 'Modelo IA', value: 'Claude Sonnet' },
-        { label: 'Webhook', value: '<200ms' },
-        { label: 'Lenguajes', value: 'Py + JS/TS' },
+        { label: { es: 'Modelo IA', en: 'AI model' }, value: 'Claude Sonnet' },
+        { label: { es: 'Webhook', en: 'Webhook' }, value: '<200ms' },
+        { label: { es: 'Lenguajes', en: 'Languages' }, value: 'Py + JS/TS' },
       ],
       github: 'https://github.com/DavidAucancela/CodeReviewX-',
     },
@@ -483,18 +533,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'project',
       typeLabel: 'Personal',
-      desc:      'Detección de gestos de mano en tiempo real vía webcam que mapea gestos a atajos de teclado, clics de ratón y acciones de sistema. Clasificador híbrido rule-based + ML sklearn.',
+      desc: { es: 'Detección de gestos de mano en tiempo real vía webcam que mapea gestos a atajos de teclado, clics de ratón y acciones de sistema. Clasificador híbrido rule-based + ML sklearn.',
+              en: 'Real-time hand-gesture detection via webcam that maps gestures to keyboard shortcuts, mouse clicks and system actions. Hybrid rule-based + sklearn ML classifier.' },
       tags:      ['Python', 'MediaPipe', 'OpenCV', 'pynput', 'sklearn'],
       icon:      '🖐️',
-      highlights: [
+      highlights: { es: [
         '21 landmarks por mano detectados en cada frame con MediaPipe Hands',
         'Clasificador híbrido: reglas geométricas + RandomForest entrenable',
         'Gestos personalizados configurables vía YAML — sin tocar código',
-      ],
+      ], en: [
+        '21 landmarks per hand detected on every frame with MediaPipe Hands',
+        'Hybrid classifier: geometric rules + a trainable RandomForest',
+        'Custom gestures configurable via YAML — no code changes needed',
+      ] },
       metricas: [
-        { label: 'Gestos base', value: '9' },
-        { label: 'Landmarks', value: '21' },
-        { label: 'Config', value: 'YAML' },
+        { label: { es: 'Gestos base', en: 'Base gestures' }, value: '9' },
+        { label: { es: 'Landmarks', en: 'Landmarks' }, value: '21' },
+        { label: { es: 'Config', en: 'Config' }, value: 'YAML' },
       ],
       github: 'https://github.com/DavidAucancela/Gesture-control',
     },
@@ -506,10 +561,11 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'cert',
       typeLabel: 'Certificación',
-      desc:      'Programa completo de ciberseguridad de IBM SkillsBuild con 8 módulos certificados: fundamentos, GRC, gestión de vulnerabilidades, seguridad de redes y sistemas, operaciones SOC, respuesta a incidentes, forense digital y seguridad en la nube.',
+      desc: { es: 'Programa completo de ciberseguridad de IBM SkillsBuild con 8 módulos certificados: fundamentos, GRC, gestión de vulnerabilidades, seguridad de redes y sistemas, operaciones SOC, respuesta a incidentes, forense digital y seguridad en la nube.',
+              en: 'Full IBM SkillsBuild cybersecurity program with 8 certified modules: fundamentals, GRC, vulnerability management, network and system security, SOC operations, incident response, digital forensics and cloud security.' },
       tags:      ['IBM', 'SOC', 'GRC', 'Cloud Security', 'Incident Response', 'Forensics', 'Vulnerability Management'],
       icon:      '📚',
-      highlights: [
+      highlights: { es: [
         'Cybersecurity Fundamentals — IBM SkillsBuild (29 abr 2026)',
         'Governance, Risk, Compliance & Data Privacy — IBM SkillsBuild (29 abr 2026)',
         'Vulnerability Management — IBM SkillsBuild (1 may 2026)',
@@ -518,11 +574,20 @@ import { LangSwitcher } from './lang.js';
         'Incident Response and Systems Forensics — IBM SkillsBuild (24 may 2026)',
         'Cloud Security — IBM SkillsBuild (24 may 2026)',
         'IBM SkillsBuild Cybersecurity Certificate — Certificado principal (24 may 2026)',
-      ],
+      ], en: [
+        'Cybersecurity Fundamentals — IBM SkillsBuild (Apr 29, 2026)',
+        'Governance, Risk, Compliance & Data Privacy — IBM SkillsBuild (Apr 29, 2026)',
+        'Vulnerability Management — IBM SkillsBuild (May 1, 2026)',
+        'System and Network Security — IBM SkillsBuild (May 23, 2026)',
+        'Security Operations and Management — IBM SkillsBuild (May 24, 2026)',
+        'Incident Response and Systems Forensics — IBM SkillsBuild (May 24, 2026)',
+        'Cloud Security — IBM SkillsBuild (May 24, 2026)',
+        'IBM SkillsBuild Cybersecurity Certificate — Main certificate (May 24, 2026)',
+      ] },
       metricas: [
-        { label: 'Módulos', value: '8' },
-        { label: 'Emisor', value: 'IBM' },
-        { label: 'Estado', value: 'Obtenida' },
+        { label: { es: 'Módulos', en: 'Modules' }, value: '8' },
+        { label: { es: 'Emisor', en: 'Issuer' }, value: 'IBM' },
+        { label: { es: 'Estado', en: 'Status' }, value: { es: 'Obtenida', en: 'Earned' } },
       ],
     },
     {
@@ -534,18 +599,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'project',
       typeLabel: 'Personal',
-      desc:      'Primera app móvil del portfolio. Expo SDK 54 + FastAPI async. Claude Haiku detecta el mood de cada entrada, Sonnet responde con contexto del historial vía RAG + embeddings. Streaming SSE real implementado vía XHR en React Native.',
+      desc: { es: 'Primera app móvil del portfolio. Expo SDK 54 + FastAPI async. Claude Haiku detecta el mood de cada entrada, Sonnet responde con contexto del historial vía RAG + embeddings. Streaming SSE real implementado vía XHR en React Native.',
+              en: 'First mobile app in the portfolio. Expo SDK 54 + async FastAPI. Claude Haiku detects the mood of each entry, Sonnet replies with history context via RAG + embeddings. Real SSE streaming implemented via XHR in React Native.' },
       tags:      ['React Native', 'Expo', 'FastAPI', 'Claude API', 'TypeScript', 'PostgreSQL'],
       icon:      '🧠',
-      highlights: [
+      highlights: { es: [
         'Streaming SSE en tiempo real vía XHR — workaround para EventSource ausente en Expo',
         'RAG semántico: embeddings OpenAI + similitud coseno sobre entradas del propio usuario',
         'Perfil acumulativo: Haiku actualiza users.context al cerrar cada sesión de chat',
-      ],
+      ], en: [
+        'Real-time SSE streaming via XHR — a workaround for EventSource being absent in Expo',
+        'Semantic RAG: OpenAI embeddings + cosine similarity over the user\'s own entries',
+        'Cumulative profile: Haiku updates users.context when each chat session ends',
+      ] },
       metricas: [
-        { label: 'Modelos Claude', value: '2' },
-        { label: 'Streaming', value: 'SSE real' },
-        { label: 'Plataforma', value: 'iOS + Android' },
+        { label: { es: 'Modelos Claude', en: 'Claude models' }, value: '2' },
+        { label: { es: 'Streaming', en: 'Streaming' }, value: { es: 'SSE real', en: 'Real SSE' } },
+        { label: { es: 'Plataforma', en: 'Platform' }, value: 'iOS + Android' },
       ],
       github: 'https://github.com/DavidAucancela/MindLog',
     },
@@ -558,18 +628,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'project',
       typeLabel: 'Personal',
-      desc:      'Aplicación full-stack de notas con arquitectura por capas (View → Service → Repository → ORM), JWT con blacklist en logout y deploy en Vercel + Railway.',
+      desc: { es: 'Aplicación full-stack de notas con arquitectura por capas (View → Service → Repository → ORM), JWT con blacklist en logout y deploy en Vercel + Railway.',
+              en: 'Full-stack notes app with a layered architecture (View → Service → Repository → ORM), JWT with a logout blacklist and deployment on Vercel + Railway.' },
       tags:      ['Django', 'React', 'JWT', 'PostgreSQL', 'Railway', 'Docker'],
       icon:      '📝',
-      highlights: [
+      highlights: { es: [
         'Arquitectura estricta en 4 capas: View → Service → Repository → ORM',
         'JWT con blacklist de refresh tokens en logout (djangorestframework-simplejwt)',
         'Frontend React 18 en Vercel, backend Django en Railway con PostgreSQL',
-      ],
+      ], en: [
+        'Strict 4-layer architecture: View → Service → Repository → ORM',
+        'JWT with a refresh-token blacklist on logout (djangorestframework-simplejwt)',
+        'React 18 frontend on Vercel, Django backend on Railway with PostgreSQL',
+      ] },
       metricas: [
-        { label: 'Capas', value: '4' },
-        { label: 'Endpoints', value: '13' },
-        { label: 'Auth', value: 'JWT + Blacklist' },
+        { label: { es: 'Capas', en: 'Layers' }, value: '4' },
+        { label: { es: 'Endpoints', en: 'Endpoints' }, value: '13' },
+        { label: { es: 'Auth', en: 'Auth' }, value: 'JWT + Blacklist' },
       ],
       demo: 'https://aucancela-35ab41.vercel.app',
     },
@@ -582,18 +657,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'project',
       typeLabel: 'Personal',
-      desc:      'Catálogo web estático de artesanías ecuatorianas en un único index.html con CSS y JS inline. Sin frameworks ni dependencias de build. Docker + nginx:alpine en Railway.',
+      desc: { es: 'Catálogo web estático de artesanías ecuatorianas en un único index.html con CSS y JS inline. Sin frameworks ni dependencias de build. Docker + nginx:alpine en Railway.',
+              en: 'Static web catalog of Ecuadorian handicrafts in a single index.html with inline CSS and JS. No frameworks, no build dependencies. Docker + nginx:alpine on Railway.' },
       tags:      ['HTML', 'CSS', 'JavaScript', 'Docker', 'nginx', 'Railway'],
       icon:      '🎨',
-      highlights: [
+      highlights: { es: [
         'Single-file: todo el proyecto en un único index.html con CSS y JS inline',
         'Sistema de diseño propio con CSS custom properties y grid responsive 4→1 columna',
         'Docker + nginx:alpine en Railway — cero dependencias npm',
-      ],
+      ], en: [
+        'Single-file: the entire project in one index.html with inline CSS and JS',
+        'Custom design system with CSS custom properties and a responsive 4→1 column grid',
+        'Docker + nginx:alpine on Railway — zero npm dependencies',
+      ] },
       metricas: [
-        { label: 'Archivos', value: '1 HTML' },
-        { label: 'Deps npm', value: '0' },
-        { label: 'Secciones', value: '8' },
+        { label: { es: 'Archivos', en: 'Files' }, value: '1 HTML' },
+        { label: { es: 'Deps npm', en: 'npm deps' }, value: '0' },
+        { label: { es: 'Secciones', en: 'Sections' }, value: '8' },
       ],
       github: 'https://github.com/DavidAucancela/ArtEcuador',
       demo:   'https://artecuador-production.up.railway.app/',
@@ -607,18 +687,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'project',
       typeLabel: 'Open Source',
-      desc:      'Dashboard open-source de observabilidad para la API de Claude. Monitorea tokens, latencia, costos y calidad de respuestas en tiempo real con Socket.io.',
+      desc: { es: 'Dashboard open-source de observabilidad para la API de Claude. Monitorea tokens, latencia, costos y calidad de respuestas en tiempo real con Socket.io.',
+              en: 'Open-source observability dashboard for the Claude API. Monitors tokens, latency, cost and response quality in real time with Socket.io.' },
       tags:      ['React', 'Node.js', 'PostgreSQL', 'Socket.io'],
       icon:      '🔭',
-      highlights: [
+      highlights: { es: [
         'Monitoreo en tiempo real de tokens, latencia y costos vía Socket.io',
         'Dashboard con métricas históricas y comparativas de modelos',
         'Open source — contribuciones de la comunidad bienvenidas',
-      ],
+      ], en: [
+        'Real-time monitoring of tokens, latency and cost via Socket.io',
+        'Dashboard with historical metrics and model comparisons',
+        'Open source — community contributions welcome',
+      ] },
       metricas: [
-        { label: 'Tiempo real', value: '✓' },
-        { label: 'Stack', value: 'React + Node' },
-        { label: 'Open Source', value: '✓' },
+        { label: { es: 'Tiempo real', en: 'Real-time' }, value: '✓' },
+        { label: { es: 'Stack', en: 'Stack' }, value: 'React + Node' },
+        { label: { es: 'Open Source', en: 'Open Source' }, value: '✓' },
       ],
       github: 'https://github.com/DavidAucancela/llm-observatory',
       demo:   'https://llm-web-production.up.railway.app/settings',
@@ -632,18 +717,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'project',
       typeLabel: 'Freelance',
-      desc:      'Catálogo digital de artesanías ecuatorianas con soporte multiidioma (ES/EN/PT), panel administrativo, carrito con pedidos por WhatsApp y modo oscuro/claro.',
+      desc: { es: 'Catálogo digital de artesanías ecuatorianas con soporte multiidioma (ES/EN/PT), panel administrativo, carrito con pedidos por WhatsApp y modo oscuro/claro.',
+              en: 'Digital catalog of Ecuadorian handicrafts with multilingual support (ES/EN/PT), an admin panel, a WhatsApp-based order cart and dark/light mode.' },
       tags:      ['Vue.js', 'Node.js', 'PostgreSQL', 'Pinia', 'i18n', 'Vercel'],
       icon:      '🎨',
-      highlights: [
+      highlights: { es: [
         'SPA multiidioma (ES/EN/PT) con vue-i18n y Pinia para estado global',
         'Panel admin CRUD de productos, categorías y usuarios',
         'Carrito con generación de pedido en mensaje WhatsApp',
-      ],
+      ], en: [
+        'Multilingual SPA (ES/EN/PT) with vue-i18n and Pinia for global state',
+        'Admin panel with CRUD for products, categories and users',
+        'Cart that generates an order as a WhatsApp message',
+      ] },
       metricas: [
-        { label: 'Idiomas', value: '3' },
-        { label: 'Productos', value: '+100' },
-        { label: 'Seguridad', value: '4 capas' },
+        { label: { es: 'Idiomas', en: 'Languages' }, value: '3' },
+        { label: { es: 'Productos', en: 'Products' }, value: '+100' },
+        { label: { es: 'Seguridad', en: 'Security' }, value: { es: '4 capas', en: '4 layers' } },
       ],
       github: 'https://github.com/DavidAucancela/IDEANCESTRAL',
       demo:   'https://ideancestral-production.up.railway.app/',
@@ -656,18 +746,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'experience',
       typeLabel: 'Prácticas',
-      desc:      'Diagnóstico de sistemas institucionales para inventario de activos y servicios activos. Análisis con herramientas de seguridad y verificación de cumplimiento de controles ISO 27001.',
+      desc: { es: 'Diagnóstico de sistemas institucionales para inventario de activos y servicios activos. Análisis con herramientas de seguridad y verificación de cumplimiento de controles ISO 27001.',
+              en: 'Assessment of institutional systems for asset and active-service inventory. Analysis with security tooling and verification of ISO 27001 control compliance.' },
       tags:      ['ISO 27001', 'Auditoría', 'Análisis de Vulnerabilidades', 'Hardening', 'Linux'],
       icon:      '🛡️',
-      highlights: [
+      highlights: { es: [
         'Inventario de activos de hardware y software en la red institucional',
         'Análisis de vulnerabilidades con herramientas de seguridad sobre sistemas internos',
         'Gap analysis de controles ISO 27001 e informe de recomendaciones',
-      ],
+      ], en: [
+        'Inventory of hardware and software assets on the institutional network',
+        'Vulnerability analysis with security tooling over internal systems',
+        'ISO 27001 control gap analysis and a recommendations report',
+      ] },
       metricas: [
-        { label: 'Norma', value: 'ISO 27001' },
-        { label: 'Duración', value: '6 meses' },
-        { label: 'Área', value: 'DETIC' },
+        { label: { es: 'Norma', en: 'Standard' }, value: 'ISO 27001' },
+        { label: { es: 'Duración', en: 'Duration' }, value: { es: '6 meses', en: '6 months' } },
+        { label: { es: 'Área', en: 'Department' }, value: 'DETIC' },
       ],
     },
     {
@@ -679,18 +774,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'project',
       typeLabel: 'Game Jam',
-      desc:      'Juego de terror 2D en Unity 6. Un niño explora la casa de su abuela de noche con una caja de fósforos limitada: cada fósforo da luz para explorar, pero acerca a algo.',
+      desc: { es: 'Juego de terror 2D en Unity 6. Un niño explora la casa de su abuela de noche con una caja de fósforos limitada: cada fósforo da luz para explorar, pero acerca a algo.',
+              en: '2D horror game in Unity 6. A boy explores his grandmother\'s house at night with a limited box of matches: each match gives light to explore but draws something closer.' },
       tags:      ['Unity', 'C#', 'Game Dev', 'Horror', 'WebGL'],
       icon:      '🕯️',
-      highlights: [
+      highlights: { es: [
         'Mecánica central de recurso limitado: la luz que te deja avanzar es la misma que te expone',
         'Terror atmosférico construido sobre iluminación y sonido, sin jumpscares',
         'Publicado y jugable en navegador vía WebGL en itch.io',
-      ],
+      ], en: [
+        'Core limited-resource mechanic: the light that lets you move forward is the same light that exposes you',
+        'Atmospheric horror built on lighting and sound, with no jumpscares',
+        'Published and playable in-browser via WebGL on itch.io',
+      ] },
       metricas: [
-        { label: 'Motor', value: 'Unity 6' },
-        { label: 'Build', value: 'WebGL' },
-        { label: 'Publicado', value: 'itch.io' },
+        { label: { es: 'Motor', en: 'Engine' }, value: 'Unity 6' },
+        { label: { es: 'Build', en: 'Build' }, value: 'WebGL' },
+        { label: { es: 'Publicado', en: 'Published' }, value: 'itch.io' },
       ],
       github: 'https://github.com/Lager-GJ/main',
       demo:   'https://lager.itch.io/lumbre',
@@ -704,18 +804,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'project',
       typeLabel: 'Personal',
-      desc:      'Librería TypeScript puro para contar repeticiones de ejercicio (abdominales, flexiones) usando MediaPipe BlazePose. Spike de 2 semanas, extensible y portable.',
+      desc: { es: 'Librería TypeScript puro para contar repeticiones de ejercicio (abdominales, flexiones) usando MediaPipe BlazePose. Spike de 2 semanas, extensible y portable.',
+              en: 'Pure-TypeScript library for counting exercise reps (sit-ups, push-ups) using MediaPipe BlazePose. A 2-week spike, extensible and portable.' },
       tags:      ['TypeScript', 'MediaPipe', 'ML Vision', 'React Native', 'Pose Detection'],
       icon:      '🏋️',
-      highlights: [
+      highlights: { es: [
         'Núcleo en TypeScript puro, sin dependencias de framework — portable entre web y móvil',
         'Conteo por pose detection con MediaPipe BlazePose, extensible a ejercicios nuevos',
         'Adaptadores para React y React Native pensados para integrarse en apps de fitness',
-      ],
+      ], en: [
+        'Pure-TypeScript core with no framework dependencies — portable across web and mobile',
+        'Rep counting via pose detection with MediaPipe BlazePose, extensible to new exercises',
+        'React and React Native adapters designed to plug into fitness apps',
+      ] },
       metricas: [
-        { label: 'Duración', value: '2 semanas' },
-        { label: 'Núcleo', value: 'TS puro' },
-        { label: 'Adaptadores', value: 'React / RN' },
+        { label: { es: 'Duración', en: 'Duration' }, value: { es: '2 semanas', en: '2 weeks' } },
+        { label: { es: 'Núcleo', en: 'Core' }, value: { es: 'TS puro', en: 'Pure TS' } },
+        { label: { es: 'Adaptadores', en: 'Adapters' }, value: 'React / RN' },
       ],
       github: 'https://github.com/DavidAucancela/Abs-PushUp-Counter',
     },
@@ -728,18 +833,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'project',
       typeLabel: 'Titulación',
-      desc:      'Sistema integral de gestión de envíos con búsqueda semántica impulsada por IA. Django REST + Angular + PostgreSQL + pgvector + Docker. Proyecto de grado con distinción.',
+      desc: { es: 'Sistema integral de gestión de envíos con búsqueda semántica impulsada por IA. Django REST + Angular + PostgreSQL + pgvector + Docker. Proyecto de grado con distinción.',
+              en: 'Comprehensive shipment management system with AI-powered semantic search. Django REST + Angular + PostgreSQL + pgvector + Docker. Thesis project graded with distinction.' },
       tags:      ['Django', 'Angular', 'OpenAI', 'pgvector', 'Docker', 'PostgreSQL'],
       icon:      '🚀',
-      highlights: [
+      highlights: { es: [
         'Búsqueda semántica con embeddings OpenAI — reduce tiempo de 4 min a 20 s',
         'CRUD completo con carga masiva Excel y generación de recibos PDF',
         'Control de acceso por roles (RBAC) + JWT + Docker Compose 4 servicios',
-      ],
+      ], en: [
+        'Semantic search with OpenAI embeddings — cuts time from 4 min to 20 s',
+        'Full CRUD with bulk Excel import and PDF receipt generation',
+        'Role-based access control (RBAC) + JWT + a 4-service Docker Compose setup',
+      ] },
       metricas: [
-        { label: 'Mejora eficiencia', value: '90%' },
-        { label: 'Módulos', value: '7' },
-        { label: 'Tiempo búsqueda', value: '<20s' },
+        { label: { es: 'Mejora eficiencia', en: 'Efficiency gain' }, value: '90%' },
+        { label: { es: 'Módulos', en: 'Modules' }, value: '7' },
+        { label: { es: 'Tiempo búsqueda', en: 'Search time' }, value: '<20s' },
       ],
       github: 'https://github.com/DavidAucancela/UBAppV2',
       demo:   'https://frontend-angular-production.up.railway.app/login',
@@ -752,20 +862,27 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'lab',
       typeLabel: 'Laboratorio HTB',
-      desc:      'Máquinas resueltas en HackTheBox: explotación de servicios FTP, SMB, Redis y captura de paquetes con Wireshark. Práctica de enumeración, escalación de privilegios y análisis de tráfico en entornos reales.',
+      desc: { es: 'Máquinas resueltas en HackTheBox: explotación de servicios FTP, SMB, Redis y captura de paquetes con Wireshark. Práctica de enumeración, escalación de privilegios y análisis de tráfico en entornos reales.',
+              en: 'Machines solved on HackTheBox: exploitation of FTP, SMB and Redis services, plus packet capture with Wireshark. Practice in enumeration, privilege escalation and traffic analysis on real environments.' },
       tags:      ['HackTheBox', 'Pentesting', 'Linux', 'Windows', 'Nmap', 'FTP', 'SMB', 'Redis'],
       icon:      '⚔️',
-      highlights: [
+      highlights: { es: [
         'Meow — Very Easy · Linux · Telnet no autenticado → root (100% owned)',
         'Fawn — Very Easy · Linux · FTP anonymous login → exfiltración de flag (100% owned)',
         'Dancing — Very Easy · Windows · SMB null session → acceso a share sin credenciales (100% owned)',
         'Redeemer — Very Easy · Linux · Redis sin auth → dump de claves en memoria (100% owned)',
         'Cap — Easy · Linux (Staff Pick) · IDOR en PCAP + SUID python → root',
-      ],
+      ], en: [
+        'Meow — Very Easy · Linux · Unauthenticated Telnet → root (100% owned)',
+        'Fawn — Very Easy · Linux · FTP anonymous login → flag exfiltration (100% owned)',
+        'Dancing — Very Easy · Windows · SMB null session → share access with no credentials (100% owned)',
+        'Redeemer — Very Easy · Linux · Unauthenticated Redis → in-memory key dump (100% owned)',
+        'Cap — Easy · Linux (Staff Pick) · IDOR in PCAP + SUID python → root',
+      ] },
       metricas: [
-        { label: 'Máquinas', value: '5' },
-        { label: 'Dificultad', value: 'Easy–Very Easy' },
-        { label: 'Owned', value: '100%' },
+        { label: { es: 'Máquinas', en: 'Machines' }, value: '5' },
+        { label: { es: 'Dificultad', en: 'Difficulty' }, value: 'Easy–Very Easy' },
+        { label: { es: 'Owned', en: 'Owned' }, value: '100%' },
       ],
     },
     {
@@ -777,18 +894,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'project',
       typeLabel: 'Personal',
-      desc:      'Mapa mundial interactivo de criminales más buscados integrando la FBI API en tiempo real, Google Trends y Leaflet.js.',
+      desc: { es: 'Mapa mundial interactivo de criminales más buscados integrando la FBI API en tiempo real, Google Trends y Leaflet.js.',
+              en: 'Interactive world map of most-wanted criminals integrating the FBI API in real time, Google Trends and Leaflet.js.' },
       tags:      ['Node.js', 'Leaflet', 'FBI API', 'Google Trends'],
       icon:      '🗺️',
-      highlights: [
+      highlights: { es: [
         'Integración en tiempo real con FBI Most Wanted API',
         'Visualización geoespacial con Leaflet.js y markers dinámicos',
         'Correlación con tendencias de búsqueda Google Trends',
-      ],
+      ], en: [
+        'Real-time integration with the FBI Most Wanted API',
+        'Geospatial visualization with Leaflet.js and dynamic markers',
+        'Correlation with Google Trends search data',
+      ] },
       metricas: [
-        { label: 'APIs integradas', value: '2' },
-        { label: 'Cobertura', value: 'Global' },
-        { label: 'Tiempo real', value: '✓' },
+        { label: { es: 'APIs integradas', en: 'APIs integrated' }, value: '2' },
+        { label: { es: 'Cobertura', en: 'Coverage' }, value: { es: 'Global', en: 'Global' } },
+        { label: { es: 'Tiempo real', en: 'Real-time' }, value: '✓' },
       ],
       github: 'https://github.com/DavidAucancela/MapCriminalsCode',
       demo:   'https://mapcriminalscode-production.up.railway.app/',
@@ -802,18 +924,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'project',
       typeLabel: 'Personal',
-      desc:      'Sistema de directorio telefónico interno con gestión de extensiones por oficina. Bulk import desde Excel, REST API completa y búsqueda por departamento.',
+      desc: { es: 'Sistema de directorio telefónico interno con gestión de extensiones por oficina. Bulk import desde Excel, REST API completa y búsqueda por departamento.',
+              en: 'Internal phone-directory system with per-office extension management. Bulk import from Excel, a full REST API and search by department.' },
       tags:      ['C#', 'ASP.NET Core', 'SQL Server', 'Razor Pages', 'Bootstrap'],
       icon:      '📇',
-      highlights: [
+      highlights: { es: [
         'ASP.NET Core 8 + ADO.NET sobre SQL Server, con Razor Pages y Bootstrap 5 en el front',
         'Importación masiva de extensiones desde Excel con ClosedXML',
         'REST API documentada con Swagger/OpenAPI y búsqueda por departamento',
-      ],
+      ], en: [
+        'ASP.NET Core 8 + ADO.NET over SQL Server, with Razor Pages and Bootstrap 5 on the front end',
+        'Bulk extension import from Excel with ClosedXML',
+        'REST API documented with Swagger/OpenAPI and search by department',
+      ] },
       metricas: [
-        { label: 'Stack', value: '.NET 8' },
-        { label: 'Import', value: 'Excel bulk' },
-        { label: 'API', value: 'Swagger' },
+        { label: { es: 'Stack', en: 'Stack' }, value: '.NET 8' },
+        { label: { es: 'Import', en: 'Import' }, value: { es: 'Excel bulk', en: 'Excel bulk' } },
+        { label: { es: 'API', en: 'API' }, value: 'Swagger' },
       ],
       github: 'https://github.com/DavidAucancela/NexoCorp-Directorio',
     },
@@ -826,18 +953,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'project',
       typeLabel: 'Cliente',
-      desc:      'Pipeline ETL (Extract → Transform → Load) que automatiza la población de bases de datos desde archivos JSON con validación de schema, transacciones atómicas y logs de auditoría.',
+      desc: { es: 'Pipeline ETL (Extract → Transform → Load) que automatiza la población de bases de datos desde archivos JSON con validación de schema, transacciones atómicas y logs de auditoría.',
+              en: 'ETL pipeline (Extract → Transform → Load) that automates populating databases from JSON files with schema validation, atomic transactions and audit logs.' },
       tags:      ['Python', 'Django', 'PostgreSQL', 'ETL', 'JSON'],
       icon:      '⚙️',
-      highlights: [
+      highlights: { es: [
         'Pipeline ETL completo con validación de schema antes de cada inserción',
         'Modo dry-run para validar datos sin modificar la base de datos',
         'Logs inmutables de auditoría con niveles INFO / WARNING / ERROR',
-      ],
+      ], en: [
+        'Full ETL pipeline with schema validation before every insert',
+        'Dry-run mode to validate data without modifying the database',
+        'Immutable audit logs with INFO / WARNING / ERROR levels',
+      ] },
       metricas: [
-        { label: 'Automatización', value: '100%' },
-        { label: 'Dry-run', value: '✓' },
-        { label: 'Validación', value: 'Schema completo' },
+        { label: { es: 'Automatización', en: 'Automation' }, value: '100%' },
+        { label: { es: 'Dry-run', en: 'Dry-run' }, value: '✓' },
+        { label: { es: 'Validación', en: 'Validation' }, value: { es: 'Schema completo', en: 'Full schema' } },
       ],
       github: 'https://github.com/DavidAucancela/App-de-prueba-Equity',
     },
@@ -850,18 +982,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'project',
       typeLabel: 'Cliente',
-      desc:      'Asistente conversacional con IA para gestión de cooperativas financieras. El backend enriquece cada consulta con datos reales antes de llamar a OpenAI, sin exponer datos PII.',
+      desc: { es: 'Asistente conversacional con IA para gestión de cooperativas financieras. El backend enriquece cada consulta con datos reales antes de llamar a OpenAI, sin exponer datos PII.',
+              en: 'AI conversational assistant for managing financial cooperatives. The backend enriches every query with real data before calling OpenAI, without exposing PII.' },
       tags:      ['TypeScript', 'React', 'Node.js', 'OpenAI', 'RAG', 'PostgreSQL'],
       icon:      '🤖',
-      highlights: [
+      highlights: { es: [
         'Patrón RAG: backend consulta BD y enriquece contexto antes de llamar a IA',
         'Streaming de respuestas OpenAI para experiencia de chat fluida',
         '0 datos PII expuestos al modelo — privacidad financiera garantizada',
-      ],
+      ], en: [
+        'RAG pattern: the backend queries the DB and enriches context before calling the AI',
+        'Streaming OpenAI responses for a fluid chat experience',
+        '0 PII data exposed to the model — financial privacy guaranteed',
+      ] },
       metricas: [
-        { label: 'Módulos IA', value: '4' },
-        { label: 'TypeScript', value: '100%' },
-        { label: 'PII expuesto', value: '0' },
+        { label: { es: 'Módulos IA', en: 'AI modules' }, value: '4' },
+        { label: { es: 'TypeScript', en: 'TypeScript' }, value: '100%' },
+        { label: { es: 'PII expuesto', en: 'PII exposed' }, value: '0' },
       ],
       github: 'https://github.com/DavidAucancela/AnaOS',
       demo:   'https://frontend-production-cc73.up.railway.app/',
@@ -875,18 +1012,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'project',
       typeLabel: 'Cliente',
-      desc:      'Agente conversacional en redes sociales que califica leads automáticamente con Claude Haiku, los registra en Supabase y los sincroniza con Kommo CRM usando n8n Cloud.',
+      desc: { es: 'Agente conversacional en redes sociales que califica leads automáticamente con Claude Haiku, los registra en Supabase y los sincroniza con Kommo CRM usando n8n Cloud.',
+              en: 'Conversational social-media agent that automatically qualifies leads with Claude Haiku, records them in Supabase and syncs them to Kommo CRM using n8n Cloud.' },
       tags:      ['n8n', 'Claude Haiku', 'Supabase', 'Kommo CRM', 'Telegram API'],
       icon:      '💬',
-      highlights: [
+      highlights: { es: [
         'Claude Haiku extrae datos del prospecto: nombre, ciudad, motivo, marca',
         'Conversación persistida en Supabase a medida que avanza el flujo',
         'Lead creado/actualizado en Kommo CRM con todos los campos calificados',
-      ],
+      ], en: [
+        'Claude Haiku extracts the prospect\'s data: name, city, reason, brand',
+        'Conversation persisted in Supabase as the flow progresses',
+        'Lead created/updated in Kommo CRM with every qualified field',
+      ] },
       metricas: [
-        { label: 'Modelo IA', value: 'Claude Haiku' },
-        { label: 'Motor', value: 'n8n Cloud' },
-        { label: 'Disponibilidad', value: '24/7' },
+        { label: { es: 'Modelo IA', en: 'AI model' }, value: 'Claude Haiku' },
+        { label: { es: 'Motor', en: 'Engine' }, value: 'n8n Cloud' },
+        { label: { es: 'Disponibilidad', en: 'Availability' }, value: '24/7' },
       ],
       github: 'https://github.com/DavidAucancela/whatsapp-ai-agent',
     },
@@ -899,18 +1041,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'project',
       typeLabel: 'Hackathon',
-      desc:      'Herramienta de datos abiertos para el municipio de Quito: visualización interactiva de fundaciones con mapas Leaflet, filtros dinámicos y estadísticas de impacto social.',
+      desc: { es: 'Herramienta de datos abiertos para el municipio de Quito: visualización interactiva de fundaciones con mapas Leaflet, filtros dinámicos y estadísticas de impacto social.',
+              en: 'Open-data tool for the city of Quito: interactive foundation visualization with Leaflet maps, dynamic filters and social-impact statistics.' },
       tags:      ['JavaScript', 'Leaflet', 'Charts.js', 'Datos Abiertos'],
       icon:      '🗺️',
-      highlights: [
+      highlights: { es: [
         'Mapas interactivos Leaflet con markers por tipo de fundación',
         'Filtros dinámicos que actualizan mapa y gráficos simultáneamente',
         'Static site — cero dependencias npm, compatible con cualquier hosting',
-      ],
+      ], en: [
+        'Interactive Leaflet maps with markers by foundation type',
+        'Dynamic filters that update the map and the charts simultaneously',
+        'Static site — zero npm dependencies, compatible with any hosting',
+      ] },
       metricas: [
-        { label: 'Fundaciones', value: '30+' },
-        { label: 'Deps npm', value: '0' },
-        { label: 'Deploy', value: 'Static' },
+        { label: { es: 'Fundaciones', en: 'Foundations' }, value: '30+' },
+        { label: { es: 'Deps npm', en: 'npm deps' }, value: '0' },
+        { label: { es: 'Deploy', en: 'Deploy' }, value: { es: 'Static', en: 'Static' } },
       ],
       github: 'https://github.com/DavidAucancela/Proyect_OpenLab',
     },
@@ -923,18 +1070,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'project',
       typeLabel: 'Cliente',
-      desc:      'Plataforma LMS para educación médica con transcripción automática de video mediante Whisper y gestión de contenido multirole (admin / instructor / alumno).',
+      desc: { es: 'Plataforma LMS para educación médica con transcripción automática de video mediante Whisper y gestión de contenido multirole (admin / instructor / alumno).',
+              en: 'LMS platform for medical education with automatic video transcription via Whisper and multi-role content management (admin / instructor / student).' },
       tags:      ['NestJS', 'Next.js', 'Supabase', 'Whisper', 'TypeScript'],
       icon:      '🩺',
-      highlights: [
+      highlights: { es: [
         'OpenAI Whisper transcribe clases en video — subtítulos y texto buscable',
         'Backend NestJS con módulos de cursos, evaluaciones y progreso',
         'Frontend Next.js con SSR; en producción con dominio propio',
-      ],
+      ], en: [
+        'OpenAI Whisper transcribes video lessons — subtitles and searchable text',
+        'NestJS backend with course, assessment and progress modules',
+        'Next.js frontend with SSR; in production on its own domain',
+      ] },
       metricas: [
-        { label: 'Transcripción', value: 'Whisper AI' },
-        { label: 'Roles', value: '3' },
-        { label: 'Estado', value: 'Producción' },
+        { label: { es: 'Transcripción', en: 'Transcription' }, value: 'Whisper AI' },
+        { label: { es: 'Roles', en: 'Roles' }, value: '3' },
+        { label: { es: 'Estado', en: 'Status' }, value: { es: 'Producción', en: 'Production' } },
       ],
       github: 'https://github.com/DavidAucancela/MareVitae',
       demo:   'https://www.marevitaeint.com/',
@@ -948,18 +1100,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'project',
       typeLabel: 'Personal',
-      desc:      'Sistema de transacciones bancarias que implementa el OWASP Top 10. JWT (access 15 min + refresh 7d), bcrypt factor 12, Helmet.js, CSRF tokens y auditoría inmutable de operaciones.',
+      desc: { es: 'Sistema de transacciones bancarias que implementa el OWASP Top 10. JWT (access 15 min + refresh 7d), bcrypt factor 12, Helmet.js, CSRF tokens y auditoría inmutable de operaciones.',
+              en: 'Banking transaction system implementing the OWASP Top 10. JWT (15 min access + 7-day refresh), bcrypt factor 12, Helmet.js, CSRF tokens and an immutable operations audit log.' },
       tags:      ['Node.js', 'Express', 'JWT', 'bcrypt', 'OWASP', 'PostgreSQL'],
       icon:      '🔒',
-      highlights: [
+      highlights: { es: [
         '6 categorías del OWASP Top 10 implementadas desde el diseño inicial',
         'JWT access 15min + refresh 7d con rotación automática y bcrypt factor 12',
         'Auditoría inmutable: cada transacción registrada con timestamp, IP y usuario',
-      ],
+      ], en: [
+        '6 OWASP Top 10 categories implemented from the initial design',
+        'JWT 15min access + 7-day refresh with automatic rotation and bcrypt factor 12',
+        'Immutable audit log: every transaction recorded with timestamp, IP and user',
+      ] },
       metricas: [
-        { label: 'OWASP mitigados', value: '6/10' },
-        { label: 'Capas seguridad', value: '5' },
-        { label: 'Auditoría', value: '100%' },
+        { label: { es: 'OWASP mitigados', en: 'OWASP mitigated' }, value: '6/10' },
+        { label: { es: 'Capas seguridad', en: 'Security layers' }, value: '5' },
+        { label: { es: 'Auditoría', en: 'Audit coverage' }, value: '100%' },
       ],
       github: 'https://github.com/DavidAucancela/SecuraBank',
     },
@@ -971,18 +1128,23 @@ import { LangSwitcher } from './lang.js';
       completed: true,
       type:      'cert',
       typeLabel: 'Certificación',
-      desc:      'Certificación oficial de Cisco sobre fundamentos de ciberseguridad: tipos de amenazas, vectores de ataque, principios de defensa de redes y respuesta a incidentes.',
+      desc: { es: 'Certificación oficial de Cisco sobre fundamentos de ciberseguridad: tipos de amenazas, vectores de ataque, principios de defensa de redes y respuesta a incidentes.',
+              en: 'Official Cisco certification on cybersecurity fundamentals: threat types, attack vectors, network defense principles and incident response.' },
       tags:      ['Cisco', 'Fundamentos', 'Threat Analysis', 'Network Security'],
       icon:      '🏅',
-      highlights: [
+      highlights: { es: [
         'Amenazas y vectores de ataque: malware, phishing, DoS/DDoS, MITM',
         'Defensa de redes: firewalls, IDS/IPS, VPN, cifrado',
         'Respuesta a incidentes y gestión de riesgos — certificado Cisco NetAcad',
-      ],
+      ], en: [
+        'Threats and attack vectors: malware, phishing, DoS/DDoS, MITM',
+        'Network defense: firewalls, IDS/IPS, VPN, encryption',
+        'Incident response and risk management — Cisco NetAcad certified',
+      ] },
       metricas: [
-        { label: 'Emisor', value: 'Cisco' },
-        { label: 'Año', value: '2024' },
-        { label: 'Estado', value: 'Obtenida' },
+        { label: { es: 'Emisor', en: 'Issuer' }, value: 'Cisco' },
+        { label: { es: 'Año', en: 'Year' }, value: '2024' },
+        { label: { es: 'Estado', en: 'Status' }, value: { es: 'Obtenida', en: 'Earned' } },
       ],
     }
   ];
@@ -1153,7 +1315,56 @@ import { LangSwitcher } from './lang.js';
   }
 
   /* ─── EXPERIENCE — Timeline horizontal ──────────────────── */
-  const COMPLETED_DATA = EXPERIENCE_DATA.filter(e => e.completed !== false);
+
+  /* typeLabel es una clave fija en español; el mapa solo traduce la etiqueta visible */
+  const TYPE_LABEL_EN = {
+    'Personal':         'Personal',
+    'Trabajo fijo':     'Full-time',
+    'Open Source':      'Open Source',
+    'Cliente':          'Client',
+    'Certificación':    'Certification',
+    'Freelance':        'Freelance',
+    'Prácticas':        'Internship',
+    'Game Jam':         'Game Jam',
+    'Titulación':       'Thesis',
+    'Laboratorio HTB':  'HTB Lab',
+    'Hackathon':        'Hackathon',
+  };
+  function _typeLabel(tl) {
+    return LangSwitcher.getLang() === 'en' ? (TYPE_LABEL_EN[tl] || tl) : tl;
+  }
+
+  /* date es texto libre en español ("Jul 2026 — Presente", "2024 — 2026"); se
+     traduce por regex en vez de duplicar el dato — sin tocar EXPERIENCE_DATA */
+  const MONTH_ABBR_EN = {
+    Ene: 'Jan', Feb: 'Feb', Mar: 'Mar', Abr: 'Apr', May: 'May', Jun: 'Jun',
+    Jul: 'Jul', Ago: 'Aug', Sep: 'Sep', Oct: 'Oct', Nov: 'Nov', Dic: 'Dec',
+  };
+  function _localizeExpDate(date) {
+    if (LangSwitcher.getLang() !== 'en' || !date) return date;
+    return date
+      .replace(/\b(Ene|Feb|Mar|Abr|May|Jun|Jul|Ago|Sep|Oct|Nov|Dic)\b/g, m => MONTH_ABBR_EN[m])
+      .replace(/Presente/g, 'Present');
+  }
+
+  /* Resuelve date/typeLabel/desc/highlights/metricas al idioma activo.
+     title/role/org quedan en español: el drawer solo muestra el texto antes
+     del " — " del title (ver trajectory.js _buildItem) y role/org no se renderizan. */
+  function _localizedExperience() {
+    return EXPERIENCE_DATA
+      .filter(e => e.completed !== false)
+      .map(e => ({
+        ...e,
+        date:      _localizeExpDate(e.date),
+        typeLabel: _typeLabel(e.typeLabel),
+        desc:      LangSwitcher.L(e.desc),
+        highlights: (LangSwitcher.L(e.highlights) || []).map(h => LangSwitcher.L(h)),
+        metricas:  (e.metricas || []).map(m => ({
+          label: LangSwitcher.L(m.label),
+          value: LangSwitcher.L(m.value),
+        })),
+      }));
+  }
 
   function renderExperience(mode) {
     const container = document.getElementById('timeline-container');
@@ -1163,7 +1374,7 @@ import { LangSwitcher } from './lang.js';
   }
 
   function _buildTimeline(container) {
-    Trajectory.render(container, COMPLETED_DATA);
+    Trajectory.render(container, _localizedExperience());
   }
 
   /* ─── CONTACT ────────────────────────────────────────────── */

@@ -58,6 +58,38 @@ const CATEGORY_ORDER = {
   sec: ['Máquinas HTB', 'Certificaciones', 'Prácticas Profesionales'],
 };
 
+/* La categoría es la clave canónica de filtro (en español, definida en los JSON).
+   Este mapa solo traduce la etiqueta visible del chip cuando el idioma es EN. */
+const CATEGORY_LABELS_EN = {
+  'Desarrollo Web':            'Web Development',
+  'Computer Vision':           'Computer Vision',
+  'Backend & Datos':           'Backend & Data',
+  'Seguridad':                 'Security',
+  'Concursos':                 'Competitions',
+  'Sistemas Inteligentes':     'Intelligent Systems',
+  'Visión & Audio':            'Vision & Audio',
+  'Búsqueda Semántica & RAG':  'Semantic Search & RAG',
+  'MLOps & DevTools':          'MLOps & DevTools',
+  'Máquinas HTB':              'HTB Machines',
+  'Certificaciones':           'Certifications',
+  'Prácticas Profesionales':   'Internships',
+};
+
+function _catLabel(cat) {
+  return LangSwitcher.getLang() === 'en' ? (CATEGORY_LABELS_EN[cat] || cat) : cat;
+}
+
+const MONTHS_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const MONTHS_EN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+/** "2026-04" → "Abr 2026" / "Apr 2026" según idioma. */
+function _fmtDate(date) {
+  if (!date) return '';
+  const [y, m] = date.split('-');
+  const months = LangSwitcher.getLang() === 'en' ? MONTHS_EN : MONTHS_ES;
+  return `${months[parseInt(m, 10) - 1] || ''} ${y}`;
+}
+
 const SLUG_MAP = {
   'project-001': 'ubapp',
   'project-002': 'ideancestral',
@@ -229,7 +261,7 @@ function _renderFilters(mode) {
     </button>`;
 
   bar.innerHTML = chip('all', LangSwitcher.t('projects.filterAll')) +
-    cats.map(cat => chip(cat, cat)).join('');
+    cats.map(cat => chip(cat, _catLabel(cat))).join('');
 
   bar.querySelectorAll('.pfilter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -324,26 +356,23 @@ function _renderPagination(totalPages, projects, mode) {
 function _buildCard(p, mode) {
   if (mode === 'sec') return p.lab ? _buildLabCard(p) : _buildSecDocCard(p);
 
+  const title = LangSwitcher.L(p.title);
+  const description = LangSwitcher.L(p.description);
+
   const card = document.createElement('article');
   card.className = `project-card project-card--fullbleed${p.featured ? ' project-card--featured' : ''}`;
-  card.setAttribute('aria-label', p.title);
+  card.setAttribute('aria-label', title);
 
   if (p.id && SLUG_MAP[p.id]) card.dataset.slug = SLUG_MAP[p.id];
 
   // Imagen o placeholder
   const imgHTML = p.image
-    ? `<img src="${p.image}" alt="Captura de ${p.title}" loading="lazy"
+    ? `<img src="${p.image}" alt="Captura de ${title}" loading="lazy"
             onerror="this.style.display='none'; this.onerror=null;" />`
     : _buildCardPlaceholder(p);
 
   // Fecha formateada
-  const dateLabel = p.date
-    ? (() => {
-        const [y, m] = p.date.split('-');
-        const mes = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][parseInt(m,10)-1] || '';
-        return `${mes} ${y}`;
-      })()
-    : '';
+  const dateLabel = _fmtDate(p.date);
 
   // Tags (máx 3 visibles — una sola línea, deja ver el título)
   const tagsHTML = p.tags.slice(0, 3)
@@ -369,7 +398,7 @@ function _buildCard(p, mode) {
   // Botones
   const liveBtn = p.liveUrl
     ? `<a href="${p.liveUrl}" target="_blank" rel="noopener noreferrer"
-          class="card-btn card-btn--primary" aria-label="Ver demo de ${p.title}">
+          class="card-btn card-btn--primary" aria-label="${LangSwitcher.t('projects.demo')} — ${title}">
          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
@@ -382,7 +411,7 @@ function _buildCard(p, mode) {
 
   const repoBtn = p.repoUrl
     ? `<a href="${p.repoUrl}" target="_blank" rel="noopener noreferrer"
-          class="card-btn card-btn--outline" aria-label="Ver código de ${p.title}">
+          class="card-btn card-btn--outline" aria-label="${LangSwitcher.t('projects.code')} — ${title}">
          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
            <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/>
          </svg>
@@ -410,13 +439,13 @@ function _buildCard(p, mode) {
       </div>
       <div class="card-body">
         <div class="card-tags">${tagsHTML}</div>
-        <h3 class="card-title">${p.title}</h3>
-        <p class="card-description">${p.description}</p>
+        <h3 class="card-title">${title}</h3>
+        <p class="card-description">${description}</p>
         <div class="card-links">
           ${liveBtn}
           ${repoBtn}
           ${privateNote}
-          <button class="card-btn card-btn--process" aria-label="Ver proceso de ${p.title}" type="button">
+          <button class="card-btn card-btn--process" aria-label="${LangSwitcher.t('projects.process')} — ${title}" type="button">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <circle cx="12" cy="12" r="10"/>
@@ -449,13 +478,16 @@ function _buildLabCard(p) {
     'Insane':    '#b14eff',
   }[lab.difficulty] || '#9fef00';
 
-  const techniquesHTML = lab.techniques
-    .map(t => `<span class="lab-technique">${t}</span>`)
+  const title = LangSwitcher.L(p.title);
+  const description = LangSwitcher.L(p.description);
+
+  const techniquesHTML = (LangSwitcher.L(lab.techniques) || [])
+    .map(t => `<span class="lab-technique">${LangSwitcher.L(t)}</span>`)
     .join('');
 
   const card = document.createElement('article');
   card.className = 'project-card lab-card';
-  card.setAttribute('aria-label', `${p.title} — ${lab.platform}`);
+  card.setAttribute('aria-label', `${title} — ${lab.platform}`);
 
   card.innerHTML = `
     <div class="lab-card-header" style="border-bottom: 1px solid var(--border-color);">
@@ -472,7 +504,7 @@ function _buildLabCard(p) {
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#9fef00" stroke-width="3" aria-hidden="true">
             <polyline points="20 6 9 17 4 12"/>
           </svg>
-          ${lab.status}
+          ${LangSwitcher.L(lab.status)}
         </span>
       </div>
     </div>
@@ -487,11 +519,11 @@ function _buildLabCard(p) {
       </div>
 
       <h3 class="card-title" style="font-size:1.25rem; letter-spacing:0.02em;">
-        ${p.title}
+        ${title}
         <span style="font-size:0.7rem; color:var(--text-muted); font-weight:400; margin-left:0.4rem; font-family:var(--font-display);">#starting-point</span>
       </h3>
 
-      <p class="card-description">${p.description}</p>
+      <p class="card-description">${description}</p>
 
       <div class="lab-techniques">
         <span class="lab-techniques-label">${LangSwitcher.t('projects.techniques')}</span>
@@ -506,7 +538,7 @@ function _buildLabCard(p) {
         </svg>
         ${LangSwitcher.t('projects.pwned')}
       </span>
-      <button class="card-btn card-btn--process" aria-label="Ver writeup de ${p.title}" type="button">
+      <button class="card-btn card-btn--process" aria-label="${LangSwitcher.t('projects.writeup')} — ${title}" type="button">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <circle cx="12" cy="12" r="10"/>
@@ -530,16 +562,12 @@ function _buildSecDocCard(p) {
   const color     = isCert ? '#ffce3d' : '#3da9fc';
   const colorBg   = isCert ? 'rgba(255,206,61,0.08)' : 'rgba(61,169,252,0.08)';
 
-  const dateLabel = p.date
-    ? (() => {
-        const [y, m] = p.date.split('-');
-        const mes = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][parseInt(m,10)-1] || '';
-        return `${mes} ${y}`;
-      })()
-    : '';
+  const title = LangSwitcher.L(p.title);
+  const description = LangSwitcher.L(p.description);
+  const dateLabel = _fmtDate(p.date);
 
   const topicsHTML = (p.tags || [])
-    .map(t => `<span class="lab-technique">${t}</span>`)
+    .map(t => `<span class="lab-technique">${LangSwitcher.L(t)}</span>`)
     .join('');
 
   const featuredChip = p.featured
@@ -548,7 +576,7 @@ function _buildSecDocCard(p) {
 
   const card = document.createElement('article');
   card.className = 'project-card lab-card';
-  card.setAttribute('aria-label', `${p.title} — ${typeLabel}`);
+  card.setAttribute('aria-label', `${title} — ${typeLabel}`);
 
   card.innerHTML = `
     <div class="lab-card-header" style="border-bottom: 1px solid var(--border-color);">
@@ -576,9 +604,9 @@ function _buildSecDocCard(p) {
         ${featuredChip}
       </div>
 
-      <h3 class="card-title" style="font-size:1.25rem; letter-spacing:0.02em;">${p.title}</h3>
+      <h3 class="card-title" style="font-size:1.25rem; letter-spacing:0.02em;">${title}</h3>
 
-      <p class="card-description">${p.description}</p>
+      <p class="card-description">${description}</p>
 
       <div class="lab-techniques">
         <span class="lab-techniques-label">${LangSwitcher.t('projects.topics')}</span>
@@ -593,7 +621,7 @@ function _buildSecDocCard(p) {
         </svg>
         ${LangSwitcher.t(isCert ? 'projects.certified' : 'projects.completed')}
       </span>
-      <button class="card-btn card-btn--process" aria-label="Ver detalle de ${p.title}" type="button">
+      <button class="card-btn card-btn--process" aria-label="${LangSwitcher.t(isCert ? 'projects.certificate' : 'projects.process')} — ${title}" type="button">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
              stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -614,7 +642,7 @@ function _getModeEmoji(mode) {
 }
 
 function _buildCardPlaceholder(p) {
-  const t = (p.title || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const t = String(LangSwitcher.L(p.title) || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   return `<div class="card-image-placeholder" aria-hidden="true"><span class="cph__bg-text">${t}</span></div>`;
 }
 

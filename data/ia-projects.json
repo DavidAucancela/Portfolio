@@ -3,8 +3,14 @@
     "id": "project-008",
     "title": "LLM Observatory",
     "category": "MLOps & DevTools",
-    "description": "Dashboard open-source de observabilidad para la API de Claude. Monitorea tokens, costo y latencia en tiempo real con un SDK wrapper drop-in de cero overhead.",
-    "longDescription": "Dashboard que da visibilidad en tiempo real de tokens, costo y latencia al usar la API de Claude, sin tocar el código existente del cliente.",
+    "description": {
+      "es": "Dashboard open-source de observabilidad para la API de Claude. Monitorea tokens, costo y latencia en tiempo real con un SDK wrapper drop-in de cero overhead.",
+      "en": "Open-source observability dashboard for the Claude API. Tracks tokens, cost and latency in real time with a zero-overhead drop-in SDK wrapper."
+    },
+    "longDescription": {
+      "es": "Dashboard que da visibilidad en tiempo real de tokens, costo y latencia al usar la API de Claude, sin tocar el código existente del cliente.",
+      "en": "Dashboard that gives real-time visibility into tokens, cost and latency when using the Claude API, without touching the client's existing code."
+    },
     "tags": [
       "React",
       "Node.js",
@@ -43,61 +49,107 @@
       ]
     },
     "process": {
-      "overview": "Los equipos que usan Claude en producción no tenían visibilidad de tokens, costo ni latencia; se construyó un SDK wrapper que intercepta cada llamada sin tocar el código cliente.",
+      "overview": {
+        "es": "Los equipos que usan Claude en producción no tenían visibilidad de tokens, costo ni latencia; se construyó un SDK wrapper que intercepta cada llamada sin tocar el código cliente.",
+        "en": "Teams using Claude in production had no visibility into tokens, cost or latency; an SDK wrapper was built to intercept every call without touching client code."
+      },
       "pasos": [
         {
           "id": "problema",
-          "resumen": "No había forma de ver el costo y la latencia real por request, ni comparar modelos en vivo.",
-          "puntos": [
-            "Sin visibilidad granular por request",
-            "Sin alertas ante picos de costo",
-            "Comparar modelos requería pruebas manuales"
-          ]
+          "resumen": {
+            "es": "No había forma de ver el costo y la latencia real por request, ni comparar modelos en vivo.",
+            "en": "There was no way to see real per-request cost and latency, or to compare models live."
+          },
+          "puntos": {
+            "es": [
+              "Sin visibilidad granular por request",
+              "Sin alertas ante picos de costo",
+              "Comparar modelos requería pruebas manuales"
+            ],
+            "en": [
+              "No granular per-request visibility",
+              "No alerts on cost spikes",
+              "Comparing models required manual testing"
+            ]
+          }
         },
         {
           "id": "diseño",
-          "resumen": "El wrapper se integra sin cambiar código y envía métricas de forma asíncrona para no afectar la latencia.",
-          "puntos": [
-            "Integración drop-in sin cambiar código",
-            "Métricas enviadas sin bloquear la respuesta",
-            "Actualización en vivo por WebSocket"
-          ]
+          "resumen": {
+            "es": "El wrapper se integra sin cambiar código y envía métricas de forma asíncrona para no afectar la latencia.",
+            "en": "The wrapper integrates without code changes and sends metrics asynchronously so latency is unaffected."
+          },
+          "puntos": {
+            "es": [
+              "Integración drop-in sin cambiar código",
+              "Métricas enviadas sin bloquear la respuesta",
+              "Actualización en vivo por WebSocket"
+            ],
+            "en": [
+              "Drop-in integration with no code changes",
+              "Metrics sent without blocking the response",
+              "Live updates over WebSocket"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "Captura tokens, latencia y costo por modelo, todo persistido y visible en tiempo real.",
-          "puntos": [
-            "Tokens y latencia por request",
-            "Costo estimado por modelo",
-            "Exportación CSV del histórico"
-          ]
+          "resumen": {
+            "es": "Captura tokens, latencia y costo por modelo, todo persistido y visible en tiempo real.",
+            "en": "Captures tokens, latency and cost per model, all persisted and visible in real time."
+          },
+          "puntos": {
+            "es": [
+              "Tokens y latencia por request",
+              "Costo estimado por modelo",
+              "Exportación CSV del histórico"
+            ],
+            "en": [
+              "Tokens and latency per request",
+              "Estimated cost per model",
+              "CSV export of the history"
+            ]
+          }
         },
         {
           "id": "despliegue",
-          "resumen": "Publicado como paquete npm, con backend y dashboard desplegados en Railway.",
-          "puntos": [
-            "Paquete npm instalable",
-            "Tres servicios en Railway",
-            "Documentación de integración en 3 pasos"
-          ]
+          "resumen": {
+            "es": "Publicado como paquete npm, con backend y dashboard desplegados en Railway.",
+            "en": "Published as an npm package, with backend and dashboard deployed on Railway."
+          },
+          "puntos": {
+            "es": [
+              "Paquete npm instalable",
+              "Tres servicios en Railway",
+              "Documentación de integración en 3 pasos"
+            ],
+            "en": [
+              "Installable npm package",
+              "Three services on Railway",
+              "3-step integration documentation"
+            ]
+          }
         }
       ],
-      "resultado": "SDK sin overhead perceptible con dashboard en vivo de tokens, costo y latencia por modelo.",
+      "resultado": {
+        "es": "SDK sin overhead perceptible con dashboard en vivo de tokens, costo y latencia por modelo.",
+        "en": "SDK with no perceptible overhead and a live dashboard of tokens, cost and latency per model."
+      },
       "metricas": [
         {
-          "label": "Overhead del SDK",
+          "label": { "es": "Overhead del SDK", "en": "SDK overhead" },
           "value": "0ms"
         },
         {
-          "label": "TTFT tracking",
+          "label": { "es": "TTFT tracking", "en": "TTFT tracking" },
           "value": "Streaming"
         },
         {
-          "label": "Modelos comparados",
+          "label": { "es": "Modelos comparados", "en": "Models compared" },
           "value": "5+"
         },
         {
-          "label": "Latencia WebSocket",
+          "label": { "es": "Latencia WebSocket", "en": "WebSocket latency" },
           "value": "< 50ms"
         }
       ]
@@ -107,8 +159,14 @@
     "id": "project-001",
     "title": "UBApp",
     "category": "Búsqueda Semántica & RAG",
-    "description": "Sistema de almacenamiento de envíos con búsqueda semántica impulsada por IA, visualización geográfica y generación de documentos.",
-    "longDescription": "Sistema de gestión de envíos con búsqueda semántica que redujo el tiempo de localizar un paquete de 4 minutos a menos de 20 segundos.",
+    "description": {
+      "es": "Sistema de almacenamiento de envíos con búsqueda semántica impulsada por IA, visualización geográfica y generación de documentos.",
+      "en": "Shipment storage system with AI-powered semantic search, geographic visualization and document generation."
+    },
+    "longDescription": {
+      "es": "Sistema de gestión de envíos con búsqueda semántica que redujo el tiempo de localizar un paquete de 4 minutos a menos de 20 segundos.",
+      "en": "Shipment management system with semantic search that cut the time to locate a package from 4 minutes to under 20 seconds."
+    },
     "tags": [
       "Django",
       "Angular",
@@ -158,61 +216,107 @@
       ]
     },
     "process": {
-      "overview": "Localizar un envío entre más de 5.000 registros tardaba hasta 4 minutos; se implementó búsqueda semántica con embeddings para encontrar cualquier envío en segundos.",
+      "overview": {
+        "es": "Localizar un envío entre más de 5.000 registros tardaba hasta 4 minutos; se implementó búsqueda semántica con embeddings para encontrar cualquier envío en segundos.",
+        "en": "Locating a shipment among more than 5,000 records took up to 4 minutes; semantic search with embeddings was implemented to find any shipment in seconds."
+      },
       "pasos": [
         {
           "id": "problema",
-          "resumen": "La búsqueda manual en hojas de cálculo era lenta y fallaba ante errores tipográficos o descripciones en lenguaje natural.",
-          "puntos": [
-            "Búsqueda manual de hasta 4 minutos",
-            "Fallaba con errores tipográficos",
-            "Sin visibilidad geográfica de los paquetes"
-          ]
+          "resumen": {
+            "es": "La búsqueda manual en hojas de cálculo era lenta y fallaba ante errores tipográficos o descripciones en lenguaje natural.",
+            "en": "Manual spreadsheet search was slow and failed on typos or natural-language descriptions."
+          },
+          "puntos": {
+            "es": [
+              "Búsqueda manual de hasta 4 minutos",
+              "Fallaba con errores tipográficos",
+              "Sin visibilidad geográfica de los paquetes"
+            ],
+            "en": [
+              "Manual search taking up to 4 minutes",
+              "Failed on typos",
+              "No geographic visibility of packages"
+            ]
+          }
         },
         {
           "id": "analisis",
-          "resumen": "Se eligió pgvector para hacer búsqueda semántica directamente en PostgreSQL, sin infraestructura adicional.",
-          "puntos": [
-            "Embeddings de OpenAI para representar el texto",
-            "Búsqueda por similitud directamente en SQL",
-            "Búsqueda híbrida: palabra clave + semántica"
-          ]
+          "resumen": {
+            "es": "Se eligió pgvector para hacer búsqueda semántica directamente en PostgreSQL, sin infraestructura adicional.",
+            "en": "pgvector was chosen to run semantic search directly in PostgreSQL, with no additional infrastructure."
+          },
+          "puntos": {
+            "es": [
+              "Embeddings de OpenAI para representar el texto",
+              "Búsqueda por similitud directamente en SQL",
+              "Búsqueda híbrida: palabra clave + semántica"
+            ],
+            "en": [
+              "OpenAI embeddings to represent the text",
+              "Similarity search directly in SQL",
+              "Hybrid search: keyword + semantic"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "Cada envío genera su embedding automáticamente; la búsqueda compara el texto del usuario contra todos los registros.",
-          "puntos": [
-            "Embedding generado al crear el envío",
-            "Búsqueda por similitud en tiempo real",
-            "Mapa con ubicación de cada envío"
-          ]
+          "resumen": {
+            "es": "Cada envío genera su embedding automáticamente; la búsqueda compara el texto del usuario contra todos los registros.",
+            "en": "Each shipment generates its embedding automatically; the search compares the user's text against every record."
+          },
+          "puntos": {
+            "es": [
+              "Embedding generado al crear el envío",
+              "Búsqueda por similitud en tiempo real",
+              "Mapa con ubicación de cada envío"
+            ],
+            "en": [
+              "Embedding generated when the shipment is created",
+              "Real-time similarity search",
+              "Map with the location of each shipment"
+            ]
+          }
         },
         {
           "id": "despliegue",
-          "resumen": "Los embeddings se generan en segundo plano para no bloquear la respuesta al usuario.",
-          "puntos": [
-            "Procesamiento en background",
-            "Caché de embeddings frecuentes",
-            "Búsqueda vectorial en menos de 100ms"
-          ]
+          "resumen": {
+            "es": "Los embeddings se generan en segundo plano para no bloquear la respuesta al usuario.",
+            "en": "Embeddings are generated in the background so the user response is never blocked."
+          },
+          "puntos": {
+            "es": [
+              "Procesamiento en background",
+              "Caché de embeddings frecuentes",
+              "Búsqueda vectorial en menos de 100ms"
+            ],
+            "en": [
+              "Background processing",
+              "Cache of frequent embeddings",
+              "Vector search in under 100ms"
+            ]
+          }
         }
       ],
-      "resultado": "Tiempo de búsqueda reducido de 4 minutos a menos de 20 segundos, un 92% más eficiente.",
+      "resultado": {
+        "es": "Tiempo de búsqueda reducido de 4 minutos a menos de 20 segundos, un 92% más eficiente.",
+        "en": "Search time cut from 4 minutes to under 20 seconds — 92% more efficient."
+      },
       "metricas": [
         {
-          "label": "Tiempo de búsqueda",
+          "label": { "es": "Tiempo de búsqueda", "en": "Search time" },
           "value": "< 20s"
         },
         {
-          "label": "Mejora eficiencia",
+          "label": { "es": "Mejora eficiencia", "en": "Efficiency gain" },
           "value": "92%"
         },
         {
-          "label": "Modelo embeddings",
+          "label": { "es": "Modelo embeddings", "en": "Embedding model" },
           "value": "ada-002"
         },
         {
-          "label": "Dimensiones vector",
+          "label": { "es": "Dimensiones vector", "en": "Vector dimensions" },
           "value": "1536"
         }
       ]
@@ -223,8 +327,14 @@
     "slug": "mindlog",
     "title": "MindLog",
     "category": "Sistemas Inteligentes",
-    "description": "App móvil de diario personal con IA conversacional. Claude Haiku detecta el mood, Sonnet responde con contexto del historial vía RAG con embeddings y streaming SSE real en React Native.",
-    "longDescription": "App de diario personal donde el usuario puede conversar con sus propias entradas pasadas, gracias a un asistente Claude con memoria y streaming en tiempo real.",
+    "description": {
+      "es": "App móvil de diario personal con IA conversacional. Claude Haiku detecta el mood, Sonnet responde con contexto del historial vía RAG con embeddings y streaming SSE real en React Native.",
+      "en": "Mobile personal-journal app with conversational AI. Claude Haiku detects mood, Sonnet replies with history context via RAG with embeddings, and real SSE streaming in React Native."
+    },
+    "longDescription": {
+      "es": "App de diario personal donde el usuario puede conversar con sus propias entradas pasadas, gracias a un asistente Claude con memoria y streaming en tiempo real.",
+      "en": "Personal-journal app where the user can converse with their own past entries, thanks to a Claude assistant with memory and real-time streaming."
+    },
     "tags": [
       "Claude API",
       "React Native",
@@ -265,70 +375,126 @@
         "PostgreSQL (Supabase)"
       ]
     },
-    "highlights": [
-      "Streaming SSE en tiempo real vía XHR (workaround para ausencia de EventSource en React Native)",
-      "RAG sobre entradas del usuario: embeddings OpenAI + similitud coseno para contexto relevante",
-      "Perfil acumulativo: users.context actualizado por Haiku e inyectado en cada system prompt",
-      "Detección automática de mood (6 emociones) con Claude Haiku al guardar cada entrada",
-      "Resumen diario generado por Sonnet disponible después de las 18 hs",
-      "Modo demo/preview con datos mock sin backend, limpiado al hacer login real"
-    ],
+    "highlights": {
+      "es": [
+        "Streaming SSE en tiempo real vía XHR (workaround para ausencia de EventSource en React Native)",
+        "RAG sobre entradas del usuario: embeddings OpenAI + similitud coseno para contexto relevante",
+        "Perfil acumulativo: users.context actualizado por Haiku e inyectado en cada system prompt",
+        "Detección automática de mood (6 emociones) con Claude Haiku al guardar cada entrada",
+        "Resumen diario generado por Sonnet disponible después de las 18 hs",
+        "Modo demo/preview con datos mock sin backend, limpiado al hacer login real"
+      ],
+      "en": [
+        "Real-time SSE streaming via XHR (workaround for the lack of EventSource in React Native)",
+        "RAG over the user's entries: OpenAI embeddings + cosine similarity for relevant context",
+        "Cumulative profile: users.context updated by Haiku and injected into every system prompt",
+        "Automatic mood detection (6 emotions) with Claude Haiku when each entry is saved",
+        "Daily summary generated by Sonnet, available after 6 PM",
+        "Demo/preview mode with mock data and no backend, cleared on a real login"
+      ]
+    },
     "process": {
-      "overview": "Los diarios digitales son pasivos y no permiten volver sobre lo escrito; se construyó un asistente que conversa con el historial del usuario y recuerda su contexto.",
+      "overview": {
+        "es": "Los diarios digitales son pasivos y no permiten volver sobre lo escrito; se construyó un asistente que conversa con el historial del usuario y recuerda su contexto.",
+        "en": "Digital journals are passive and don't let you revisit what you wrote; an assistant was built that converses with the user's history and remembers their context."
+      },
       "pasos": [
         {
           "id": "problema",
-          "resumen": "El usuario escribe pero no puede interactuar con su historial ni ver su evolución emocional.",
-          "puntos": [
-            "Sin forma de conversar con el historial",
-            "Sin detección de estado de ánimo",
-            "Contexto perdido entre sesiones"
-          ]
+          "resumen": {
+            "es": "El usuario escribe pero no puede interactuar con su historial ni ver su evolución emocional.",
+            "en": "The user writes but can't interact with their history or see their emotional evolution."
+          },
+          "puntos": {
+            "es": [
+              "Sin forma de conversar con el historial",
+              "Sin detección de estado de ánimo",
+              "Contexto perdido entre sesiones"
+            ],
+            "en": [
+              "No way to converse with the history",
+              "No mood detection",
+              "Context lost between sessions"
+            ]
+          }
         },
         {
           "id": "diseño",
-          "resumen": "Dos modelos con roles distintos: uno rápido para detectar el mood, otro para el chat y el resumen diario.",
-          "puntos": [
-            "Un modelo detecta el estado de ánimo",
-            "Otro modelo conversa con contexto acumulado",
-            "Búsqueda semántica sobre entradas propias"
-          ]
+          "resumen": {
+            "es": "Dos modelos con roles distintos: uno rápido para detectar el mood, otro para el chat y el resumen diario.",
+            "en": "Two models with distinct roles: a fast one to detect mood, another for the chat and the daily summary."
+          },
+          "puntos": {
+            "es": [
+              "Un modelo detecta el estado de ánimo",
+              "Otro modelo conversa con contexto acumulado",
+              "Búsqueda semántica sobre entradas propias"
+            ],
+            "en": [
+              "One model detects the mood",
+              "Another model converses with accumulated context",
+              "Semantic search over the user's own entries"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "Backend asíncrono con streaming en tiempo real adaptado a las limitaciones de React Native.",
-          "puntos": [
-            "Streaming de respuesta en tiempo real",
-            "Historial con scroll infinito",
-            "Modo demo con datos de ejemplo"
-          ]
+          "resumen": {
+            "es": "Backend asíncrono con streaming en tiempo real adaptado a las limitaciones de React Native.",
+            "en": "Async backend with real-time streaming adapted to React Native's limitations."
+          },
+          "puntos": {
+            "es": [
+              "Streaming de respuesta en tiempo real",
+              "Historial con scroll infinito",
+              "Modo demo con datos de ejemplo"
+            ],
+            "en": [
+              "Real-time response streaming",
+              "History with infinite scroll",
+              "Demo mode with sample data"
+            ]
+          }
         },
         {
           "id": "despliegue",
-          "resumen": "Backend en Railway; la app se distribuye como build de prueba sin pasar por tiendas de apps.",
-          "puntos": [
-            "Backend en Railway",
-            "Distribución sin tiendas de apps",
-            "Base de datos gestionada en Supabase"
-          ]
+          "resumen": {
+            "es": "Backend en Railway; la app se distribuye como build de prueba sin pasar por tiendas de apps.",
+            "en": "Backend on Railway; the app is distributed as a test build without going through app stores."
+          },
+          "puntos": {
+            "es": [
+              "Backend en Railway",
+              "Distribución sin tiendas de apps",
+              "Base de datos gestionada en Supabase"
+            ],
+            "en": [
+              "Backend on Railway",
+              "Distribution without app stores",
+              "Managed database on Supabase"
+            ]
+          }
         }
       ],
-      "resultado": "Primera app móvil del portfolio con chat conversacional, memoria de contexto y detección automática de mood.",
+      "resultado": {
+        "es": "Primera app móvil del portfolio con chat conversacional, memoria de contexto y detección automática de mood.",
+        "en": "First mobile app in the portfolio with conversational chat, context memory and automatic mood detection."
+      },
       "metricas": [
         {
-          "label": "Modelos Claude",
+          "label": { "es": "Modelos Claude", "en": "Claude models" },
           "value": "2 (Haiku + Sonnet)"
         },
         {
-          "label": "Streaming",
-          "value": "SSE en tiempo real"
+          "label": { "es": "Streaming", "en": "Streaming" },
+          "value": { "es": "SSE en tiempo real", "en": "Real-time SSE" }
         },
         {
-          "label": "Almacenamiento token",
+          "label": { "es": "Almacenamiento token", "en": "Token storage" },
           "value": "SecureStore"
         },
         {
-          "label": "Distribución",
+          "label": { "es": "Distribución", "en": "Distribution" },
           "value": "Expo EAS Preview"
         }
       ]
@@ -339,8 +505,14 @@
     "slug": "marevitae",
     "title": "Mare Vitae",
     "category": "Visión & Audio",
-    "description": "Plataforma LMS para educación médica con transcripción automática de video mediante Whisper y gestión de contenido multirole.",
-    "longDescription": "LMS para profesionales de la salud que transcribe automáticamente las clases en video, generando subtítulos y contenido buscable.",
+    "description": {
+      "es": "Plataforma LMS para educación médica con transcripción automática de video mediante Whisper y gestión de contenido multirole.",
+      "en": "LMS platform for medical education with automatic video transcription via Whisper and multi-role content management."
+    },
+    "longDescription": {
+      "es": "LMS para profesionales de la salud que transcribe automáticamente las clases en video, generando subtítulos y contenido buscable.",
+      "en": "LMS for healthcare professionals that automatically transcribes video lessons, generating subtitles and searchable content."
+    },
     "tags": [
       "NestJS",
       "Next.js",
@@ -380,61 +552,107 @@
       ]
     },
     "process": {
-      "overview": "Las clases médicas en video no tenían transcripciones ni forma de buscarlas; se integró Whisper para generar subtítulos y contenido buscable automáticamente.",
+      "overview": {
+        "es": "Las clases médicas en video no tenían transcripciones ni forma de buscarlas; se integró Whisper para generar subtítulos y contenido buscable automáticamente.",
+        "en": "Medical video lessons had no transcripts or way to search them; Whisper was integrated to generate subtitles and searchable content automatically."
+      },
       "pasos": [
         {
           "id": "problema",
-          "resumen": "El contenido en video no era accesible ni buscable, y la gestión de cursos era manual.",
-          "puntos": [
-            "Videos sin transcripciones ni subtítulos",
-            "Contenido no buscable por palabras clave",
-            "Sin roles diferenciados por usuario"
-          ]
+          "resumen": {
+            "es": "El contenido en video no era accesible ni buscable, y la gestión de cursos era manual.",
+            "en": "Video content was neither accessible nor searchable, and course management was manual."
+          },
+          "puntos": {
+            "es": [
+              "Videos sin transcripciones ni subtítulos",
+              "Contenido no buscable por palabras clave",
+              "Sin roles diferenciados por usuario"
+            ],
+            "en": [
+              "Videos with no transcripts or subtitles",
+              "Content not searchable by keyword",
+              "No differentiated user roles"
+            ]
+          }
         },
         {
           "id": "diseño",
-          "resumen": "Backend modular por dominio y frontend con SSR para SEO en las páginas de cursos.",
-          "puntos": [
-            "Backend modular por dominio",
-            "Autenticación y storage gestionados",
-            "Páginas de cursos optimizadas para SEO"
-          ]
+          "resumen": {
+            "es": "Backend modular por dominio y frontend con SSR para SEO en las páginas de cursos.",
+            "en": "Domain-modular backend and an SSR frontend for SEO on the course pages."
+          },
+          "puntos": {
+            "es": [
+              "Backend modular por dominio",
+              "Autenticación y storage gestionados",
+              "Páginas de cursos optimizadas para SEO"
+            ],
+            "en": [
+              "Domain-modular backend",
+              "Managed authentication and storage",
+              "SEO-optimized course pages"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "El video se sube, se transcribe automáticamente y el texto queda indexado para búsqueda.",
-          "puntos": [
-            "Transcripción automática al subir el video",
-            "Subtítulos generados y servidos con el video",
-            "Búsqueda full-text sobre las transcripciones"
-          ]
+          "resumen": {
+            "es": "El video se sube, se transcribe automáticamente y el texto queda indexado para búsqueda.",
+            "en": "The video is uploaded, transcribed automatically, and the text is indexed for search."
+          },
+          "puntos": {
+            "es": [
+              "Transcripción automática al subir el video",
+              "Subtítulos generados y servidos con el video",
+              "Búsqueda full-text sobre las transcripciones"
+            ],
+            "en": [
+              "Automatic transcription on video upload",
+              "Subtitles generated and served with the video",
+              "Full-text search over the transcripts"
+            ]
+          }
         },
         {
           "id": "despliegue",
-          "resumen": "Frontend y backend desplegados por separado, con Supabase gestionando datos y storage.",
-          "puntos": [
-            "Frontend y backend independientes",
-            "Transcripción en segundo plano",
-            "Notificación al completar el proceso"
-          ]
+          "resumen": {
+            "es": "Frontend y backend desplegados por separado, con Supabase gestionando datos y storage.",
+            "en": "Frontend and backend deployed separately, with Supabase managing data and storage."
+          },
+          "puntos": {
+            "es": [
+              "Frontend y backend independientes",
+              "Transcripción en segundo plano",
+              "Notificación al completar el proceso"
+            ],
+            "en": [
+              "Independent frontend and backend",
+              "Transcription in the background",
+              "Notification when the process finishes"
+            ]
+          }
         }
       ],
-      "resultado": "LMS en producción con clases transcritas automáticamente y contenido completamente buscable.",
+      "resultado": {
+        "es": "LMS en producción con clases transcritas automáticamente y contenido completamente buscable.",
+        "en": "LMS in production with automatically transcribed lessons and fully searchable content."
+      },
       "metricas": [
         {
-          "label": "Transcripción",
+          "label": { "es": "Transcripción", "en": "Transcription" },
           "value": "Whisper AI"
         },
         {
-          "label": "Roles",
-          "value": "3 (admin/instructor/alumno)"
+          "label": { "es": "Roles", "en": "Roles" },
+          "value": { "es": "3 (admin/instructor/alumno)", "en": "3 (admin/instructor/student)" }
         },
         {
-          "label": "SSR",
+          "label": { "es": "SSR", "en": "SSR" },
           "value": "Next.js"
         },
         {
-          "label": "Storage",
+          "label": { "es": "Storage", "en": "Storage" },
           "value": "Supabase"
         }
       ]
@@ -445,8 +663,14 @@
     "slug": "whatsapp-ai-agent",
     "title": "Social Media AI Agent",
     "category": "Sistemas Inteligentes",
-    "description": "Agente conversacional en redes sociales que califica leads automáticamente con Claude Haiku, los registra en Supabase y los sincroniza con Kommo CRM usando n8n Cloud.",
-    "longDescription": "Bot de Telegram que califica leads automáticamente con IA y los registra en el CRM del cliente, sin escribir una línea de código de backend.",
+    "description": {
+      "es": "Agente conversacional en redes sociales que califica leads automáticamente con Claude Haiku, los registra en Supabase y los sincroniza con Kommo CRM usando n8n Cloud.",
+      "en": "Conversational social-media agent that automatically qualifies leads with Claude Haiku, records them in Supabase and syncs them to Kommo CRM using n8n Cloud."
+    },
+    "longDescription": {
+      "es": "Bot de Telegram que califica leads automáticamente con IA y los registra en el CRM del cliente, sin escribir una línea de código de backend.",
+      "en": "Telegram bot that automatically qualifies leads with AI and records them in the client's CRM, without writing a single line of backend code."
+    },
     "tags": [
       "n8n",
       "Claude Haiku",
@@ -480,61 +704,107 @@
       ]
     },
     "process": {
-      "overview": "Las consultas por Telegram se perdían o tardaban horas en responderse; se automatizó la calificación de leads con IA y su registro directo en el CRM.",
+      "overview": {
+        "es": "Las consultas por Telegram se perdían o tardaban horas en responderse; se automatizó la calificación de leads con IA y su registro directo en el CRM.",
+        "en": "Telegram inquiries got lost or took hours to answer; lead qualification with AI and direct CRM recording were automated."
+      },
       "pasos": [
         {
           "id": "problema",
-          "resumen": "Sin calificación automática ni registro en CRM, el equipo de ventas operaba sin datos estructurados.",
-          "puntos": [
-            "Respuestas manuales lentas",
-            "Sin extracción automática de datos",
-            "Leads sin seguimiento en el CRM"
-          ]
+          "resumen": {
+            "es": "Sin calificación automática ni registro en CRM, el equipo de ventas operaba sin datos estructurados.",
+            "en": "With no automatic qualification or CRM recording, the sales team worked without structured data."
+          },
+          "puntos": {
+            "es": [
+              "Respuestas manuales lentas",
+              "Sin extracción automática de datos",
+              "Leads sin seguimiento en el CRM"
+            ],
+            "en": [
+              "Slow manual responses",
+              "No automatic data extraction",
+              "Leads with no follow-up in the CRM"
+            ]
+          }
         },
         {
           "id": "diseño",
-          "resumen": "Automatización visual sin código, con IA encargada de extraer y confirmar los datos del prospecto.",
-          "puntos": [
-            "Flujo 100% visual sin código",
-            "IA extrae datos del mensaje",
-            "Estado de conversación guardado en la nube"
-          ]
+          "resumen": {
+            "es": "Automatización visual sin código, con IA encargada de extraer y confirmar los datos del prospecto.",
+            "en": "Visual no-code automation, with AI responsible for extracting and confirming the prospect's data."
+          },
+          "puntos": {
+            "es": [
+              "Flujo 100% visual sin código",
+              "IA extrae datos del mensaje",
+              "Estado de conversación guardado en la nube"
+            ],
+            "en": [
+              "Fully visual, no-code flow",
+              "AI extracts data from the message",
+              "Conversation state stored in the cloud"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "El flujo detecta si faltan datos, los pregunta, confirma y guarda el lead calificado en el CRM.",
-          "puntos": [
-            "Detección de datos faltantes",
-            "Confirmación automática con el usuario",
-            "Sincronización directa con el CRM"
-          ]
+          "resumen": {
+            "es": "El flujo detecta si faltan datos, los pregunta, confirma y guarda el lead calificado en el CRM.",
+            "en": "The flow detects missing data, asks for it, confirms it and saves the qualified lead in the CRM."
+          },
+          "puntos": {
+            "es": [
+              "Detección de datos faltantes",
+              "Confirmación automática con el usuario",
+              "Sincronización directa con el CRM"
+            ],
+            "en": [
+              "Detection of missing data",
+              "Automatic confirmation with the user",
+              "Direct synchronization with the CRM"
+            ]
+          }
         },
         {
           "id": "despliegue",
-          "resumen": "Automatización gestionada en la nube, sin servidor propio que mantener.",
-          "puntos": [
-            "Sin servidor propio",
-            "Cliente modifica el flujo sin ayuda técnica",
-            "Variables sensibles fuera del workflow"
-          ]
+          "resumen": {
+            "es": "Automatización gestionada en la nube, sin servidor propio que mantener.",
+            "en": "Cloud-managed automation, with no server of its own to maintain."
+          },
+          "puntos": {
+            "es": [
+              "Sin servidor propio",
+              "Cliente modifica el flujo sin ayuda técnica",
+              "Variables sensibles fuera del workflow"
+            ],
+            "en": [
+              "No dedicated server",
+              "The client edits the flow without technical help",
+              "Sensitive variables kept outside the workflow"
+            ]
+          }
         }
       ],
-      "resultado": "Leads calificados y registrados automáticamente en el CRM, con respuesta instantánea 24/7.",
+      "resultado": {
+        "es": "Leads calificados y registrados automáticamente en el CRM, con respuesta instantánea 24/7.",
+        "en": "Leads qualified and recorded in the CRM automatically, with instant 24/7 responses."
+      },
       "metricas": [
         {
-          "label": "Modelo IA",
+          "label": { "es": "Modelo IA", "en": "AI model" },
           "value": "Claude Haiku"
         },
         {
-          "label": "Motor",
+          "label": { "es": "Motor", "en": "Engine" },
           "value": "n8n Cloud"
         },
         {
-          "label": "CRM",
+          "label": { "es": "CRM", "en": "CRM" },
           "value": "Kommo"
         },
         {
-          "label": "Canal",
+          "label": { "es": "Canal", "en": "Channel" },
           "value": "Telegram Bot"
         }
       ]
@@ -544,8 +814,14 @@
     "id": "project-003",
     "title": "AnaOS",
     "category": "Sistemas Inteligentes",
-    "description": "Plataforma SaaS multi-tenant para gestión de cooperativas y agencias con planes de suscripción, auth completo y deploy en Railway.",
-    "longDescription": "Plataforma SaaS para que cooperativas y agencias gestionen su operación con datos aislados por cliente y planes de suscripción diferenciados.",
+    "description": {
+      "es": "Plataforma SaaS multi-tenant para gestión de cooperativas y agencias con planes de suscripción, auth completo y deploy en Railway.",
+      "en": "Multi-tenant SaaS platform for managing cooperatives and agencies, with subscription plans, full auth and deployment on Railway."
+    },
+    "longDescription": {
+      "es": "Plataforma SaaS para que cooperativas y agencias gestionen su operación con datos aislados por cliente y planes de suscripción diferenciados.",
+      "en": "SaaS platform for cooperatives and agencies to run their operations with per-client data isolation and differentiated subscription plans."
+    },
     "tags": [
       "ASP.NET Core",
       "React",
@@ -580,61 +856,107 @@
       ]
     },
     "process": {
-      "overview": "Cooperativas y agencias necesitaban gestión digital con datos completamente aislados entre clientes; se construyó un SaaS multi-tenant con planes diferenciados.",
+      "overview": {
+        "es": "Cooperativas y agencias necesitaban gestión digital con datos completamente aislados entre clientes; se construyó un SaaS multi-tenant con planes diferenciados.",
+        "en": "Cooperatives and agencies needed digital management with fully isolated data between clients; a multi-tenant SaaS with differentiated plans was built."
+      },
       "pasos": [
         {
           "id": "analisis",
-          "resumen": "Cada cliente necesitaba sus datos aislados y acceso a features según su plan contratado.",
-          "puntos": [
-            "Datos aislados entre clientes",
-            "Tres planes con features distintas",
-            "Dashboards según el rol del usuario"
-          ]
+          "resumen": {
+            "es": "Cada cliente necesitaba sus datos aislados y acceso a features según su plan contratado.",
+            "en": "Each client needed isolated data and feature access according to their contracted plan."
+          },
+          "puntos": {
+            "es": [
+              "Datos aislados entre clientes",
+              "Tres planes con features distintas",
+              "Dashboards según el rol del usuario"
+            ],
+            "en": [
+              "Isolated data between clients",
+              "Three plans with different features",
+              "Dashboards based on the user's role"
+            ]
+          }
         },
         {
           "id": "diseño",
-          "resumen": "El aislamiento de datos se resuelve automáticamente en cada consulta según el cliente autenticado.",
-          "puntos": [
-            "Aislamiento automático por cliente",
-            "Rutas protegidas según plan y rol",
-            "Orquestación con Docker"
-          ]
+          "resumen": {
+            "es": "El aislamiento de datos se resuelve automáticamente en cada consulta según el cliente autenticado.",
+            "en": "Data isolation is resolved automatically on every query based on the authenticated client."
+          },
+          "puntos": {
+            "es": [
+              "Aislamiento automático por cliente",
+              "Rutas protegidas según plan y rol",
+              "Orquestación con Docker"
+            ],
+            "en": [
+              "Automatic per-client isolation",
+              "Routes protected by plan and role",
+              "Orchestration with Docker"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "API con migraciones automáticas y frontend con acceso restringido a funciones premium.",
-          "puntos": [
-            "Migraciones automáticas al iniciar",
-            "Acceso premium validado por middleware",
-            "Verificación de email con tokens"
-          ]
+          "resumen": {
+            "es": "API con migraciones automáticas y frontend con acceso restringido a funciones premium.",
+            "en": "API with automatic migrations and a frontend with restricted access to premium features."
+          },
+          "puntos": {
+            "es": [
+              "Migraciones automáticas al iniciar",
+              "Acceso premium validado por middleware",
+              "Verificación de email con tokens"
+            ],
+            "en": [
+              "Automatic migrations on startup",
+              "Premium access validated by middleware",
+              "Email verification with tokens"
+            ]
+          }
         },
         {
           "id": "despliegue",
-          "resumen": "Backend, frontend y base de datos desplegados en Railway con HTTPS automático.",
-          "puntos": [
-            "Deploy automático desde GitHub",
-            "HTTPS sin configuración manual",
-            "Variables separadas por ambiente"
-          ]
+          "resumen": {
+            "es": "Backend, frontend y base de datos desplegados en Railway con HTTPS automático.",
+            "en": "Backend, frontend and database deployed on Railway with automatic HTTPS."
+          },
+          "puntos": {
+            "es": [
+              "Deploy automático desde GitHub",
+              "HTTPS sin configuración manual",
+              "Variables separadas por ambiente"
+            ],
+            "en": [
+              "Automatic deploy from GitHub",
+              "HTTPS with no manual configuration",
+              "Variables separated per environment"
+            ]
+          }
         }
       ],
-      "resultado": "SaaS multi-tenant en producción con 3 planes activos y aislamiento de datos verificado.",
+      "resultado": {
+        "es": "SaaS multi-tenant en producción con 3 planes activos y aislamiento de datos verificado.",
+        "en": "Multi-tenant SaaS in production with 3 active plans and verified data isolation."
+      },
       "metricas": [
         {
-          "label": "Modelos de dominio",
+          "label": { "es": "Modelos de dominio", "en": "Domain models" },
           "value": "7"
         },
         {
-          "label": "Planes de suscripción",
+          "label": { "es": "Planes de suscripción", "en": "Subscription plans" },
           "value": "3"
         },
         {
-          "label": "Servicios Docker",
+          "label": { "es": "Servicios Docker", "en": "Docker services" },
           "value": "3"
         },
         {
-          "label": "Roles de usuario",
+          "label": { "es": "Roles de usuario", "en": "User roles" },
           "value": "4"
         }
       ]
@@ -646,8 +968,14 @@
     "title": "CodeReviewX",
     "observatoryToken": "code-review",
     "category": "MLOps & DevTools",
-    "description": "GitHub App de revisión de código automatizada. Analiza diffs con Ruff/ESLint y Claude Sonnet, y publica comentarios inline en el PR — sin intervención humana.",
-    "longDescription": "GitHub App que combina linters con Claude Sonnet para detectar bugs lógicos y problemas de seguridad que los linters no ven, comentando directamente en el PR.",
+    "description": {
+      "es": "GitHub App de revisión de código automatizada. Analiza diffs con Ruff/ESLint y Claude Sonnet, y publica comentarios inline en el PR — sin intervención humana.",
+      "en": "Automated code-review GitHub App. Analyzes diffs with Ruff/ESLint and Claude Sonnet, and posts inline comments on the PR — with no human intervention."
+    },
+    "longDescription": {
+      "es": "GitHub App que combina linters con Claude Sonnet para detectar bugs lógicos y problemas de seguridad que los linters no ven, comentando directamente en el PR.",
+      "en": "GitHub App that combines linters with Claude Sonnet to catch logic bugs and security issues linters miss, commenting directly on the PR."
+    },
     "tags": [
       "Claude API",
       "FastAPI",
@@ -693,62 +1021,108 @@
       ]
     },
     "process": {
-      "overview": "Los linters detectan estilo pero no bugs lógicos ni vulnerabilidades; se construyó una GitHub App que suma análisis semántico con Claude Sonnet a la revisión de PRs.",
+      "overview": {
+        "es": "Los linters detectan estilo pero no bugs lógicos ni vulnerabilidades; se construyó una GitHub App que suma análisis semántico con Claude Sonnet a la revisión de PRs.",
+        "en": "Linters catch style but not logic bugs or vulnerabilities; a GitHub App was built that adds semantic analysis with Claude Sonnet to PR reviews."
+      },
       "pasos": [
         {
           "id": "problema",
-          "resumen": "Los reviews manuales son lentos y los linters no detectan bugs lógicos ni problemas de seguridad sutiles.",
-          "puntos": [
-            "Linters no detectan bugs lógicos",
-            "Reviews manuales lentos",
-            "Sin feedback fuera de horario laboral"
-          ]
+          "resumen": {
+            "es": "Los reviews manuales son lentos y los linters no detectan bugs lógicos ni problemas de seguridad sutiles.",
+            "en": "Manual reviews are slow, and linters don't catch logic bugs or subtle security issues."
+          },
+          "puntos": {
+            "es": [
+              "Linters no detectan bugs lógicos",
+              "Reviews manuales lentos",
+              "Sin feedback fuera de horario laboral"
+            ],
+            "en": [
+              "Linters don't catch logic bugs",
+              "Slow manual reviews",
+              "No feedback outside working hours"
+            ]
+          }
         },
         {
           "id": "diseño",
-          "resumen": "El webhook responde de inmediato mientras el análisis corre en segundo plano y comenta directamente en el PR.",
-          "puntos": [
-            "Respuesta inmediata al webhook",
-            "Análisis corre en segundo plano",
-            "Comentarios en la línea exacta del diff"
-          ]
+          "resumen": {
+            "es": "El webhook responde de inmediato mientras el análisis corre en segundo plano y comenta directamente en el PR.",
+            "en": "The webhook responds immediately while the analysis runs in the background and comments directly on the PR."
+          },
+          "puntos": {
+            "es": [
+              "Respuesta inmediata al webhook",
+              "Análisis corre en segundo plano",
+              "Comentarios en la línea exacta del diff"
+            ],
+            "en": [
+              "Immediate webhook response",
+              "Analysis runs in the background",
+              "Comments on the exact line of the diff"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "Claude Sonnet analiza el diff y detecta bugs, vulnerabilidades y problemas de diseño que el linter no ve.",
-          "puntos": [
-            "Detecta bugs lógicos reales",
-            "Identifica riesgos de seguridad",
-            "Filtra falsos positivos del linter"
-          ]
+          "resumen": {
+            "es": "Claude Sonnet analiza el diff y detecta bugs, vulnerabilidades y problemas de diseño que el linter no ve.",
+            "en": "Claude Sonnet analyzes the diff and finds bugs, vulnerabilities and design issues the linter misses."
+          },
+          "puntos": {
+            "es": [
+              "Detecta bugs lógicos reales",
+              "Identifica riesgos de seguridad",
+              "Filtra falsos positivos del linter"
+            ],
+            "en": [
+              "Detects real logic bugs",
+              "Identifies security risks",
+              "Filters out linter false positives"
+            ]
+          }
         },
         {
           "id": "despliegue",
-          "resumen": "Instalable en cualquier repositorio sin configuración extra, con verificación de origen en cada webhook.",
-          "puntos": [
-            "Instalación sin configuración extra",
-            "Verificación de origen del webhook",
-            "Deploy automático en cada push"
-          ]
+          "resumen": {
+            "es": "Instalable en cualquier repositorio sin configuración extra, con verificación de origen en cada webhook.",
+            "en": "Installable on any repository with no extra configuration, with origin verification on every webhook."
+          },
+          "puntos": {
+            "es": [
+              "Instalación sin configuración extra",
+              "Verificación de origen del webhook",
+              "Deploy automático en cada push"
+            ],
+            "en": [
+              "Installation with no extra configuration",
+              "Webhook origin verification",
+              "Automatic deploy on every push"
+            ]
+          }
         }
       ],
-      "resultado": "GitHub App que publica comentarios de revisión inline combinando análisis estático y semántico, sin intervención humana.",
+      "resultado": {
+        "es": "GitHub App que publica comentarios de revisión inline combinando análisis estático y semántico, sin intervención humana.",
+        "en": "GitHub App that posts inline review comments combining static and semantic analysis, with no human intervention."
+      },
       "metricas": [
         {
-          "label": "Modelo IA",
+          "label": { "es": "Modelo IA", "en": "AI model" },
           "value": "Claude Sonnet 4.6"
         },
         {
-          "label": "Latencia webhook",
+          "label": { "es": "Latencia webhook", "en": "Webhook latency" },
           "value": "< 200ms"
         },
         {
-          "label": "Lenguajes",
+          "label": { "es": "Lenguajes", "en": "Languages" },
           "value": "Python + JS/TS"
         },
         {
-          "label": "Comentarios",
-          "value": "Inline por línea"
+          "label": { "es": "Comentarios", "en": "Comments" },
+          "value": { "es": "Inline por línea", "en": "Inline per line" }
         }
       ]
     }
@@ -759,8 +1133,14 @@
     "title": "WhisperX",
     "observatoryToken": "whisperX",
     "category": "Visión & Audio",
-    "description": "Microservicio FastAPI que centraliza transcripción, traducción y diarización de audio, y generación de embeddings vía OpenAI — consumido por otros proyectos en lugar de llamar a OpenAI directamente.",
-    "longDescription": "Microservicio que centraliza la transcripción de audio y generación de embeddings para todos los proyectos del portfolio, con caché y control de costos.",
+    "description": {
+      "es": "Microservicio FastAPI que centraliza transcripción, traducción y diarización de audio, y generación de embeddings vía OpenAI — consumido por otros proyectos en lugar de llamar a OpenAI directamente.",
+      "en": "FastAPI microservice that centralizes audio transcription, translation and diarization, plus embedding generation via OpenAI — consumed by other projects instead of calling OpenAI directly."
+    },
+    "longDescription": {
+      "es": "Microservicio que centraliza la transcripción de audio y generación de embeddings para todos los proyectos del portfolio, con caché y control de costos.",
+      "en": "Microservice that centralizes audio transcription and embedding generation for every project in the portfolio, with caching and cost control."
+    },
     "tags": [
       "FastAPI",
       "OpenAI API",
@@ -801,57 +1181,103 @@
       ]
     },
     "process": {
-      "overview": "Varios proyectos llamaban directamente a OpenAI, duplicando lógica y sin control de costos; se centralizó todo en un microservicio con caché y observabilidad.",
+      "overview": {
+        "es": "Varios proyectos llamaban directamente a OpenAI, duplicando lógica y sin control de costos; se centralizó todo en un microservicio con caché y observabilidad.",
+        "en": "Several projects called OpenAI directly, duplicating logic with no cost control; everything was centralized into one microservice with caching and observability."
+      },
       "pasos": [
         {
           "id": "problema",
-          "resumen": "Cada proyecto llamaba a OpenAI por su cuenta, sin caché ni visibilidad de costo real.",
-          "puntos": [
-            "Llamadas duplicadas a OpenAI",
-            "Sin caché de resultados repetidos",
-            "Sin visibilidad de costo por proyecto"
-          ]
+          "resumen": {
+            "es": "Cada proyecto llamaba a OpenAI por su cuenta, sin caché ni visibilidad de costo real.",
+            "en": "Each project called OpenAI on its own, with no cache and no visibility into real cost."
+          },
+          "puntos": {
+            "es": [
+              "Llamadas duplicadas a OpenAI",
+              "Sin caché de resultados repetidos",
+              "Sin visibilidad de costo por proyecto"
+            ],
+            "en": [
+              "Duplicate calls to OpenAI",
+              "No cache for repeated results",
+              "No per-project cost visibility"
+            ]
+          }
         },
         {
           "id": "diseño",
-          "resumen": "Servicio central con autenticación propia, límite de uso y caché antes de llamar a OpenAI.",
-          "puntos": [
-            "Caché por contenido para evitar reprocesos",
-            "Reintentos automáticos ante fallos",
-            "Verificación de salud del servicio"
-          ]
+          "resumen": {
+            "es": "Servicio central con autenticación propia, límite de uso y caché antes de llamar a OpenAI.",
+            "en": "Central service with its own authentication, usage limits and a cache in front of OpenAI."
+          },
+          "puntos": {
+            "es": [
+              "Caché por contenido para evitar reprocesos",
+              "Reintentos automáticos ante fallos",
+              "Verificación de salud del servicio"
+            ],
+            "en": [
+              "Content-based cache to avoid reprocessing",
+              "Automatic retries on failure",
+              "Service health checks"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "La identificación de quién habla corre localmente, sin depender de un servicio externo de pago.",
-          "puntos": [
-            "Identificación de hablantes local",
-            "Compatible con cualquier formato de audio",
-            "Opcional, sin afectar el flujo simple"
-          ]
+          "resumen": {
+            "es": "La identificación de quién habla corre localmente, sin depender de un servicio externo de pago.",
+            "en": "Speaker identification runs locally, without relying on a paid external service."
+          },
+          "puntos": {
+            "es": [
+              "Identificación de hablantes local",
+              "Compatible con cualquier formato de audio",
+              "Opcional, sin afectar el flujo simple"
+            ],
+            "en": [
+              "Local speaker identification",
+              "Works with any audio format",
+              "Optional, without affecting the simple flow"
+            ]
+          }
         },
         {
           "id": "seguridad",
-          "resumen": "El servicio corre con privilegios mínimos y límite de uso por cliente para evitar abuso.",
-          "puntos": [
-            "Ejecuta con privilegios mínimos",
-            "Límite de uso por cliente",
-            "39 tests automatizados"
-          ]
+          "resumen": {
+            "es": "El servicio corre con privilegios mínimos y límite de uso por cliente para evitar abuso.",
+            "en": "The service runs with minimal privileges and per-client usage limits to prevent abuse."
+          },
+          "puntos": {
+            "es": [
+              "Ejecuta con privilegios mínimos",
+              "Límite de uso por cliente",
+              "39 tests automatizados"
+            ],
+            "en": [
+              "Runs with minimal privileges",
+              "Per-client usage limit",
+              "39 automated tests"
+            ]
+          }
         }
       ],
-      "resultado": "Microservicio que centraliza transcripción y embeddings para todo el portfolio, con caché y control de costos.",
+      "resultado": {
+        "es": "Microservicio que centraliza transcripción y embeddings para todo el portfolio, con caché y control de costos.",
+        "en": "Microservice that centralizes transcription and embeddings for the whole portfolio, with caching and cost control."
+      },
       "metricas": [
         {
-          "label": "Tests",
+          "label": { "es": "Tests", "en": "Tests" },
           "value": "39"
         },
         {
-          "label": "Fases completadas",
+          "label": { "es": "Fases completadas", "en": "Phases completed" },
           "value": "7"
         },
         {
-          "label": "Endpoints",
+          "label": { "es": "Endpoints", "en": "Endpoints" },
           "value": "6+"
         }
       ]
@@ -863,8 +1289,14 @@
     "title": "Visual QC Inspector",
     "observatoryToken": ["visual-qc-inspector", "visual-qc-inspector-openAI"],
     "category": "Visión & Audio",
-    "description": "Sistema de inspección de calidad visual en tiempo real: la webcam captura frames, Claude Vision los evalúa contra criterios de inspección escritos en YAML, y emite veredictos PASS/WARN/FAIL con evidencia auditable.",
-    "longDescription": "Sistema de control de calidad donde los criterios de inspección se escriben en texto simple, no en código, y Claude Vision evalúa cada producto en vivo.",
+    "description": {
+      "es": "Sistema de inspección de calidad visual en tiempo real: la webcam captura frames, Claude Vision los evalúa contra criterios de inspección escritos en YAML, y emite veredictos PASS/WARN/FAIL con evidencia auditable.",
+      "en": "Real-time visual quality-inspection system: the webcam captures frames, Claude Vision evaluates them against inspection criteria written in YAML, and issues PASS/WARN/FAIL verdicts with auditable evidence."
+    },
+    "longDescription": {
+      "es": "Sistema de control de calidad donde los criterios de inspección se escriben en texto simple, no en código, y Claude Vision evalúa cada producto en vivo.",
+      "en": "Quality-control system where inspection criteria are written in plain text, not code, and Claude Vision evaluates each product live."
+    },
     "tags": [
       "Claude Vision",
       "Python",
@@ -898,49 +1330,85 @@
       ]
     },
     "process": {
-      "overview": "Los sistemas de visión clásicos requieren reprogramar reglas por cada producto nuevo; se reemplazó eso por criterios en texto simple que Claude Vision interpreta en vivo.",
+      "overview": {
+        "es": "Los sistemas de visión clásicos requieren reprogramar reglas por cada producto nuevo; se reemplazó eso por criterios en texto simple que Claude Vision interpreta en vivo.",
+        "en": "Classic vision systems require reprogramming rules for each new product; that was replaced with plain-text criteria that Claude Vision interprets live."
+      },
       "pasos": [
         {
           "id": "problema",
-          "resumen": "Agregar un producto nuevo a inspeccionar requería conocimiento técnico de visión por computadora.",
-          "puntos": [
-            "Reglas clásicas no escalan a productos nuevos",
-            "Definir criterios requería conocimiento técnico",
-            "Sin evidencia auditable del resultado"
-          ]
+          "resumen": {
+            "es": "Agregar un producto nuevo a inspeccionar requería conocimiento técnico de visión por computadora.",
+            "en": "Adding a new product to inspect required technical knowledge of computer vision."
+          },
+          "puntos": {
+            "es": [
+              "Reglas clásicas no escalan a productos nuevos",
+              "Definir criterios requería conocimiento técnico",
+              "Sin evidencia auditable del resultado"
+            ],
+            "en": [
+              "Classic rules don't scale to new products",
+              "Defining criteria required technical knowledge",
+              "No auditable evidence of the result"
+            ]
+          }
         },
         {
           "id": "diseño",
-          "resumen": "La webcam captura frames y Claude Vision los evalúa contra el criterio de inspección definido en texto.",
-          "puntos": [
-            "Criterios definidos en texto simple",
-            "Veredicto PASS/WARN/FAIL por frame",
-            "Cambio de perfil sin reiniciar la sesión"
-          ]
+          "resumen": {
+            "es": "La webcam captura frames y Claude Vision los evalúa contra el criterio de inspección definido en texto.",
+            "en": "The webcam captures frames and Claude Vision evaluates them against the text-defined inspection criterion."
+          },
+          "puntos": {
+            "es": [
+              "Criterios definidos en texto simple",
+              "Veredicto PASS/WARN/FAIL por frame",
+              "Cambio de perfil sin reiniciar la sesión"
+            ],
+            "en": [
+              "Criteria defined in plain text",
+              "PASS/WARN/FAIL verdict per frame",
+              "Profile switching without restarting the session"
+            ]
+          }
         },
         {
           "id": "pruebas",
-          "resumen": "Cada inspección queda documentada con frames, registro y un reporte final.",
-          "puntos": [
-            "Frames guardados como evidencia",
-            "Reporte final por sesión",
-            "Probado en PCBs, packaging y etiquetas"
-          ]
+          "resumen": {
+            "es": "Cada inspección queda documentada con frames, registro y un reporte final.",
+            "en": "Every inspection is documented with frames, a log and a final report."
+          },
+          "puntos": {
+            "es": [
+              "Frames guardados como evidencia",
+              "Reporte final por sesión",
+              "Probado en PCBs, packaging y etiquetas"
+            ],
+            "en": [
+              "Frames saved as evidence",
+              "Final report per session",
+              "Tested on PCBs, packaging and labels"
+            ]
+          }
         }
       ],
-      "resultado": "Sistema donde agregar un producto nuevo es escribir texto, no programar un clasificador.",
+      "resultado": {
+        "es": "Sistema donde agregar un producto nuevo es escribir texto, no programar un clasificador.",
+        "en": "A system where adding a new product means writing text, not programming a classifier."
+      },
       "metricas": [
         {
-          "label": "Veredictos",
+          "label": { "es": "Veredictos", "en": "Verdicts" },
           "value": "PASS/WARN/FAIL"
         },
         {
-          "label": "Perfiles",
+          "label": { "es": "Perfiles", "en": "Profiles" },
           "value": "YAML"
         },
         {
-          "label": "Evidencia",
-          "value": "Auditable"
+          "label": { "es": "Evidencia", "en": "Evidence" },
+          "value": { "es": "Auditable", "en": "Auditable" }
         }
       ]
     }
@@ -949,8 +1417,14 @@
     "id": "project-018",
     "slug": "inkos",
     "title": "KOS",
-    "description": "Motor de conocimiento independiente donde Obsidian es solo uno de los conectores. Ingesta múltiples fuentes, construye grafo de conocimiento y razona con agentes IA coordinados.",
-    "longDescription": "Motor de conocimiento personal que organiza información de múltiples fuentes en un grafo y razona sobre ella con agentes de IA.",
+    "description": {
+      "es": "Motor de conocimiento independiente donde Obsidian es solo uno de los conectores. Ingesta múltiples fuentes, construye grafo de conocimiento y razona con agentes IA coordinados.",
+      "en": "Independent knowledge engine where Obsidian is just one of the connectors. Ingests multiple sources, builds a knowledge graph and reasons over it with coordinated AI agents."
+    },
+    "longDescription": {
+      "es": "Motor de conocimiento personal que organiza información de múltiples fuentes en un grafo y razona sobre ella con agentes de IA.",
+      "en": "Personal knowledge engine that organizes information from multiple sources into a graph and reasons over it with AI agents."
+    },
     "tags": [
       "FastAPI",
       "React",
@@ -1005,63 +1479,125 @@
       ]
     },
     "process": {
-      "overview": "Motor de conocimiento personal que unifica múltiples fuentes en un grafo consultable por agentes de IA, con corrección manual asistida.",
+      "overview": {
+        "es": "Motor de conocimiento personal que unifica múltiples fuentes en un grafo consultable por agentes de IA, con corrección manual asistida.",
+        "en": "Personal knowledge engine that unifies multiple sources into a graph queryable by AI agents, with assisted manual correction."
+      },
       "pasos": [
         {
           "id": "analisis",
-          "resumen": "Obsidian por sí solo no bastaba como fuente única de conocimiento; se definió un modelo de grafo capaz de integrar múltiples orígenes.",
-          "puntos": [
-            "Entidades del grafo: Person, Project, Technology, Concept, Document, Task, Organization, Event, Skill",
-            "Obsidian como uno más de los conectores, no como núcleo del sistema",
-            "Razonamiento sobre el grafo delegado a agentes de IA coordinados"
-          ]
+          "resumen": {
+            "es": "Obsidian por sí solo no bastaba como fuente única de conocimiento; se definió un modelo de grafo capaz de integrar múltiples orígenes.",
+            "en": "Obsidian alone wasn't enough as a single source of knowledge; a graph model was defined that can integrate multiple origins."
+          },
+          "puntos": {
+            "es": [
+              "Entidades del grafo: Person, Project, Technology, Concept, Document, Task, Organization, Event, Skill",
+              "Obsidian como uno más de los conectores, no como núcleo del sistema",
+              "Razonamiento sobre el grafo delegado a agentes de IA coordinados"
+            ],
+            "en": [
+              "Graph entities: Person, Project, Technology, Concept, Document, Task, Organization, Event, Skill",
+              "Obsidian as one connector among many, not the core of the system",
+              "Reasoning over the graph delegated to coordinated AI agents"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "Backend en FastAPI con Neo4j como grafo y PostgreSQL/pgvector para datos y embeddings; frontend en React con chat y editor visual del grafo.",
-          "puntos": [
-            "Ingesta y embeddings con Ollama + bge-m3",
-            "Chat con respuestas citadas por fuente del conocimiento indexado",
-            "Editor de grafo con vista de nodos y vista de tabla"
-          ]
+          "resumen": {
+            "es": "Backend en FastAPI con Neo4j como grafo y PostgreSQL/pgvector para datos y embeddings; frontend en React con chat y editor visual del grafo.",
+            "en": "FastAPI backend with Neo4j as the graph and PostgreSQL/pgvector for data and embeddings; React frontend with chat and a visual graph editor."
+          },
+          "puntos": {
+            "es": [
+              "Ingesta y embeddings con Ollama + bge-m3",
+              "Chat con respuestas citadas por fuente del conocimiento indexado",
+              "Editor de grafo con vista de nodos y vista de tabla"
+            ],
+            "en": [
+              "Ingestion and embeddings with Ollama + bge-m3",
+              "Chat with answers cited by source from the indexed knowledge",
+              "Graph editor with a node view and a table view"
+            ]
+          }
         },
         {
           "id": "pruebas",
-          "resumen": "Validación del pipeline con consultas reales y corrección manual de nodos protegida ante la siguiente sincronización.",
-          "puntos": [
-            "Consultas con nivel de confianza y citas por fuente",
-            "Corrección y rechazo de relaciones mal etiquetadas por nodo",
-            "Monitoreo de latencia por servicio: PostgreSQL, Redis, Neo4j, MinIO, Ollama"
-          ]
+          "resumen": {
+            "es": "Validación del pipeline con consultas reales y corrección manual de nodos protegida ante la siguiente sincronización.",
+            "en": "Pipeline validation with real queries and manual node correction protected against the next synchronization."
+          },
+          "puntos": {
+            "es": [
+              "Consultas con nivel de confianza y citas por fuente",
+              "Corrección y rechazo de relaciones mal etiquetadas por nodo",
+              "Monitoreo de latencia por servicio: PostgreSQL, Redis, Neo4j, MinIO, Ollama"
+            ],
+            "en": [
+              "Queries with a confidence level and per-source citations",
+              "Correcting and rejecting mislabeled relationships per node",
+              "Per-service latency monitoring: PostgreSQL, Redis, Neo4j, MinIO, Ollama"
+            ]
+          }
         },
         {
           "id": "mejoras",
-          "resumen": "Iteración sobre la calidad del grafo: deduplicación de conceptos y ajuste de relaciones entre nodos.",
-          "puntos": [
-            "Ordenamiento de nodos por cantidad de relaciones para priorizar revisión",
-            "Panel de estado del sistema por servicio con latencia en vivo",
-            "Corrección manual de nombres canónicos de nodos"
-          ]
+          "resumen": {
+            "es": "Iteración sobre la calidad del grafo: deduplicación de conceptos y ajuste de relaciones entre nodos.",
+            "en": "Iterating on graph quality: concept deduplication and tuning relationships between nodes."
+          },
+          "puntos": {
+            "es": [
+              "Ordenamiento de nodos por cantidad de relaciones para priorizar revisión",
+              "Panel de estado del sistema por servicio con latencia en vivo",
+              "Corrección manual de nombres canónicos de nodos"
+            ],
+            "en": [
+              "Sorting nodes by number of relationships to prioritize review",
+              "System status panel per service with live latency",
+              "Manual correction of nodes' canonical names"
+            ]
+          }
         },
         {
           "id": "despliegue",
-          "resumen": "En desarrollo activo; pensado para self-hosting con Docker Compose y observabilidad integrada, sin demo pública todavía.",
-          "puntos": [
-            "Stack completo vía Docker Compose",
-            "OpenTelemetry, Prometheus y Grafana para monitoreo",
-            "Sin URL pública mientras continúa el desarrollo"
-          ]
+          "resumen": {
+            "es": "En desarrollo activo; pensado para self-hosting con Docker Compose y observabilidad integrada, sin demo pública todavía.",
+            "en": "Under active development; designed for self-hosting with Docker Compose and built-in observability, with no public demo yet."
+          },
+          "puntos": {
+            "es": [
+              "Stack completo vía Docker Compose",
+              "OpenTelemetry, Prometheus y Grafana para monitoreo",
+              "Sin URL pública mientras continúa el desarrollo"
+            ],
+            "en": [
+              "Full stack via Docker Compose",
+              "OpenTelemetry, Prometheus and Grafana for monitoring",
+              "No public URL while development continues"
+            ]
+          }
         }
       ],
-      "resultado": "Grafo de conocimiento consultable con corrección asistida y trazabilidad de fuentes en cada respuesta."
+      "resultado": {
+        "es": "Grafo de conocimiento consultable con corrección asistida y trazabilidad de fuentes en cada respuesta.",
+        "en": "Queryable knowledge graph with assisted correction and source traceability in every answer."
+      }
     }
   },
   {
     "id": "project-019",
     "slug": "rep-counter",
     "title": "Rep-Counter",
-    "description": "Librería TypeScript puro para contar repeticiones de ejercicio (abdominales, flexiones) usando MediaPipe BlazePose. Spike de 2 semanas, extensible y portable.",
-    "longDescription": "Librería que cuenta repeticiones de ejercicio con visión por computadora, pensada para integrarse en apps de React Native.",
+    "description": {
+      "es": "Librería TypeScript puro para contar repeticiones de ejercicio (abdominales, flexiones) usando MediaPipe BlazePose. Spike de 2 semanas, extensible y portable.",
+      "en": "Pure-TypeScript library for counting exercise reps (sit-ups, push-ups) using MediaPipe BlazePose. A 2-week spike, extensible and portable."
+    },
+    "longDescription": {
+      "es": "Librería que cuenta repeticiones de ejercicio con visión por computadora, pensada para integrarse en apps de React Native.",
+      "en": "Library that counts exercise reps with computer vision, designed to be integrated into React Native apps."
+    },
     "tags": [
       "TypeScript",
       "MediaPipe",
@@ -1093,8 +1629,14 @@
     "id": "project-021",
     "slug": "zeroday-fitnessgame",
     "title": "ZeroDay",
-    "description": "La única app que te dice, con datos reales de tu cuerpo verificados por IA, si sobrevivirías a un apocalipsis zombie que empiece hoy.",
-    "longDescription": "App gamificada que mide el fitness real del usuario con IA y lo confronta con escenarios de supervivencia tipo apocalipsis zombie.",
+    "description": {
+      "es": "La única app que te dice, con datos reales de tu cuerpo verificados por IA, si sobrevivirías a un apocalipsis zombie que empiece hoy.",
+      "en": "The only app that tells you, with real data from your body verified by AI, whether you'd survive a zombie apocalypse starting today."
+    },
+    "longDescription": {
+      "es": "App gamificada que mide el fitness real del usuario con IA y lo confronta con escenarios de supervivencia tipo apocalipsis zombie.",
+      "en": "Gamified app that measures the user's real fitness with AI and pits it against zombie-apocalypse survival scenarios."
+    },
     "tags": [
       "AI Vision",
       "Gamification",

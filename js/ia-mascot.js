@@ -11,6 +11,7 @@
 import { IAAssistant } from './ia-assistant.js';
 import { IaTour }      from './ia-tour.js';
 import { IaBubble }    from './ia-bubble.js';
+import { LangSwitcher } from './lang.js';
 import { track }       from '@vercel/analytics';
 
 /* ── CONFIGURACIÓN ────────────────────────────────────────────── */
@@ -579,16 +580,16 @@ export const IaMascot = (() => {
     if (fallbackResult.level === 1) {
       // Nivel 1: encontró con query expandida
       const best = fallbackResult.candidates[0];
-      return `Hmm, no lo encontré literal, pero creo que buscas algo relacionado con **${best.data.name || best.data.title}**. ¿Es eso?`;
+      return `Hmm, no lo encontré literal, pero creo que buscas algo relacionado con **${best.data.name || LangSwitcher.L(best.data.title)}**. ¿Es eso?`;
     }
     if (fallbackResult.level === 2) {
       // Nivel 2: encontró por categoría/tags
-      const cats = fallbackResult.candidates.map(c => c.data.name || c.data.title).join(', ');
+      const cats = fallbackResult.candidates.map(c => c.data.name || LangSwitcher.L(c.data.title)).join(', ');
       return `No encontré exactamente eso, pero Jonathan trabaja con **${cats}**. ¿Quizás uno de estos?`;
     }
     // Nivel 3: exploratoria (sin candidatos técnicos)
     const projNames = fallbackResult.featuredProjects
-      .map(p => p.data.title)
+      .map(p => LangSwitcher.L(p.data.title))
       .join(', ') || 'varios proyectos';
     return `No encontré "**${val}**" en su portfolio. Pero Jonathan trabaja en **${projNames}** y otros. ¿Quieres saber más?`;
   }
@@ -1190,7 +1191,7 @@ export const IaMascot = (() => {
       // Historial completo de JotAI en LLM Observatory (server-side, fire-and-forget) —
       // ver api/jotai-log.js. ai_fallback/canned_fallback ya se reportan solos
       // desde api/jotai-chat.js vía MonitoredOpenAI; no duplicar acá.
-      const intentLabel = finalResult.type === 'project' ? (finalResult.data?.title || 'project')
+      const intentLabel = finalResult.type === 'project' ? (LangSwitcher.L(finalResult.data?.title) || 'project')
         : finalResult.type === 'skill' ? (finalResult.data?.name || 'skill')
         : (finalResult.type || 'special');
       fetch('/api/jotai-log', {
@@ -1271,13 +1272,13 @@ export const IaMascot = (() => {
         p.liveUrl ? `<a href="${_esc(p.liveUrl)}" target="_blank" rel="noopener" class="jotai-result__link">Demo ↗</a>` : '',
       ].filter(Boolean).join('');
       const meta = p.lab
-        ? `${p.lab.platform} · ${p.lab.difficulty} · ${p.lab.status || ''}`
+        ? `${p.lab.platform} · ${p.lab.difficulty} · ${LangSwitcher.L(p.lab.status) || ''}`
         : (p.date ? p.date.replace('-', ' / ') : '');
 
       return `<div class="jotai-result">
-        <div class="jotai-result__title">${_esc(p.title)}</div>
+        <div class="jotai-result__title">${_esc(LangSwitcher.L(p.title))}</div>
         ${meta ? `<div class="jotai-result__meta">${_esc(meta)}</div>` : ''}
-        <div>${_md(p.description || '')}</div>
+        <div>${_md(LangSwitcher.L(p.description) || '')}</div>
         ${tags  ? `<div class="jotai-result__tags">${tags}</div>` : ''}
         ${links ? `<div class="jotai-result__links">${links}</div>` : ''}
       </div>`;
@@ -1735,7 +1736,7 @@ export const IaMascot = (() => {
       IaBubble.dismiss();
     });
     window.addEventListener('portfolio:projectClose', () => {
-      const title = _lastProject?.title;
+      const title = LangSwitcher.L(_lastProject?.title);
       _lastProject = null;
       if (!title) return;
       setTimeout(() => {

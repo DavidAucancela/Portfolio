@@ -4,8 +4,14 @@
     "slug": "artecuador",
     "title": "ArtEcuador",
     "category": "Desarrollo Web",
-    "description": "Catálogo web estático de artesanías ecuatorianas en un único index.html con CSS y JS inline. Sin frameworks ni dependencias de build.",
-    "longDescription": "Catálogo web de artesanías ecuatorianas en una sola página, pensado para mostrar productos reales sin necesitar backend ni servidor de aplicaciones.",
+    "description": {
+      "es": "Catálogo web estático de artesanías ecuatorianas en un único index.html con CSS y JS inline. Sin frameworks ni dependencias de build.",
+      "en": "Static web catalog of Ecuadorian handicrafts in a single index.html with inline CSS and JS. No frameworks, no build dependencies."
+    },
+    "longDescription": {
+      "es": "Catálogo web de artesanías ecuatorianas en una sola página, pensado para mostrar productos reales sin necesitar backend ni servidor de aplicaciones.",
+      "en": "Single-page web catalog of Ecuadorian handicrafts, built to showcase real products without needing a backend or an application server."
+    },
     "tags": [
       "HTML",
       "CSS",
@@ -41,61 +47,107 @@
       ]
     },
     "process": {
-      "overview": "Los artesanos no tenían dónde mostrar sus productos online; se construyó un catálogo simple, sin backend, fácil de desplegar y con identidad visual ecuatoriana.",
+      "overview": {
+        "es": "Los artesanos no tenían dónde mostrar sus productos online; se construyó un catálogo simple, sin backend, fácil de desplegar y con identidad visual ecuatoriana.",
+        "en": "The artisans had nowhere to show their products online; a simple, backend-free catalog was built — easy to deploy and with an Ecuadorian visual identity."
+      },
       "pasos": [
         {
           "id": "analisis",
-          "resumen": "Se buscó un catálogo simple, sin backend, que mostrara fotos reales con identidad visual ecuatoriana.",
-          "puntos": [
-            "Catálogo sin backend — solo HTML, CSS y JS",
-            "Fotos reales de productos artesanales",
-            "Colores rojo, amarillo y verde como identidad"
-          ]
+          "resumen": {
+            "es": "Se buscó un catálogo simple, sin backend, que mostrara fotos reales con identidad visual ecuatoriana.",
+            "en": "The goal was a simple, backend-free catalog showing real photos with an Ecuadorian visual identity."
+          },
+          "puntos": {
+            "es": [
+              "Catálogo sin backend — solo HTML, CSS y JS",
+              "Fotos reales de productos artesanales",
+              "Colores rojo, amarillo y verde como identidad"
+            ],
+            "en": [
+              "Backend-free catalog — just HTML, CSS and JS",
+              "Real photos of handcrafted products",
+              "Red, yellow and green as the visual identity"
+            ]
+          }
         },
         {
           "id": "diseño",
-          "resumen": "Sistema de diseño con variables CSS y grid responsive de productos con tarjetas por categoría.",
-          "puntos": [
-            "Grid responsive de 4 columnas a 1 en móvil",
-            "Tarjetas con categoría, precio y detalle",
-            "Modal de detalle adaptado a móvil"
-          ]
+          "resumen": {
+            "es": "Sistema de diseño con variables CSS y grid responsive de productos con tarjetas por categoría.",
+            "en": "Design system with CSS variables and a responsive product grid with per-category cards."
+          },
+          "puntos": {
+            "es": [
+              "Grid responsive de 4 columnas a 1 en móvil",
+              "Tarjetas con categoría, precio y detalle",
+              "Modal de detalle adaptado a móvil"
+            ],
+            "en": [
+              "Responsive grid from 4 columns down to 1 on mobile",
+              "Cards with category, price and detail",
+              "Detail modal adapted for mobile"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "JavaScript inline para navegación, menú móvil y carrito básico, sin dependencias externas.",
-          "puntos": [
-            "Navegación suave entre secciones",
-            "Menú hamburguesa en móvil",
-            "Sin dependencias externas salvo Google Fonts"
-          ]
+          "resumen": {
+            "es": "JavaScript inline para navegación, menú móvil y carrito básico, sin dependencias externas.",
+            "en": "Inline JavaScript for navigation, mobile menu and a basic cart, with no external dependencies."
+          },
+          "puntos": {
+            "es": [
+              "Navegación suave entre secciones",
+              "Menú hamburguesa en móvil",
+              "Sin dependencias externas salvo Google Fonts"
+            ],
+            "en": [
+              "Smooth scrolling between sections",
+              "Hamburger menu on mobile",
+              "No external dependencies other than Google Fonts"
+            ]
+          }
         },
         {
           "id": "despliegue",
-          "resumen": "Contenerizado con Docker y nginx, desplegado en Railway con deploy automático en cada push.",
-          "puntos": [
-            "Imagen Docker nginx:alpine",
-            "Deploy automático en Railway",
-            "Sin servidor de aplicaciones"
-          ]
+          "resumen": {
+            "es": "Contenerizado con Docker y nginx, desplegado en Railway con deploy automático en cada push.",
+            "en": "Containerized with Docker and nginx, deployed on Railway with automatic deploys on every push."
+          },
+          "puntos": {
+            "es": [
+              "Imagen Docker nginx:alpine",
+              "Deploy automático en Railway",
+              "Sin servidor de aplicaciones"
+            ],
+            "en": [
+              "nginx:alpine Docker image",
+              "Automatic deploy on Railway",
+              "No application server"
+            ]
+          }
         }
       ],
-      "resultado": "Catálogo en producción con 8 secciones y fotos reales de productos, sin servidor de aplicaciones.",
+      "resultado": {
+        "es": "Catálogo en producción con 8 secciones y fotos reales de productos, sin servidor de aplicaciones.",
+        "en": "Catalog in production with 8 sections and real product photos, with no application server."
+      },
       "metricas": [
         {
-          "label": "Archivos del proyecto",
+          "label": { "es": "Archivos del proyecto", "en": "Project files" },
           "value": "1 HTML"
         },
         {
-          "label": "Dependencias npm",
+          "label": { "es": "Dependencias npm", "en": "npm dependencies" },
           "value": "0"
         },
         {
-          "label": "Secciones del catálogo",
+          "label": { "es": "Secciones del catálogo", "en": "Catalog sections" },
           "value": "8"
         },
         {
-          "label": "Deploy",
+          "label": { "es": "Deploy", "en": "Deploy" },
           "value": "Railway + Docker"
         }
       ]
@@ -105,8 +157,14 @@
     "id": "project-002",
     "title": "Ideancestral",
     "category": "Desarrollo Web",
-    "description": "Plataforma de catálogo digital multiidioma para artesanos ecuatorianos con carrito de compras vía WhatsApp.",
-    "longDescription": "Plataforma para que artesanos ecuatorianos vendan sin conocimientos técnicos: catálogo en 3 idiomas y checkout directo por WhatsApp.",
+    "description": {
+      "es": "Plataforma de catálogo digital multiidioma para artesanos ecuatorianos con carrito de compras vía WhatsApp.",
+      "en": "Multilingual digital catalog platform for Ecuadorian artisans with a WhatsApp-based shopping cart."
+    },
+    "longDescription": {
+      "es": "Plataforma para que artesanos ecuatorianos vendan sin conocimientos técnicos: catálogo en 3 idiomas y checkout directo por WhatsApp.",
+      "en": "A platform for Ecuadorian artisans to sell without technical skills: a catalog in 3 languages and direct checkout over WhatsApp."
+    },
     "tags": [
       "Vue.js",
       "Node.js",
@@ -149,61 +207,107 @@
       ]
     },
     "process": {
-      "overview": "Artesanos sin presencia digital ni forma de vender a compradores internacionales; se construyó un catálogo multiidioma con checkout directo vía WhatsApp.",
+      "overview": {
+        "es": "Artesanos sin presencia digital ni forma de vender a compradores internacionales; se construyó un catálogo multiidioma con checkout directo vía WhatsApp.",
+        "en": "Artisans with no digital presence and no way to sell to international buyers; a multilingual catalog was built with direct checkout over WhatsApp."
+      },
       "pasos": [
         {
           "id": "analisis",
-          "resumen": "Los artesanos no tenían presencia digital y necesitaban vender en varios idiomas por un canal que ya conocían.",
-          "puntos": [
-            "Sin presencia digital ni habilidades técnicas",
-            "Compradores internacionales en 3 idiomas",
-            "WhatsApp como canal de venta familiar"
-          ]
+          "resumen": {
+            "es": "Los artesanos no tenían presencia digital y necesitaban vender en varios idiomas por un canal que ya conocían.",
+            "en": "The artisans had no digital presence and needed to sell in several languages through a channel they already knew."
+          },
+          "puntos": {
+            "es": [
+              "Sin presencia digital ni habilidades técnicas",
+              "Compradores internacionales en 3 idiomas",
+              "WhatsApp como canal de venta familiar"
+            ],
+            "en": [
+              "No digital presence and no technical skills",
+              "International buyers across 3 languages",
+              "WhatsApp as a familiar sales channel"
+            ]
+          }
         },
         {
           "id": "diseño",
-          "resumen": "SPA en Vue con backend en Node y checkout que arma un mensaje de WhatsApp automáticamente.",
-          "puntos": [
-            "SPA Vue.js con backend Node/Express",
-            "Traducción automática ES/EN/PT",
-            "Checkout que genera mensaje de WhatsApp"
-          ]
+          "resumen": {
+            "es": "SPA en Vue con backend en Node y checkout que arma un mensaje de WhatsApp automáticamente.",
+            "en": "Vue SPA with a Node backend and a checkout that automatically builds a WhatsApp message."
+          },
+          "puntos": {
+            "es": [
+              "SPA Vue.js con backend Node/Express",
+              "Traducción automática ES/EN/PT",
+              "Checkout que genera mensaje de WhatsApp"
+            ],
+            "en": [
+              "Vue.js SPA with a Node/Express backend",
+              "Automatic ES/EN/PT translation",
+              "Checkout that generates a WhatsApp message"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "Frontend con componentes reutilizables y modo oscuro; panel admin protegido con autenticación.",
-          "puntos": [
-            "Componentes Vue reutilizables",
-            "Panel admin con autenticación JWT",
-            "Modo oscuro/claro sin dependencias extra"
-          ]
+          "resumen": {
+            "es": "Frontend con componentes reutilizables y modo oscuro; panel admin protegido con autenticación.",
+            "en": "Frontend with reusable components and dark mode; admin panel protected with authentication."
+          },
+          "puntos": {
+            "es": [
+              "Componentes Vue reutilizables",
+              "Panel admin con autenticación JWT",
+              "Modo oscuro/claro sin dependencias extra"
+            ],
+            "en": [
+              "Reusable Vue components",
+              "Admin panel with JWT authentication",
+              "Dark/light mode with no extra dependencies"
+            ]
+          }
         },
         {
           "id": "despliegue",
-          "resumen": "Frontend en Vercel y backend en Render, ambos con SSL automático y sin configuración manual.",
-          "puntos": [
-            "Frontend en Vercel con CI/CD",
-            "Backend en Render con PostgreSQL",
-            "SSL automático en ambos servicios"
-          ]
+          "resumen": {
+            "es": "Frontend en Vercel y backend en Render, ambos con SSL automático y sin configuración manual.",
+            "en": "Frontend on Vercel and backend on Render, both with automatic SSL and no manual configuration."
+          },
+          "puntos": {
+            "es": [
+              "Frontend en Vercel con CI/CD",
+              "Backend en Render con PostgreSQL",
+              "SSL automático en ambos servicios"
+            ],
+            "en": [
+              "Frontend on Vercel with CI/CD",
+              "Backend on Render with PostgreSQL",
+              "Automatic SSL on both services"
+            ]
+          }
         }
       ],
-      "resultado": "Plataforma en producción con catálogo en 3 idiomas que los artesanos gestionan sin ayuda técnica.",
+      "resultado": {
+        "es": "Plataforma en producción con catálogo en 3 idiomas que los artesanos gestionan sin ayuda técnica.",
+        "en": "Platform in production with a 3-language catalog the artisans manage without technical help."
+      },
       "metricas": [
         {
-          "label": "Idiomas",
+          "label": { "es": "Idiomas", "en": "Languages" },
           "value": "3 (ES/EN/PT)"
         },
         {
-          "label": "Panel admin",
-          "value": "Sin código"
+          "label": { "es": "Panel admin", "en": "Admin panel" },
+          "value": { "es": "Sin código", "en": "No-code" }
         },
         {
-          "label": "Checkout",
+          "label": { "es": "Checkout", "en": "Checkout" },
           "value": "WhatsApp"
         },
         {
-          "label": "Deploy",
+          "label": { "es": "Deploy", "en": "Deploy" },
           "value": "Vercel + Render"
         }
       ]
@@ -213,8 +317,14 @@
     "id": "project-007",
     "title": "MapCriminals",
     "category": "Desarrollo Web",
-    "description": "Mapa mundial interactivo de criminales más buscados integrando la FBI API en tiempo real, Google Trends y datos manuales por país.",
-    "longDescription": "Mapa mundial que agrega criminales más buscados de la FBI y otras fuentes en tiempo real, con estética de sala de operaciones.",
+    "description": {
+      "es": "Mapa mundial interactivo de criminales más buscados integrando la FBI API en tiempo real, Google Trends y datos manuales por país.",
+      "en": "Interactive world map of most-wanted criminals integrating the FBI API in real time, Google Trends and manual per-country data."
+    },
+    "longDescription": {
+      "es": "Mapa mundial que agrega criminales más buscados de la FBI y otras fuentes en tiempo real, con estética de sala de operaciones.",
+      "en": "World map that aggregates most-wanted criminals from the FBI and other sources in real time, with an operations-room aesthetic."
+    },
     "tags": [
       "Node.js",
       "Leaflet",
@@ -251,52 +361,88 @@
       ]
     },
     "process": {
-      "overview": "La FBI API no tiene CORS ni permite consultas directas desde el browser; se construyó un proxy que agrega, cachea y geolocaliza los datos en un mapa interactivo.",
+      "overview": {
+        "es": "La FBI API no tiene CORS ni permite consultas directas desde el browser; se construyó un proxy que agrega, cachea y geolocaliza los datos en un mapa interactivo.",
+        "en": "The FBI API has no CORS and does not allow direct queries from the browser; a proxy was built to aggregate, cache and geolocate the data on an interactive map."
+      },
       "pasos": [
         {
           "id": "analisis",
-          "resumen": "Sin acceso directo desde el browser ni datos geográficos, hacía falta un proxy que agregara y cacheara varias fuentes.",
-          "puntos": [
-            "FBI API sin soporte CORS",
-            "Datos incompletos según el país",
-            "Rate limiting agresivo en Google Trends"
-          ]
+          "resumen": {
+            "es": "Sin acceso directo desde el browser ni datos geográficos, hacía falta un proxy que agregara y cacheara varias fuentes.",
+            "en": "With no direct browser access and no geographic data, a proxy was needed to aggregate and cache multiple sources."
+          },
+          "puntos": {
+            "es": [
+              "FBI API sin soporte CORS",
+              "Datos incompletos según el país",
+              "Rate limiting agresivo en Google Trends"
+            ],
+            "en": [
+              "FBI API with no CORS support",
+              "Incomplete data depending on the country",
+              "Aggressive rate limiting on Google Trends"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "Proxy en Express con caché por fuente y mapa Leaflet con panel por país y filtros cruzados.",
-          "puntos": [
-            "Caché en memoria con TTL por fuente",
-            "Mapa con marcadores y panel por país",
-            "Filtros por nombre, crimen y nacionalidad"
-          ]
+          "resumen": {
+            "es": "Proxy en Express con caché por fuente y mapa Leaflet con panel por país y filtros cruzados.",
+            "en": "Express proxy with per-source caching and a Leaflet map with a per-country panel and cross filters."
+          },
+          "puntos": {
+            "es": [
+              "Caché en memoria con TTL por fuente",
+              "Mapa con marcadores y panel por país",
+              "Filtros por nombre, crimen y nacionalidad"
+            ],
+            "en": [
+              "In-memory cache with per-source TTL",
+              "Map with markers and a per-country panel",
+              "Filters by name, crime and nationality"
+            ]
+          }
         },
         {
           "id": "despliegue",
-          "resumen": "Deploy en Railway con un único servicio Express sirviendo API y frontend.",
-          "puntos": [
-            "Un solo servicio en Railway",
-            "HTTPS automático sin configuración",
-            "Variables de entorno para API keys"
-          ]
+          "resumen": {
+            "es": "Deploy en Railway con un único servicio Express sirviendo API y frontend.",
+            "en": "Deployed on Railway with a single Express service serving both the API and the frontend."
+          },
+          "puntos": {
+            "es": [
+              "Un solo servicio en Railway",
+              "HTTPS automático sin configuración",
+              "Variables de entorno para API keys"
+            ],
+            "en": [
+              "A single service on Railway",
+              "Automatic HTTPS with no configuration",
+              "Environment variables for API keys"
+            ]
+          }
         }
       ],
-      "resultado": "Mapa con datos en tiempo real de criminales más buscados cubriendo más de 20 países.",
+      "resultado": {
+        "es": "Mapa con datos en tiempo real de criminales más buscados cubriendo más de 20 países.",
+        "en": "Map with real-time most-wanted data covering more than 20 countries."
+      },
       "metricas": [
         {
-          "label": "Fuentes de datos",
+          "label": { "es": "Fuentes de datos", "en": "Data sources" },
           "value": "3"
         },
         {
-          "label": "Países cubiertos",
+          "label": { "es": "Países cubiertos", "en": "Countries covered" },
           "value": "20+"
         },
         {
-          "label": "Cache TTL FBI",
+          "label": { "es": "Cache TTL FBI", "en": "FBI cache TTL" },
           "value": "1h"
         },
         {
-          "label": "Idiomas",
+          "label": { "es": "Idiomas", "en": "Languages" },
           "value": "ES/EN"
         }
       ]
@@ -307,8 +453,14 @@
     "slug": "notes-app",
     "title": "Notes App",
     "category": "Desarrollo Web",
-    "description": "Aplicación full-stack de notas con autenticación JWT, categorías, archivado y arquitectura por capas (View → Service → Repository → ORM).",
-    "longDescription": "App de notas con autenticación segura y arquitectura por capas, para aplicar buenas prácticas de backend desacoplado del frontend.",
+    "description": {
+      "es": "Aplicación full-stack de notas con autenticación JWT, categorías, archivado y arquitectura por capas (View → Service → Repository → ORM).",
+      "en": "Full-stack notes app with JWT authentication, categories, archiving and a layered architecture (View → Service → Repository → ORM)."
+    },
+    "longDescription": {
+      "es": "App de notas con autenticación segura y arquitectura por capas, para aplicar buenas prácticas de backend desacoplado del frontend.",
+      "en": "Notes app with secure authentication and a layered architecture, built to apply backend best practices decoupled from the frontend."
+    },
     "tags": [
       "Django",
       "React",
@@ -345,70 +497,126 @@
       ]
     },
     "process": {
-      "overview": "Se necesitaba una app de notas con autenticación robusta y backend desacoplado del frontend, aplicando una arquitectura limpia y verificable.",
+      "overview": {
+        "es": "Se necesitaba una app de notas con autenticación robusta y backend desacoplado del frontend, aplicando una arquitectura limpia y verificable.",
+        "en": "A notes app was needed with robust authentication and a backend decoupled from the frontend, applying a clean, verifiable architecture."
+      },
       "pasos": [
         {
           "id": "analisis",
-          "resumen": "Notas privadas por usuario, con categorías y archivado, sin exponer lógica de negocio al frontend.",
-          "puntos": [
-            "Autenticación con access y refresh token",
-            "Notas privadas por usuario",
-            "Archivado sin eliminar la nota"
-          ]
+          "resumen": {
+            "es": "Notas privadas por usuario, con categorías y archivado, sin exponer lógica de negocio al frontend.",
+            "en": "Per-user private notes, with categories and archiving, without exposing business logic to the frontend."
+          },
+          "puntos": {
+            "es": [
+              "Autenticación con access y refresh token",
+              "Notas privadas por usuario",
+              "Archivado sin eliminar la nota"
+            ],
+            "en": [
+              "Authentication with access and refresh tokens",
+              "Per-user private notes",
+              "Archiving without deleting the note"
+            ]
+          }
         },
         {
           "id": "diseño",
-          "resumen": "Backend organizado en 4 capas para separar responsabilidades y mantener el código testeable.",
-          "puntos": [
-            "View → Service → Repository → ORM",
-            "Validación de entrada y salida separadas",
-            "Estado de auth centralizado en el frontend"
-          ]
+          "resumen": {
+            "es": "Backend organizado en 4 capas para separar responsabilidades y mantener el código testeable.",
+            "en": "Backend organized into 4 layers to separate responsibilities and keep the code testable."
+          },
+          "puntos": {
+            "es": [
+              "View → Service → Repository → ORM",
+              "Validación de entrada y salida separadas",
+              "Estado de auth centralizado en el frontend"
+            ],
+            "en": [
+              "View → Service → Repository → ORM",
+              "Separate input and output validation",
+              "Centralized auth state on the frontend"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "JWT con blacklist de tokens en logout y cliente Axios que adjunta el token automáticamente.",
-          "puntos": [
-            "Login devuelve access y refresh token",
-            "Logout invalida el refresh token",
-            "Archivado y categorías vía API REST"
-          ]
+          "resumen": {
+            "es": "JWT con blacklist de tokens en logout y cliente Axios que adjunta el token automáticamente.",
+            "en": "JWT with a token blacklist on logout and an Axios client that attaches the token automatically."
+          },
+          "puntos": {
+            "es": [
+              "Login devuelve access y refresh token",
+              "Logout invalida el refresh token",
+              "Archivado y categorías vía API REST"
+            ],
+            "en": [
+              "Login returns an access and a refresh token",
+              "Logout invalidates the refresh token",
+              "Archiving and categories via a REST API"
+            ]
+          }
         },
         {
           "id": "despliegue",
-          "resumen": "Frontend en Vercel y backend en Railway, con script único para levantar todo en local.",
-          "puntos": [
-            "Frontend en Vercel con CI/CD",
-            "Backend en Railway con PostgreSQL",
-            "Script único para entorno local"
-          ]
+          "resumen": {
+            "es": "Frontend en Vercel y backend en Railway, con script único para levantar todo en local.",
+            "en": "Frontend on Vercel and backend on Railway, with a single script to spin everything up locally."
+          },
+          "puntos": {
+            "es": [
+              "Frontend en Vercel con CI/CD",
+              "Backend en Railway con PostgreSQL",
+              "Script único para entorno local"
+            ],
+            "en": [
+              "Frontend on Vercel with CI/CD",
+              "Backend on Railway with PostgreSQL",
+              "Single script for the local environment"
+            ]
+          }
         },
         {
           "id": "seguridad",
-          "resumen": "Configuración estricta por defecto y notas siempre filtradas por el usuario autenticado.",
-          "puntos": [
-            "DEBUG desactivado por defecto",
-            "Acceso a nota ajena devuelve 404",
-            "Refresh tokens invalidados en logout"
-          ]
+          "resumen": {
+            "es": "Configuración estricta por defecto y notas siempre filtradas por el usuario autenticado.",
+            "en": "Strict configuration by default and notes always filtered by the authenticated user."
+          },
+          "puntos": {
+            "es": [
+              "DEBUG desactivado por defecto",
+              "Acceso a nota ajena devuelve 404",
+              "Refresh tokens invalidados en logout"
+            ],
+            "en": [
+              "DEBUG disabled by default",
+              "Accessing another user's note returns 404",
+              "Refresh tokens invalidated on logout"
+            ]
+          }
         }
       ],
-      "resultado": "App full-stack en producción con autenticación completa y arquitectura por capas verificable.",
+      "resultado": {
+        "es": "App full-stack en producción con autenticación completa y arquitectura por capas verificable.",
+        "en": "Full-stack app in production with complete authentication and a verifiable layered architecture."
+      },
       "metricas": [
         {
-          "label": "Capas de arquitectura",
+          "label": { "es": "Capas de arquitectura", "en": "Architecture layers" },
           "value": "4"
         },
         {
-          "label": "Endpoints API",
+          "label": { "es": "Endpoints API", "en": "API endpoints" },
           "value": "13"
         },
         {
-          "label": "Auth",
+          "label": { "es": "Auth", "en": "Auth" },
           "value": "JWT + Blacklist"
         },
         {
-          "label": "Deploy",
+          "label": { "es": "Deploy", "en": "Deploy" },
           "value": "Vercel + Railway"
         }
       ]
@@ -418,8 +626,14 @@
     "id": "project-004",
     "title": "Equity",
     "category": "Backend & Datos",
-    "description": "Pipeline automatizado de limpieza y carga de datos desde JSON a PostgreSQL con validación de schema y modo dry-run.",
-    "longDescription": "Herramienta ETL que automatiza la carga de datos financieros desde JSON a PostgreSQL, reemplazando un proceso manual propenso a errores.",
+    "description": {
+      "es": "Pipeline automatizado de limpieza y carga de datos desde JSON a PostgreSQL con validación de schema y modo dry-run.",
+      "en": "Automated pipeline for cleaning and loading data from JSON into PostgreSQL with schema validation and a dry-run mode."
+    },
+    "longDescription": {
+      "es": "Herramienta ETL que automatiza la carga de datos financieros desde JSON a PostgreSQL, reemplazando un proceso manual propenso a errores.",
+      "en": "ETL tool that automates loading financial data from JSON into PostgreSQL, replacing an error-prone manual process."
+    },
     "tags": [
       "Python",
       "Django",
@@ -448,53 +662,89 @@
       ]
     },
     "process": {
-      "overview": "La carga manual de datos financieros generaba errores sin trazabilidad; se construyó un pipeline ETL con validación y rollback automático.",
+      "overview": {
+        "es": "La carga manual de datos financieros generaba errores sin trazabilidad; se construyó un pipeline ETL con validación y rollback automático.",
+        "en": "Manually loading financial data produced errors with no traceability; an ETL pipeline was built with validation and automatic rollback."
+      },
       "pasos": [
         {
           "id": "analisis",
-          "resumen": "La carga manual era propensa a errores y no dejaba registro de qué se había cargado.",
-          "puntos": [
-            "Carga manual propensa a errores",
-            "Sin validación previa a insertar",
-            "Sin trazabilidad de las cargas"
-          ]
+          "resumen": {
+            "es": "La carga manual era propensa a errores y no dejaba registro de qué se había cargado.",
+            "en": "Manual loading was error-prone and left no record of what had been loaded."
+          },
+          "puntos": {
+            "es": [
+              "Carga manual propensa a errores",
+              "Sin validación previa a insertar",
+              "Sin trazabilidad de las cargas"
+            ],
+            "en": [
+              "Error-prone manual loading",
+              "No validation before inserting",
+              "No traceability of the loads"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "Pipeline con extracción, validación y carga atómica con rollback automático ante errores.",
-          "puntos": [
-            "Validación de schema antes de insertar",
-            "Transacción atómica con rollback",
-            "Modo dry-run para probar sin insertar"
-          ]
+          "resumen": {
+            "es": "Pipeline con extracción, validación y carga atómica con rollback automático ante errores.",
+            "en": "Pipeline with extraction, validation and atomic loading with automatic rollback on errors."
+          },
+          "puntos": {
+            "es": [
+              "Validación de schema antes de insertar",
+              "Transacción atómica con rollback",
+              "Modo dry-run para probar sin insertar"
+            ],
+            "en": [
+              "Schema validation before inserting",
+              "Atomic transaction with rollback",
+              "Dry-run mode to test without inserting"
+            ]
+          }
         },
         {
           "id": "despliegue",
-          "resumen": "CLI vía comandos de Django, configurable por variables de entorno según el ambiente.",
-          "puntos": [
-            "Comando CLI con flag dry-run",
-            "PostgreSQL como destino",
-            "Configuración por variables de entorno"
-          ]
+          "resumen": {
+            "es": "CLI vía comandos de Django, configurable por variables de entorno según el ambiente.",
+            "en": "CLI via Django commands, configurable through environment variables per environment."
+          },
+          "puntos": {
+            "es": [
+              "Comando CLI con flag dry-run",
+              "PostgreSQL como destino",
+              "Configuración por variables de entorno"
+            ],
+            "en": [
+              "CLI command with a dry-run flag",
+              "PostgreSQL as the target",
+              "Configuration via environment variables"
+            ]
+          }
         }
       ],
-      "resultado": "Redujo el tiempo de carga de 2 horas manuales a menos de 5 minutos, sin errores de integridad.",
+      "resultado": {
+        "es": "Redujo el tiempo de carga de 2 horas manuales a menos de 5 minutos, sin errores de integridad.",
+        "en": "Cut load time from 2 manual hours to under 5 minutes, with no integrity errors."
+      },
       "metricas": [
         {
-          "label": "Tiempo de carga",
+          "label": { "es": "Tiempo de carga", "en": "Load time" },
           "value": "< 5 min"
         },
         {
-          "label": "Validaciones",
-          "value": "Schema + tipos"
+          "label": { "es": "Validaciones", "en": "Validations" },
+          "value": { "es": "Schema + tipos", "en": "Schema + types" }
         },
         {
-          "label": "Modo dry-run",
-          "value": "Sí"
+          "label": { "es": "Modo dry-run", "en": "Dry-run mode" },
+          "value": { "es": "Sí", "en": "Yes" }
         },
         {
-          "label": "Transacciones",
-          "value": "Atómicas"
+          "label": { "es": "Transacciones", "en": "Transactions" },
+          "value": { "es": "Atómicas", "en": "Atomic" }
         }
       ]
     }
@@ -504,8 +754,14 @@
     "slug": "securabank",
     "title": "SecuraBank",
     "category": "Seguridad",
-    "description": "Sistema de transacciones bancarias que implementa el OWASP Top 10: JWT, bcrypt, Helmet.js, CSRF tokens y auditoría inmutable.",
-    "longDescription": "Sistema bancario demostrativo diseñado para aplicar el OWASP Top 10 como checklist de seguridad desde el primer día.",
+    "description": {
+      "es": "Sistema de transacciones bancarias que implementa el OWASP Top 10: JWT, bcrypt, Helmet.js, CSRF tokens y auditoría inmutable.",
+      "en": "Banking transaction system implementing the OWASP Top 10: JWT, bcrypt, Helmet.js, CSRF tokens and an immutable audit log."
+    },
+    "longDescription": {
+      "es": "Sistema bancario demostrativo diseñado para aplicar el OWASP Top 10 como checklist de seguridad desde el primer día.",
+      "en": "Demonstrative banking system designed to apply the OWASP Top 10 as a security checklist from day one."
+    },
     "tags": [
       "JavaScript",
       "Node.js",
@@ -544,48 +800,84 @@
       ]
     },
     "process": {
-      "overview": "Los sistemas bancarios son blanco frecuente de ataques; se construyó una app demostrativa aplicando el OWASP Top 10 como requisito de diseño desde el inicio.",
+      "overview": {
+        "es": "Los sistemas bancarios son blanco frecuente de ataques; se construyó una app demostrativa aplicando el OWASP Top 10 como requisito de diseño desde el inicio.",
+        "en": "Banking systems are a frequent attack target; a demonstrative app was built applying the OWASP Top 10 as a design requirement from the start."
+      },
       "pasos": [
         {
           "id": "analisis",
-          "resumen": "Cada módulo se analizó contra el OWASP Top 10 antes de escribir código.",
-          "puntos": [
-            "Checklist OWASP previo al desarrollo",
-            "Tokens JWT de corta duración",
-            "Rate limiting contra fuerza bruta"
-          ]
+          "resumen": {
+            "es": "Cada módulo se analizó contra el OWASP Top 10 antes de escribir código.",
+            "en": "Each module was analyzed against the OWASP Top 10 before any code was written."
+          },
+          "puntos": {
+            "es": [
+              "Checklist OWASP previo al desarrollo",
+              "Tokens JWT de corta duración",
+              "Rate limiting contra fuerza bruta"
+            ],
+            "en": [
+              "OWASP checklist before development",
+              "Short-lived JWT tokens",
+              "Rate limiting against brute force"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "Headers de seguridad automáticos, queries parametrizadas y auditoría de cada transacción.",
-          "puntos": [
-            "Headers de seguridad con Helmet.js",
-            "Queries parametrizadas contra inyección SQL",
-            "Cada transacción queda auditada"
-          ]
+          "resumen": {
+            "es": "Headers de seguridad automáticos, queries parametrizadas y auditoría de cada transacción.",
+            "en": "Automatic security headers, parameterized queries and an audit record for every transaction."
+          },
+          "puntos": {
+            "es": [
+              "Headers de seguridad con Helmet.js",
+              "Queries parametrizadas contra inyección SQL",
+              "Cada transacción queda auditada"
+            ],
+            "en": [
+              "Security headers with Helmet.js",
+              "Parameterized queries against SQL injection",
+              "Every transaction is audited"
+            ]
+          }
         },
         {
           "id": "seguridad",
-          "resumen": "Seis categorías del OWASP Top 10 mitigadas con capas de seguridad independientes.",
-          "puntos": [
-            "Control de acceso por roles",
-            "Contraseñas cifradas con bcrypt",
-            "Protección CSRF en formularios sensibles"
-          ]
+          "resumen": {
+            "es": "Seis categorías del OWASP Top 10 mitigadas con capas de seguridad independientes.",
+            "en": "Six OWASP Top 10 categories mitigated with independent security layers."
+          },
+          "puntos": {
+            "es": [
+              "Control de acceso por roles",
+              "Contraseñas cifradas con bcrypt",
+              "Protección CSRF en formularios sensibles"
+            ],
+            "en": [
+              "Role-based access control",
+              "Passwords hashed with bcrypt",
+              "CSRF protection on sensitive forms"
+            ]
+          }
         }
       ],
-      "resultado": "Seis vulnerabilidades del OWASP Top 10 mitigadas con cobertura completa de auth y auditoría.",
+      "resultado": {
+        "es": "Seis vulnerabilidades del OWASP Top 10 mitigadas con cobertura completa de auth y auditoría.",
+        "en": "Six OWASP Top 10 vulnerabilities mitigated with full auth and audit coverage."
+      },
       "metricas": [
         {
-          "label": "OWASP mitigados",
+          "label": { "es": "OWASP mitigados", "en": "OWASP mitigated" },
           "value": "6/10"
         },
         {
-          "label": "Capas de seguridad",
+          "label": { "es": "Capas de seguridad", "en": "Security layers" },
           "value": "5"
         },
         {
-          "label": "Cobertura auditoría",
+          "label": { "es": "Cobertura auditoría", "en": "Audit coverage" },
           "value": "100%"
         }
       ]
@@ -596,8 +888,14 @@
     "slug": "gesture-control",
     "title": "Gesture Control",
     "category": "Computer Vision",
-    "description": "Detección de gestos de mano en tiempo real vía webcam que mapea gestos a atajos de teclado, clics de ratón y acciones de sistema. Clasificador híbrido rule-based + ML sklearn.",
-    "longDescription": "Sistema que reemplaza teclado y mouse por gestos de mano captados por webcam, útil para controlar la computadora sin tocarla.",
+    "description": {
+      "es": "Detección de gestos de mano en tiempo real vía webcam que mapea gestos a atajos de teclado, clics de ratón y acciones de sistema. Clasificador híbrido rule-based + ML sklearn.",
+      "en": "Real-time hand-gesture detection via webcam that maps gestures to keyboard shortcuts, mouse clicks and system actions. Hybrid rule-based + sklearn ML classifier."
+    },
+    "longDescription": {
+      "es": "Sistema que reemplaza teclado y mouse por gestos de mano captados por webcam, útil para controlar la computadora sin tocarla.",
+      "en": "System that replaces keyboard and mouse with hand gestures captured by webcam, useful for controlling the computer without touching it."
+    },
     "tags": [
       "Python",
       "MediaPipe",
@@ -634,62 +932,108 @@
       ]
     },
     "process": {
-      "overview": "Se buscó controlar la computadora sin tocarla: la webcam detecta gestos de mano y los traduce en atajos de teclado, clics y scroll.",
+      "overview": {
+        "es": "Se buscó controlar la computadora sin tocarla: la webcam detecta gestos de mano y los traduce en atajos de teclado, clics y scroll.",
+        "en": "The goal was to control the computer without touching it: the webcam detects hand gestures and translates them into keyboard shortcuts, clicks and scrolling."
+      },
       "pasos": [
         {
           "id": "analisis",
-          "resumen": "MediaPipe detecta hasta 2 manos en tiempo real y extrae los puntos clave de cada dedo por frame.",
-          "puntos": [
-            "Detección de hasta 2 manos en vivo",
-            "Overlay visual con esqueleto y FPS",
-            "Calibración con modo debug"
-          ]
+          "resumen": {
+            "es": "MediaPipe detecta hasta 2 manos en tiempo real y extrae los puntos clave de cada dedo por frame.",
+            "en": "MediaPipe detects up to 2 hands in real time and extracts the key points of every finger per frame."
+          },
+          "puntos": {
+            "es": [
+              "Detección de hasta 2 manos en vivo",
+              "Overlay visual con esqueleto y FPS",
+              "Calibración con modo debug"
+            ],
+            "en": [
+              "Live detection of up to 2 hands",
+              "Visual overlay with skeleton and FPS",
+              "Calibration with a debug mode"
+            ]
+          }
         },
         {
           "id": "diseño",
-          "resumen": "Clasificador híbrido: reglas geométricas para los gestos base y un modelo ML opcional entrenable con datos propios.",
-          "puntos": [
-            "9 gestos base reconocidos",
-            "Capa ML opcional con datos propios",
-            "Cambia a ML automáticamente si hay modelo entrenado"
-          ]
+          "resumen": {
+            "es": "Clasificador híbrido: reglas geométricas para los gestos base y un modelo ML opcional entrenable con datos propios.",
+            "en": "Hybrid classifier: geometric rules for the base gestures and an optional ML model trainable on your own data."
+          },
+          "puntos": {
+            "es": [
+              "9 gestos base reconocidos",
+              "Capa ML opcional con datos propios",
+              "Cambia a ML automáticamente si hay modelo entrenado"
+            ],
+            "en": [
+              "9 recognized base gestures",
+              "Optional ML layer with custom data",
+              "Switches to ML automatically when a trained model exists"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "Cada gesto se traduce en una acción de sistema con debounce para evitar disparos repetidos.",
-          "puntos": [
-            "Atajos de teclado y combos",
-            "Clics y scroll de mouse",
-            "Modo solo-detección para pruebas"
-          ]
+          "resumen": {
+            "es": "Cada gesto se traduce en una acción de sistema con debounce para evitar disparos repetidos.",
+            "en": "Each gesture is translated into a system action with debouncing to avoid repeated triggers."
+          },
+          "puntos": {
+            "es": [
+              "Atajos de teclado y combos",
+              "Clics y scroll de mouse",
+              "Modo solo-detección para pruebas"
+            ],
+            "en": [
+              "Keyboard shortcuts and combos",
+              "Mouse clicks and scrolling",
+              "Detection-only mode for testing"
+            ]
+          }
         },
         {
           "id": "despliegue",
-          "resumen": "Todo se personaliza en archivos YAML, sin tocar el código.",
-          "puntos": [
-            "Configuración de cámara en YAML",
-            "Mapeo gesto-acción editable",
-            "Compatible con Windows, macOS y Linux"
-          ]
+          "resumen": {
+            "es": "Todo se personaliza en archivos YAML, sin tocar el código.",
+            "en": "Everything is customized in YAML files, without touching the code."
+          },
+          "puntos": {
+            "es": [
+              "Configuración de cámara en YAML",
+              "Mapeo gesto-acción editable",
+              "Compatible con Windows, macOS y Linux"
+            ],
+            "en": [
+              "Camera configuration in YAML",
+              "Editable gesture-to-action mapping",
+              "Works on Windows, macOS and Linux"
+            ]
+          }
         }
       ],
-      "resultado": "Control por gestos en tiempo real con 9 gestos base, extensible con gestos personalizados vía ML.",
+      "resultado": {
+        "es": "Control por gestos en tiempo real con 9 gestos base, extensible con gestos personalizados vía ML.",
+        "en": "Real-time gesture control with 9 base gestures, extensible with custom gestures via ML."
+      },
       "metricas": [
         {
-          "label": "Gestos soportados",
-          "value": "9 base + custom"
+          "label": { "es": "Gestos soportados", "en": "Supported gestures" },
+          "value": { "es": "9 base + custom", "en": "9 base + custom" }
         },
         {
-          "label": "Landmarks por mano",
+          "label": { "es": "Landmarks por mano", "en": "Landmarks per hand" },
           "value": "21"
         },
         {
-          "label": "Clasificador",
+          "label": { "es": "Clasificador", "en": "Classifier" },
           "value": "Rule-based + ML"
         },
         {
-          "label": "Config",
-          "value": "YAML sin código"
+          "label": { "es": "Config", "en": "Config" },
+          "value": { "es": "YAML sin código", "en": "YAML, no code" }
         }
       ]
     }
@@ -698,8 +1042,14 @@
     "id": "project-006",
     "title": "ConQuito",
     "category": "Concursos",
-    "description": "Visualización interactiva de fundaciones de Quito para ConQuito con mapas Leaflet y estadísticas de impacto social.",
-    "longDescription": "Herramienta que convierte datos abiertos de fundaciones de Quito en un mapa filtrable, entregada a ConQuito para apoyar decisiones de política pública.",
+    "description": {
+      "es": "Visualización interactiva de fundaciones de Quito para ConQuito con mapas Leaflet y estadísticas de impacto social.",
+      "en": "Interactive visualization of Quito's foundations for ConQuito with Leaflet maps and social-impact statistics."
+    },
+    "longDescription": {
+      "es": "Herramienta que convierte datos abiertos de fundaciones de Quito en un mapa filtrable, entregada a ConQuito para apoyar decisiones de política pública.",
+      "en": "Tool that turns open data on Quito's foundations into a filterable map, delivered to ConQuito to support public-policy decisions."
+    },
     "tags": [
       "JavaScript",
       "Leaflet",
@@ -728,52 +1078,88 @@
       ]
     },
     "process": {
-      "overview": "Los datos de fundaciones de Quito existían en CSV sin visualización ni filtros geográficos; se construyó un mapa interactivo para apoyar decisiones de ConQuito.",
+      "overview": {
+        "es": "Los datos de fundaciones de Quito existían en CSV sin visualización ni filtros geográficos; se construyó un mapa interactivo para apoyar decisiones de ConQuito.",
+        "en": "Quito's foundation data existed as CSV with no visualization or geographic filters; an interactive map was built to support ConQuito's decisions."
+      },
       "pasos": [
         {
           "id": "analisis",
-          "resumen": "Los datos existían pero sin visualización ni forma de analizar su distribución por zona.",
-          "puntos": [
-            "Datos en CSV sin visualización",
-            "Sin filtros geográficos",
-            "Entrega como herramienta usable por el equipo"
-          ]
+          "resumen": {
+            "es": "Los datos existían pero sin visualización ni forma de analizar su distribución por zona.",
+            "en": "The data existed but with no visualization and no way to analyze its distribution by area."
+          },
+          "puntos": {
+            "es": [
+              "Datos en CSV sin visualización",
+              "Sin filtros geográficos",
+              "Entrega como herramienta usable por el equipo"
+            ],
+            "en": [
+              "Data in CSV with no visualization",
+              "No geographic filters",
+              "Delivered as a tool the team can use"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "Mapa con Leaflet y gráficos con Chart.js, sin frameworks para facilitar la entrega.",
-          "puntos": [
-            "Marcadores por tipo de fundación",
-            "Gráficos de distribución por zona",
-            "Filtros dinámicos por tipo y zona"
-          ]
+          "resumen": {
+            "es": "Mapa con Leaflet y gráficos con Chart.js, sin frameworks para facilitar la entrega.",
+            "en": "Map with Leaflet and charts with Chart.js, framework-free to ease handover."
+          },
+          "puntos": {
+            "es": [
+              "Marcadores por tipo de fundación",
+              "Gráficos de distribución por zona",
+              "Filtros dinámicos por tipo y zona"
+            ],
+            "en": [
+              "Markers by foundation type",
+              "Distribution charts by area",
+              "Dynamic filters by type and area"
+            ]
+          }
         },
         {
           "id": "despliegue",
-          "resumen": "Aplicación estática entregada directamente, sin servidor ni infraestructura.",
-          "puntos": [
-            "Sin dependencias de servidor",
-            "Datos embebidos para uso offline",
-            "Documentación de uso incluida"
-          ]
+          "resumen": {
+            "es": "Aplicación estática entregada directamente, sin servidor ni infraestructura.",
+            "en": "Static application delivered directly, with no server or infrastructure."
+          },
+          "puntos": {
+            "es": [
+              "Sin dependencias de servidor",
+              "Datos embebidos para uso offline",
+              "Documentación de uso incluida"
+            ],
+            "en": [
+              "No server dependencies",
+              "Embedded data for offline use",
+              "Usage documentation included"
+            ]
+          }
         }
       ],
-      "resultado": "Mapa interactivo con más de 50 fundaciones entregado a ConQuito como herramienta de decisión.",
+      "resultado": {
+        "es": "Mapa interactivo con más de 50 fundaciones entregado a ConQuito como herramienta de decisión.",
+        "en": "Interactive map with more than 50 foundations delivered to ConQuito as a decision-making tool."
+      },
       "metricas": [
         {
-          "label": "Fundaciones mapeadas",
+          "label": { "es": "Fundaciones mapeadas", "en": "Foundations mapped" },
           "value": "50+"
         },
         {
-          "label": "Zonas de Quito",
+          "label": { "es": "Zonas de Quito", "en": "Quito districts" },
           "value": "8"
         },
         {
-          "label": "Stack",
+          "label": { "es": "Stack", "en": "Stack" },
           "value": "Vanilla JS"
         },
         {
-          "label": "Cliente",
+          "label": { "es": "Cliente", "en": "Client" },
           "value": "ConQuito"
         }
       ]
@@ -784,8 +1170,14 @@
     "slug": "nunna",
     "title": "Nunna",
     "category": "Desarrollo Web",
-    "description": "Catálogo digital + experiencia inmersiva sobre los personajes tradicionales de los pases riobambeños — Diablo Huma, Curiquingue, Sacha Runa y más.",
-    "longDescription": "Plataforma de preservación digital de personajes tradicionales de los pases riobambeños, con CMS para que el equipo cultural gestione el contenido sin código.",
+    "description": {
+      "es": "Catálogo digital + experiencia inmersiva sobre los personajes tradicionales de los pases riobambeños — Diablo Huma, Curiquingue, Sacha Runa y más.",
+      "en": "Digital catalog + immersive experience about the traditional characters of Riobamba's processions — Diablo Huma, Curiquingue, Sacha Runa and more."
+    },
+    "longDescription": {
+      "es": "Plataforma de preservación digital de personajes tradicionales de los pases riobambeños, con CMS para que el equipo cultural gestione el contenido sin código.",
+      "en": "Digital preservation platform for the traditional characters of Riobamba's processions, with a CMS so the cultural team manages content without code."
+    },
     "tags": [
       "Next.js",
       "NestJS",
@@ -828,61 +1220,107 @@
       ]
     },
     "process": {
-      "overview": "Los personajes tradicionales riobambeños carecían de documentación digital y corrían riesgo de pérdida cultural; se construyó un catálogo interactivo con CMS sin código.",
+      "overview": {
+        "es": "Los personajes tradicionales riobambeños carecían de documentación digital y corrían riesgo de pérdida cultural; se construyó un catálogo interactivo con CMS sin código.",
+        "en": "Riobamba's traditional characters lacked digital documentation and were at risk of cultural loss; an interactive catalog was built with a no-code CMS."
+      },
       "pasos": [
         {
           "id": "analisis",
-          "resumen": "El patrimonio inmaterial riobambeño no tenía registro digital ni forma de gestionarse sin conocimiento técnico.",
-          "puntos": [
-            "Sin documentación digital centralizada",
-            "CMS necesario para editores no técnicos",
-            "Búsqueda semántica sobre el catálogo"
-          ]
+          "resumen": {
+            "es": "El patrimonio inmaterial riobambeño no tenía registro digital ni forma de gestionarse sin conocimiento técnico.",
+            "en": "Riobamba's intangible heritage had no digital record and no way to be managed without technical knowledge."
+          },
+          "puntos": {
+            "es": [
+              "Sin documentación digital centralizada",
+              "CMS necesario para editores no técnicos",
+              "Búsqueda semántica sobre el catálogo"
+            ],
+            "en": [
+              "No centralized digital documentation",
+              "A CMS needed for non-technical editors",
+              "Semantic search across the catalog"
+            ]
+          }
         },
         {
           "id": "diseño",
-          "resumen": "Monorepo con sitio público en Next.js y API en NestJS, compartiendo tipos y componentes.",
-          "puntos": [
-            "Next.js con SSR para SEO",
-            "NestJS para búsqueda y sincronización",
-            "Tipos y UI compartidos entre apps"
-          ]
+          "resumen": {
+            "es": "Monorepo con sitio público en Next.js y API en NestJS, compartiendo tipos y componentes.",
+            "en": "Monorepo with a public Next.js site and a NestJS API, sharing types and components."
+          },
+          "puntos": {
+            "es": [
+              "Next.js con SSR para SEO",
+              "NestJS para búsqueda y sincronización",
+              "Tipos y UI compartidos entre apps"
+            ],
+            "en": [
+              "Next.js with SSR for SEO",
+              "NestJS for search and synchronization",
+              "Shared types and UI across apps"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "Directus como CMS headless para que el equipo cultural gestione contenido sin tocar código.",
-          "puntos": [
-            "Gestión visual de seres y tradiciones",
-            "Sincronización automática al publicar",
-            "PostgreSQL como base de datos"
-          ]
+          "resumen": {
+            "es": "Directus como CMS headless para que el equipo cultural gestione contenido sin tocar código.",
+            "en": "Directus as a headless CMS so the cultural team manages content without touching code."
+          },
+          "puntos": {
+            "es": [
+              "Gestión visual de seres y tradiciones",
+              "Sincronización automática al publicar",
+              "PostgreSQL como base de datos"
+            ],
+            "en": [
+              "Visual management of beings and traditions",
+              "Automatic synchronization on publish",
+              "PostgreSQL as the database"
+            ]
+          }
         },
         {
           "id": "despliegue",
-          "resumen": "Next.js en Vercel con preview automático; API y CMS en servicios dedicados.",
-          "puntos": [
-            "Deploy automático desde GitHub",
-            "Entorno local con un solo comando",
-            "Variables de entorno separadas por servicio"
-          ]
+          "resumen": {
+            "es": "Next.js en Vercel con preview automático; API y CMS en servicios dedicados.",
+            "en": "Next.js on Vercel with automatic previews; API and CMS on dedicated services."
+          },
+          "puntos": {
+            "es": [
+              "Deploy automático desde GitHub",
+              "Entorno local con un solo comando",
+              "Variables de entorno separadas por servicio"
+            ],
+            "en": [
+              "Automatic deploy from GitHub",
+              "Local environment with a single command",
+              "Environment variables separated per service"
+            ]
+          }
         }
       ],
-      "resultado": "Plataforma de preservación cultural en producción con CMS sin código y búsqueda semántica.",
+      "resultado": {
+        "es": "Plataforma de preservación cultural en producción con CMS sin código y búsqueda semántica.",
+        "en": "Cultural-preservation platform in production with a no-code CMS and semantic search."
+      },
       "metricas": [
         {
-          "label": "Apps en monorepo",
-          "value": "2 (web + api)"
+          "label": { "es": "Apps en monorepo", "en": "Apps in the monorepo" },
+          "value": { "es": "2 (web + api)", "en": "2 (web + api)" }
         },
         {
-          "label": "Packages compartidos",
+          "label": { "es": "Packages compartidos", "en": "Shared packages" },
           "value": "3"
         },
         {
-          "label": "CMS",
-          "value": "Directus headless"
+          "label": { "es": "CMS", "en": "CMS" },
+          "value": { "es": "Directus headless", "en": "Headless Directus" }
         },
         {
-          "label": "Build",
+          "label": { "es": "Build", "en": "Build" },
           "value": "Turborepo"
         }
       ]
@@ -893,8 +1331,14 @@
     "slug": "dualface",
     "title": "DualFace",
     "category": "Desarrollo Web",
-    "description": "Experiencia web inmersiva de preservación cultural sobre el Diablo Huma y el Cucurucho — dos íconos del patrimonio ecuatoriano. Scroll narrativo estilo Persepolis con GSAP y audio ambiental por universo.",
-    "longDescription": "Experiencia narrativa que preserva dos íconos del patrimonio ecuatoriano, el Diablo Huma y el Cucurucho, con scroll cinematográfico y audio ambiental por universo.",
+    "description": {
+      "es": "Experiencia web inmersiva de preservación cultural sobre el Diablo Huma y el Cucurucho — dos íconos del patrimonio ecuatoriano. Scroll narrativo estilo Persepolis con GSAP y audio ambiental por universo.",
+      "en": "Immersive cultural-preservation web experience about the Diablo Huma and the Cucurucho — two icons of Ecuadorian heritage. Persepolis-style narrative scroll with GSAP and ambient audio per universe."
+    },
+    "longDescription": {
+      "es": "Experiencia narrativa que preserva dos íconos del patrimonio ecuatoriano, el Diablo Huma y el Cucurucho, con scroll cinematográfico y audio ambiental por universo.",
+      "en": "Narrative experience preserving two icons of Ecuadorian heritage, the Diablo Huma and the Cucurucho, with cinematic scroll and ambient audio per universe."
+    },
     "tags": [
       "HTML5",
       "CSS3",
@@ -933,61 +1377,107 @@
       ]
     },
     "process": {
-      "overview": "Dos íconos culturales ecuatorianos necesitaban una narrativa digital rigurosa sin mezclarse entre sí; se diseñó una experiencia con temas duales y scroll cinematográfico.",
+      "overview": {
+        "es": "Dos íconos culturales ecuatorianos necesitaban una narrativa digital rigurosa sin mezclarse entre sí; se diseñó una experiencia con temas duales y scroll cinematográfico.",
+        "en": "Two Ecuadorian cultural icons needed a rigorous digital narrative without blending into each other; an experience was designed with dual themes and cinematic scroll."
+      },
       "pasos": [
         {
           "id": "problema",
-          "resumen": "El Diablo Huma y el Cucurucho son dos mundos culturales distintos; el reto era narrarlos juntos sin mezclarlos.",
-          "puntos": [
-            "4 capítulos narrativos por universo",
-            "Rigor histórico en cada afirmación",
-            "Audio siempre opcional, nunca obligatorio"
-          ]
+          "resumen": {
+            "es": "El Diablo Huma y el Cucurucho son dos mundos culturales distintos; el reto era narrarlos juntos sin mezclarlos.",
+            "en": "The Diablo Huma and the Cucurucho are two distinct cultural worlds; the challenge was to tell them together without mixing them."
+          },
+          "puntos": {
+            "es": [
+              "4 capítulos narrativos por universo",
+              "Rigor histórico en cada afirmación",
+              "Audio siempre opcional, nunca obligatorio"
+            ],
+            "en": [
+              "4 narrative chapters per universe",
+              "Historical rigor in every claim",
+              "Audio always optional, never required"
+            ]
+          }
         },
         {
           "id": "diseño",
-          "resumen": "Un solo atributo controla toda la paleta visual, permitiendo cambiar de universo al instante.",
-          "puntos": [
-            "Paletas distintas por universo",
-            "Cambio de tema en menos de 800ms",
-            "Arquitectura fácil de extender a más seres"
-          ]
+          "resumen": {
+            "es": "Un solo atributo controla toda la paleta visual, permitiendo cambiar de universo al instante.",
+            "en": "A single attribute controls the entire visual palette, allowing an instant switch between universes."
+          },
+          "puntos": {
+            "es": [
+              "Paletas distintas por universo",
+              "Cambio de tema en menos de 800ms",
+              "Arquitectura fácil de extender a más seres"
+            ],
+            "en": [
+              "Distinct palettes per universe",
+              "Theme switch in under 800ms",
+              "Architecture easy to extend to more beings"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "El scroll activa cada capítulo como una escena fija con parallax en varias capas.",
-          "puntos": [
-            "Escenas fijas mientras el usuario scrollea",
-            "Parallax en 3 capas por capítulo",
-            "Animaciones desactivables por accesibilidad"
-          ]
+          "resumen": {
+            "es": "El scroll activa cada capítulo como una escena fija con parallax en varias capas.",
+            "en": "Scrolling triggers each chapter as a pinned scene with multi-layer parallax."
+          },
+          "puntos": {
+            "es": [
+              "Escenas fijas mientras el usuario scrollea",
+              "Parallax en 3 capas por capítulo",
+              "Animaciones desactivables por accesibilidad"
+            ],
+            "en": [
+              "Pinned scenes while the user scrolls",
+              "3-layer parallax per chapter",
+              "Animations can be disabled for accessibility"
+            ]
+          }
         },
         {
           "id": "mejoras",
-          "resumen": "Todo el texto pasa por un sistema de traducción ES/EN; el audio ambiental carga solo si el usuario lo activa.",
-          "puntos": [
-            "Traducción completa ES/EN",
-            "Audio ambiental distinto por universo",
-            "Sitio funciona igual sin audio"
-          ]
+          "resumen": {
+            "es": "Todo el texto pasa por un sistema de traducción ES/EN; el audio ambiental carga solo si el usuario lo activa.",
+            "en": "All text goes through an ES/EN translation system; ambient audio only loads if the user turns it on."
+          },
+          "puntos": {
+            "es": [
+              "Traducción completa ES/EN",
+              "Audio ambiental distinto por universo",
+              "Sitio funciona igual sin audio"
+            ],
+            "en": [
+              "Full ES/EN translation",
+              "Different ambient audio per universe",
+              "Site works the same with no audio"
+            ]
+          }
         }
       ],
-      "resultado": "Experiencia bilingüe entregada a cliente institucional, con narrativa dual y audio ambiental diferenciado.",
+      "resultado": {
+        "es": "Experiencia bilingüe entregada a cliente institucional, con narrativa dual y audio ambiental diferenciado.",
+        "en": "Bilingual experience delivered to an institutional client, with dual narrative and differentiated ambient audio."
+      },
       "metricas": [
         {
-          "label": "Universos culturales",
-          "value": "2 (DH + Cucurucho)"
+          "label": { "es": "Universos culturales", "en": "Cultural universes" },
+          "value": { "es": "2 (DH + Cucurucho)", "en": "2 (DH + Cucurucho)" }
         },
         {
-          "label": "Capítulos narrativos",
-          "value": "8 (4 × universo)"
+          "label": { "es": "Capítulos narrativos", "en": "Narrative chapters" },
+          "value": { "es": "8 (4 × universo)", "en": "8 (4 × universe)" }
         },
         {
-          "label": "Frameworks",
-          "value": "0 (vanilla)"
+          "label": { "es": "Frameworks", "en": "Frameworks" },
+          "value": { "es": "0 (vanilla)", "en": "0 (vanilla)" }
         },
         {
-          "label": "Idiomas",
+          "label": { "es": "Idiomas", "en": "Languages" },
           "value": "ES/EN"
         }
       ]
@@ -998,8 +1488,14 @@
     "slug": "portfolio-trimodal",
     "title": "Portfolio",
     "category": "Desarrollo Web",
-    "description": "Portfolio personal con tres modos de presentación (dev / ia / sec), canvas de partículas por modo, asistente de IA integrado con embeddings semánticos y galería fullscreen de proyectos.",
-    "longDescription": "Portfolio personal que se adapta a tres perfiles (dev, IA, ciberseguridad), con asistente de IA integrado que responde preguntas sobre los proyectos.",
+    "description": {
+      "es": "Portfolio personal con tres modos de presentación (dev / ia / sec), canvas de partículas por modo, asistente de IA integrado con embeddings semánticos y galería fullscreen de proyectos.",
+      "en": "Personal portfolio with three presentation modes (dev / ia / sec), a per-mode particle canvas, an integrated AI assistant with semantic embeddings and a fullscreen project gallery."
+    },
+    "longDescription": {
+      "es": "Portfolio personal que se adapta a tres perfiles (dev, IA, ciberseguridad), con asistente de IA integrado que responde preguntas sobre los proyectos.",
+      "en": "Personal portfolio that adapts to three profiles (dev, AI, cybersecurity), with an integrated AI assistant that answers questions about the projects."
+    },
     "tags": [
       "HTML5",
       "CSS3",
@@ -1041,61 +1537,107 @@
       ]
     },
     "process": {
-      "overview": "Un portfolio único no reflejaba bien perfiles tan distintos (dev, IA, seguridad); se construyó un sistema que cambia contenido y estilo según el perfil activo.",
+      "overview": {
+        "es": "Un portfolio único no reflejaba bien perfiles tan distintos (dev, IA, seguridad); se construyó un sistema que cambia contenido y estilo según el perfil activo.",
+        "en": "A single portfolio didn't represent such different profiles well (dev, AI, security); a system was built that changes content and style based on the active profile."
+      },
       "pasos": [
         {
           "id": "diseño",
-          "resumen": "Sistema de tres modos con módulos independientes coordinados por eventos.",
-          "puntos": [
-            "Tres modos con estilos y contenido propios",
-            "Módulos independientes con API pública",
-            "Coordinación entre módulos vía eventos"
-          ]
+          "resumen": {
+            "es": "Sistema de tres modos con módulos independientes coordinados por eventos.",
+            "en": "Three-mode system with independent modules coordinated through events."
+          },
+          "puntos": {
+            "es": [
+              "Tres modos con estilos y contenido propios",
+              "Módulos independientes con API pública",
+              "Coordinación entre módulos vía eventos"
+            ],
+            "en": [
+              "Three modes with their own styles and content",
+              "Independent modules with a public API",
+              "Coordination between modules via events"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "Animaciones y partículas de fondo distintas para cada modo.",
-          "puntos": [
-            "Partículas temáticas por modo",
-            "Animaciones activadas al hacer scroll",
-            "Divisor interactivo entre secciones"
-          ]
+          "resumen": {
+            "es": "Animaciones y partículas de fondo distintas para cada modo.",
+            "en": "Different background animations and particles for each mode."
+          },
+          "puntos": {
+            "es": [
+              "Partículas temáticas por modo",
+              "Animaciones activadas al hacer scroll",
+              "Divisor interactivo entre secciones"
+            ],
+            "en": [
+              "Themed particles per mode",
+              "Scroll-triggered animations",
+              "Interactive divider between sections"
+            ]
+          }
         },
         {
           "id": "mejoras",
-          "resumen": "Asistente JotAI que responde preguntas sobre los proyectos con búsqueda semántica.",
-          "puntos": [
-            "Widget animado con estados visuales",
-            "Búsqueda semántica en segundo plano",
-            "Caché de resultados para carga rápida"
-          ]
+          "resumen": {
+            "es": "Asistente JotAI que responde preguntas sobre los proyectos con búsqueda semántica.",
+            "en": "JotAI assistant that answers questions about the projects using semantic search."
+          },
+          "puntos": {
+            "es": [
+              "Widget animado con estados visuales",
+              "Búsqueda semántica en segundo plano",
+              "Caché de resultados para carga rápida"
+            ],
+            "en": [
+              "Animated widget with visual states",
+              "Semantic search in the background",
+              "Result cache for fast loading"
+            ]
+          }
         },
         {
           "id": "pruebas",
-          "resumen": "Buscador global, terminal temática y galería de proyectos con vista de documentos.",
-          "puntos": [
-            "Buscador global tipo Cmd+K",
-            "Terminal interactiva en modo seguridad",
-            "Galería con vista de PDF integrada"
-          ]
+          "resumen": {
+            "es": "Buscador global, terminal temática y galería de proyectos con vista de documentos.",
+            "en": "Global search, themed terminal and a project gallery with a document view."
+          },
+          "puntos": {
+            "es": [
+              "Buscador global tipo Cmd+K",
+              "Terminal interactiva en modo seguridad",
+              "Galería con vista de PDF integrada"
+            ],
+            "en": [
+              "Cmd+K-style global search",
+              "Interactive terminal in security mode",
+              "Gallery with integrated PDF view"
+            ]
+          }
         }
       ],
-      "resultado": "Portfolio en producción con deploy automático, sistema de tres modos y asistente de IA funcionando en vivo.",
+      "resultado": {
+        "es": "Portfolio en producción con deploy automático, sistema de tres modos y asistente de IA funcionando en vivo.",
+        "en": "Portfolio in production with automatic deploys, a three-mode system and an AI assistant running live."
+      },
       "metricas": [
         {
-          "label": "Módulos JS",
+          "label": { "es": "Módulos JS", "en": "JS modules" },
           "value": "18"
         },
         {
-          "label": "Modos",
+          "label": { "es": "Modos", "en": "Modes" },
           "value": "3"
         },
         {
-          "label": "Proyectos",
+          "label": { "es": "Proyectos", "en": "Projects" },
           "value": "20+"
         },
         {
-          "label": "Deploy",
+          "label": { "es": "Deploy", "en": "Deploy" },
           "value": "Vercel"
         }
       ]
@@ -1106,8 +1648,14 @@
     "slug": "xv-tammy",
     "title": "XV Tammy",
     "category": "Desarrollo Web",
-    "description": "Sistema de invitaciones digitales con QR y control de acceso en tiempo real para una quinceañera: landing con countdown y galería, invitación personalizada por token, escáner QR para staff y dashboard de check-in en vivo.",
-    "longDescription": "Sistema de invitaciones digitales con QR para un evento de XV años, que permite validar el ingreso de invitados en tiempo real sin listas en papel.",
+    "description": {
+      "es": "Sistema de invitaciones digitales con QR y control de acceso en tiempo real para una quinceañera: landing con countdown y galería, invitación personalizada por token, escáner QR para staff y dashboard de check-in en vivo.",
+      "en": "Digital invitation system with QR codes and real-time access control for a quinceañera: landing page with countdown and gallery, per-token personalized invitation, QR scanner for staff and a live check-in dashboard."
+    },
+    "longDescription": {
+      "es": "Sistema de invitaciones digitales con QR para un evento de XV años, que permite validar el ingreso de invitados en tiempo real sin listas en papel.",
+      "en": "Digital QR-based invitation system for a quinceañera event, allowing guest entry to be validated in real time without paper lists."
+    },
     "tags": [
       "Next.js",
       "Supabase",
@@ -1144,49 +1692,85 @@
       ]
     },
     "process": {
-      "overview": "El control de acceso manual en la puerta del evento era lento y sin registro; se construyó un sistema de invitaciones con QR y check-in en tiempo real.",
+      "overview": {
+        "es": "El control de acceso manual en la puerta del evento era lento y sin registro; se construyó un sistema de invitaciones con QR y check-in en tiempo real.",
+        "en": "Manual access control at the event door was slow and left no record; an invitation system was built with QR codes and real-time check-in."
+      },
       "pasos": [
         {
           "id": "problema",
-          "resumen": "Sin listas centralizadas ni control de acceso confiable, era difícil confirmar asistencia y validar invitados en la puerta.",
-          "puntos": [
-            "Sin confirmación centralizada de asistencia",
-            "Control de acceso manual lento",
-            "Sin panel en vivo del aforo"
-          ]
+          "resumen": {
+            "es": "Sin listas centralizadas ni control de acceso confiable, era difícil confirmar asistencia y validar invitados en la puerta.",
+            "en": "With no centralized lists and no reliable access control, it was hard to confirm attendance and validate guests at the door."
+          },
+          "puntos": {
+            "es": [
+              "Sin confirmación centralizada de asistencia",
+              "Control de acceso manual lento",
+              "Sin panel en vivo del aforo"
+            ],
+            "en": [
+              "No centralized attendance confirmation",
+              "Slow manual access control",
+              "No live capacity panel"
+            ]
+          }
         },
         {
           "id": "desarrollo",
-          "resumen": "Cada invitado recibe un link único con su invitación y QR, donde puede confirmar o declinar asistencia.",
-          "puntos": [
-            "Link único e intransferible por invitado",
-            "QR generado en el servidor",
-            "Confirmación de asistencia desde el link"
-          ]
+          "resumen": {
+            "es": "Cada invitado recibe un link único con su invitación y QR, donde puede confirmar o declinar asistencia.",
+            "en": "Each guest receives a unique link with their invitation and QR code, where they can confirm or decline attendance."
+          },
+          "puntos": {
+            "es": [
+              "Link único e intransferible por invitado",
+              "QR generado en el servidor",
+              "Confirmación de asistencia desde el link"
+            ],
+            "en": [
+              "Unique, non-transferable link per guest",
+              "QR code generated on the server",
+              "Attendance confirmation from the link"
+            ]
+          }
         },
         {
           "id": "despliegue",
-          "resumen": "El staff escanea el QR en la puerta y el dashboard refleja el ingreso al instante.",
-          "puntos": [
-            "Escaneo de QR desde cualquier celular",
-            "Check-in en vivo en el dashboard",
-            "Acceso de staff sin contraseñas"
-          ]
+          "resumen": {
+            "es": "El staff escanea el QR en la puerta y el dashboard refleja el ingreso al instante.",
+            "en": "Staff scan the QR code at the door and the dashboard reflects the entry instantly."
+          },
+          "puntos": {
+            "es": [
+              "Escaneo de QR desde cualquier celular",
+              "Check-in en vivo en el dashboard",
+              "Acceso de staff sin contraseñas"
+            ],
+            "en": [
+              "QR scanning from any phone",
+              "Live check-in on the dashboard",
+              "Passwordless staff access"
+            ]
+          }
         }
       ],
-      "resultado": "Plataforma usada el día del evento para invitaciones y control de acceso en tiempo real.",
+      "resultado": {
+        "es": "Plataforma usada el día del evento para invitaciones y control de acceso en tiempo real.",
+        "en": "Platform used on the day of the event for invitations and real-time access control."
+      },
       "metricas": [
         {
-          "label": "Rutas",
+          "label": { "es": "Rutas", "en": "Routes" },
           "value": "7"
         },
         {
-          "label": "Auth",
-          "value": "Magic link"
+          "label": { "es": "Auth", "en": "Auth" },
+          "value": { "es": "Magic link", "en": "Magic link" }
         },
         {
-          "label": "Realtime",
-          "value": "Sí"
+          "label": { "es": "Realtime", "en": "Realtime" },
+          "value": { "es": "Sí", "en": "Yes" }
         }
       ]
     }
@@ -1195,8 +1779,14 @@
     "id": "project-017",
     "slug": "lumbre",
     "title": "Lumbre",
-    "description": "Juego de terror 2D en Unity 6. Un niño explora la casa de su abuela de noche con una caja de fósforos limitada: cada fósforo da luz para explorar pero acerca a algo.",
-    "longDescription": "Juego de terror atmosférico donde cada fósforo limitado ilumina el camino pero también acerca al peligro. Publicado en itch.io.",
+    "description": {
+      "es": "Juego de terror 2D en Unity 6. Un niño explora la casa de su abuela de noche con una caja de fósforos limitada: cada fósforo da luz para explorar pero acerca a algo.",
+      "en": "2D horror game in Unity 6. A boy explores his grandmother's house at night with a limited box of matches: each match gives light to explore but draws something closer."
+    },
+    "longDescription": {
+      "es": "Juego de terror atmosférico donde cada fósforo limitado ilumina el camino pero también acerca al peligro. Publicado en itch.io.",
+      "en": "Atmospheric horror game where each limited match lights the way but also brings danger closer. Published on itch.io."
+    },
     "tags": [
       "Unity",
       "C#",
@@ -1229,8 +1819,14 @@
     "id": "project-020",
     "slug": "phone-directory",
     "title": "NexoCorp",
-    "description": "Sistema de directorio telefónico interno con gestión de extensiones por oficina. Bulk import desde Excel, REST API completa y búsqueda por departamento.",
-    "longDescription": "Directorio telefónico interno para consultar y administrar extensiones por oficina, con importación masiva desde Excel.",
+    "description": {
+      "es": "Sistema de directorio telefónico interno con gestión de extensiones por oficina. Bulk import desde Excel, REST API completa y búsqueda por departamento.",
+      "en": "Internal phone-directory system with per-office extension management. Bulk import from Excel, a full REST API and search by department."
+    },
+    "longDescription": {
+      "es": "Directorio telefónico interno para consultar y administrar extensiones por oficina, con importación masiva desde Excel.",
+      "en": "Internal phone directory to look up and manage extensions per office, with bulk import from Excel."
+    },
     "tags": [
       "C#",
       "ASP.NET Core",

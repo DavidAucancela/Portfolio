@@ -4,6 +4,12 @@
  * y stack técnico. Se abre al hacer clic en "Ver Proceso" de cualquier tarjeta.
  */
 
+import { LangSwitcher } from './lang.js';
+
+/* Atajo: resuelve campos bilingües { es, en } (o strings planos). */
+const _L = v => LangSwitcher.L(v);
+const _isEn = () => LangSwitcher.getLang() === 'en';
+
 /* ─────────────────────────────────────────────────────────
    CONFIG
 ───────────────────────────────────────────────────────── */
@@ -11,15 +17,38 @@ const MODE_PILL = { dev: '.dev', ia: '.ia', sec: '.sec' };
 
 /* Metadata por fase: nombre y color de acento — mismo vocabulario en los 3 modos */
 const PHASE_META = {
-  problema:   { label: 'Contexto',   color: '#f59e0b' },
-  analisis:   { label: 'Análisis',   color: '#8b5cf6' },
-  diseño:     { label: 'Diseño',     color: '#06b6d4' },
-  desarrollo: { label: 'Desarrollo', color: '#10b981' },
-  pruebas:    { label: 'Pruebas',    color: '#eab308' },
-  mejoras:    { label: 'Mejoras',    color: '#0ea5e9' },
-  despliegue: { label: 'Despliegue', color: '#3b82f6' },
-  seguridad:  { label: 'Seguridad',  color: '#ef4444' },
+  problema:   { label: { es: 'Contexto',   en: 'Context' },     color: '#f59e0b' },
+  analisis:   { label: { es: 'Análisis',   en: 'Analysis' },    color: '#8b5cf6' },
+  diseño:     { label: { es: 'Diseño',     en: 'Design' },      color: '#06b6d4' },
+  desarrollo: { label: { es: 'Desarrollo', en: 'Development' },  color: '#10b981' },
+  pruebas:    { label: { es: 'Pruebas',    en: 'Testing' },     color: '#eab308' },
+  mejoras:    { label: { es: 'Mejoras',    en: 'Improvements' }, color: '#0ea5e9' },
+  despliegue: { label: { es: 'Despliegue', en: 'Deployment' },  color: '#3b82f6' },
+  seguridad:  { label: { es: 'Seguridad',  en: 'Security' },    color: '#ef4444' },
 };
+
+/* Etiqueta visible de cada grupo del stack técnico (la clave del JSON es canónica). */
+const TECH_GROUP_LABELS = {
+  frontend:  { es: 'Frontend',   en: 'Frontend' },
+  backend:   { es: 'Backend',    en: 'Backend' },
+  tools:     { es: 'Herramientas', en: 'Tools' },
+  data:      { es: 'Datos',      en: 'Data' },
+  database:  { es: 'Base de datos', en: 'Database' },
+  ml:        { es: 'ML',         en: 'ML' },
+  vision:    { es: 'Visión',     en: 'Vision' },
+  audio:     { es: 'Audio',      en: 'Audio' },
+  infra:     { es: 'Infra',      en: 'Infra' },
+  deploy:    { es: 'Deploy',     en: 'Deploy' },
+  build:     { es: 'Build',      en: 'Build' },
+  engine:    { es: 'Motor',      en: 'Engine' },
+  language:  { es: 'Lenguaje',   en: 'Language' },
+  animacion: { es: 'Animación',  en: 'Animation' },
+  ia:        { es: 'IA',         en: 'AI' },
+};
+function _groupLabel(group) {
+  const m = TECH_GROUP_LABELS[String(group).toLowerCase()];
+  return m ? _L(m) : group;
+}
 
 /* ─────────────────────────────────────────────────────────
    HTML BUILDERS
@@ -30,9 +59,9 @@ function _phaseHTML(paso, idx) {
   const meta  = PHASE_META[paso.id] || { label: paso.id, color: 'var(--color-accent)' };
   const color = meta.color;
 
-  const pointsHTML = (paso.puntos || [])
+  const pointsHTML = (_L(paso.puntos) || [])
     .slice(0, MAX_PHASE_POINTS)
-    .map(pt => `<li class="pdm-phase__point">${_esc(pt)}</li>`)
+    .map(pt => `<li class="pdm-phase__point">${_esc(_L(pt))}</li>`)
     .join('');
 
   return `
@@ -40,13 +69,13 @@ function _phaseHTML(paso, idx) {
       <div class="pdm-phase__header">
         <span class="pdm-phase__num">0${idx + 1}</span>
         <div class="pdm-phase__info">
-          <div class="pdm-phase__name">${_esc(meta.label)}</div>
+          <div class="pdm-phase__name">${_esc(_L(meta.label))}</div>
         </div>
       </div>
       <div class="pdm-phase__body">
         <div class="pdm-phase__body-inner">
           <div class="pdm-phase__content">
-            ${paso.resumen ? `<p class="pdm-phase__summary">${_esc(paso.resumen)}</p>` : ''}
+            ${paso.resumen ? `<p class="pdm-phase__summary">${_esc(_L(paso.resumen))}</p>` : ''}
             ${pointsHTML   ? `<ul class="pdm-phase__points">${pointsHTML}</ul>`       : ''}
           </div>
         </div>
@@ -56,31 +85,38 @@ function _phaseHTML(paso, idx) {
 
 /* Generate synthetic phases for projects without explicit process data */
 function _syntheticPhases(p) {
-  const desc  = p.longDescription || p.description || '';
+  const en    = _isEn();
+  const desc  = _L(p.longDescription) || _L(p.description) || '';
+  const tags  = p.tags || [];
   const pasos = [];
 
   pasos.push({
     id: 'analisis',
     resumen: desc,
-    puntos: (p.tags || []).slice(0, 4).map(t => `Tecnología utilizada: ${t}`),
+    puntos: tags.slice(0, 4).map(t => (en ? `Technology used: ${t}` : `Tecnología utilizada: ${t}`)),
   });
 
-  if ((p.tags || []).length > 0) {
+  if (tags.length > 0) {
+    const more = tags.length > 3;
     pasos.push({
       id: 'desarrollo',
-      resumen: `Implementado con ${(p.tags || []).slice(0, 3).join(', ')}${(p.tags || []).length > 3 ? ' y más.' : '.'}`,
-      puntos: (p.tags || []).map(t => `Stack: ${t}`),
+      resumen: en
+        ? `Built with ${tags.slice(0, 3).join(', ')}${more ? ' and more.' : '.'}`
+        : `Implementado con ${tags.slice(0, 3).join(', ')}${more ? ' y más.' : '.'}`,
+      puntos: tags.map(t => `Stack: ${t}`),
     });
   }
 
   const items = [];
-  if (p.liveUrl) items.push(`Demo en producción disponible`);
-  if (p.repoUrl) items.push(`Código disponible en repositorio`);
-  if (!items.length) items.push('Proyecto completado');
+  if (p.liveUrl) items.push(en ? 'Live demo available' : 'Demo en producción disponible');
+  if (p.repoUrl) items.push(en ? 'Source code available in repository' : 'Código disponible en repositorio');
+  if (!items.length) items.push(en ? 'Project completed' : 'Proyecto completado');
 
   pasos.push({
     id: 'despliegue',
-    resumen: p.liveUrl ? 'Aplicación desplegada y disponible en producción.' : 'Proyecto finalizado y disponible.',
+    resumen: p.liveUrl
+      ? (en ? 'Application deployed and available in production.' : 'Aplicación desplegada y disponible en producción.')
+      : (en ? 'Project finished and available.' : 'Proyecto finalizado y disponible.'),
     puntos: items,
   });
 
@@ -89,32 +125,37 @@ function _syntheticPhases(p) {
 
 /* Generate CTF attack phases for lab cards */
 function _labPhases(p) {
+  const en    = _isEn();
   const lab   = p.lab;
-  const techs = lab.techniques || [];
+  const techs = (_L(lab.techniques) || []).map(t => _L(t));
 
   return [
     {
       id: 'analisis',
-      resumen: `Reconocimiento del target. Sistema operativo: ${lab.os}. Enumeración de puertos y servicios con nmap.`,
-      puntos: [
-        'nmap -sV -sC para detección de servicios y versiones',
-        `Sistema operativo: ${lab.os}`,
-        'Identificación de superficie de ataque',
-      ],
+      resumen: en
+        ? `Target recon. Operating system: ${lab.os}. Port and service enumeration with nmap.`
+        : `Reconocimiento del target. Sistema operativo: ${lab.os}. Enumeración de puertos y servicios con nmap.`,
+      puntos: en
+        ? ['nmap -sV -sC for service and version detection', `Operating system: ${lab.os}`, 'Attack surface identification']
+        : ['nmap -sV -sC para detección de servicios y versiones', `Sistema operativo: ${lab.os}`, 'Identificación de superficie de ataque'],
     },
     {
       id: 'desarrollo',
-      resumen: `Explotación exitosa mediante ${techs.join(', ')}. Acceso inicial obtenido.`,
-      puntos: techs.map(t => `Técnica aplicada: ${t}`),
+      resumen: en
+        ? `Successful exploitation via ${techs.join(', ')}. Initial access gained.`
+        : `Explotación exitosa mediante ${techs.join(', ')}. Acceso inicial obtenido.`,
+      puntos: techs.map(t => (en ? `Technique applied: ${t}` : `Técnica aplicada: ${t}`)),
     },
     {
       id: 'seguridad',
-      resumen: `Flag capturada. Máquina pwneada en ${lab.platform}. Dificultad: ${lab.difficulty}.`,
+      resumen: en
+        ? `Flag captured. Machine pwned on ${lab.platform}. Difficulty: ${lab.difficulty}.`
+        : `Flag capturada. Máquina pwneada en ${lab.platform}. Dificultad: ${lab.difficulty}.`,
       puntos: [
-        `Plataforma: ${lab.platform}`,
-        `Dificultad: ${lab.difficulty}`,
+        `${en ? 'Platform' : 'Plataforma'}: ${lab.platform}`,
+        `${en ? 'Difficulty' : 'Dificultad'}: ${lab.difficulty}`,
         `Rating: ${lab.rating}`,
-        'user.txt y root.txt obtenidos',
+        en ? 'user.txt and root.txt obtained' : 'user.txt y root.txt obtenidos',
       ],
     },
   ];
@@ -130,23 +171,24 @@ function _esc(str) {
 
 /* Un solo vocabulario de secciones — sin variación por modo */
 const PANEL_LABELS = {
-  overview:   'Resumen del Proyecto',
-  phases:     'Proceso',
-  metrics:    'Resultados',
-  highlights: 'Destacados',
-  tech:       'Stack Técnico',
-  techFb:     'Tecnologías',
-  docs:       'Documentos',
+  overview:   { es: 'Resumen del Proyecto', en: 'Project Overview' },
+  phases:     { es: 'Proceso',              en: 'Process' },
+  metrics:    { es: 'Resultados',           en: 'Results' },
+  highlights: { es: 'Destacados',           en: 'Highlights' },
+  tech:       { es: 'Stack Técnico',        en: 'Tech Stack' },
+  techFb:     { es: 'Tecnologías',          en: 'Technologies' },
+  docs:       { es: 'Documentos',           en: 'Documents' },
 };
 
-/* Estado del proyecto — color por valor de p.status, sin icono */
+/* Estado del proyecto — color por valor canónico (español) de p.status, sin icono.
+   label lleva la traducción visible; si falta, cae al valor canónico. */
 const STATUS_META = {
-  'En producción':  { color: '#22c55e' },
-  'Completado':     { color: '#3b82f6' },
-  'En desarrollo':  { color: '#f59e0b' },
-  'Archivado':      { color: '#6b7280' },
-  'Certificado':    { color: '#ffce3d' },
-  'Pwned':          { color: '#9fef00', label: 'Resuelto' },
+  'En producción':  { color: '#22c55e', label: { es: 'En producción', en: 'In production' } },
+  'Completado':     { color: '#3b82f6', label: { es: 'Completado',    en: 'Completed' } },
+  'En desarrollo':  { color: '#f59e0b', label: { es: 'En desarrollo', en: 'In development' } },
+  'Archivado':      { color: '#6b7280', label: { es: 'Archivado',     en: 'Archived' } },
+  'Certificado':    { color: '#ffce3d', label: { es: 'Certificado',   en: 'Certified' } },
+  'Pwned':          { color: '#9fef00', label: { es: 'Resuelto',      en: 'Solved' } },
 };
 
 function _statusHTML(p) {
@@ -154,7 +196,7 @@ function _statusHTML(p) {
   const meta = STATUS_META[p.status] || { color: 'var(--color-accent)' };
   return `
     <span class="pdm__status-badge" style="color:${meta.color};border-color:${meta.color}40;background:${meta.color}18;">
-      ${_esc(meta.label || p.status)}
+      ${_esc(_L(meta.label) || p.status)}
     </span>`;
 }
 
@@ -250,7 +292,7 @@ function _techIconHTML(name) {
 function _buildContent(p, mode) {
   const isLab = mode === 'sec' && !!p.lab;
 
-  const lbl = m => PANEL_LABELS[m] || '';
+  const lbl = m => _L(PANEL_LABELS[m]) || '';
 
   /* ── Phases ── */
   const pasos = p.process?.pasos?.length > 0
@@ -262,8 +304,8 @@ function _buildContent(p, mode) {
     .join('');
 
   /* ── Overview ── */
-  const overview  = p.process?.overview || p.longDescription || p.description || '';
-  const resultado = p.process?.resultado || '';
+  const overview  = _L(p.process?.overview) || _L(p.longDescription) || _L(p.description) || '';
+  const resultado = _L(p.process?.resultado) || '';
   const overviewHTML = overview ? `
     <p class="pdm__slabel">${lbl('overview')}${_statusHTML(p)}</p>
     <div class="pdm__overview">
@@ -278,17 +320,17 @@ function _buildContent(p, mode) {
     <div class="pdm-achievements">
       ${metricas.map(m => `
         <div class="pdm-achievement">
-          <span class="pdm-achievement__value">${_esc(m.value)}</span>
-          <span class="pdm-achievement__label">${_esc(m.label)}</span>
+          <span class="pdm-achievement__value">${_esc(_L(m.value))}</span>
+          <span class="pdm-achievement__label">${_esc(_L(m.label))}</span>
         </div>`).join('')}
     </div>` : '';
 
   /* ── Highlights ── */
-  const highlights = p.highlights || [];
+  const highlights = _L(p.highlights) || [];
   const highlightsHTML = (!metricas.length && highlights.length > 0) ? `
     <p class="pdm__slabel">${lbl('highlights')}</p>
     <ul class="pdm-highlights">
-      ${highlights.map(h => `<li class="pdm-highlight">${_esc(h)}</li>`).join('')}
+      ${highlights.map(h => `<li class="pdm-highlight">${_esc(_L(h))}</li>`).join('')}
     </ul>` : '';
 
   /* ── Tech Stack ── */
@@ -298,7 +340,7 @@ function _buildContent(p, mode) {
       .filter(([, arr]) => Array.isArray(arr) && arr.length > 0)
       .map(([group, arr]) => `
         <div class="pdm-tech-group">
-          <div class="pdm-tech-group__label">${_esc(group)}</div>
+          <div class="pdm-tech-group__label">${_esc(_groupLabel(group))}</div>
           <div class="pdm-tech-chips">
             ${arr.map(t => `<span class="pdm-tech-chip">${_techIconHTML(t)}${_esc(t)}</span>`).join('')}
           </div>
@@ -326,22 +368,22 @@ function _buildContent(p, mode) {
     <div class="pdm__cta">
       ${liveUrl ? `
         <a href="${_esc(liveUrl)}" target="_blank" rel="noopener noreferrer"
-           class="pdm__cta-btn pdm__cta-btn--primary" aria-label="Ver demo de ${_esc(p.title)}">
+           class="pdm__cta-btn pdm__cta-btn--primary" aria-label="${_esc(LangSwitcher.t('projects.demo'))} — ${_esc(_L(p.title))}">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
             <polyline points="15 3 21 3 21 9"/>
             <line x1="10" y1="14" x2="21" y2="3"/>
           </svg>
-          Ver Demo
+          ${LangSwitcher.t('projects.demo')}
         </a>` : ''}
       ${repoUrl ? `
         <a href="${_esc(repoUrl)}" target="_blank" rel="noopener noreferrer"
-           class="pdm__cta-btn pdm__cta-btn--outline" aria-label="Ver código de ${_esc(p.title)}">
+           class="pdm__cta-btn pdm__cta-btn--outline" aria-label="${_esc(LangSwitcher.t('projects.code'))} — ${_esc(_L(p.title))}">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/>
           </svg>
-          Código
+          ${LangSwitcher.t('projects.code')}
         </a>` : ''}
     </div>` : '';
 
@@ -352,16 +394,17 @@ function _buildContent(p, mode) {
     <div class="pdm__docs">
       ${docs.map((d, i) => {
         const encodedUrl = d.url.split('/').map(encodeURIComponent).join('/');
+        const label = _L(d.label);
         return `
         <a href="${encodedUrl}" class="pdm__doc-link"
-           data-doc-index="${i}" data-pdf-url="${encodedUrl}" data-pdf-label="${_esc(d.label)}"
-           aria-label="${_esc(d.label)}">
+           data-doc-index="${i}" data-pdf-url="${encodedUrl}" data-pdf-label="${_esc(label)}"
+           aria-label="${_esc(label)}">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
             <polyline points="14 2 14 8 20 8"/>
           </svg>
-          ${_esc(d.label)}
+          ${_esc(label)}
         </a>`;
       }).join('')}
     </div>` : '';
@@ -383,6 +426,8 @@ function _buildContent(p, mode) {
 ───────────────────────────────────────────────────────── */
 let _el        = null;
 let _prevFocus = null;
+let _curP      = null;
+let _curMode   = 'dev';
 
 function _inject() {
   if (document.getElementById('pdm')) {
@@ -407,7 +452,7 @@ function _inject() {
       <header class="pdm__header">
         <div class="pdm__header-top">
           <span class="pdm__mode-pill" id="pdm-mode-pill"></span>
-          <button class="pdm__close" id="pdm-close" aria-label="Cerrar detalle del proyecto">
+          <button class="pdm__close" id="pdm-close" aria-label="${LangSwitcher.t('detail.closeAria')}">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                  stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <line x1="18" y1="6" x2="6" y2="18"/>
@@ -431,6 +476,14 @@ function _inject() {
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && _el?.classList.contains('is-open')) _close();
   });
+
+  // Re-renderiza el contenido traducible sin cerrar el panel
+  window.addEventListener('portfolio:langChange', () => {
+    if (!_el || !_el.classList.contains('is-open') || !_curP) return;
+    document.getElementById('pdm-title').textContent = _L(_curP.title);
+    document.getElementById('pdm-desc').textContent  = _L(_curP.description) || '';
+    document.getElementById('pdm-body').innerHTML    = _buildContent(_curP, _curMode);
+  });
 }
 
 /* ─────────────────────────────────────────────────────────
@@ -439,6 +492,8 @@ function _inject() {
 function _open(p, mode) {
   if (!_el) _inject();
 
+  _curP    = p;
+  _curMode = mode;
   _prevFocus = document.activeElement;
 
   /* Hero image */
@@ -455,8 +510,8 @@ function _open(p, mode) {
 
   /* Header */
   document.getElementById('pdm-mode-pill').textContent = MODE_PILL[mode] || '';
-  document.getElementById('pdm-title').textContent     = p.title;
-  document.getElementById('pdm-desc').textContent      = p.description || '';
+  document.getElementById('pdm-title').textContent     = _L(p.title);
+  document.getElementById('pdm-desc').textContent      = _L(p.description) || '';
 
   /* Body */
   const body = document.getElementById('pdm-body');

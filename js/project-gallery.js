@@ -1,11 +1,12 @@
 import { ProjectDetail } from './project-detail.js';
+import { LangSwitcher } from './lang.js';
 
 const MODE_EMOJI = { dev: '⚙️', ia: '🤖', sec: '🔒' };
 
 function _buildPgalPlaceholder(p) {
-  const esc  = s => (s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const title = esc(p?.title);
-  const desc  = esc(p?.description);
+  const esc  = s => String(s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const title = esc(LangSwitcher.L(p?.title));
+  const desc  = esc(LangSwitcher.L(p?.description));
   const tags  = (p?.tags || []).slice(0, 5).map(t => `<span class="tag">${esc(t)}</span>`).join('');
   return `
     <span class="pgal-ph__bg-text">${title}</span>
@@ -50,7 +51,7 @@ export const ProjectGallery = (() => {
       <div class="pgal__header">
         <span class="pgal__title" id="pgal-title"></span>
         <span class="pgal__counter" id="pgal-counter"></span>
-        <button class="pgal__close" id="pgal-close" aria-label="Cerrar galería">
+        <button class="pgal__close" id="pgal-close" aria-label="${LangSwitcher.t('gallery.closeAria')}">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <line x1="18" y1="6" x2="6" y2="18"/>
@@ -61,7 +62,7 @@ export const ProjectGallery = (() => {
       <div class="pgal__body">
         <div class="pgal__left">
           <div class="pgal__main">
-            <button class="pgal__arrow pgal__arrow--prev" id="pgal-prev" aria-label="Anterior">
+            <button class="pgal__arrow pgal__arrow--prev" id="pgal-prev" aria-label="${LangSwitcher.t('projects.prev')}">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <polyline points="15 18 9 12 15 6"/>
@@ -71,9 +72,9 @@ export const ProjectGallery = (() => {
             <div class="pgal__img-wrap">
               <img class="pgal__img" id="pgal-img" src="" alt="" />
               <div class="pgal__placeholder" id="pgal-placeholder" aria-hidden="true"></div>
-              <iframe class="pgal__pdf" id="pgal-pdf" src="" title="Documento PDF" loading="lazy"></iframe>
+              <iframe class="pgal__pdf" id="pgal-pdf" src="" title="${LangSwitcher.t('gallery.pdfTitle')}" loading="lazy"></iframe>
             </div>
-            <button class="pgal__arrow pgal__arrow--next" id="pgal-next" aria-label="Siguiente">
+            <button class="pgal__arrow pgal__arrow--next" id="pgal-next" aria-label="${LangSwitcher.t('projects.next')}">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <polyline points="9 18 15 12 9 6"/>
@@ -103,6 +104,15 @@ export const ProjectGallery = (() => {
 
     window.addEventListener('portfolio:modeChange', close);
 
+    // Re-renderiza el contenido traducible sin cerrar la galería
+    window.addEventListener('portfolio:langChange', () => {
+      if (!_el || !_el.classList.contains('is-open') || !_p) return;
+      document.getElementById('pgal-title').textContent = LangSwitcher.L(_p.title) || '';
+      document.getElementById('pgal-info').innerHTML = ProjectDetail.buildContent(_p, _mode);
+      if (_isDocsMode()) _renderDocTabs(); else _renderFilmstrip();
+      _goTo(_idx);
+    });
+
     // Intercept doc-link clicks in the info panel → navigate gallery (docs mode only)
     document.getElementById('pgal-info').addEventListener('click', e => {
       const link = e.target.closest('.pdm__doc-link');
@@ -120,8 +130,8 @@ export const ProjectGallery = (() => {
 
     strip.innerHTML = _images.map((src, i) => `
       <button class="pgal__thumb" role="tab" data-idx="${i}"
-              aria-label="Imagen ${i + 1}" aria-selected="false" type="button">
-        <img src="${_src(src)}" alt="Miniatura ${i + 1}" loading="lazy"
+              aria-label="${LangSwitcher.t('gallery.imgAlt')} ${i + 1}" aria-selected="false" type="button">
+        <img src="${_src(src)}" alt="${LangSwitcher.t('gallery.thumb')} ${i + 1}" loading="lazy"
              onerror="this.closest('.pgal__thumb').classList.add('pgal__thumb--error')" />
       </button>
     `).join('');
@@ -136,12 +146,15 @@ export const ProjectGallery = (() => {
     const strip = document.getElementById('pgal-filmstrip');
     if (_docs.length <= 1) { strip.innerHTML = ''; return; }
 
-    strip.innerHTML = _docs.map((doc, i) => `
+    strip.innerHTML = _docs.map((doc, i) => {
+      const label = LangSwitcher.L(doc.label);
+      return `
       <button class="pgal__thumb pgal__doc-tab" role="tab" data-idx="${i}"
-              aria-label="${doc.label}" aria-selected="false" type="button">
-        <span>${doc.label}</span>
+              aria-label="${label}" aria-selected="false" type="button">
+        <span>${label}</span>
       </button>
-    `).join('');
+    `;
+    }).join('');
 
     strip.querySelectorAll('.pgal__doc-tab').forEach(btn => {
       btn.addEventListener('click', () => _goTo(parseInt(btn.dataset.idx, 10)));
@@ -211,7 +224,7 @@ export const ProjectGallery = (() => {
     img.style.display = '';
     ph.style.display  = 'none';
     img.classList.add('is-swapping');
-    img.alt = `${_p?.title || ''} — imagen ${_idx + 1}`;
+    img.alt = `${LangSwitcher.L(_p?.title) || ''} — ${LangSwitcher.t('gallery.imgAlt')} ${_idx + 1}`;
     img.src = _src(src);
 
     if (bg) {
@@ -257,7 +270,7 @@ export const ProjectGallery = (() => {
 
     _prevFocus = document.activeElement;
 
-    document.getElementById('pgal-title').textContent = p.title || '';
+    document.getElementById('pgal-title').textContent = LangSwitcher.L(p.title) || '';
 
     document.getElementById('pgal-info').innerHTML = ProjectDetail.buildContent(p, mode);
 

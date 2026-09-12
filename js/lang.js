@@ -149,6 +149,12 @@ const TRANSLATIONS = {
     'secterm.aria':       'Terminal interactiva',
     'secterm.gatePre':    'Click',
     'secterm.gatePost':   'para acceder',
+    // Gallery / detalle de proyecto
+    'gallery.closeAria':  'Cerrar galería',
+    'gallery.pdfTitle':   'Documento PDF',
+    'gallery.thumb':      'Miniatura',
+    'gallery.imgAlt':     'imagen',
+    'detail.closeAria':   'Cerrar detalle del proyecto',
     // Lang button
     'lang.btn':       'EN',
   },
@@ -296,6 +302,12 @@ const TRANSLATIONS = {
     'secterm.aria':       'Interactive terminal',
     'secterm.gatePre':    'Click',
     'secterm.gatePost':   'to enter',
+    // Gallery / project detail
+    'gallery.closeAria':  'Close gallery',
+    'gallery.pdfTitle':   'PDF document',
+    'gallery.thumb':      'Thumbnail',
+    'gallery.imgAlt':     'image',
+    'detail.closeAria':   'Close project detail',
     // Lang button
     'lang.btn':       'ES',
   },
@@ -311,6 +323,19 @@ function t(key) {
 /** Devuelve el idioma activo ('es' | 'en'). */
 function getLang() {
   return currentLang;
+}
+
+/**
+ * Resuelve un campo de datos que puede venir como string plano o como
+ * objeto bilingüe { es: ..., en: ... }. Soporta también valores no-string
+ * (arrays de puntos: { es: [...], en: [...] }). Fallback: idioma activo →
+ * español → inglés → el valor tal cual.
+ */
+function L(val) {
+  if (val && typeof val === 'object' && !Array.isArray(val)) {
+    return val[currentLang] ?? val.es ?? val.en ?? '';
+  }
+  return val;
 }
 
 function _apply(lang) {
@@ -364,4 +389,4 @@ function init() {
   }
 }
 
-export const LangSwitcher = { init, toggle, t, getLang };
+export const LangSwitcher = { init, toggle, t, getLang, L };

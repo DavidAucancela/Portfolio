@@ -237,6 +237,38 @@ como constantes en `sections.js`. `EXPERIENCE_DATA` alimenta el drawer de trayec
 (22 items: proyectos + prácticas + certificaciones); al agregar un proyecto a los JSON
 hay que añadirlo también ahí para que aparezca en la trayectoria.
 
+### Campos bilingües en los JSON de proyectos (`LangSwitcher.L`)
+Cualquier campo de texto traducible puede venir como string plano **o** como objeto
+`{ "es": "...", "en": "..." }` (para `puntos`, `{ "es": [...], "en": [...] }`). El resolver
+central es `LangSwitcher.L(val)` en `js/lang.js` — devuelve el idioma activo con fallback
+`es → en → val`. Lo consumen `projects.js` (cards), `project-detail.js` (`buildContent`,
+fases, métricas, status, docs) y `project-gallery.js` (título, alt, doc tabs); los tres
+paneles se re-renderizan en `portfolio:langChange` sin cerrarse. `ia-assistant.js` aplana
+estos campos con su propio `_flat()` (usa **es** como forma canónica de la KB, no se
+reconstruye al togglear idioma); `ia-mascot.js` sí resuelve con `LangSwitcher.L` para que
+la tarjeta de respuesta de JotAI siga el idioma de la UI.
+- **`title` se deja como string** (nombres propios). **`category` y `status` también**:
+  son claves canónicas de filtro/estado — la traducción visible sale de `CATEGORY_LABELS_EN`
+  en `projects.js` y de `STATUS_META[...].label` / `TECH_GROUP_LABELS` en `project-detail.js`.
+- **Estado actual:** `dev-projects.json`, `ia-projects.json` y `sec-projects.json` están
+  traducidos completos (title queda en español salvo `prac-001` y `cert-002` de sec, que
+  son títulos descriptivos y sí son bilingües).
+- `ia-assistant.js._flat()` y `ia-mascot.js` (vía `LangSwitcher.L`) también resuelven
+  `p.title` bilingüe — necesario desde que `prac-001`/`cert-002` lo tienen como objeto.
+
+### Drawer de trayectoria (`EXPERIENCE_DATA` en `sections.js`)
+`EXPERIENCE_DATA` (31 ítems) sigue teniendo sus campos **en español dentro del objeto**
+(no usa `{es,en}` inline como los JSON de proyectos), pero `desc`, `highlights` y
+`metricas[].label/value` sí son `{es,en}`. `_localizedExperience()` resuelve todo el
+array al idioma activo antes de pasarlo a `Trajectory.render()` — se recalcula en cada
+`portfolio:langChange` (vía `render(_currentMode)`, ya existente). `title`/`role`/`org`
+**no se traducen a propósito**: el drawer solo muestra el texto antes del `—` del
+`title` (`trajectory.js` `_buildItem`) y `role`/`org` no se renderizan en ningún lado —
+traducirlos no tendría efecto visible. `date` (texto libre tipo `"Jul 2026 — Presente"`)
+se traduce por regex (`_localizeExpDate` — meses ES→EN + `Presente`→`Present`) en vez de
+duplicar el dato. `typeLabel` es una clave fija en español traducida por el mapa
+`TYPE_LABEL_EN` (mismo patrón que `CATEGORY_LABELS_EN` en `projects.js`).
+
 ### Campos de proyecto (estructura completa)
 ```json
 {

@@ -102,11 +102,12 @@ const TRANSLATIONS = {
     'footer.copy':    '© 2026 Jonathan Aucancela.',
     'footer.mode':    'Modo:',
     // Mode bar
-    'modebar.label':      '3 modos',
-    'modebar.aria':       'Selector de modo — 3 modos disponibles',
+    'modebar.label':      '4 modos',
+    'modebar.aria':       'Selector de modo — 4 modos disponibles',
     'modebar.dev.aria':   '.dev — Modo desarrollador: proyectos full-stack',
     'modebar.ia.aria':    '.ia — Modo inteligencia artificial: proyectos con LLMs y ML',
     'modebar.sec.aria':   '.sec — Modo ciberseguridad: labs y pentesting',
+    'modebar.gam.aria':   '.gam — Modo game room: cuarto interactivo',
     // Hero · widget de actividad de Git (modo .dev)
     'gitw.aria':          'Actividad de Git',
     'gitw.summaryLabel':  'Pull requests',
@@ -255,11 +256,12 @@ const TRANSLATIONS = {
     'footer.copy':    '© 2026 Jonathan Aucancela.',
     'footer.mode':    'Mode:',
     // Mode bar
-    'modebar.label':      '3 modes',
-    'modebar.aria':       'Mode selector — 3 modes available',
+    'modebar.label':      '4 modes',
+    'modebar.aria':       'Mode selector — 4 modes available',
     'modebar.dev.aria':   '.dev — Developer mode: full-stack projects',
     'modebar.ia.aria':    '.ia — Artificial intelligence mode: LLM and ML projects',
     'modebar.sec.aria':   '.sec — Cybersecurity mode: labs and pentesting',
+    'modebar.gam.aria':   '.gam — Game room mode: interactive room',
     // Hero · Git activity widget (.dev mode)
     'gitw.aria':          'Git activity',
     'gitw.summaryLabel':  'Pull requests',
@@ -335,7 +337,7 @@ function L(val) {
   if (val && typeof val === 'object' && !Array.isArray(val)) {
     return val[currentLang] ?? val.es ?? val.en ?? '';
   }
-  return val;
+  return val ?? '';
 }
 
 function _apply(lang) {

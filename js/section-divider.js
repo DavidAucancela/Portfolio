@@ -2,7 +2,7 @@ export const SectionDivider = (() => {
   const CHARGE_DELAY  = 600;
   const BURST_COUNT   = 72;
   const AMBIENT_COUNT = 36;
-  const ACCENT_RGB = { dev: '59,130,246', ia: '6,255,165', sec: '0,255,65' };
+  const ACCENT_RGB = { dev: '59,130,246', ia: '6,255,165', sec: '0,255,65', gam: '255,176,32' };
 
   let el, canvas, ctx, glowEl, chargeEl;
   let hoverTimer  = null;

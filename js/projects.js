@@ -35,6 +35,12 @@ const COMING_SOON = {
     message: { es: 'Reportes de pentest, herramientas y writeups CTF en construcción.', en: 'Pentest reports, tools and CTF writeups under construction.' },
     badge:   { es: '> escaneando proyectos...', en: '> scanning for projects...' },
   },
+  gam: {
+    icon:    '🎮',
+    title:   { es: 'Cuarto en construcción',    en: 'Room under construction' },
+    message: { es: 'Los proyectos se van a poder explorar directo desde los objetos del cuarto. Probá moverte con WASD/flechas arriba.', en: 'Projects will soon be explorable straight from the room objects. Try moving around with WASD/arrows above.' },
+    badge:   { es: 'Cargando el cuarto...',     en: 'Loading the room...' },
+  },
 };
 
 let currentMode      = 'dev';
@@ -165,7 +171,7 @@ async function loadProjects(mode) {
    para que el próximo switch de modo sea instantáneo (cache-hit)
 ──────────────────────────────────────────────────── */
 function _prefetchOtherModes(loadedMode) {
-  const others = ['dev', 'ia', 'sec'].filter(m => m !== loadedMode && !_cache[m]);
+  const others = ['dev', 'ia', 'sec', 'gam'].filter(m => m !== loadedMode && !_cache[m]);
   if (others.length === 0) return;
 
   const run = () => {
@@ -638,7 +644,7 @@ function _buildSecDocCard(p) {
 }
 
 function _getModeEmoji(mode) {
-  return { dev: '💻', ia: '🤖', sec: '🔒' }[mode] || '📁';
+  return { dev: '💻', ia: '🤖', sec: '🔒', gam: '🎮' }[mode] || '📁';
 }
 
 function _buildCardPlaceholder(p) {

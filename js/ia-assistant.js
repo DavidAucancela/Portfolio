@@ -31,7 +31,7 @@ function _norm(s) {
    cambiar el idioma de la UI). Strings planos pasan sin cambios. */
 function _flat(v) {
   if (v && typeof v === 'object' && !Array.isArray(v)) return v.es ?? v.en ?? '';
-  return v;
+  return v ?? '';
 }
 
 function _matchAny(norm, terms) {

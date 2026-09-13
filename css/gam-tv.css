@@ -1,0 +1,439 @@
+/* ============================================================
+   GAM TV — cuarto interactivo embebido en el hero (modo .gam)
+   ============================================================
+   A diferencia de .git-activity / .ia-tokens / .sec-terminal, este
+   widget no tiene collapsed/expanded: tiene 2 estados propios —
+   "estática" (TV apagada, esperando click) y "jugando" (Phaser
+   montado adentro de la pantalla) — manejados por gam-tv.js.
+
+   .gam no tiene secciones propias como los otros 3 modos: todo el
+   modo vive en el hero (TV a la derecha). Las secciones de scroll
+   normal (about/projects/skills/contact) y el puente hacia ellas se
+   ocultan — ver el bloque "SIN SECCIONES DE SCROLL" más abajo. */
+
+.gam-tv {
+  display: none;
+}
+
+/* Mismo criterio que [data-theme="dev"] #hero .container en
+   git-history.css — el widget flota como componente independiente,
+   no comparte fila/columna de grid con .hero-content. */
+[data-theme="gam"] #hero .container {
+  position: relative;
+}
+
+[data-theme="gam"] .gam-tv {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  width: min(620px, 50vw);
+  animation: gamTvEnter 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.3s;
+  opacity: 0;
+}
+
+@keyframes gamTvEnter {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+
+.gam-tv__frame {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.7rem;
+  background: rgba(26, 18, 6, 0.94);
+  border: 1px solid rgba(255, 176, 32, 0.22);
+  border-radius: 14px;
+  box-shadow:
+    0 0 0 1px rgba(255, 176, 32, 0.06),
+    0 24px 64px rgba(0, 0, 0, 0.75),
+    0 0 48px rgba(255, 176, 32, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+/* ─── Barra de título — mismo chrome que .sec-terminal__bar ─── */
+.gam-tv__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.5rem;
+}
+
+.gam-tv__dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.gam-tv__title {
+  flex: 1;
+  text-align: center;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.67rem;
+  color: rgba(255, 176, 32, 0.55);
+  letter-spacing: 0.06em;
+  user-select: none;
+}
+
+/* ─── Pantalla ─── */
+.gam-tv__screen {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #050301;
+}
+
+.gam-tv__static {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  opacity: 0.55;
+}
+
+.gam-tv__scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.35) 0px,
+    rgba(0, 0, 0, 0.35) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+  mix-blend-mode: multiply;
+  z-index: 2;
+}
+
+.gam-tv__vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
+  z-index: 2;
+}
+
+/* ─── Botón "Click para comenzar" ─── */
+.gam-tv__start {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  border: none;
+  background: rgba(5, 3, 1, 0.35);
+  color: #f5e9d6;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.gam-tv__start:hover,
+.gam-tv__start:focus-visible {
+  background: rgba(5, 3, 1, 0.15);
+}
+
+.gam-tv__start-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #1a1206;
+  font-size: 0.9rem;
+}
+
+.gam-tv__start[hidden] { display: none; }
+
+/* ─── Power-on: flash + "encendido" de tubo CRT ─── */
+.gam-tv__screen.is-powering-on::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  background: #fff;
+  animation: gamTvFlash 0.5s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes gamTvFlash {
+  0%   { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+
+/* ─── Loading ─── */
+.gam-tv__loading {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85rem;
+  background: #050301;
+}
+
+.gam-tv__loading[hidden] { display: none; }
+
+.gam-tv__loading-icon {
+  font-size: 1.8rem;
+  animation: gamTvLoadingPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes gamTvLoadingPulse {
+  0%, 100% { transform: scale(1);    opacity: 0.7; }
+  50%      { transform: scale(1.15); opacity: 1;   }
+}
+
+/* ─── Canvas root de Phaser ─── */
+.gam-canvas-root {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gam-canvas-root canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* ─── Prompt de interacción ("Presiona E") ─── */
+.gam-prompt {
+  position: absolute;
+  left: 50%;
+  bottom: 0.85rem;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(26, 18, 6, 0.85);
+  border: 1px solid rgba(255, 176, 32, 0.4);
+  backdrop-filter: blur(8px);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.78rem;
+  color: #f5e9d6;
+  animation: gamPromptBob 1.6s ease-in-out infinite;
+}
+
+.gam-prompt kbd {
+  padding: 0.1em 0.5em;
+  border-radius: 5px;
+  background: var(--color-accent);
+  color: #1a1206;
+  font-weight: 700;
+}
+
+@keyframes gamPromptBob {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%      { transform: translateX(-50%) translateY(-4px); }
+}
+
+/* `display:flex` (arriba) le gana al `display:none` del UA stylesheet
+   para [hidden] por orden de cascada — hace falta este override explícito
+   (mismo caso que .git-activity__history[hidden] en git-history.css). */
+.gam-prompt[hidden] { display: none; }
+
+/* ─── Hint de controles — visible solo mientras se juega ─── */
+.gam-tv__hint {
+  margin: 0;
+  padding: 0 0.3rem;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.gam-tv__hint[hidden] { display: none; }
+
+.gam-tv__hint kbd {
+  display: inline-block;
+  min-width: 1.3em;
+  padding: 0.05em 0.35em;
+  margin: 0 0.05em;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--bg-glass-input, var(--bg-secondary));
+  font-size: 0.85em;
+  color: var(--text-primary);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MODO JUGANDO — pantalla completa
+   Al arrancar el juego (click en la TV) deja de ser un widget del hero:
+   se vuelve un overlay fixed que tapa TODO (navbar, mode-bar, el resto
+   del hero) — la única salida es la puerta del cuarto (gam-loader.js
+   escucha 'gam:interact' kind:'exit' → ThemeSwitcher.switchMode al modo
+   anterior, lo que dispara portfolio:modeChange y saca la clase
+   .gam-playing del body). Fixed (no absolute dentro de .container) para
+   no depender del max-width/padding del container ni del scroll.
+   ═══════════════════════════════════════════════════════════ */
+[data-theme="gam"].gam-playing #navbar,
+[data-theme="gam"].gam-playing #mode-bar {
+  display: none;
+}
+
+[data-theme="gam"].gam-playing #hero .hero-content,
+[data-theme="gam"].gam-playing #hero .hero-decoration {
+  display: none;
+}
+
+[data-theme="gam"].gam-playing .gam-tv {
+  position: fixed;
+  inset: 0;
+  top: 0;
+  right: 0;
+  z-index: 9500;
+  width: 100%;
+  animation: none;
+  opacity: 1;
+}
+
+[data-theme="gam"].gam-playing .gam-tv__frame {
+  height: 100%;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+}
+
+[data-theme="gam"].gam-playing .gam-tv__screen {
+  flex: 1;
+  min-height: 0;
+  aspect-ratio: auto;
+  border-radius: 0;
+}
+
+/* Botones del hero — por las dudas queden expuestos por algún otro
+   selector; el bloque de arriba ya los saca del flujo por completo. */
+[data-theme="gam"].gam-playing .hero-cta-group {
+  display: none;
+}
+
+/* ─── Tablet / Mobile — vuelve al flujo normal, apilado ─── */
+@media (max-width: 960px) {
+  [data-theme="gam"] .gam-tv {
+    position: static;
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="gam"] .gam-tv { animation: none; opacity: 1; }
+  .gam-prompt { animation: none; }
+  .gam-tv__loading-icon { animation: none; }
+}
+
+/* ============================================================
+   SIN SECCIONES DE SCROLL — .gam vive entero en el hero.
+   A diferencia de dev/ia/sec, no hay about/projects/skills/contact
+   ni el puente animado hacia ellas.
+   ============================================================ */
+[data-theme="gam"] #section-divider,
+[data-theme="gam"] #about,
+[data-theme="gam"] #projects,
+[data-theme="gam"] #skills,
+[data-theme="gam"] #contact {
+  display: none;
+}
+
+/* ============================================================
+   MODAL PLACEHOLDER — objetos del cuarto sin minijuego todavía
+   Mismo patrón de overlay que pdf-modal.css.
+   ============================================================ */
+.gam-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9985;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gam-modal[hidden] { display: none; }
+
+.gam-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+}
+
+.gam-modal__card {
+  position: relative;
+  z-index: 1;
+  max-width: 420px;
+  width: min(90vw, 420px);
+  padding: 2rem 1.75rem;
+  border-radius: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-card-hover, var(--shadow-card));
+  text-align: center;
+  animation: gam-modal-in 0.25s ease;
+}
+
+@keyframes gam-modal-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+
+.gam-modal__close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 50%;
+  background: var(--bg-glass-input, var(--bg-secondary));
+  color: var(--text-primary);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.gam-modal__close:hover { background: var(--bg-glass-hover, var(--bg-card-hover)); }
+
+.gam-modal__icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.gam-modal__title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.gam-modal__text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}

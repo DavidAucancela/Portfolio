@@ -25,6 +25,7 @@ import { SectionDivider } from './section-divider.js';
 import { GitHistory } from './git-history.js';
 import { IaTokensWidget } from './ia-tokens-widget.js';
 import { Analytics } from './analytics.js';
+import { GamLoader } from './gam/gam-loader.js';
 
 // CSS imports — Vite los bundlea automáticamente
 import '../css/main.css';
@@ -41,12 +42,16 @@ import '../css/ia-mascot.css';
 import '../css/section-divider.css';
 import '../css/git-history.css';
 import '../css/ia-tokens-widget.css';
+import '../css/gam-tv.css';
 
 // Vercel Analytics y Speed Insights — solo activos en producción
 injectAnalytics();
 injectSpeedInsights();
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Antes de ThemeSwitcher.init(): si el usuario ya estaba en .gam
+  // (localStorage/hash), no hay que perderse el primer modeChange.
+  GamLoader.init();
   ThemeSwitcher.init();
   Trajectory.init();
   Sections.init(localStorage.getItem('portfolio-mode') || 'dev');

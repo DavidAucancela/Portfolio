@@ -27,6 +27,8 @@ const ALL_COMMANDS = [
     keys: 'ia inteligencia artificial llm rag ml embeddings',  action: () => _setMode('ia') },
   { id: 'mode-sec', icon: '🔒', label: 'Modo .sec', sub: 'Ciberseguridad',          group: 'Modo',
     keys: 'sec seguridad hacker pentest owasp ctf red team',   action: () => _setMode('sec') },
+  { id: 'mode-gam', icon: '🎮', label: 'Modo .gam', sub: 'Game Room',               group: 'Modo',
+    keys: 'gam game room juego cuarto piano malabares patineta', action: () => _setMode('gam') },
 
   // Proyectos
   { id: 'proj-mindlog', icon: '📔', label: 'MindLog', sub: 'React Native · FastAPI · Claude',
@@ -222,6 +224,9 @@ function _bindGlobalKeys() {
   document.addEventListener('keydown', e => {
     if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
       e.preventDefault();
+      // Jugando en modo .gam: la única salida válida es la puerta del
+      // cuarto — la palette tiene comandos de "Modo" que la saltearían.
+      if (document.body.classList.contains('gam-playing')) return;
       toggle();
       return;
     }

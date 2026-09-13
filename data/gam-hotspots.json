@@ -1,0 +1,64 @@
+[
+  {
+    "id": "desk",
+    "icon": "🖥️",
+    "title": "Escritorio",
+    "message": "Acá vas a poder ver los proyectos .dev directo desde el cuarto. Por ahora, mirá la sección Proyectos más abajo."
+  },
+  {
+    "id": "bookshelf",
+    "icon": "📚",
+    "title": "Estante",
+    "message": "Proyectos .ia y skills — próximamente accesibles desde acá."
+  },
+  {
+    "id": "terminal",
+    "icon": "💚",
+    "title": "Terminal",
+    "message": "Labs y writeups .sec — próximamente accesibles desde acá."
+  },
+  {
+    "id": "diplomas",
+    "icon": "🏆",
+    "title": "Pared de diplomas",
+    "message": "Certificaciones y trayectoria profesional — próximamente."
+  },
+  {
+    "id": "piano",
+    "icon": "🎹",
+    "title": "Piano",
+    "message": "Acá va a ir un minijuego para tocar una melodía simple. Todavía en construcción."
+  },
+  {
+    "id": "juggling",
+    "icon": "🤹",
+    "title": "Malabares",
+    "message": "Acá van a ir un minijuego de malabares y un video de ejemplo. Todavía en construcción.",
+    "videoUrl": null
+  },
+  {
+    "id": "skateboard",
+    "icon": "🛹",
+    "title": "Patineta",
+    "message": "Acá va a abrir un visor 3D del arte de la patineta. Todavía en construcción.",
+    "modelUrl": null
+  },
+  {
+    "id": "reading",
+    "icon": "📖",
+    "title": "Rincón de lectura",
+    "message": "Libros favoritos — próximamente."
+  },
+  {
+    "id": "bed",
+    "icon": "🛏️",
+    "title": "Cama",
+    "message": "Este cuarto también es un cuarto de verdad — acá descansa David entre proyecto y proyecto."
+  },
+  {
+    "id": "pukis",
+    "icon": "🐾",
+    "title": "Pukis",
+    "message": "El perro de David. Un homenaje. 🐶"
+  }
+]

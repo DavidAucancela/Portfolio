@@ -62,6 +62,7 @@ let density  = 1;         // multiplicador de densidad (calidad adaptativa)
 let slowRun  = 0;
 let resizeTimer = null;
 let zones    = [];
+let bgPressing = false;   // true mientras el mouse está presionado sobre el fondo
 
 const pointer = { x: -9999, y: -9999, active: false };
 
@@ -356,7 +357,38 @@ function _bindCards() {
   window.addEventListener('portfolio:projectClose', () => {
     renderer.onCardRelease && renderer.onCardRelease();
   });
+
+  // Click en una zona vacía del fondo (fuera de botones/links/cards/paneles/overlays)
+  document.addEventListener('click', (e) => {
+    if (lite) return; // paridad con el resto de los click-fx: sin touch
+    if (e.target.closest && e.target.closest(BG_CLICK_IGNORE)) return;
+    if (!renderer.onBackgroundClick) return;
+    renderer.onBackgroundClick({ x: e.clientX, y: e.clientY + scrollTop });
+  });
+
+  // Mantener presionado en el fondo: el renderer decide qué hacer mientras dura
+  document.addEventListener('pointerdown', (e) => {
+    if (lite) return;
+    if (e.target.closest && e.target.closest(BG_CLICK_IGNORE)) return;
+    if (!renderer.onBackgroundPress) return;
+    bgPressing = true;
+    renderer.onBackgroundPress();
+  });
+  window.addEventListener('pointerup', () => {
+    if (!bgPressing) return;
+    bgPressing = false;
+    renderer.onBackgroundRelease && renderer.onBackgroundRelease();
+  });
 }
+
+/** Selectores de UI real / overlays — un click ahí nunca es "click en el fondo". */
+const BG_CLICK_IGNORE =
+  'a, button, input, textarea, select, [role="button"], [tabindex], ' +
+  '.project-card, .lab-card, .card-btn, ' +
+  '#navbar, #jonathan-panel, .cmd-overlay, ' +
+  '#jotai-widget, #pgal, .pdf-modal, ' +
+  '.git-activity, .ia-tokens, .sec-terminal, ' +
+  '.footer, #contact-form, #sn-panel';
 
 function _makeRenderer(m) {
   if (m === 'ia')  return IaField;
@@ -380,15 +412,23 @@ const DevField = (() => {
   const ROUTER_R   = 280;   // radio en el que el cursor desvía paquetes
   const DIRS       = [[1, 0], [0, 1], [-1, 0], [0, -1]];
 
+  // Ícono de "cloud" fijo en el viewport (esquina sup. izq., debajo del navbar) —
+  // soltar los paquetes agarrados ahí dispara un "deploy".
+  const CLOUD_X = 40, CLOUD_Y = 96, CLOUD_R = 42;
+
   let packets = [];
   let pitch   = PITCH;
   let hoverRect = null;
+  let deployPulses = [];   // anillos de deploy en curso: { life }
+  let cloudGlow = 0;       // fase de la respiración ambiental del ícono
 
   function init(view) {
     pitch = view.lite ? PITCH * 1.35 : PITCH;
     const target = Math.round((view.lite ? 7 : 16) * view.density);
     packets = [];
     for (let i = 0; i < target; i++) packets.push(_spawn(view));
+    deployPulses = [];
+    cloudGlow = 0;
   }
 
   function _snap(v) { return Math.round(v / pitch) * pitch; }
@@ -402,7 +442,51 @@ const DevField = (() => {
       t: Math.random(),
       speed: rnd(0.010, 0.020),
       bright: Math.random() < 0.3,
+      pulling: false,
+      sending: false,
     };
+  }
+
+  function _ease(t) { return t * t * (3 - 2 * t); } // smoothstep
+
+  let holding = false;   // true mientras el mouse está presionado sobre el fondo
+
+  /** Mantener presionado: los paquetes se desvían hacia el cursor, a su propia velocidad. */
+  function onBackgroundPress() { holding = true; }
+
+  /**
+   * Al soltar, los paquetes agarrados "se envían a la nube": vuelan hacia el
+   * ícono ☁ y se reincorporan a la malla como paquetes nuevos al llegar. La
+   * nube responde con un anillo de pulso y una oleada de paquetes brillantes.
+   */
+  function onBackgroundRelease() {
+    if (!holding) return;
+    holding = false;
+    let any = false;
+    for (const p of packets) {
+      if (!p.pulling) continue;
+      p.pulling = false;
+      p.sending = true;
+      p.sendT = 0;
+      p.sfx = p.px;
+      p.sfy = p.py;
+      any = true;
+    }
+    if (any) _deploy(_view());
+  }
+
+  function _deploy(view) {
+    deployPulses.push({ life: 1 });
+    const cdx = CLOUD_X;
+    const cdy = CLOUD_Y + view.scrollTop;   // el ícono es fijo en viewport → a coords de documento
+    for (let i = 0; i < 8; i++) {
+      const p = _spawn(view, cdx, cdy, i % 4);
+      p.bright = true;
+      p.speed  = rnd(0.030, 0.045);
+      packets.push(p);
+    }
+    const cap = Math.round((lite ? 7 : 16) * density) + 12;
+    while (packets.length > cap) packets.shift();
   }
 
   /* Elección de dirección en un nodo. El cursor sesga la decisión. */
@@ -438,6 +522,40 @@ const DevField = (() => {
     if (!view.lite && view.pointer.active) _drawReveal(ctx, view);
     if (hoverRect) _drawCardGrid(ctx, view);
     _drawPackets(dt, ctx, view);
+    if (!view.lite) _drawCloud(dt, ctx, view);
+  }
+
+  /* ── Ícono de cloud + pulsos de deploy ── */
+  function _drawCloud(dt, ctx, view) {
+    cloudGlow += 0.03 * dt;
+    const pulse = 1 + Math.sin(cloudGlow) * 0.12;
+    const near  = holding;   // toda soltada termina en la nube — se destaca mientras se sostiene
+    const r     = CLOUD_R * (near ? 1.3 : 1) * pulse;
+
+    const halo = ctx.createRadialGradient(CLOUD_X, CLOUD_Y, 0, CLOUD_X, CLOUD_Y, r);
+    halo.addColorStop(0, rgba(C2, near ? 0.30 : 0.12));
+    halo.addColorStop(1, rgba(C2, 0));
+    ctx.fillStyle = halo;
+    ctx.beginPath();
+    ctx.arc(CLOUD_X, CLOUD_Y, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.font = `${Math.round(20 * pulse)}px 'Fira Code', 'Courier New', monospace`;
+    ctx.textAlign = 'center';
+    ctx.fillStyle = rgba(near ? C2 : C, near ? 0.95 : 0.5);
+    ctx.fillText('☁', CLOUD_X, CLOUD_Y + 7);
+
+    for (let i = deployPulses.length - 1; i >= 0; i--) {
+      const dp = deployPulses[i];
+      dp.life -= 0.02 * dt;
+      if (dp.life <= 0) { deployPulses.splice(i, 1); continue; }
+      const rr = CLOUD_R * 0.4 + CLOUD_R * 3.2 * (1 - dp.life);
+      ctx.strokeStyle = rgba(C2, dp.life * 0.55);
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(CLOUD_X, CLOUD_Y, rr, 0, Math.PI * 2);
+      ctx.stroke();
+    }
   }
 
   /* ── Retícula ── */
@@ -546,9 +664,76 @@ const DevField = (() => {
     ctx.restore();
   }
 
+  /* Halo + cabeza reusado por el flujo normal y por el agarre del cursor */
+  function _drawHalo(ctx, x, sy, col, alpha) {
+    const halo = ctx.createRadialGradient(x, sy, 0, x, sy, 9);
+    halo.addColorStop(0, rgba(col, alpha * 0.35));
+    halo.addColorStop(1, rgba(col, 0));
+    ctx.fillStyle = halo;
+    ctx.beginPath();
+    ctx.arc(x, sy, 9, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = rgba(col, alpha);
+    ctx.beginPath();
+    ctx.arc(x, sy, 2.1, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
   /* ── Paquetes ── */
   function _drawPackets(dt, ctx, view) {
+    const pulled = holding && view.pointer.active;
+
     for (const p of packets) {
+      if (p.sending) {
+        // Volando hacia la nube tras soltar — al llegar reaparece como paquete normal
+        p.sendT = Math.min(1, p.sendT + 0.045 * dt);
+        const e  = _ease(p.sendT);
+        const cx = CLOUD_X;
+        const cy = CLOUD_Y + view.scrollTop;
+        const x  = p.sfx + (cx - p.sfx) * e;
+        const y  = p.sfy + (cy - p.sfy) * e;
+        const sy = y - view.scrollTop;
+        _drawHalo(ctx, x, sy, C2, 0.9 * (1 - e * 0.5));
+        if (p.sendT >= 1) Object.assign(p, _spawn(view));
+        continue;
+      }
+
+      if (pulled) {
+        if (!p.pulling) {
+          // Primer frame agarrado: la posición de grilla actual pasa a ser libre
+          const [dx0, dy0] = DIRS[p.dir];
+          p.px = p.ax + dx0 * pitch * p.t;
+          p.py = p.ay + dy0 * pitch * p.t;
+          p.pulling = true;
+        }
+        const tx = view.pointer.x;
+        const ty = view.pointer.y + view.scrollTop;
+        const dx = tx - p.px, dy = ty - p.py;
+        // Misma velocidad que tenía en la malla — pero por camino lineal en un
+        // solo eje a la vez, como se mueven naturalmente por la grilla
+        const pxSpeed = p.speed * pitch;
+        const moveAmt = pxSpeed * dt;
+        if (Math.abs(dx) > Math.abs(dy)) {
+          p.px += Math.sign(dx) * Math.min(Math.abs(dx), moveAmt);
+        } else {
+          p.py += Math.sign(dy) * Math.min(Math.abs(dy), moveAmt);
+        }
+
+        const sy = p.py - view.scrollTop;
+        _drawHalo(ctx, p.px, sy, p.bright ? C2 : C, p.bright ? 0.9 : 0.7);
+        continue;
+      }
+
+      if (p.pulling) {
+        // Se soltó sin que el cursor siguiera activo (ej. salió de la ventana):
+        // vuelve a la malla sin pasar por la nube
+        p.ax = _snap(p.px);
+        p.ay = _snap(p.py);
+        p.t = 0;
+        p.pulling = false;
+      }
+
       p.t += p.speed * dt * (0.6 + zoneIntensity(p.ay) * 0.8);
 
       while (p.t >= 1) {
@@ -585,19 +770,7 @@ const DevField = (() => {
       ctx.lineTo(x, sy);
       ctx.stroke();
 
-      // Halo + cabeza
-      const halo = ctx.createRadialGradient(x, sy, 0, x, sy, 9);
-      halo.addColorStop(0, rgba(col, alpha * 0.35));
-      halo.addColorStop(1, rgba(col, 0));
-      ctx.fillStyle = halo;
-      ctx.beginPath();
-      ctx.arc(x, sy, 9, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = rgba(col, alpha);
-      ctx.beginPath();
-      ctx.arc(x, sy, 2.1, 0, Math.PI * 2);
-      ctx.fill();
+      _drawHalo(ctx, x, sy, col, alpha);
     }
   }
 
@@ -626,9 +799,9 @@ const DevField = (() => {
     while (packets.length > cap) packets.shift();
   }
 
-  function destroy() { packets = []; hoverRect = null; }
+  function destroy() { packets = []; hoverRect = null; holding = false; deployPulses = []; }
 
-  return { init, step, onCardHover, onCardClick, destroy };
+  return { init, step, onCardHover, onCardClick, onBackgroundPress, onBackgroundRelease, destroy };
 })();
 
 /* ══════════════════════════════════════════════════════
@@ -648,12 +821,17 @@ const IaField = (() => {
   const CURSOR_R  = 310;   // alcance de la influencia del puntero
   const MAX_SPEED = 0.85;
   const CAPTURE_N = 18;
+  const QUERY_MAX_DEPTH = 4;    // niveles de BFS que se propagan desde el nodo semilla
+  const QUERY_STAGGER   = 10;   // frame-units entre niveles (~0.16s a 60fps)
+  const QUERY_MAX_NODES = 40;   // techo para no disparar cientos de chispas en zonas densas
 
   let nodes   = [];
   let far     = [];
   let signals = [];
   let capture = null;   // { rect, strength, pulse }
   let visible = [];     // buffer reutilizado — evita un filter() por frame
+  let pendingQuery = []; // { a, b, delay } — chispas de la consulta en espera de disparar
+  let holding = false;   // true mientras el mouse está presionado sobre el fondo
 
   function init(view) {
     const n = Math.round((view.vw * view.docH) / AREA_PER_NODE * view.density * (view.lite ? 0.45 : 1));
@@ -670,6 +848,7 @@ const IaField = (() => {
         pulse: rnd(0, Math.PI * 2),
         ps: rnd(0.02, 0.05),
         cap: 0, tx: 0, ty: 0, capIdx: -1,
+        lit: 0,
       });
     }
 
@@ -686,6 +865,8 @@ const IaField = (() => {
 
     signals = [];
     capture = null;
+    pendingQuery = [];
+    holding = false;
   }
 
   /* Punto del perímetro de un rect para s ∈ [0,1) */
@@ -707,6 +888,7 @@ const IaField = (() => {
 
     _drawFar(ctx, view);
     _update(dt, view, minY, maxY);
+    _updateQuery(dt);
 
     visible.length = 0;
     for (const n of nodes) {
@@ -755,12 +937,14 @@ const IaField = (() => {
         n.cap = Math.max(0, n.cap - 0.02 * dt);
       }
 
-      if (view.pointer.active && !view.lite) {
+      if (n.lit > 0) n.lit = Math.max(0, n.lit - 0.012 * dt);
+
+      if (holding && view.pointer.active && !view.lite) {
         const dx = mx - n.x;
         const dy = my - n.y;
         const d  = Math.hypot(dx, dy);
         if (d < CURSOR_R && d > 1) {
-          // Atracción suave: la red se acerca a quien la mira
+          // Mantener presionado: la red se acerca a quien la sostiene
           const f = (1 - d / CURSOR_R) * 0.014;
           n.vx += (dx / d) * f * dt;
           n.vy += (dy / d) * f * dt;
@@ -867,7 +1051,7 @@ const IaField = (() => {
       const near = active
         ? clamp(1 - Math.hypot(mx - n.x, my - n.y) / CURSOR_R, 0, 1)
         : 0;
-      const boost = Math.max(near, n.cap);
+      const boost = Math.max(near, n.cap, n.lit);
       const r = n.r * (1 + Math.sin(n.pulse) * 0.16 + boost * 0.5);
       const col = n.teal ? C2 : C;
       const a = (0.34 + Math.sin(n.pulse) * 0.12 + boost * 0.55)
@@ -958,6 +1142,79 @@ const IaField = (() => {
 
   function onCardClick(rect) { _recruit(rect, 1); }
 
+  /**
+   * Click en el fondo: dispara un "pulso de consulta" que recorre la red real
+   * (BFS por proximidad, mismo radio que usan las conexiones visibles) desde
+   * el nodo más cercano al click — como una query propagándose por un grafo.
+   * Cada nivel enciende sus nodos y lanza una chispa por la arista que lo
+   * conectó, con un pequeño delay por nivel para que se vea la propagación.
+   */
+  function onBackgroundClick(pt) {
+    if (!nodes.length) return;
+
+    let seed = null, bestD = Infinity;
+    for (const n of nodes) {
+      const d = Math.hypot(n.x - pt.x, n.y - pt.y);
+      if (d < bestD) { bestD = d; seed = n; }
+    }
+    if (!seed) return;
+
+    seed.lit = 1;
+    const visited = new Set([seed]);
+    let frontier = [seed];
+    pendingQuery = [];
+
+    for (let depth = 1; depth <= QUERY_MAX_DEPTH && frontier.length && visited.size < QUERY_MAX_NODES; depth++) {
+      const next = [];
+      for (const a of frontier) {
+        for (const b of nodes) {
+          if (visited.has(b) || visited.size >= QUERY_MAX_NODES) continue;
+          if (Math.hypot(a.x - b.x, a.y - b.y) < LINK_MAX) {
+            visited.add(b);
+            next.push(b);
+            pendingQuery.push({ a, b, delay: depth * QUERY_STAGGER });
+          }
+        }
+      }
+      frontier = next;
+    }
+  }
+
+  /** Dispara las chispas de la consulta en cola cuando les toca su turno. */
+  function _updateQuery(dt) {
+    for (let i = pendingQuery.length - 1; i >= 0; i--) {
+      const q = pendingQuery[i];
+      q.delay -= dt;
+      if (q.delay <= 0) {
+        q.b.lit = 1;
+        signals.push({ ax: q.a.x, ay: q.a.y, bx: q.b.x, by: q.b.y, t: 0, sp: rnd(0.05, 0.08), teal: Math.random() < 0.5 });
+        pendingQuery.splice(i, 1);
+      }
+    }
+  }
+
+  /** Mantener presionado: la red se acerca a quien la sostiene (ver _update). */
+  function onBackgroundPress() { holding = true; }
+
+  /** Al soltar, la red se repele y se reparte entre las distintas secciones. */
+  function onBackgroundRelease() {
+    if (!holding) return;
+    holding = false;
+    if (!zones.length) return;
+    if (capture) onCardRelease();
+
+    const view = _view();
+    for (const n of nodes) {
+      const z = zones[(Math.random() * zones.length) | 0];
+      const tx = rnd(40, Math.max(41, view.vw - 40));
+      const ty = rnd(z.top + 20, Math.max(z.top + 21, z.bottom - 20));
+      const dx = tx - n.x, dy = ty - n.y;
+      const d  = Math.hypot(dx, dy) || 1;
+      n.vx += (dx / d) * rnd(0.5, 1.0);
+      n.vy += (dy / d) * rnd(0.5, 1.0);
+    }
+  }
+
   function onCardRelease() {
     nodes.forEach(n => {
       if (n.capIdx < 0) return;
@@ -969,9 +1226,15 @@ const IaField = (() => {
     capture = null;
   }
 
-  function destroy() { nodes = []; far = []; signals = []; visible = []; capture = null; }
+  function destroy() {
+    nodes = []; far = []; signals = []; visible = [];
+    capture = null; pendingQuery = []; holding = false;
+  }
 
-  return { init, step, onCardHover, onCardClick, onCardRelease, destroy };
+  return {
+    init, step, onCardHover, onCardClick, onCardRelease,
+    onBackgroundClick, onBackgroundPress, onBackgroundRelease, destroy,
+  };
 })();
 
 /* ══════════════════════════════════════════════════════
@@ -993,6 +1256,8 @@ const SecField = (() => {
   const FLEE_R   = 150;     // el virus huye a partir de aquí
   const KILL_R   = 55;      // y se desintegra aquí
   const MAX_VIRUS = 5;
+  const BREACH_DAMAGE = 20;   // % de integridad que resta un ataque logrado
+  const KILL_REPAIR   = 6;    // % que restaura cazar un virus a tiempo
 
   let cols = [];
   let farCols = [];
@@ -1000,10 +1265,26 @@ const SecField = (() => {
   let debris = [];
   let flash = [];
   let spawnT = 0;
+  let integrity = 100;   // 0-100 — a 0 se dispara el "hackeo"
+  let hacked = 0;        // 0 = normal, >0 = secuencia de "sistema comprometido" activa
 
   const chr = () => CHARS[(Math.random() * CHARS.length) | 0];
 
+  // Cuanta menos integridad queda, más se corrompe la lluvia (esto es lo
+  // que hace que la degradación se vea todo el tiempo, no solo en el
+  // glitch final de _triggerHacked).
+  const _degrad = () => 1 - integrity / 100;
+  const _glitchChance = () => 0.08 + _degrad() * 0.35;
+
+  const ERR_MSGS = [
+    'ERR_SEGMENT_FAULT', 'PROCESO CAÍDO', 'ACCESO DENEGADO',
+    'CONEXIÓN PERDIDA', 'INTEGRIDAD CRÍTICA', '0xDEADBEEF',
+  ];
+  const _errMsg = () => ERR_MSGS[(Math.random() * ERR_MSGS.length) | 0];
+
   function init(view) {
+    integrity = 100;
+    hacked = 0;
     const step = (view.lite ? 22 : 16) / Math.max(0.5, view.density);
     cols = _mkCols(view, step, FS, 0.08, 0.20);
     farCols = view.lite ? [] : _mkCols(view, step * 2.4, FS_FAR, 0.04, 0.09);
@@ -1026,7 +1307,8 @@ const SecField = (() => {
         fs,
         fade: 1,
         chars: Array.from({ length: 30 }, chr),
-        glitch: Math.random() < 0.08,
+        glitch: Math.random() < _glitchChance(),
+        blank: 0,
       });
     }
     return out;
@@ -1039,7 +1321,43 @@ const SecField = (() => {
     if (!view.lite) {
       _virus(dt, ctx, view);
       _debris(dt, ctx, view);
+      _drawErrorNoise(dt, ctx, view);
+      _drawIntegrityMeter(ctx, view);
     }
+    if (hacked > 0) _drawHackGlitch(dt, ctx, view);
+  }
+
+  /* ── Mensajes de error sueltos — más frecuentes cuanto peor está la integridad ── */
+  function _drawErrorNoise(dt, ctx, view) {
+    const deg = _degrad();
+    if (deg <= 0.15) return;
+    if (Math.random() < 0.006 * dt * deg) {
+      ctx.font = "11px 'Fira Code', 'Courier New', monospace";
+      ctx.textAlign = 'left';
+      ctx.fillStyle = rgba(C2, rnd(0.25, 0.6) * deg);
+      ctx.fillText(_errMsg(), rnd(0, view.vw * 0.7), rnd(0, view.vh));
+    }
+  }
+
+  /* ── HUD: integridad del sistema, fijo en el viewport ── */
+  const METER_X = 24, METER_Y = 86, METER_W = 140, METER_H = 8;
+
+  function _drawIntegrityMeter(ctx, view) {
+    const pct = integrity / 100;
+    const danger = pct < 0.3;
+
+    ctx.font = "10px 'Fira Code', 'Courier New', monospace";
+    ctx.textAlign = 'left';
+    ctx.fillStyle = rgba(danger ? C2 : C, 0.75);
+    ctx.fillText('INTEGRIDAD DEL SISTEMA', METER_X, METER_Y - 6);
+
+    ctx.strokeStyle = rgba(C, 0.35);
+    ctx.lineWidth = 1;
+    ctx.strokeRect(METER_X, METER_Y, METER_W, METER_H);
+
+    const flicker = danger ? 0.7 + 0.3 * Math.sin(performance.now() * 0.02) : 1;
+    ctx.fillStyle = rgba(danger ? C2 : C, 0.75 * flicker);
+    ctx.fillRect(METER_X + 1, METER_Y + 1, Math.max(0, METER_W - 2) * pct, METER_H - 2);
   }
 
   /* ── Lluvia ── */
@@ -1063,7 +1381,7 @@ const SecField = (() => {
       if (sy - col.len * col.fs > view.vh + 200 || sy < -600) {
         col.y = off + rnd(-col.len * col.fs, view.vh);
         col.sp = rnd(0.28, 0.85);
-        col.glitch = Math.random() < 0.08;
+        col.glitch = Math.random() < _glitchChance();
         col.fade = 0;
         sy = col.y - off;
       }
@@ -1072,6 +1390,14 @@ const SecField = (() => {
       if (Math.random() < 0.045 * dt) {
         col.chars[(Math.random() * col.chars.length) | 0] = chr();
       }
+
+      // Integridad crítica: columnas que se "apagan" (borradas) un rato
+      if (col.blank > 0) {
+        col.blank -= dt;
+      } else if (_degrad() > 0.55 && Math.random() < 0.0025 * dt * _degrad()) {
+        col.blank = rnd(60, 180);
+      }
+      if (col.blank > 0) continue;
 
       const inten = 0.55 + zoneIntensity(col.y) * 0.6;
 
@@ -1104,6 +1430,8 @@ const SecField = (() => {
         phase: rnd(0, Math.PI * 2),
         glyph: GLYPH[(Math.random() * GLYPH.length) | 0],
         born: 0,
+        age: 0,
+        lifespan: rnd(420, 600),   // ~7-10s a 60fps antes de "lograr" el ataque
       });
     }
 
@@ -1139,6 +1467,15 @@ const SecField = (() => {
           v.vx += (dx / d) * f * dt;
           v.vy += (dy / d) * f * dt;
         }
+      }
+
+      // No se neutralizó a tiempo: el ataque "logra" su objetivo
+      v.age += dt;
+      if (v.age >= v.lifespan) {
+        _breach(v.x, v.y);
+        virus.splice(i, 1);
+        spawnT = rnd(240, 480);
+        continue;
       }
 
       // Deriva errática
@@ -1187,6 +1524,7 @@ const SecField = (() => {
 
   /* ── Desintegración ── */
   function _kill(v, x, y) {
+    integrity = Math.min(100, integrity + KILL_REPAIR);
     for (let i = 0; i < 12; i++) {
       const ang = (Math.PI * 2 * i) / 12 + rnd(-0.3, 0.3);
       const sp  = rnd(1.4, 4.2);
@@ -1201,6 +1539,62 @@ const SecField = (() => {
     flash.push({ x, y, life: 1 });
   }
 
+  /* ── Ataque logrado: el virus no fue neutralizado a tiempo ── */
+  function _breach(x, y) {
+    integrity = Math.max(0, integrity - BREACH_DAMAGE);
+    for (let i = 0; i < 8; i++) {
+      const ang = rnd(0, Math.PI * 2);
+      const sp  = rnd(1, 3);
+      debris.push({
+        x, y,
+        vx: Math.cos(ang) * sp,
+        vy: Math.sin(ang) * sp,
+        life: 1,
+        ch: chr(),
+        breach: true,
+      });
+    }
+    flash.push({ x, y, life: 1, breach: true });
+    if (integrity <= 0) _triggerHacked();
+  }
+
+  /* ── La integridad llegó a 0: el sistema muestra que fue hackeado ── */
+  function _triggerHacked() {
+    hacked = 1;
+    integrity = 100;
+    virus = [];   // el ataque ya "ganó" — tablero limpio para el próximo ciclo
+    window.dispatchEvent(new CustomEvent('portfolio:secBreach'));
+  }
+
+  function _drawHackGlitch(dt, ctx, view) {
+    hacked = Math.max(0, hacked - 0.005 * dt);   // ~3-4s de duración total a 60fps
+    const canvasEl = ctx.canvas;
+
+    // Slices horizontales del propio frame, corridas — glitch clásico en canvas 2D
+    const bands = 2 + ((Math.random() * 3) | 0);
+    for (let i = 0; i < bands; i++) {
+      const y   = rnd(0, view.vh);
+      const h   = rnd(4, 18);
+      const off = rnd(-14, 14) * hacked;
+      ctx.drawImage(canvasEl, 0, y, view.vw, h, off, y, view.vw, h);
+    }
+
+    // Línea de error falsa, parpadeo random
+    if (Math.random() < 0.5) {
+      ctx.font = `${FS}px 'Fira Code', 'Courier New', monospace`;
+      ctx.textAlign = 'left';
+      ctx.fillStyle = rgba(C2, rnd(0.3, 0.8) * hacked);
+      ctx.fillText(
+        'SYSTEM BREACH — 0x' + ((Math.random() * 0xffffff) | 0).toString(16).toUpperCase(),
+        rnd(0, view.vw * 0.6), rnd(0, view.vh)
+      );
+    }
+
+    // Strobe rojo tenue sobre todo el viewport
+    ctx.fillStyle = rgba(C2, 0.05 * hacked * (0.5 + 0.5 * Math.sin(performance.now() * 0.05)));
+    ctx.fillRect(0, 0, view.vw, view.vh);
+  }
+
   function _debris(dt, ctx, view) {
     const off = view.scrollTop * RAIN_F;
     ctx.font = `11px 'Fira Code', 'Courier New', monospace`;
@@ -1213,12 +1607,12 @@ const SecField = (() => {
       d.vx *= 0.94; d.vy *= 0.94;
       d.life -= 0.022 * dt;
       if (d.life <= 0) { debris.splice(i, 1); continue; }
-      ctx.fillStyle = rgba(i % 3 === 0 ? C : C2, d.life * 0.85);
+      ctx.fillStyle = d.breach ? rgba(C2, d.life * 0.9) : rgba(i % 3 === 0 ? C : C2, d.life * 0.85);
       ctx.fillText(d.ch, d.x, d.y - off);
     }
   }
 
-  /* ── Fogonazo blanco donde murió el virus ── */
+  /* ── Fogonazo donde murió (verde) o triunfó (rojo) un virus ── */
   function _flash(dt, ctx, view) {
     const off = view.scrollTop * RAIN_F;
     for (let i = flash.length - 1; i >= 0; i--) {
@@ -1228,8 +1622,9 @@ const SecField = (() => {
       const y = f.y - off;
       const r = 70 * (1 - f.life) + 20;
       const g = ctx.createRadialGradient(f.x, y, 0, f.x, y, r);
-      g.addColorStop(0, `rgba(220,255,220,${f.life * 0.30})`);
-      g.addColorStop(1, 'rgba(220,255,220,0)');
+      const rgb = f.breach ? '255,60,80' : '220,255,220';
+      g.addColorStop(0, `rgba(${rgb},${f.life * 0.30})`);
+      g.addColorStop(1, `rgba(${rgb},0)`);
       ctx.fillStyle = g;
       ctx.beginPath();
       ctx.arc(f.x, y, r, 0, Math.PI * 2);
@@ -1237,7 +1632,10 @@ const SecField = (() => {
     }
   }
 
-  function destroy() { cols = []; farCols = []; virus = []; debris = []; flash = []; }
+  function destroy() {
+    cols = []; farCols = []; virus = []; debris = []; flash = [];
+    integrity = 100; hacked = 0;
+  }
 
   return { init, step, destroy };
 })();

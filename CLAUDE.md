@@ -345,7 +345,7 @@ puede quedar alineado con una card mientras se scrollea.
 | Modo | Campo | Interacción con el cursor | Interacción con cards |
 |------|-------|---------------------------|----------------------|
 | `.dev` | Retícula técnica (paso 68px) + paquetes viajando por las aristas | Router: desvía los paquetes hacia él y revela más malla en un radio de 200px | Hover ilumina la parcela bajo la card; el click emite 4 paquetes desde su borde |
-| `.ia` | Nodos púrpura/teal en deriva + señales por las aristas | Las conexiones **nacen bajo el puntero y se disuelven al alejarse** (radio 108px en reposo → 252px bajo el cursor); los nodos se acercan a él | Al abrir un proyecto, 18 nodos se reclutan sobre el perímetro de la card y un pulso lo recorre — la respuesta "se genera" de la red. `portfolio:projectClose` los suelta |
+| `.ia` | Nodos púrpura/teal en deriva + señales por las aristas | Las conexiones **nacen bajo el puntero y se disuelven al alejarse** (radio 108px en reposo → 252px bajo el cursor); mantener presionado sobre el fondo atrae los nodos (ya no es pasivo al hover — ver abajo) | Al abrir un proyecto, 18 nodos se reclutan sobre el perímetro de la card y un pulso lo recorre — la respuesta "se genera" de la red. `portfolio:projectClose` los suelta |
 | `.sec` | Lluvia de chars atenuada (opacidad 0.08–0.20; antes llegaba a 0.45) + virus | Los virus huyen a <150px y se desintegran a <55px, con estallido de debris y fogonazo en la columna | — |
 
 Acentos hardcoded en `ACCENT` / `ACCENT2` (mismo criterio que tenía `SectionCanvas`):
@@ -354,6 +354,61 @@ dev: [59, 130, 246]   + [125, 211, 252] (paquetes brillantes)
 ia:  [177, 78, 255]   + [6, 255, 165]   (teal)
 sec: [0, 255, 65]     + [255, 0, 51]    (rojo de amenaza — virus)
 ```
+
+### Interacciones dinámicas de click/agarre en el fondo (`.dev` / `.ia` / `.sec`)
+
+**Núcleo (`_bindCards()`, js/background.js):** además del click sobre `.project-card`/
+`.lab-card` (`onCardClick`), hay dos vías más de interacción con el fondo *vacío*,
+delegadas al renderer activo con el mismo patrón de hook opcional
+(`renderer.onX && renderer.onX(...)`):
+```js
+document.addEventListener('click', ...)       // → renderer.onBackgroundClick(pt)
+document.addEventListener('pointerdown', ...) // → renderer.onBackgroundPress()
+window.addEventListener('pointerup', ...)      // → renderer.onBackgroundRelease()
+```
+Ambas rutas ignoran clicks sobre `BG_CLICK_IGNORE` (navbar, cards, botones, paneles de
+JotAI/trayectoria/command-palette/gallery/PDF, hero-widgets, footer, form de contacto)
+y se desactivan en `lite` (touch) — igual criterio que el resto de los click-fx. `pt`
+va en coords de **documento** (`clientY + scrollTop`), igual que `docRect()`. `click` y
+`pointerdown`+`pointerup` son eventos independientes: un tap normal dispara los tres
+(press, release y click) porque un click nativo siempre incluye un press+release sin
+arrastre — los tres efectos están pensados para convivir sin pisarse.
+
+- **`.dev` — agarrar y enviar a la nube:** hay un ícono ☁ fijo en el viewport
+  (`CLOUD_X/Y/R`, esquina sup. izq. bajo el navbar — nunca en el grid del `.container`,
+  ver más abajo la regla de los widgets). Mientras se mantiene presionado
+  (`onBackgroundPress`), cada packet se desvía hacia el cursor **a su misma velocidad
+  de siempre** pero por un solo eje a la vez (Manhattan, `Math.abs(dx) > Math.abs(dy)`)
+  para no romper la estética de malla — nunca diagonal. Al soltar
+  (`onBackgroundRelease`), los packets agarrados pasan a `sending: true` y vuelan
+  (smoothstep) hacia el ícono, donde se reincorporan como packets nuevos
+  (`Object.assign(p, _spawn(view))`); el release además dispara siempre `_deploy()`
+  (anillo de pulso + 8 packets brillantes nuevos saliendo de la nube), ya no depende de
+  soltar exactamente encima del ícono.
+- **`.ia` — mantener presionado / soltar, más el pulso de consulta:** la atracción al
+  cursor de `_update()` está gateada por `holding` (antes era pasiva con solo
+  `pointer.active`) — `onBackgroundPress`/`onBackgroundRelease` la activan/desactivan.
+  Al soltar, cada node recibe un impulso hacia un punto random dentro de una sección
+  elegida al azar del array `zones` (mismo que usa `zoneIntensity`) — reparto por
+  impulso único, no una fuerza sostenida. Aparte y sin relación con el press/release,
+  `onBackgroundClick` dispara un **pulso de consulta**: BFS por proximidad (mismo radio
+  `LINK_MAX` que usan las conexiones visibles) desde el node más cercano al click, hasta
+  4 niveles / 40 nodes tope; cada nivel enciende sus nodes (`n.lit`, boost visual en
+  `_drawNodes`) y lanza una chispa por la arista real que lo conectó (reusa el array
+  `signals` existente), con un delay escalonado por nivel (`QUERY_STAGGER`) para que se
+  vea la propagación como una query recorriendo el grafo.
+- **`.sec` — sin click de usuario, es un medidor de integridad:** no hay
+  `onBackgroundClick`/`onBackgroundPress` en este renderer — la mecánica es emergente
+  por tiempo, no por input. Cada virus tiene `lifespan` (~7-10s); si el cursor no lo
+  mata a tiempo (`KILL_R`), `_breach()` resta `BREACH_DAMAGE` (20) a `integrity`
+  (0-100, HUD fijo arriba-izq. — mismo rincón que la nube de `.dev`, distinto modo);
+  cada kill a tiempo restaura `KILL_REPAIR` (6). La corrupción visual escala **continua**
+  con `1 - integrity/100` (`_degrad()`), no solo al final: más probabilidad de
+  `col.glitch` en la lluvia, mensajes de error sueltos cada vez más frecuentes
+  (`_drawErrorNoise`), y por debajo de ~45% de integridad algunas columnas se
+  "apagan" un rato (`col.blank`). A 0% se dispara `_triggerHacked()` — glitch de pantalla
+  completo (~3-4s: slices de canvas corridas vía `drawImage` sobre sí mismo, línea de
+  error grande, strobe rojo) y la integridad vuelve a 100 para el próximo ciclo.
 
 ### Zonas
 Cada sección declara su intensidad en `ZONE_INTENSITY`; el campo es continuo pero

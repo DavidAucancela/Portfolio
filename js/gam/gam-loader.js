@@ -16,6 +16,7 @@ let _booting         = false;
 let _hotspotsPromise = null;
 let _lastNonGamMode  = null;
 let _panelSeq        = 0; // invalida renders async (fetch de lista) de un panel ya cerrado
+let _minigameUnmount = null; // cleanup del minijuego montado en #gam-modal-list (piano/malabares/patineta)
 
 const GAME_WIDTH  = 800;
 const GAME_HEIGHT = 600;
@@ -121,16 +122,31 @@ function _destroy() {
 }
 
 /* ────────────────────────────────────────────────────
-   PANEL DE OBJETOS — dos variantes sobre el mismo <div id="gam-modal">:
-   texto simple (info/video/3d/minigame sin contenido real todavía) o
-   lista de proyectos (desk/bookshelf/terminal). La trayectoria (diplomas)
-   no usa este modal — abre el drawer que ya existe en el resto del sitio.
-   Cualquiera de las tres pausa la escena de Phaser mientras está abierta.
+   PANEL DE OBJETOS — varias variantes sobre el mismo <div id="gam-modal">:
+   texto simple (bed/pukis/reading, sin contenido real todavía), lista de
+   proyectos (desk/bookshelf/terminal), o un minijuego montado dentro de
+   #gam-modal-list (piano/malabares/patineta — ver gam-piano.js,
+   gam-juggling.js, gam-skateboard.js). La trayectoria (diplomas) no usa
+   este modal — abre el drawer que ya existe en el resto del sitio.
+   Todas pausan la escena de Phaser mientras están abiertas.
 ──────────────────────────────────────────────────── */
+
+/** Limpia cualquier minijuego montado — timers/audio/listeners propios. */
+function _teardownMinigame() {
+  _minigameUnmount?.();
+  _minigameUnmount = null;
+}
+
+function _setCardVariant(variant) {
+  const card = document.getElementById('gam-modal-card');
+  card?.classList.remove('gam-modal__card--list', 'gam-modal__card--wide');
+  if (variant) card?.classList.add(variant);
+}
+
 function _openTextPanel(detail) {
   ++_panelSeq;
+  _teardownMinigame();
   const modal   = document.getElementById('gam-modal');
-  const card    = document.getElementById('gam-modal-card');
   const iconEl  = document.getElementById('gam-modal-icon');
   const titleEl = document.getElementById('gam-modal-title');
   const textEl  = document.getElementById('gam-modal-text');
@@ -143,7 +159,7 @@ function _openTextPanel(detail) {
   textEl.textContent  = LangSwitcher.L(content.message) || 'Este objeto todavía está en construcción.';
   textEl.hidden = false;
 
-  card?.classList.remove('gam-modal__card--list');
+  _setCardVariant(null);
   if (listEl) listEl.hidden = true;
 
   modal.hidden = false;
@@ -154,13 +170,13 @@ function _openTextPanel(detail) {
 
 function _openListPanel(detail) {
   const seq = ++_panelSeq;
+  _teardownMinigame();
   const modal   = document.getElementById('gam-modal');
-  const card    = document.getElementById('gam-modal-card');
   const iconEl  = document.getElementById('gam-modal-icon');
   const titleEl = document.getElementById('gam-modal-title');
   const textEl  = document.getElementById('gam-modal-text');
   const listEl  = document.getElementById('gam-modal-list');
-  if (!modal || !card || !listEl) return;
+  if (!modal || !listEl) return;
 
   const content = detail.content || {};
   const mode    = content.projectMode || 'dev';
@@ -171,7 +187,7 @@ function _openListPanel(detail) {
   textEl.textContent = msg;
   textEl.hidden = !msg;
 
-  card.classList.add('gam-modal__card--list');
+  _setCardVariant('gam-modal__card--list');
   listEl.hidden = false;
   listEl.innerHTML = '';
 
@@ -235,12 +251,74 @@ function _renderSkillsBlock(listEl, skills) {
   listEl.appendChild(wrap);
 }
 
+/**
+ * Minijuegos reales montados dentro de #gam-modal-list — cada módulo es
+ * autocontenido (DOM propio, sus timers/listeners) y se importa recién al
+ * interactuar con el objeto, no al entrar a .gam (mismo criterio de carga
+ * perezosa que Phaser). `which` decide qué módulo cargar.
+ */
+async function _openMinigamePanel(detail, which) {
+  const seq = ++_panelSeq;
+  _teardownMinigame();
+  const modal   = document.getElementById('gam-modal');
+  const iconEl  = document.getElementById('gam-modal-icon');
+  const titleEl = document.getElementById('gam-modal-title');
+  const textEl  = document.getElementById('gam-modal-text');
+  const listEl  = document.getElementById('gam-modal-list');
+  if (!modal || !listEl) return;
+
+  const content = detail.content || {};
+  iconEl.textContent  = content.icon || '🎮';
+  titleEl.textContent = LangSwitcher.L(content.title) || detail.label || '';
+  textEl.hidden = true;
+
+  _setCardVariant(which === 'skateboard' ? 'gam-modal__card--wide' : 'gam-modal__card--list');
+  listEl.hidden = false;
+  listEl.innerHTML = '<p class="gam-modal__list-empty">Cargando…</p>';
+
+  modal.hidden = false;
+  _game?.scene.pause('GamScene');
+
+  try {
+    let unmount;
+    if (which === 'piano') {
+      const { GamPiano } = await import('./gam-piano.js');
+      if (seq !== _panelSeq) return;
+      listEl.innerHTML = '';
+      unmount = GamPiano.mount(listEl);
+    } else if (which === 'juggling') {
+      const { GamJuggling } = await import('./gam-juggling.js');
+      if (seq !== _panelSeq) return;
+      listEl.innerHTML = '';
+      unmount = GamJuggling.mount(listEl, { videoUrl: content.videoUrl || null });
+    } else if (which === 'skateboard') {
+      const { GamSkateboard } = await import('./gam-skateboard.js');
+      if (seq !== _panelSeq) return;
+      listEl.innerHTML = '';
+      unmount = GamSkateboard.mount(listEl);
+    }
+
+    if (seq === _panelSeq) {
+      _minigameUnmount = unmount;
+    } else {
+      // El panel se cerró (o se abrió otro) mientras el módulo cargaba
+      unmount?.();
+    }
+  } catch (err) {
+    console.warn('[GamLoader] No se pudo cargar el minijuego:', err);
+    if (seq === _panelSeq) {
+      listEl.innerHTML = '<p class="gam-modal__list-empty">No se pudo cargar. Probá de nuevo.</p>';
+    }
+  }
+}
+
 function _closeModal() {
   ++_panelSeq;
+  _teardownMinigame();
   const modal = document.getElementById('gam-modal');
   if (!modal || modal.hidden) return;
   modal.hidden = true;
-  document.getElementById('gam-modal-card')?.classList.remove('gam-modal__card--list');
+  _setCardVariant(null);
   const listEl = document.getElementById('gam-modal-list');
   if (listEl) { listEl.hidden = true; listEl.innerHTML = ''; }
   _game?.scene.resume('GamScene');
@@ -300,13 +378,15 @@ function init() {
   });
 
   window.addEventListener('gam:interact', (e) => {
-    const { kind } = e.detail;
+    const { kind, id } = e.detail;
     if (kind === 'exit') {
       ThemeSwitcher.switchMode(_lastNonGamMode || 'dev');
     } else if (kind === 'list') {
       _openListPanel(e.detail);
     } else if (kind === 'trajectory') {
       _openTrajectory();
+    } else if (id === 'piano' || id === 'juggling' || id === 'skateboard') {
+      _openMinigamePanel(e.detail, id);
     } else {
       _openTextPanel(e.detail);
     }

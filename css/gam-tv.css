@@ -605,6 +605,266 @@
   color: var(--text-secondary);
 }
 
+/* ─── Variante ancha — patineta (gam-skateboard.js), ~75vw/75vh ─── */
+.gam-modal__card--wide {
+  max-width: 720px;
+  width: min(75vw, 720px);
+  max-height: min(75vh, 640px);
+  display: flex;
+  flex-direction: column;
+}
+
+.gam-modal__card--wide .gam-modal__list {
+  flex: 1;
+  min-height: 0;
+}
+
+/* ============================================================
+   PIANO (gam-piano.js)
+   ============================================================ */
+.gam-piano {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding-top: 0.25rem;
+}
+
+.gam-piano__tabs {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: center;
+}
+
+.gam-piano__tab {
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-glass-input, var(--bg-secondary));
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.gam-piano__tab.is-active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #1a1206;
+  font-weight: 600;
+}
+
+.gam-piano__status {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  min-height: 1.3em;
+}
+
+.gam-piano__keys {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 0.35rem;
+}
+
+.gam-piano__key {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.3rem;
+  height: 96px;
+  padding-bottom: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-glass-input, var(--bg-secondary));
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 0.1s ease, transform 0.1s ease;
+}
+
+.gam-piano__key.is-active,
+.gam-piano__key:active {
+  background: var(--color-accent);
+  color: #1a1206;
+  transform: translateY(2px);
+}
+
+.gam-piano__key-note {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.gam-piano__key-bind {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.7rem;
+  opacity: 0.65;
+}
+
+.gam-piano__challenge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.gam-piano__start {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-accent);
+  background: var(--color-accent);
+  color: #1a1206;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ============================================================
+   MALABARES (gam-juggling.js)
+   ============================================================ */
+.gam-juggle {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.gam-juggle__status {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-align: center;
+  min-height: 1.3em;
+}
+
+.gam-juggle__track {
+  position: relative;
+  width: 100%;
+  max-width: 220px;
+  height: 260px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-glass-input, var(--bg-secondary));
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.gam-juggle__track.is-fail {
+  border-color: #ff2ea6;
+  animation: gamJuggleShake 0.3s ease;
+}
+
+@keyframes gamJuggleShake {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-4px); }
+  75%      { transform: translateX(4px); }
+}
+
+.gam-juggle__zone {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: rgba(255, 176, 32, 0.18);
+  border-top: 1px dashed rgba(255, 176, 32, 0.5);
+  border-bottom: 1px dashed rgba(255, 176, 32, 0.5);
+}
+
+.gam-juggle__ball {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  font-size: 1.6rem;
+  line-height: 1;
+  transition: filter 0.1s ease;
+}
+
+.gam-juggle__ball.is-caught {
+  filter: drop-shadow(0 0 8px var(--color-accent));
+}
+
+.gam-juggle__controls {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.gam-juggle__catch {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-accent);
+  background: transparent;
+  color: var(--color-accent);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.gam-juggle__video-btn {
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-glass-input, var(--bg-secondary));
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.gam-juggle__video-pending {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.gam-juggle__video {
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 16 / 9;
+}
+
+.gam-juggle__video iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 8px;
+}
+
+/* ============================================================
+   PATINETA — vista previa (gam-skateboard.js)
+   ============================================================ */
+.gam-skate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  height: 100%;
+  padding: 1rem 0;
+}
+
+.gam-skate__stage {
+  perspective: 700px;
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  touch-action: none;
+}
+
+.gam-skate__stage.is-dragging { cursor: grabbing; }
+
+.gam-skate__deck {
+  width: 80%;
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.35));
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.gam-skate__hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 280px;
+}
+
 /* Drawer de trayectoria por encima de la TV a pantalla completa —
    normalmente vive en z-index 1100, muy por debajo de .gam-tv (9500). */
 [data-theme="gam"].gam-playing #jonathan-panel {

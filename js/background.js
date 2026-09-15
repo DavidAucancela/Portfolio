@@ -63,6 +63,7 @@ let slowRun  = 0;
 let resizeTimer = null;
 let zones    = [];
 let bgPressing = false;   // true mientras el mouse está presionado sobre el fondo
+let gamPlaying = false;   // true mientras el modo .gam está en pantalla completa jugando
 
 const pointer = { x: -9999, y: -9999, active: false };
 
@@ -260,6 +261,16 @@ function _watchPerf(frameMs) {
   renderer.init(_view());
 }
 
+function _pauseLoop() {
+  if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+}
+
+function _resumeLoop() {
+  if (rafId || reducedMotion.matches || document.hidden || gamPlaying) return;
+  lastT = performance.now();
+  rafId = requestAnimationFrame(_tick);
+}
+
 /* ── Eventos ── */
 function _bindEvents() {
   window.addEventListener('scroll', () => { scrollTop = window.scrollY; }, { passive: true });
@@ -300,12 +311,26 @@ function _bindEvents() {
 
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
-      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-    } else if (!rafId && !reducedMotion.matches) {
-      lastT = performance.now();
-      rafId = requestAnimationFrame(_tick);
+      _pauseLoop();
+    } else {
+      _resumeLoop();
     }
   });
+
+  // Modo .gam a pantalla completa: el canvas queda tapado por el juego de
+  // Phaser (z-index 9500) y no aporta nada — pausar el rAF entero en vez
+  // de solo dejar de dibujarlo ahorra el costo real de simular partículas
+  // que nadie ve. gam-loader.js es quien pone/saca esta clase del body.
+  if ('MutationObserver' in window) {
+    const mo = new MutationObserver(() => {
+      const playing = document.body.classList.contains('gam-playing');
+      if (playing === gamPlaying) return;
+      gamPlaying = playing;
+      if (gamPlaying) _pauseLoop();
+      else _resumeLoop();
+    });
+    mo.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  }
 
   window.addEventListener('portfolio:modeChange', (e) => {
     const m = e.detail && e.detail.mode;

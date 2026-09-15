@@ -419,6 +419,15 @@
               <div class="gam-prompt" id="gam-prompt" hidden aria-hidden="true">
                 <kbd>E</kbd> <span id="gam-prompt-label">Interactuar</span>
               </div>
+
+              <!-- Controles táctiles — gam-scene.js los muestra solo si
+                   detecta pointer:coarse (ver css/gam-tv.css) -->
+              <div class="gam-touch" id="gam-touch" hidden aria-hidden="true">
+                <div class="gam-touch__stick" id="gam-touch-stick">
+                  <div class="gam-touch__knob" id="gam-touch-knob"></div>
+                </div>
+                <button type="button" class="gam-touch__btn" id="gam-touch-interact" aria-label="Interactuar">E</button>
+              </div>
             </div>
 
             <p class="gam-tv__hint" id="gam-tv-hint" hidden>

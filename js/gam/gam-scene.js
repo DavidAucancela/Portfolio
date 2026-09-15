@@ -225,6 +225,8 @@ export class GamScene extends Phaser.Scene {
     this._keys = this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,E');
     this._player = { x: 300, y: 270 };
     this._activeHotspot = null;
+    this._touchVec = { x: 0, y: 0 };
+    this._touchInteractPressed = false;
 
     this._promptEl      = document.getElementById('gam-prompt');
     this._promptLabelEl = document.getElementById('gam-prompt-label');
@@ -232,6 +234,8 @@ export class GamScene extends Phaser.Scene {
     this._drawFloor();
     this._furnitureObjs = FURNITURE.map(f => this._drawFurniture(f));
     this._playerG = this._drawPlayer();
+    this._setupCamera();
+    this._initTouchControls();
 
     // QA desde consola en dev — mismo criterio que window.IaMascot (ver
     // ia-mascot.js): permite inspeccionar this._player sin instrumentar UI.
@@ -245,6 +249,72 @@ export class GamScene extends Phaser.Scene {
 
   _hidePrompt() {
     if (this._promptEl) this._promptEl.hidden = true;
+    if (this._touchWrapEl) this._touchWrapEl.hidden = true;
+  }
+
+  /**
+   * Joystick virtual + botón "E" — solo en pointer:coarse (móvil/tablet).
+   * Vive como DOM plano superpuesto al canvas (mismo criterio que
+   * #gam-prompt), no como objetos de Phaser: más simple de tocar con el
+   * dedo sin competir con el input del juego.
+   */
+  _initTouchControls() {
+    const coarse = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+    const wrap  = document.getElementById('gam-touch');
+    const stick = document.getElementById('gam-touch-stick');
+    const knob  = document.getElementById('gam-touch-knob');
+    const btn   = document.getElementById('gam-touch-interact');
+    if (!coarse || !wrap || !stick || !knob) return;
+
+    wrap.hidden = false;
+    this._touchWrapEl = wrap;
+
+    const MAX_R = 38;
+    let activeId = null;
+
+    const setKnob = (dx, dy) => { knob.style.transform = `translate(${dx}px, ${dy}px)`; };
+
+    const handleMove = (e) => {
+      if (e.pointerId !== activeId) return;
+      const rect = stick.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      let dx = e.clientX - cx;
+      let dy = e.clientY - cy;
+      const dist = Math.hypot(dx, dy);
+      if (dist > MAX_R) { dx = (dx / dist) * MAX_R; dy = (dy / dist) * MAX_R; }
+      setKnob(dx, dy);
+      this._touchVec.x = dx / MAX_R;
+      this._touchVec.y = dy / MAX_R;
+    };
+
+    const handleEnd = (e) => {
+      if (e.pointerId !== activeId) return;
+      activeId = null;
+      this._touchVec.x = 0;
+      this._touchVec.y = 0;
+      setKnob(0, 0);
+    };
+
+    stick.addEventListener('pointerdown', (e) => {
+      activeId = e.pointerId;
+      stick.setPointerCapture(activeId);
+      handleMove(e);
+    });
+    stick.addEventListener('pointermove', handleMove);
+    stick.addEventListener('pointerup', handleEnd);
+    stick.addEventListener('pointercancel', handleEnd);
+
+    btn?.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      this._touchInteractPressed = true;
+    });
+  }
+
+  _consumeTouchInteract() {
+    if (!this._touchInteractPressed) return false;
+    this._touchInteractPressed = false;
+    return true;
   }
 
   _drawFloor() {
@@ -306,6 +376,27 @@ export class GamScene extends Phaser.Scene {
     return { ...f, depth, _g: g, _label: label };
   }
 
+  /**
+   * Cámara que sigue al personaje, acotada al piso del cuarto. Con el
+   * cuarto actual (600x600, cabe entero en los 800x600 lógicos del canvas)
+   * el follow apenas se nota — queda listo para cuando el cuarto crezca
+   * más allá del viewport sin tener que revisitar esto.
+   */
+  _setupCamera() {
+    const corners = [
+      isoProject(0, 0), isoProject(ROOM_W, 0),
+      isoProject(ROOM_W, ROOM_H), isoProject(0, ROOM_H),
+    ];
+    const xs = corners.map(c => c.sx);
+    const ys = corners.map(c => c.sy);
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys) - 60; // margen para etiquetas sobre los muebles
+    const maxY = Math.max(...ys);
+    this.cameras.main.setBounds(minX, minY, maxX - minX, maxY - minY + 60);
+    this.cameras.main.startFollow(this._playerG, true, 0.08, 0.08);
+  }
+
   _drawPlayer() {
     const g = this.add.graphics();
     g.fillStyle(0xffb020, 1);
@@ -331,15 +422,26 @@ export class GamScene extends Phaser.Scene {
     const k  = this._keys;
 
     let dx = 0, dy = 0;
-    if (k.W.isDown || k.UP.isDown)    dy -= 1;
-    if (k.S.isDown || k.DOWN.isDown)  dy += 1;
-    if (k.A.isDown || k.LEFT.isDown)  dx -= 1;
-    if (k.D.isDown || k.RIGHT.isDown) dx += 1;
+    if (this._touchVec.x || this._touchVec.y) {
+      // Joystick táctil: vector continuo -1..1 — conserva la magnitud del
+      // tilt como velocidad parcial (ver más abajo), no solo la dirección.
+      dx = this._touchVec.x;
+      dy = this._touchVec.y;
+    } else {
+      if (k.W.isDown || k.UP.isDown)    dy -= 1;
+      if (k.S.isDown || k.DOWN.isDown)  dy += 1;
+      if (k.A.isDown || k.LEFT.isDown)  dx -= 1;
+      if (k.D.isDown || k.RIGHT.isDown) dx += 1;
+    }
 
     if (dx !== 0 || dy !== 0) {
       const len = Math.hypot(dx, dy);
-      this._tryMove((dx / len) * PLAYER_SPEED * dt, 0);
-      this._tryMove(0, (dy / len) * PLAYER_SPEED * dt);
+      // El teclado siempre da len >= 1 (incluso diagonal, tras dividir por
+      // len de abajo), así que este clamp solo atenúa al joystick táctil
+      // cuando el tilt es parcial.
+      const speed = PLAYER_SPEED * Math.min(1, len);
+      this._tryMove((dx / len) * speed * dt, 0);
+      this._tryMove(0, (dy / len) * speed * dt);
     }
 
     const proj = isoProject(this._player.x, this._player.y);
@@ -348,7 +450,7 @@ export class GamScene extends Phaser.Scene {
 
     this._updateHotspotProximity();
 
-    if (Phaser.Input.Keyboard.JustDown(k.E) && this._activeHotspot) {
+    if ((Phaser.Input.Keyboard.JustDown(k.E) || this._consumeTouchInteract()) && this._activeHotspot) {
       this._interact(this._activeHotspot);
     }
   }

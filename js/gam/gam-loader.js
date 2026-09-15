@@ -53,6 +53,16 @@ async function _boot() {
       backgroundColor: '#050301',
       scene: [scene],
       render: { antialias: true },
+      // FIT: resolución lógica fija (800x600) escalada al contenedor real
+      // (pantalla completa en desktop, ancho completo apilado en mobile —
+      // ver .gam-tv__screen en css/gam-tv.css) sin distorsionar el aspect
+      // ratio ni depender de max-width/max-height en CSS.
+      scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        width: GAME_WIDTH,
+        height: GAME_HEIGHT,
+      },
     });
 
     GamTV.onBooted();
@@ -97,18 +107,25 @@ function _openModal(detail) {
   textEl.textContent  = content.message || 'Este objeto todavía está en construcción.';
 
   modal.hidden = false;
+  // Sin esto el jugador se sigue moviendo (y puede volver a disparar E)
+  // detrás del modal — la escena queda "viva" aunque no se vea.
+  _game?.scene.pause('GamScene');
 }
 
 function _closeModal() {
   const modal = document.getElementById('gam-modal');
-  if (modal) modal.hidden = true;
+  if (!modal || modal.hidden) return;
+  modal.hidden = true;
+  _game?.scene.resume('GamScene');
 }
 
 function _bindModal() {
   document.getElementById('gam-modal-close')?.addEventListener('click', _closeModal);
   document.getElementById('gam-modal-backdrop')?.addEventListener('click', _closeModal);
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') _closeModal();
+    if (e.key !== 'Escape') return;
+    const modal = document.getElementById('gam-modal');
+    if (modal && !modal.hidden) _closeModal();
   });
 }
 

@@ -453,14 +453,17 @@
       <canvas id="sdiv-canvas" aria-hidden="true"></canvas>
     </div>
 
-    <!-- Modal placeholder de objetos del cuarto (MVP: sin minijuego real todavía) -->
+    <!-- Panel de objetos del cuarto: texto simple para info/video/3d/minigame
+         sin contenido real todavía, o lista de proyectos/skills para
+         desk/bookshelf/terminal (ver gam-loader.js _openPanel) -->
     <div class="gam-modal" id="gam-modal" hidden role="dialog" aria-modal="true" aria-labelledby="gam-modal-title">
       <div class="gam-modal__backdrop" id="gam-modal-backdrop"></div>
-      <div class="gam-modal__card">
+      <div class="gam-modal__card" id="gam-modal-card">
         <button class="gam-modal__close" id="gam-modal-close" aria-label="Cerrar">✕</button>
         <div class="gam-modal__icon" id="gam-modal-icon" aria-hidden="true">🚧</div>
         <h3 class="gam-modal__title" id="gam-modal-title">Próximamente</h3>
         <p class="gam-modal__text" id="gam-modal-text"></p>
+        <div class="gam-modal__list" id="gam-modal-list" hidden></div>
       </div>
     </div>
 

@@ -41,15 +41,15 @@ function isoProject(x, y) {
 ──────────────────────────────────────────────────── */
 const FURNITURE = [
   { id: 'piano',      x: 150, y: 126, w: 95, h: 40, color: 0x2e2210, label: '🎹 Piano',            kind: 'minigame' },
-  { id: 'desk',       x: 267, y: 72,  w: 80, h: 55, color: 0x3b82f6, label: '🖥️ Escritorio',       kind: 'info' },
+  { id: 'desk',       x: 267, y: 72,  w: 80, h: 55, color: 0x3b82f6, label: '🖥️ Escritorio',       kind: 'list' },
   { id: 'juggling',   x: 395, y: 91,  w: 40, h: 40, color: 0xff8a3d, label: '🤹 Malabares',        kind: 'video' },
-  { id: 'diplomas',   x: 530, y: 300, w: 65, h: 40, color: 0xffd580, label: '🏆 Diplomas',         kind: 'info' },
+  { id: 'diplomas',   x: 530, y: 300, w: 65, h: 40, color: 0xffd580, label: '🏆 Diplomas',         kind: 'trajectory' },
   { id: 'bed',        x: 493, y: 424, w: 70, h: 50, color: 0xc9a06a, label: '🛏️ Cama',            kind: 'info' },
   { id: 'door',       x: 395, y: 509, w: 55, h: 20, color: 0x94a3b8, label: '🚪 Salir',            kind: 'exit' },
   { id: 'reading',    x: 267, y: 528, w: 60, h: 40, color: 0xc9a06a, label: '📖 Rincón de lectura', kind: 'info' },
-  { id: 'terminal',   x: 150, y: 474, w: 65, h: 55, color: 0x00ff41, label: '💚 Terminal',         kind: 'info' },
+  { id: 'terminal',   x: 150, y: 474, w: 65, h: 55, color: 0x00ff41, label: '💚 Terminal',         kind: 'list' },
   { id: 'skateboard', x: 79,  y: 365, w: 65, h: 30, color: 0x06ffa5, label: '🛹 Patineta',         kind: '3d' },
-  { id: 'bookshelf',  x: 79,  y: 235, w: 65, h: 65, color: 0xb14eff, label: '📚 Estante',          kind: 'info' },
+  { id: 'bookshelf',  x: 79,  y: 235, w: 65, h: 65, color: 0xb14eff, label: '📚 Estante',          kind: 'list' },
   { id: 'pukis',      x: 300, y: 300, w: 28, h: 24, color: 0x8b5a2b, label: '🐾 Pukis',            kind: 'info', decorative: true },
 ];
 

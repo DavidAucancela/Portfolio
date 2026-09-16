@@ -200,13 +200,74 @@ destroy + TV vuelve a estática, volver a `.gam` → estática de nuevo, no
 
 **Con arte placeholder** (rombos/bloques de color, sin sprites reales
 todavía) — el motor, los controles y la integración con el resto del sitio
-ya están validados. Siguiente paso natural: generar el sprite de David
-(referencia de fotos existentes) y reemplazar los bloques de color por
-arte real, objeto por objeto.
+ya están validados.
+
+## Fases 0-2 (2026-09-15/16) — motor, contenido real, minijuegos jugables
+
+Retomado después del MVP. Rama de trabajo: `feat/gam-mode-fase0` (rebaseada
+sobre `feat/dynamic-bg-interactions`).
+
+**Fase 0 — base del motor:**
+- El fondo global (`background.js`) se pausa por completo mientras
+  `.gam-playing` (antes seguía simulando partículas invisibles detrás del
+  juego) — `MutationObserver` sobre la clase del `body`.
+- El panel de objetos pausa/retoma `GamScene` (`scene.pause`/`resume`) —
+  antes el personaje se seguía moviendo y `E` reabría el modal detrás.
+- `Phaser.Scale.FIT` + cámara con `startFollow` acotada al piso (antes
+  canvas fijo 800×600 escalado solo por CSS).
+- Controles táctiles: joystick virtual + botón `E` (`pointer:coarse`).
+- JotAI (`#jotai-widget`, z-index 9940) se oculta mientras se juega — antes
+  flotaba por encima de la TV a pantalla completa (9500).
+
+**Fase 1 — contenido real (sin arte todavía):**
+- desk/bookshelf/terminal pasan de modal placeholder a un panel `list` con
+  los proyectos reales de `.dev`/`.ia`/`.sec` — click abre
+  `ProjectGallery.open(p, modo)`, reutilizando la gallery existente.
+  bookshelf además lista las skills `category:"ai"`.
+- diplomas abre el drawer de trayectoria real (`portfolio:syncTrayectoria`)
+  en vez de un modal propio.
+- `data/gam-hotspots.json` pasa a bilingüe `{es,en}`.
+
+**Fase 2 — minijuegos reales:**
+- 🎹 Piano jugable: Web Audio (sin archivos), modo libre + modo desafío
+  estilo Simon con récord en `localStorage`.
+- 🤹 Malabares jugable: minijuego de reflejos (atrapar la pelota en la
+  zona), récord en `localStorage`. El botón de video solo aparece si
+  `videoUrl` tiene un link real (sigue en `null`).
+- 🛹 Patineta: **todavía no** es el visor 3D real con `@google/model-viewer`
+  — sin el `.glb` no hay nada que cargar ahí. Queda un adelanto honesto
+  (deck dibujado con tilt 3D arrastrable) hasta que llegue el modelo; el
+  módulo (`gam-skateboard.js`) se reemplaza entero sin tocar el resto.
+- Progreso: `localStorage('gam-discovered')` cuenta los 10 objetos
+  interactuables explorados, persistido entre visitas (`#gam-progress`,
+  esquina sup. izq. de la TV), con un toast breve al completar los 10.
+- Eventos `gam:start`/`gam:interact`/`gam:score` → `js/analytics.js`
+  (`gam_start`/`gam_interact`/`gam_minigame_score`).
+
+Todos los cambios de código verificados con `npm run build` (chunks
+separados intactos: `phaser`, `gam-scene`, `gam-piano`, `gam-juggling`,
+`gam-skateboard`) y chequeo de sintaxis de cada módulo — **sin probar en
+navegador real** (sin acceso a Claude in Chrome en esas sesiones). Pendiente
+que David lo juegue de punta a punta antes de la Fase 3.
+
+## Pendiente — Fase 3 (arte real) y Fase 4 (pulido)
+
+- **Arte real:** hoja de referencia del personaje (fotos reales de David) →
+  sprites de caminata en 4 direcciones; sprite de Pukis; reemplazar los
+  `ICON_DRAWERS` de los muebles por arte real, uno por uno. Bloqueado en
+  parte por la decisión isométrico vs. top-down (ver "Riesgo técnico" y
+  "MVP" arriba) — **recomendado: top-down**, más fácil de generar
+  consistente en 4 direcciones y hay tilesets CC0 listos; el cambio de
+  motor es acotado (sacar `isoProject()`, la lógica de colisión no cambia).
+- **Sonido/mute:** sin sonido ambiente propio todavía (el piano usa audio
+  como mecánica, no como ambientación) — no hay nada que mutear aún.
+- **`docs/gam-mode-plan.md`/`CLAUDE.md`:** actualizados a esta fecha; seguir
+  actualizando en cada fase nueva.
+- Falta probar en un dispositivo móvil real (no solo el gating por
+  `pointer:coarse` revisado en código).
 
 ## Abierto / por confirmar con David
 
-- Color de acento de `.gam` y tono general (¿arcade retro, cálido/hogareño?)
 - Link de YouTube del video de malabares (pendiente de que lo pases)
 - Patineta: ¿ya existe un modelo 3D (`.glb`) del deck, o hay que generarlo?
   Define si el visor 3D entra en el MVP o en una iteración posterior

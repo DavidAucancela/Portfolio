@@ -221,6 +221,31 @@
   max-height: 100%;
 }
 
+/* ─── Contador de objetos explorados ─── */
+.gam-progress {
+  position: absolute;
+  top: 0.7rem;
+  left: 0.7rem;
+  z-index: 3;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(26, 18, 6, 0.75);
+  border: 1px solid rgba(255, 176, 32, 0.35);
+  backdrop-filter: blur(6px);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  color: #f5e9d6;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.gam-progress[hidden] { display: none; }
+
+.gam-progress.is-complete {
+  background: var(--color-accent);
+  color: #1a1206;
+  font-weight: 700;
+}
+
 /* ─── Prompt de interacción ("Presiona E") ─── */
 .gam-prompt {
   position: absolute;

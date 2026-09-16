@@ -24,6 +24,59 @@ const GAME_HEIGHT = 600;
 const _projectsCache = {};
 let _skillsPromise = null;
 
+/* ────────────────────────────────────────────────────
+   PROGRESO — cuántos de los 10 objetos interactuables ya se exploraron,
+   persistido entre visitas (localStorage, no depende de terminar el
+   juego de una sentada). La puerta ('exit') no cuenta como objeto.
+──────────────────────────────────────────────────── */
+const DISCOVER_KEY = 'gam-discovered';
+const DISCOVERABLE_IDS = [
+  'piano', 'desk', 'juggling', 'diplomas', 'bed',
+  'reading', 'terminal', 'skateboard', 'bookshelf', 'pukis',
+];
+
+function _loadDiscovered() {
+  try { return new Set(JSON.parse(localStorage.getItem(DISCOVER_KEY) || '[]')); }
+  catch { return new Set(); }
+}
+function _saveDiscovered() {
+  try { localStorage.setItem(DISCOVER_KEY, JSON.stringify([..._discovered])); } catch { /* privado/lleno: sin progreso persistido, no rompe el juego */ }
+}
+
+let _discovered = _loadDiscovered();
+let _celebrated = false; // no repetir el aviso de "recorriste todo" dentro de la misma sesión
+
+function _updateProgressUI() {
+  const el = document.getElementById('gam-progress');
+  if (!el) return;
+  el.hidden = _discovered.size === 0;
+  el.textContent = `🔎 ${_discovered.size}/${DISCOVERABLE_IDS.length}`;
+}
+
+function _markDiscovered(id) {
+  if (!DISCOVERABLE_IDS.includes(id) || _discovered.has(id)) return;
+  _discovered.add(id);
+  _saveDiscovered();
+  _updateProgressUI();
+  if (_discovered.size === DISCOVERABLE_IDS.length) _celebrateComplete();
+}
+
+/** Toast breve en el mismo lugar del contador — no compite con el panel
+ *  que ya se está abriendo para el objeto que completó la ronda. */
+function _celebrateComplete() {
+  if (_celebrated) return;
+  _celebrated = true;
+  const el = document.getElementById('gam-progress');
+  if (!el) return;
+  el.classList.add('is-complete');
+  const prev = el.textContent;
+  el.textContent = LangSwitcher.getLang() === 'en' ? '🎉 Found them all!' : '🎉 ¡Encontraste todo!';
+  setTimeout(() => {
+    el.classList.remove('is-complete');
+    el.textContent = prev;
+  }, 4000);
+}
+
 function _esc(s) {
   return String(s ?? '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
@@ -96,6 +149,7 @@ async function _boot() {
     });
 
     GamTV.onBooted();
+    window.dispatchEvent(new CustomEvent('gam:start'));
   } catch (err) {
     console.warn('[GamLoader] No se pudo iniciar el cuarto:', err);
     // Si Phaser falla, no dejar al usuario atrapado en pantalla completa
@@ -365,6 +419,7 @@ function init() {
   GamTV.onStart(_handleStart);
   _bindModal();
   _bindTrajectoryResume();
+  _updateProgressUI(); // refleja el progreso de visitas anteriores apenas arranca
 
   window.addEventListener('portfolio:modeChange', (e) => {
     const mode = e.detail.mode;
@@ -381,7 +436,10 @@ function init() {
     const { kind, id } = e.detail;
     if (kind === 'exit') {
       ThemeSwitcher.switchMode(_lastNonGamMode || 'dev');
-    } else if (kind === 'list') {
+      return;
+    }
+    _markDiscovered(id);
+    if (kind === 'list') {
       _openListPanel(e.detail);
     } else if (kind === 'trajectory') {
       _openTrajectory();

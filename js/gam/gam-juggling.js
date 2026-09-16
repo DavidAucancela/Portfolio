@@ -119,6 +119,7 @@ function mount(container, { videoUrl } = {}) {
     const best = Math.max(_bestScore(), score);
     localStorage.setItem(BEST_KEY, String(best));
     bestEl.textContent = String(best);
+    window.dispatchEvent(new CustomEvent('gam:score', { detail: { game: 'juggling', score } }));
     statusEl.innerHTML = `Se cayó en ${score} 🎾 — récord <strong id="gam-juggle-best">${best}</strong>`;
     startBtn.hidden = false;
     startBtn.textContent = '↻ Reintentar';

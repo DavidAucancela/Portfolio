@@ -415,6 +415,10 @@
               <!-- Phaser monta el <canvas> del juego acá -->
               <div id="gam-canvas-root" class="gam-canvas-root"></div>
 
+              <!-- Contador de objetos explorados — persiste entre visitas
+                   (gam-loader.js _markDiscovered/_updateProgressUI) -->
+              <div class="gam-progress" id="gam-progress" hidden aria-live="polite"></div>
+
               <!-- Prompt de interacción por proximidad ("Presiona E") -->
               <div class="gam-prompt" id="gam-prompt" hidden aria-hidden="true">
                 <kbd>E</kbd> <span id="gam-prompt-label">Interactuar</span>

@@ -47,10 +47,13 @@ css/
   pdf-modal.css               # Modal fullscreen visor de PDF (CV + links externos)
   ia-mascot.css               # JotAI widget flotante: trigger, panel de chat, tour, estados
   section-divider.css         # Divisor animado entre secciones (partículas + glow al hover)
+  gam-tv.css                  # TV del modo .gam: estática, pantalla completa al jugar, panel de
+                               # objetos (texto/lista/minijuegos), controles táctiles, progreso
   themes/
     dev.css                   # Overrides modo .dev (azul, tipografía display)
     ia.css                    # Overrides modo .ia (púrpura, gradientes)
     sec.css                   # Overrides modo .sec (verde terminal, negro puro)
+    gam.css                   # Overrides modo .gam (ámbar/magenta, "cuarto hogareño")
 
 js/
   main.js                     # Punto de entrada Vite — importa módulos y llama init()
@@ -75,11 +78,20 @@ js/
   pdf-modal.js                # PDFModal — visor PDF inline (modal overlay con iframe)
   section-divider.js          # SectionDivider — divisor animado entre secciones (canvas partículas)
   analytics.js                 # Analytics — sink de eventos custom hacia Vercel Analytics
+  gam/
+    gam-tv.js                  # GamTV — DOM de la TV: estática, botón de inicio, loading, hint
+    gam-loader.js              # Orquestador: boot/destroy de Phaser, paneles de objetos, progreso
+    gam-scene.js                # GamScene (Phaser) — cuarto, colisiones, hotspots, cámara, táctil
+    gam-piano.js                # Minijuego piano (Web Audio, sin Phaser)
+    gam-juggling.js             # Minijuego malabares (reflejos, sin Phaser)
+    gam-skateboard.js           # Vista previa de la patineta (adelanto, sin @google/model-viewer)
 
 data/
   dev-projects.json           # 11 proyectos del modo .dev (cargados con fetch en runtime)
   ia-projects.json            # 7 proyectos del modo .ia (cargados con fetch en runtime)
   sec-projects.json           # 7 proyectos del modo .sec (labs HTB + prácticas + certs)
+  gam-hotspots.json           # Contenido bilingüe de los 10 objetos interactuables del modo .gam
+  gam-projects.json           # Vacío — fallback para projects.js en modo .gam (no se usa hoy)
   personal.json               # Bio, email, redes, timeline
   skills.json                 # Skills por categoría
 
@@ -216,6 +228,66 @@ el panel en el grid del `.container`.**
   (85ms/char; instantáneo con reduced-motion) y lo ejecuta. Sin uso actual
   (el tour de JotAI la usó; quedó disponible)
 - El archivo `sec.css` oculta `#hero-bg-text` cuando el terminal está visible
+
+## Modo `.gam` — Cuarto interactivo (`js/gam/*.js` + `css/gam-tv.css`)
+
+Cuarto modo del portfolio, junto a `dev`/`ia`/`sec`, pero de naturaleza distinta: no
+cambia el estilo de las mismas cards — es una escena jugable (Phaser 3) que vive
+**entera dentro del hero**, detrás de una "TV" (mismo lugar/patrón que los widgets de
+arriba). `#section-divider`/`#about`/`#projects`/`#skills`/`#contact` se ocultan por
+completo en este modo. Diseño completo, decisiones y roadmap en
+**`docs/gam-mode-plan.md`** — acá solo el resumen de arquitectura.
+
+- **`gam-tv.js`** — dueño del DOM de la TV: estática (canvas de ruido, ~14fps) +
+  botón "Click para comenzar". No sabe nada de Phaser.
+- **`gam-loader.js`** — orquestador. Dispara el `import()` dinámico de `phaser` +
+  `gam-scene.js` recién al hacer click en la TV (nunca al entrar al modo). Al jugar,
+  la TV pasa a `position:fixed; inset:0` (overlay a pantalla completa, `.gam-playing`
+  en `body`): navbar, mode-bar, JotAI y el resto del hero se ocultan — **la única
+  salida es la puerta del cuarto**. También maneja los paneles que abren los objetos
+  (ver abajo) y el contador de progreso.
+- **`gam-scene.js`** — la `Phaser.Scene`: piso isométrico (`isoProject()`, toda la
+  lógica de movimiento/colisión vive en coordenadas cartesianas simples — cambiar a
+  top-down es sacar esa proyección, no tocar colisiones), 11 objetos (`FURNITURE`),
+  cámara con `startFollow` acotada al piso, `Phaser.Scale.FIT`. Controles: WASD/flechas
+  + tecla `E`, o el joystick virtual + botón `E` que se muestran solo con
+  `pointer:coarse` (`#gam-touch`, combinado con el teclado en `_updateFrame`).
+
+**Panel de objetos (`gam-loader.js`, sobre `#gam-modal`)** — un solo `<div>` con varias
+variantes según `kind` del objeto en `FURNITURE`, todas pausan `GamScene` mientras
+están abiertas (`scene.pause`/`resume`, así el jugador no se mueve detrás del panel):
+- `list` (desk/bookshelf/terminal) → lista real de proyectos `.dev`/`.ia`/`.sec`
+  (fetch cacheado de `data/{modo}-projects.json`, mismo patrón que `projects.js`);
+  click en un ítem cierra el panel y abre `ProjectGallery.open(p, modo)`. `bookshelf`
+  además lista las skills `category:"ai"` de `data/skills.json` (`showAiSkills`).
+- `trajectory` (diplomas) → dispara `portfolio:syncTrayectoria` (abre el drawer que
+  ya existe); un `MutationObserver` sobre la clase `open` de `#jonathan-panel` retoma
+  la escena cuando se cierra (app.js no emite un evento propio de cierre).
+- `id === 'piano' | 'juggling' | 'skateboard'` → monta un minijuego real dentro de
+  `#gam-modal-list`, importado con `import()` dinámico recién al interactuar
+  (`gam-piano.js`, `gam-juggling.js`, `gam-skateboard.js` — cada uno autocontenido,
+  con su propio `mount(container)` → `unmount()` que limpia timers/`AudioContext`/
+  listeners). `_teardownMinigame()` corre al cerrar el panel o abrir otro.
+- resto (bed/pukis/reading) → texto simple, contenido todavía placeholder.
+
+`data/gam-hotspots.json` es bilingüe (`{es,en}` en `title`/`message`, resuelto con
+`LangSwitcher.L()`); trae además `projectMode`/`showAiSkills` (objetos `list`) y
+`videoUrl`/`modelUrl` (`null` hoy — malabares y patineta, pendientes de esos assets).
+
+**Progreso** (`gam-loader.js`): cada interacción no-`exit` marca su `id` como
+descubierto en `localStorage('gam-discovered')`; `#gam-progress` (esquina sup. izq.
+de la TV) muestra `X/10` y persiste entre visitas. Al completar los 10 objetos, un
+toast breve una vez por sesión (no un panel — no compite con el que ya se abre para
+el objeto que completó la ronda).
+
+**Eventos custom propios de `.gam`** (además de `portfolio:*` reutilizados arriba):
+```js
+'gam:interact'  // objeto interactuado → detail: { id, kind, label, content }
+'gam:start'     // Phaser terminó de montarse (boot exitoso)
+'gam:score'     // fin de una ronda de piano/malabares → detail: { game, score }
+```
+`js/analytics.js` los traduce a `gam_interact`/`gam_start`/`gam_minigame_score` en
+Vercel Analytics, mismo criterio que el resto de los eventos custom del sitio.
 
 ## Secciones en index.html
 - `#hero` — presentación con modos + terminal .sec

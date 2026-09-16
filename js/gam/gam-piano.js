@@ -175,6 +175,7 @@ function mount(container) {
     const best = Math.max(_bestScore(), score);
     localStorage.setItem(BEST_KEY, String(best));
     bestEl.textContent = String(best);
+    window.dispatchEvent(new CustomEvent('gam:score', { detail: { game: 'piano', score } }));
     statusEl.textContent = score > 0
       ? `Se rompió en ${score} 🎹 — ¿otra vuelta?`
       : 'Se rompió en la primera — ¿otra vuelta?';

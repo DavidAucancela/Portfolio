@@ -1,0 +1,128 @@
+[
+  {
+    "id": "desk",
+    "icon": "🖥️",
+    "title": {
+      "es": "Escritorio",
+      "en": "Desk"
+    },
+    "message": {
+      "es": "Los proyectos full-stack de David — hecho con Django, React, Angular y compañía.",
+      "en": "David's full-stack projects — built with Django, React, Angular and friends."
+    },
+    "projectMode": "dev"
+  },
+  {
+    "id": "bookshelf",
+    "icon": "📚",
+    "title": {
+      "es": "Estante",
+      "en": "Bookshelf"
+    },
+    "message": {
+      "es": "Proyectos de IA y las herramientas de IA que más usa.",
+      "en": "AI projects, plus the AI tools he uses the most."
+    },
+    "projectMode": "ia",
+    "showAiSkills": true
+  },
+  {
+    "id": "terminal",
+    "icon": "💚",
+    "title": {
+      "es": "Terminal",
+      "en": "Terminal"
+    },
+    "message": {
+      "es": "Labs de HackTheBox, prácticas y certificaciones de seguridad.",
+      "en": "HackTheBox labs, hands-on practice and security certifications."
+    },
+    "projectMode": "sec"
+  },
+  {
+    "id": "diplomas",
+    "icon": "🏆",
+    "title": {
+      "es": "Pared de diplomas",
+      "en": "Wall of diplomas"
+    },
+    "message": {
+      "es": "Trayectoria completa: proyectos, prácticas y certificaciones en orden.",
+      "en": "Full timeline: projects, internships and certifications in order."
+    }
+  },
+  {
+    "id": "piano",
+    "icon": "🎹",
+    "title": {
+      "es": "Piano",
+      "en": "Piano"
+    },
+    "message": {
+      "es": "Acá va a ir un minijuego para tocar una melodía simple. Todavía en construcción.",
+      "en": "A mini-game for playing a simple tune goes here. Still under construction."
+    }
+  },
+  {
+    "id": "juggling",
+    "icon": "🤹",
+    "title": {
+      "es": "Malabares",
+      "en": "Juggling"
+    },
+    "message": {
+      "es": "Acá van a ir un minijuego de malabares y un video de ejemplo. Todavía en construcción.",
+      "en": "A juggling mini-game and an example video go here. Still under construction."
+    },
+    "videoUrl": null
+  },
+  {
+    "id": "skateboard",
+    "icon": "🛹",
+    "title": {
+      "es": "Patineta",
+      "en": "Skateboard"
+    },
+    "message": {
+      "es": "Acá va a abrir un visor 3D del arte de la patineta. Todavía en construcción.",
+      "en": "A 3D viewer for the skateboard's artwork opens here. Still under construction."
+    },
+    "modelUrl": null
+  },
+  {
+    "id": "reading",
+    "icon": "📖",
+    "title": {
+      "es": "Rincón de lectura",
+      "en": "Reading corner"
+    },
+    "message": {
+      "es": "Libros favoritos — próximamente.",
+      "en": "Favorite books — coming soon."
+    }
+  },
+  {
+    "id": "bed",
+    "icon": "🛏️",
+    "title": {
+      "es": "Cama",
+      "en": "Bed"
+    },
+    "message": {
+      "es": "Este cuarto también es un cuarto de verdad — acá descansa David entre proyecto y proyecto.",
+      "en": "This room is also a real room — David rests here between projects."
+    }
+  },
+  {
+    "id": "pukis",
+    "icon": "🐾",
+    "title": {
+      "es": "Pukis",
+      "en": "Pukis"
+    },
+    "message": {
+      "es": "El perro de David. Un homenaje. 🐶",
+      "en": "David's dog. A tribute. 🐶"
+    }
+  }
+]

@@ -395,6 +395,10 @@ const WELCOME_KEY  = 'jotai-welcomed';
 const MODES_INTRO_TEXT = '¿Viste que hay 3 modos arriba? .dev, .ia y .sec cambian todo el contenido, no solo el color.';
 const MODES_INTRO_KEY  = 'jotai-modes-intro-seen';
 
+/* Hint del fondo animado — mantener presionado dispara algo en .dev/.ia y
+   nadie lo descubre solo. Encadenado tras el aviso de los 3 modos. */
+const HERO_HOLD_TEXT = 'Probá mantener presionado sobre el fondo un segundo — algo va a pasar.';
+
 /* Nudges contextuales — sutiles, con cooldown y presupuesto por sesión */
 const NUDGE_DWELL_MS    = 8000;   // tiempo en una sección antes del tip
 const NUDGE_COOLDOWN_MS = 45000;  // silencio mínimo entre globos (global)
@@ -1531,11 +1535,17 @@ export const IaMascot = (() => {
   }
 
   function _maybeIntroduceModes() {
-    if (_introducedModes()) return;
-    if (say(MODES_INTRO_TEXT, { duration: 6500, mood: 'pointing' })) {
+    // El aviso de los 3 modos es 1x para siempre (localStorage) — pero el
+    // hint del fondo debe poder aparecer en cada sesión nueva, así que se
+    // encadena afuera del early-return de _introducedModes().
+    if (!_introducedModes() && say(MODES_INTRO_TEXT, { duration: 6500, mood: 'pointing' })) {
       try { localStorage.setItem(MODES_INTRO_KEY, '1'); } catch { /* privado */ }
       _pulseModeBar();
     }
+    setTimeout(() => {
+      if (document.body.dataset.theme === 'sec') return; // ahí "mantener" no hace nada en el fondo
+      _maybeNudge('hero-hold', HERO_HOLD_TEXT);
+    }, 1500);
   }
 
   /* Pulso sutil en los chips del mode-bar, sincronizado con el globo de

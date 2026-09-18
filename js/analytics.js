@@ -26,6 +26,22 @@ function init() {
     if (!detail?.section) return;
     track('section_dwell', { section: detail.section, mode: detail.mode || '' });
   });
+
+  // Modo .gam — ver js/gam/gam-loader.js (gam:start, gam:interact) y
+  // gam-piano.js/gam-juggling.js (gam:score)
+  window.addEventListener('gam:start', () => {
+    track('gam_start');
+  });
+
+  window.addEventListener('gam:interact', ({ detail }) => {
+    if (!detail?.id) return;
+    track('gam_interact', { id: detail.id, kind: detail.kind || '' });
+  });
+
+  window.addEventListener('gam:score', ({ detail }) => {
+    if (!detail?.game) return;
+    track('gam_minigame_score', { game: detail.game, score: detail.score ?? 0 });
+  });
 }
 
 export const Analytics = { init };

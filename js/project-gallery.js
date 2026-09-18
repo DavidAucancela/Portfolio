@@ -1,7 +1,7 @@
 import { ProjectDetail } from './project-detail.js';
 import { LangSwitcher } from './lang.js';
 
-const MODE_EMOJI = { dev: '⚙️', ia: '🤖', sec: '🔒' };
+const MODE_EMOJI = { dev: '⚙️', ia: '🤖', sec: '🔒', gam: '🎮' };
 
 function _buildPgalPlaceholder(p) {
   const esc  = s => String(s || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');

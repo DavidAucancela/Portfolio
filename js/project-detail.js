@@ -13,7 +13,7 @@ const _isEn = () => LangSwitcher.getLang() === 'en';
 /* ─────────────────────────────────────────────────────────
    CONFIG
 ───────────────────────────────────────────────────────── */
-const MODE_PILL = { dev: '.dev', ia: '.ia', sec: '.sec' };
+const MODE_PILL = { dev: '.dev', ia: '.ia', sec: '.sec', gam: '.gam' };
 
 /* Metadata por fase: nombre y color de acento — mismo vocabulario en los 3 modos */
 const PHASE_META = {

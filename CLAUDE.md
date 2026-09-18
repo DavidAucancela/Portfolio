@@ -47,10 +47,15 @@ css/
   pdf-modal.css               # Modal fullscreen visor de PDF (CV + links externos)
   ia-mascot.css               # JotAI widget flotante: trigger, panel de chat, tour, estados
   section-divider.css         # Divisor animado entre secciones (partículas + glow al hover)
+  gam-tv.css                  # Prompt "insertar moneda" del modo .gam (sin bezel — la estática
+                               # vive en background.js GamField), pantalla completa al jugar
+                               # (navbar visible, solo mode-bar oculto), panel de objetos
+                               # (texto/lista/minijuegos), controles táctiles, progreso
   themes/
     dev.css                   # Overrides modo .dev (azul, tipografía display)
     ia.css                    # Overrides modo .ia (púrpura, gradientes)
     sec.css                   # Overrides modo .sec (verde terminal, negro puro)
+    gam.css                   # Overrides modo .gam (ámbar/magenta, "cuarto hogareño")
 
 js/
   main.js                     # Punto de entrada Vite — importa módulos y llama init()
@@ -75,11 +80,21 @@ js/
   pdf-modal.js                # PDFModal — visor PDF inline (modal overlay con iframe)
   section-divider.js          # SectionDivider — divisor animado entre secciones (canvas partículas)
   analytics.js                 # Analytics — sink de eventos custom hacia Vercel Analytics
+  gam/
+    gam-tv.js                  # GamTV — prompt "insertar moneda", loading, hint (sin estática
+                               # propia — la pinta background.js GamField como fondo unificado)
+    gam-loader.js              # Orquestador: boot/destroy de Phaser, paneles de objetos, progreso
+    gam-scene.js                # GamScene (Phaser) — cuarto, colisiones, hotspots, cámara, táctil
+    gam-piano.js                # Minijuego piano (Web Audio, sin Phaser)
+    gam-juggling.js             # Minijuego malabares (reflejos, sin Phaser)
+    gam-skateboard.js           # Vista previa de la patineta (adelanto, sin @google/model-viewer)
 
 data/
   dev-projects.json           # 11 proyectos del modo .dev (cargados con fetch en runtime)
   ia-projects.json            # 7 proyectos del modo .ia (cargados con fetch en runtime)
   sec-projects.json           # 7 proyectos del modo .sec (labs HTB + prácticas + certs)
+  gam-hotspots.json           # Contenido bilingüe de los 10 objetos interactuables del modo .gam
+  gam-projects.json           # Vacío — fallback para projects.js en modo .gam (no se usa hoy)
   personal.json               # Bio, email, redes, timeline
   skills.json                 # Skills por categoría
 
@@ -155,14 +170,28 @@ Los keyframes globales son: `sd-up`, `sd-left`, `sd-right`, `sd-scale`, `sd-bar`
 - Botón trigger en la navbar (antes del hamburger)
 - `_openProject(slug, preferredMode)` cambia de modo si es necesario y navega al proyecto
 
-## Widgets del hero — `.git-activity` / `.ia-tokens` / `.sec-terminal`
+## Widgets del hero — `.git-activity` / `.ia-tokens` / `.sec-terminal` / `.gam-tv`
 
-Tres paneles, uno por modo (`git-history.js`+`.css`, `ia-tokens-widget.js`+`.css`,
-`sec-terminal.js`+`.css`), anclados arriba a la derecha del hero en desktop. Cada uno
-tiene dos estados en `data-widget-state` (`collapsed`/`expanded`, toggle vía el botón
-"Ver más"/compuerta). El paso `collapsed → expanded` revela el cuerpo directamente
-(la vieja animación de intro por widget — commit→cloud en `.dev`, red neuronal
-mini→macro en `.ia`, glitch de intrusión en `.sec` — se eliminó).
+Cuatro paneles, uno por modo (`git-history.js`+`.css`, `ia-tokens-widget.js`+`.css`,
+`sec-terminal.js`+`.css`, `gam-tv.js`+`.css`), anclados arriba a la derecha del hero en
+desktop. Los primeros tres tienen dos estados en `data-widget-state`
+(`collapsed`/`expanded`, toggle vía el botón "Ver más"/compuerta) — `.gam-tv` no: tiene
+sus 2 estados propios (prompt "insertar moneda" ⇄ jugando, ver más abajo). El paso
+`collapsed → expanded` revela el cuerpo directamente (la vieja animación de intro por
+widget — commit→cloud en `.dev`, red neuronal mini→macro en `.ia`, glitch de intrusión
+en `.sec` — se eliminó).
+
+**Entrada de los 4 widgets — `animation`, NUNCA `.animate-on-scroll`:** los cuatro
+usan `animation: sd-right .55s … both; animation-delay:.3s; opacity:0;` en su regla
+base (reusan el keyframe `sd-right` de `animations.css` por consistencia visual, pero
+como `animation` normal). **Se probó `.animate-on-scroll` (el sistema de reveal en
+scroll del resto del sitio) y rompió los 4 widgets** — `animation-timeline: view()`
+tiene un bug real en Chrome: cuando un elemento pasa de `display:none` a visible *sin
+que haya scroll de por medio* (que es exactamente lo que pasa acá — el widget aparece
+por cambio de modo, no por scroll), el timeline no se re-evalúa y el elemento queda
+pegado en `opacity:0` para siempre. `.animate-on-scroll` es correcto para contenido
+que ya está en el flujo del documento y se revela al scrollear (`#about`/`#skills`/
+`#contact`) — nunca para algo que alterna `display:none ⇄ flex` por JS/CSS de tema.
 
 **El panel es un flotante independiente — nunca un grid con `.hero-content`.**
 Hasta hace poco `#hero .container` pasaba a `display:grid; grid-template-columns:1fr
@@ -210,12 +239,147 @@ el panel en el grid del `.container`.**
   que el resto de los widgets — ver arriba)
 - Boot sequence animado (`BOOT_LINES`) la primera vez que se abre la terminal —
   al abrir la compuerta va directo al boot, sin la vieja animación de intrusión
-- Comandos: `help`, `whoami`, `ls [projects]`, `cat <file>.md`, `ping linkedin`, `clear`, `exit`
+- Comandos: `help`, `whoami`, `neofetch`, `history`, `whois`, `ls [projects]`,
+  `cat <file>.md`, `ping linkedin`, `nmap`, `patch/quarantine/block <port>`,
+  `clear`, `exit`
 - Historial de comandos con ↑↓
 - `SecTerminal.demo(cmd)` — API pública: teclea el comando en el input real
   (85ms/char; instantáneo con reduced-motion) y lo ejecuta. Sin uso actual
   (el tour de JotAI la usó; quedó disponible)
 - El archivo `sec.css` oculta `#hero-bg-text` cuando el terminal está visible
+
+**Sistema comprometido (`portfolio:secBreach` → investigación → `portfolio:secRepaired`):**
+Cuando `SecField` (background.js) llega a 0% de integridad, todo el sitio queda
+"apagado" salvo la terminal — la única forma de recuperarlo es investigar y remediar
+desde ahí. Flujo completo:
+1. `SecField._triggerHacked()` (background.js) pone `locked=true` (congela
+   `integrity`/`hacked`, corta el spawn de virus — ver `step()`) y dispara
+   `window.dispatchEvent(new CustomEvent('portfolio:secBreach'))`. Guardado contra
+   doble disparo (`if (locked) return;` al inicio) por si dos virus expiran en el
+   mismo frame del loop de `_virus()`.
+2. `sec-terminal.js` escucha `portfolio:secBreach` (`_onBreach`): agrega
+   `body.classList.add('is-sec-hacked')`, marca `inert` en `#navbar`, `#mode-bar`,
+   `.hero-content`, `#about`, `#projects`, `#skills`, `#contact`, `.footer` (incluir
+   `#mode-bar` es a propósito — si quedara usable el usuario podría saltar de modo y
+   "esquivar" el candado), fuerza `_enter()` y — **si la terminal no estaba booteada
+   todavía** — espera 1300ms (el boot async tarda ~1.1s en `setTimeout`s escalonados)
+   antes de imprimir la alerta, para no pisar el orden de las líneas.
+3. `css/sec-terminal.css` — `body.is-sec-hacked` aplica `filter: grayscale(1)
+   brightness(0.12) contrast(1.3)` + `outline` verde tenue a esos mismos selectores
+   (apagado elemento por elemento, no hay un ancestro común que excluya solo a la
+   terminal — está DENTRO de `#hero`, hermana de `.hero-content`).
+4. `INTRUSION_VECTORS` (3 vectores fijos, `sec-terminal.js`): `patch 4444`
+   (backdoor), `quarantine 3389` (ransomware) — resolución directa por comando — y
+   `block 22` (brute-force) — dispara `_startReflexChallenge()`: credenciales
+   candidatas ciclando cada 550ms en una línea del output, hay que presionar Enter
+   cuando aparece la marcada como correcta (`line.dataset.hit`). Mientras el
+   minijuego está activo, `_onKeyDown` bifurca a `_onReflexKeyDown` — los comandos
+   normales (`nmap`, etc.) quedan bloqueados hasta acertar o fallar el intento.
+5. `nmap` lista los 3 vectores (`[RESUELTO]` los ya resueltos); `patch`/`quarantine`/
+   `block <puerto>` (`_handleRemediation`) validan puerto + acción antes de resolver.
+6. Al resolver los 3, `_endHack()` saca `is-sec-hacked`/`inert`, limpia `_hackState`
+   y dispara `portfolio:secRepaired` — `SecField` lo escucha a nivel de módulo (un
+   solo listener, registrado una vez al evaluar el IIFE) y resetea
+   `integrity=100; hacked=0; locked=false`, reanudando el spawn de virus.
+
+## Modo `.gam` — Cuarto interactivo (`js/gam/*.js` + `css/gam-tv.css`)
+
+Cuarto modo del portfolio, junto a `dev`/`ia`/`sec`, pero de naturaleza distinta: no
+cambia el estilo de las mismas cards — es una escena jugable (Phaser 3) que vive
+**entera dentro del hero**. `#section-divider`/`#about`/`#projects`/`#skills`/`#contact`
+se ocultan por completo en este modo. Diseño completo, decisiones y roadmap en
+**`docs/gam-mode-plan.md`** — acá solo el resumen de arquitectura.
+
+**Sin caja de TV — la estática es el fondo unificado.** El widget de entrada ya no es
+una cajita con marco/barra de puntitos/canvas de estática propio: es solo el prompt
+**"Insertar moneda / click para empezar"** (texto con glow, sin bezel), flotando en el
+mismo lugar que los otros 3 widgets (`position:absolute; top:0; right:0` — ver la
+sección de arriba). La estática de TV la pinta `GamField` en `js/background.js`
+(el mismo canvas unificado que usan `.dev`/`.ia`/`.sec`), registrado en
+`_makeRenderer()` para el modo `gam` — antes de esto `.gam` caía al fallback de
+`DevField` (grilla azul) porque `_makeRenderer` no tenía un caso propio.
+- `GamField`: ruido random en un canvas offscreen 160×120 (`~14fps`, mismo ritmo
+  que tenía la vieja estática de `gam-tv.js`), escalado al viewport con
+  `ctx.drawImage()`. `ctx.globalAlpha = 0.32` (contraste bajo a propósito — 0.6
+  quemaba mucho). **Recortado a los límites del `#hero`** (`ctx.clip()` sobre el
+  rect medido en `_measureHero()`, coords de documento): sin esto, al scrollear más
+  allá del hero (`.gam` no tiene about/projects/skills/contact) la estática seguía
+  llenando todo el viewport en vez de verse oscuro como el resto de la página.
+  Se pausa entera cuando arranca el juego — ver el `MutationObserver` de
+  `.gam-playing` en `_bindEvents()` (`_pauseLoop()`), ya existía para performance y
+  ahora también evita repintar estática detrás de Phaser.
+- **`gam-tv.js`** — dueño del DOM del prompt: botón "Insertar moneda", loading, hint
+  de controles. No sabe nada de Phaser ni de la estática (ver arriba).
+- **`gam-loader.js`** — orquestador. Dispara el `import()` dinámico de `phaser` +
+  `gam-scene.js` recién al hacer click en el prompt (nunca al entrar al modo). Al
+  jugar, `.gam-tv` pasa a `position:fixed; inset` (overlay a pantalla completa,
+  `.gam-playing` en `body`) — ver el detalle de qué se oculta y qué no abajo.
+  También maneja los paneles que abren los objetos (ver abajo) y el contador de
+  progreso.
+- **`gam-scene.js`** — la `Phaser.Scene`: piso isométrico (`isoProject()`, toda la
+  lógica de movimiento/colisión vive en coordenadas cartesianas simples — cambiar a
+  top-down es sacar esa proyección, no tocar colisiones), 11 objetos (`FURNITURE`),
+  cámara con `startFollow` acotada al piso, `Phaser.Scale.FIT`. Controles: WASD/flechas
+  + tecla `E`, o el joystick virtual + botón `E` que se muestran solo con
+  `pointer:coarse` (`#gam-touch`, combinado con el teclado en `_updateFrame`).
+
+**Fullscreen — el navbar queda visible a propósito.** Al jugar se oculta
+`#mode-bar`, `.hero-content`, `.hero-decoration` y `#jotai-widget`, pero **no**
+`#navbar` — sube de `z-index:100` a `9600` (por encima del stage en `9500`) y su
+`top` se resetea a `0` (normalmente es `var(--mode-bar-height)`, el espacio que
+ahora dejó libre el mode-bar oculto). `.gam-tv` (el contenedor fijo) arranca en
+`top: var(--nav-height)` para no superponerse con la franja del navbar. La única
+salida sigue siendo la puerta del cuarto (`gam:interact` con `kind:'exit'`).
+
+**Trampa real ya corregida — un elemento posicionado tapa a uno sin posición aunque
+esté vacío.** `#gam-canvas-root` (donde Phaser monta el canvas del juego) es
+`position:absolute; inset:0; z-index:1` dentro de `.gam-tv__screen`, y viene
+**después** del botón `.gam-tv__start` en el HTML. Al sacarle la caja al botón para
+el rediseño (ya no es `position:absolute;inset:0;z-index:3` como antes — ahora vive
+en flujo normal, centrado por flex), se quedó sin `position`/`z-index` propios — y un
+elemento posicionado siempre pinta (y captura clicks) por encima de uno sin
+posición, sin importar el orden en el HTML ni que esté completamente vacío/invisible.
+Resultado: el click "moría" contra el `#gam-canvas-root` vacío y el botón no
+respondía. Fix: `.gam-tv__start { position: relative; z-index: 2; }` — cualquier
+hijo interactivo de `.gam-tv__screen` que viva en flujo normal necesita esto mientras
+`#gam-canvas-root`/`.gam-tv__loading`/`.gam-prompt`/`.gam-touch` sigan siendo
+`position:absolute`.
+
+**Panel de objetos (`gam-loader.js`, sobre `#gam-modal`)** — un solo `<div>` con varias
+variantes según `kind` del objeto en `FURNITURE`, todas pausan `GamScene` mientras
+están abiertas (`scene.pause`/`resume`, así el jugador no se mueve detrás del panel):
+- `list` (desk/bookshelf/terminal) → lista real de proyectos `.dev`/`.ia`/`.sec`
+  (fetch cacheado de `data/{modo}-projects.json`, mismo patrón que `projects.js`);
+  click en un ítem cierra el panel y abre `ProjectGallery.open(p, modo)`. `bookshelf`
+  además lista las skills `category:"ai"` de `data/skills.json` (`showAiSkills`).
+- `trajectory` (diplomas) → dispara `portfolio:syncTrayectoria` (abre el drawer que
+  ya existe); un `MutationObserver` sobre la clase `open` de `#jonathan-panel` retoma
+  la escena cuando se cierra (app.js no emite un evento propio de cierre).
+- `id === 'piano' | 'juggling' | 'skateboard'` → monta un minijuego real dentro de
+  `#gam-modal-list`, importado con `import()` dinámico recién al interactuar
+  (`gam-piano.js`, `gam-juggling.js`, `gam-skateboard.js` — cada uno autocontenido,
+  con su propio `mount(container)` → `unmount()` que limpia timers/`AudioContext`/
+  listeners). `_teardownMinigame()` corre al cerrar el panel o abrir otro.
+- resto (bed/pukis/reading) → texto simple, contenido todavía placeholder.
+
+`data/gam-hotspots.json` es bilingüe (`{es,en}` en `title`/`message`, resuelto con
+`LangSwitcher.L()`); trae además `projectMode`/`showAiSkills` (objetos `list`) y
+`videoUrl`/`modelUrl` (`null` hoy — malabares y patineta, pendientes de esos assets).
+
+**Progreso** (`gam-loader.js`): cada interacción no-`exit` marca su `id` como
+descubierto en `localStorage('gam-discovered')`; `#gam-progress` (esquina sup. izq.
+de la TV) muestra `X/10` y persiste entre visitas. Al completar los 10 objetos, un
+toast breve una vez por sesión (no un panel — no compite con el que ya se abre para
+el objeto que completó la ronda).
+
+**Eventos custom propios de `.gam`** (además de `portfolio:*` reutilizados arriba):
+```js
+'gam:interact'  // objeto interactuado → detail: { id, kind, label, content }
+'gam:start'     // Phaser terminó de montarse (boot exitoso)
+'gam:score'     // fin de una ronda de piano/malabares → detail: { game, score }
+```
+`js/analytics.js` los traduce a `gam_interact`/`gam_start`/`gam_minigame_score` en
+Vercel Analytics, mismo criterio que el resto de los eventos custom del sitio.
 
 ## Secciones en index.html
 - `#hero` — presentación con modos + terminal .sec
@@ -344,9 +508,10 @@ puede quedar alineado con una card mientras se scrollea.
 ### Efectos por modo
 | Modo | Campo | Interacción con el cursor | Interacción con cards |
 |------|-------|---------------------------|----------------------|
-| `.dev` | Retícula técnica (paso 68px) + paquetes viajando por las aristas | Router: desvía los paquetes hacia él y revela más malla en un radio de 200px | Hover ilumina la parcela bajo la card; el click emite 4 paquetes desde su borde |
-| `.ia` | Nodos púrpura/teal en deriva + señales por las aristas | Las conexiones **nacen bajo el puntero y se disuelven al alejarse** (radio 108px en reposo → 252px bajo el cursor); los nodos se acercan a él | Al abrir un proyecto, 18 nodos se reclutan sobre el perímetro de la card y un pulso lo recorre — la respuesta "se genera" de la red. `portfolio:projectClose` los suelta |
-| `.sec` | Lluvia de chars atenuada (opacidad 0.08–0.20; antes llegaba a 0.45) + virus | Los virus huyen a <150px y se desintegran a <55px, con estallido de debris y fogonazo en la columna | — |
+| `.dev` | Retícula técnica (paso 68px) + paquetes viajando por las aristas | Router: desvía los paquetes hacia él y revela más malla en un radio de 200px. Mantener presionado en la franja superior de la pantalla hace aparecer una nube ☁ (fade-in) y enruta los paquetes cercanos por la grilla real hacia ella — ver abajo | Hover ilumina la parcela bajo la card; el click emite 4 paquetes desde su borde |
+| `.ia` | Nodos púrpura/teal en deriva + señales por las aristas | Las conexiones **nacen bajo el puntero y se disuelven al alejarse** (radio 108px en reposo → 252px bajo el cursor); un click dispara un pulso de consulta (BFS) sin mover ningún nodo, y mantener presionado hace que ese mismo pulso se repita y crezca — ver abajo | Al abrir un proyecto, 18 nodos se reclutan sobre el perímetro de la card y un pulso lo recorre — la respuesta "se genera" de la red. `portfolio:projectClose` los suelta |
+| `.sec` | Lluvia de chars atenuada (opacidad 0.08–0.20; antes llegaba a 0.45) + virus | Los virus huyen a <150px y se desintegran a <55px (mouse) o con un tap directo en touch (`onBackgroundTap`, radio 80px — ver abajo), con estallido de debris y fogonazo en la columna | — |
+| `.gam` | Estática de TV (ruido, ~14fps), recortada a los límites del `#hero` — ver `GamField` en la sección del modo `.gam` | — | — |
 
 Acentos hardcoded en `ACCENT` / `ACCENT2` (mismo criterio que tenía `SectionCanvas`):
 ```js
@@ -354,6 +519,88 @@ dev: [59, 130, 246]   + [125, 211, 252] (paquetes brillantes)
 ia:  [177, 78, 255]   + [6, 255, 165]   (teal)
 sec: [0, 255, 65]     + [255, 0, 51]    (rojo de amenaza — virus)
 ```
+
+### Overlays fijos del canvas — nunca detrás del navbar
+`CLOUD_Y` (`.dev`) y `METER_Y` (`.sec`) **no son constantes** — se recalculan en
+`init(view)` contra `view.navBottom`, medido en `_measureNavBottom()` leyendo
+`--mode-bar-height` + `--nav-height` (custom properties de `main.css`) vía
+`getComputedStyle`. Antes eran valores fijos (96px/86px) que caían justo en la franja
+del navbar (`z-index:100`, opaco) y quedaban tapados — el canvas de fondo (`z-index:0`)
+sí cubre toda la pantalla, el problema era puramente de rango Y coincidente, no de
+z-index. `_measureNavBottom()` corre dentro de `_measure()`, así que se recalcula solo
+en cada resize/breakpoint sin código extra.
+
+### Interacciones dinámicas de click/agarre en el fondo (`.dev` / `.ia` / `.sec`)
+
+**Núcleo (`_bindCards()`, js/background.js):** además del click sobre `.project-card`/
+`.lab-card` (`onCardClick`), hay dos vías más de interacción con el fondo *vacío*,
+delegadas al renderer activo con el mismo patrón de hook opcional
+(`renderer.onX && renderer.onX(...)`):
+```js
+document.addEventListener('click', ...)       // → renderer.onBackgroundClick(pt)
+document.addEventListener('pointerdown', ...) // → renderer.onBackgroundPress()
+window.addEventListener('pointerup', ...)      // → renderer.onBackgroundRelease()
+```
+Ambas rutas ignoran clicks sobre `BG_CLICK_IGNORE` (navbar, cards, botones, paneles de
+JotAI/trayectoria/command-palette/gallery/PDF, hero-widgets, footer, form de contacto)
+y se desactivan en `lite` (touch) — igual criterio que el resto de los click-fx. `pt`
+va en coords de **documento** (`clientY + scrollTop`), igual que `docRect()`. `click` y
+`pointerdown`+`pointerup` son eventos independientes: un tap normal dispara los tres
+(press, release y click) porque un click nativo siempre incluye un press+release sin
+arrastre — los tres efectos están pensados para convivir sin pisarse.
+
+- **`.dev` — agarrar y enviar a la nube:** hay un ícono ☁ fijo en el viewport
+  (`CLOUD_X/Y/R` — ver overlays arriba), pero **invisible por defecto**
+  (`cloudAlpha`, easing hacia 0/1). Solo aparece (fade-in) mientras se mantiene
+  presionado **y** el puntero está en la franja superior de la pantalla
+  (`view.pointer.y < view.navBottom + TOP_ZONE_MARGIN`, 90px). Mientras está activa,
+  los paquetes agarrados (`p.pulling`) se enrutan **por la grilla real** hacia el
+  nodo exacto de la nube — `_nextDir()` bifurca a un ruteo goloso Manhattan
+  (`_snap(CLOUD_X)`/`_snap(CLOUD_Y + scrollTop)`) en vez del sesgo suave normal hacia
+  el cursor; ya no hay interpolación libre en píxeles (`p.px`/`p.py` no existen más).
+  Un paquete que llega exacto al nodo de la nube queda `arrived` ("parqueado",
+  dibuja solo su halo, no avanza) hasta que se suelte. Al soltar
+  (`onBackgroundRelease`), **solo los `arrived` se envían** — pasan a `sending:true` y
+  vuelan (smoothstep) hacia el ícono, reincorporándose como packets nuevos al llegar
+  (`Object.assign(p, _spawn(view))`); los que seguían en tránsito por el camino
+  simplemente dejan de estar agarrados y continúan su recorrido normal de malla. Un
+  envío exitoso dispara siempre `_deploy()` (anillo de pulso + 8 packets brillantes
+  nuevos saliendo de la nube). El ícono en sí es un dibujo vectorial (`_drawCloud`,
+  varios lóbulos superpuestos con halo) — ya no el carácter `☁` suelto de antes.
+- **`.ia` — click = solo pulso, mantener presionado = pulso más grande (nunca mueve
+  nodos):** `onBackgroundClick` llama a `_pulseFrom(pt, {maxDepth, maxNodes,
+  stagger})` — BFS por proximidad (mismo radio `LINK_MAX` que las conexiones
+  visibles) desde el nodo más cercano al click, hasta `QUERY_MAX_DEPTH`/
+  `QUERY_MAX_NODES` (4 niveles / 40 nodos) tope; cada nivel enciende sus nodos
+  (`n.lit`) y lanza una chispa por la arista real que lo conectó (`signals`), con
+  delay escalonado por nivel (`QUERY_STAGGER`) para que se vea la propagación.
+  Mientras se mantiene presionado, `_updateHoldPulse()` repite ese mismo
+  `_pulseFrom()` cada ~0.43s desde la posición del cursor, con `maxDepth`/`maxNodes`
+  **creciendo** con el tiempo sostenido (`holdElapsed`) — el pulso alcanza cada vez
+  más nodos y es más visible. **Nada de esto mueve nodos.** Antes, mantener
+  presionado atraía físicamente los nodos hacia el cursor y soltar los dispersaba a
+  zonas random — eso se sacó por completo (`onBackgroundPress`/`onBackgroundRelease`
+  ya no tocan `n.vx`/`n.vy`) porque un tap normal (que dispara press+release+click
+  juntos) hacía que un simple click "moviera la red" sin que el usuario lo pidiera.
+- **`.sec` — medidor de integridad + tap-to-kill en touch:** la mecánica de virus es
+  emergente por tiempo, no por click/hold — pero ahora también corre en `lite`
+  (antes el bloque entero de virus/debris/meter estaba gateado a `!view.lite`, así
+  que en mobile la mecánica ni se veía). Cada virus tiene `lifespan` (~7-10s); si no
+  se mata a tiempo, `_breach()` resta `BREACH_DAMAGE` (20) a `integrity` (0-100, HUD
+  arriba-izq. — ver overlays arriba); cada kill a tiempo restaura `KILL_REPAIR` (6).
+  En desktop se mata con el cursor (`KILL_R`, 55px, requiere hover continuo — no
+  corre en `lite` porque no hay `pointermove` atado). En touch, `onBackgroundTap(pt)`
+  (nueva, expuesta en el objeto retornado de `SecField`) hace el mismo hit-test con
+  radio mayor (`TOUCH_KILL_R`, 80px) contra un tap directo — cableada por
+  `_bindTouchKill()`, una función **separada** de `_bindCards()` (que sigue 100%
+  apagada en `lite`): es el único gesto de fondo con sentido sin hover sostenido, y
+  el filtro por modo sale gratis chequeando si el renderer implementa el método. La
+  corrupción visual escala **continua** con `1 - integrity/100` (`_degrad()`): más
+  probabilidad de `col.glitch`, mensajes de error sueltos (`_drawErrorNoise`), y
+  columnas que se "apagan" bajo ~45% (`col.blank`). A 0% se dispara `_triggerHacked()`
+  — glitch de pantalla transitorio (~3-4s) y el sistema queda **bloqueado**
+  (`locked=true`) hasta repararlo desde la terminal — ver "Sistema comprometido" en
+  la sección de la terminal `.sec` más arriba. Ya no se auto-resetea solo.
 
 ### Zonas
 Cada sección declara su intensidad en `ZONE_INTENSITY`; el campo es continuo pero
@@ -404,6 +651,10 @@ verde de la lluvia vibra detrás del texto.
   pantalla se queda vacía. El `col.fade` tapa la aparición a media altura.
 - `scrollTop` se lee **antes** de medir las zonas en `init()`: la página puede cargar
   ya scrolleada y los rects saldrían desplazados.
+- `_triggerHacked()` (`.sec`) tiene una guarda `if (locked) return;` al inicio — sin
+  ella, si dos virus expiran en el mismo frame del loop de `_virus()`, el segundo
+  `_breach()` volvería a re-disparar `portfolio:secBreach` (reseteando `_hackState`
+  en `sec-terminal.js` y descartando el progreso de remediación ya hecho).
 
 ## Convenciones CSS
 - **Metodología:** BEM-like (`.section__element--modifier`)
@@ -632,6 +883,15 @@ secciones más altas que la pantalla). Guardas anti-molestia:
 - Máx. **3 nudges/sesión** + 1 vez por `key` (sessionStorage `jotai-nudge-*`)
 - Nunca con globo visible, panel abierto, tour activo u overlay
   (`body.style.overflow === 'hidden'` — gallery, PDF modal y palette lo activan)
+
+**Nudge `hero-hold`** — encadenado al final de `_maybeIntroduceModes()` (`setTimeout`
+1500ms), invita a mantener presionado sobre el fondo (interacción oculta de `.dev`/`.ia`,
+ver "Interacciones dinámicas..." en la sección del fondo unificado). No se muestra en
+`.sec` (ahí mantener presionado no hace nada en el fondo). A propósito **no** depende
+de `_introducedModes()` — el aviso de los 3 modos es 1x para siempre (localStorage),
+pero el chequeo de modo dentro del `setTimeout` (no antes) deja que este nudge tenga su
+propia chance vía `_maybeNudge` (que ya se autolimita por sessionStorage) en cada
+sesión nueva, incluso para visitantes recurrentes que ya vieron el aviso de modos.
 
 **Reacciones a eventos:**
 - `portfolio:modeChange` → saludo temático del modo, 1× por modo y por carga;

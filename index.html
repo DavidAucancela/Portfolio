@@ -87,13 +87,14 @@
   ════════════════════════════════════════════════════ -->
 
   <!-- Mode Bar — selector de modo encima del navbar -->
-  <div id="mode-bar" class="mode-bar" role="toolbar" data-i18n-aria="modebar.aria" aria-label="Selector de modo — 3 modos disponibles">
+  <div id="mode-bar" class="mode-bar" role="toolbar" data-i18n-aria="modebar.aria" aria-label="Selector de modo — 4 modos disponibles">
     <div class="mode-bar__inner">
-      <span class="mode-bar__label" data-i18n="modebar.label">3 modos</span>
+      <span class="mode-bar__label" data-i18n="modebar.label">4 modos</span>
       <div class="mode-bar__chips">
         <button class="mode-bar-chip active" data-mode-option="dev" data-i18n-aria="modebar.dev.aria" aria-label=".dev — Modo desarrollador: proyectos full-stack">.dev</button>
         <button class="mode-bar-chip" data-mode-option="ia" data-i18n-aria="modebar.ia.aria" aria-label=".ia — Modo inteligencia artificial: proyectos con LLMs y ML">.ia</button>
         <button class="mode-bar-chip" data-mode-option="sec" data-i18n-aria="modebar.sec.aria" aria-label=".sec — Modo ciberseguridad: labs y pentesting">.sec</button>
+        <button class="mode-bar-chip" data-mode-option="gam" data-i18n-aria="modebar.gam.aria" aria-label=".gam — Modo game room: cuarto interactivo">.gam</button>
       </div>
     </div>
   </div>
@@ -131,6 +132,10 @@
               <button class="mode-option" data-mode-option="sec"
                       role="option" aria-selected="false" title="Ciberseguridad">
                 <span class="mode-option-dot" style="background:#00ff41;"></span>.sec
+              </button>
+              <button class="mode-option" data-mode-option="gam"
+                      role="option" aria-selected="false" title="Game Room">
+                <span class="mode-option-dot" style="background:#ffb020;"></span>.gam
               </button>
             </div>
           </div>
@@ -172,6 +177,7 @@
           <button class="btn btn-sm btn-outline" data-mode-option="dev">.dev</button>
           <button class="btn btn-sm btn-outline" data-mode-option="ia">.ia</button>
           <button class="btn btn-sm btn-outline" data-mode-option="sec">.sec</button>
+          <button class="btn btn-sm btn-outline" data-mode-option="gam">.gam</button>
         </div>
       </div>
     </nav>
@@ -379,6 +385,57 @@
           </div>
         </div>
 
+        <!-- TV del cuarto interactivo — solo visible en modo .gam.
+             Sin marco/bezel: la estática vive en el fondo unificado de la
+             página (background.js, GamField) — este widget es solo el
+             prompt de "insertar moneda" + el stage donde Phaser monta el
+             juego al arrancar (ver css/gam-tv.css, sección MODO JUGANDO). -->
+        <div class="gam-tv" id="gam-tv" role="region" aria-label="Cuarto interactivo — click para comenzar">
+          <div class="gam-tv__screen" id="gam-tv-screen">
+            <button type="button" class="gam-tv__start" id="gam-tv-start">
+              <span class="gam-tv__start-icon" aria-hidden="true">▶</span>
+              <span class="gam-tv__start-label">Insertar moneda</span>
+              <span class="gam-tv__start-sub">click para empezar</span>
+            </button>
+
+            <div class="gam-tv__loading" id="gam-tv-loading" hidden role="status" aria-live="polite">
+              <span class="gam-tv__loading-icon" aria-hidden="true">🎮</span>
+              <span>Cargando el cuarto…</span>
+            </div>
+
+            <!-- Phaser monta el <canvas> del juego acá -->
+            <div id="gam-canvas-root" class="gam-canvas-root"></div>
+
+            <!-- Contador de objetos explorados — persiste entre visitas
+                 (gam-loader.js _markDiscovered/_updateProgressUI) -->
+            <div class="gam-progress" id="gam-progress" hidden aria-live="polite"></div>
+
+            <!-- Botón de mute — ambiente sonoro + footsteps + blips
+                 (gam-scene.js / gam-ambience.js) -->
+            <button type="button" class="gam-mute" id="gam-mute" aria-label="Silenciar sonido" aria-pressed="false">
+              <span id="gam-mute-icon" aria-hidden="true">🔊</span>
+            </button>
+
+            <!-- Prompt de interacción por proximidad ("Presiona E") -->
+            <div class="gam-prompt" id="gam-prompt" hidden aria-hidden="true">
+              <kbd>E</kbd> <span id="gam-prompt-label">Interactuar</span>
+            </div>
+
+            <!-- Controles táctiles — gam-scene.js los muestra solo si
+                 detecta pointer:coarse (ver css/gam-tv.css) -->
+            <div class="gam-touch" id="gam-touch" hidden aria-hidden="true">
+              <div class="gam-touch__stick" id="gam-touch-stick">
+                <div class="gam-touch__knob" id="gam-touch-knob"></div>
+              </div>
+              <button type="button" class="gam-touch__btn" id="gam-touch-interact" aria-label="Interactuar">E</button>
+            </div>
+          </div>
+
+          <p class="gam-tv__hint" id="gam-tv-hint" hidden>
+            Movete con <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> o las flechas · interactuá con <kbd>E</kbd>
+          </p>
+        </div>
+
       </div>
 
       <div class="hero-decoration hero-bg-deco" id="hero-bg-text" aria-hidden="true">&lt;/&gt;</div>
@@ -394,6 +451,20 @@
       <div class="sdiv__node sdiv__node--right"></div>
       <div class="sdiv__cursor-glow"></div>
       <canvas id="sdiv-canvas" aria-hidden="true"></canvas>
+    </div>
+
+    <!-- Panel de objetos del cuarto: texto simple para info/video/3d/minigame
+         sin contenido real todavía, o lista de proyectos/skills para
+         desk/bookshelf/terminal (ver gam-loader.js _openPanel) -->
+    <div class="gam-modal" id="gam-modal" hidden role="dialog" aria-modal="true" aria-labelledby="gam-modal-title">
+      <div class="gam-modal__backdrop" id="gam-modal-backdrop"></div>
+      <div class="gam-modal__card" id="gam-modal-card">
+        <button class="gam-modal__close" id="gam-modal-close" aria-label="Cerrar">✕</button>
+        <div class="gam-modal__icon" id="gam-modal-icon" aria-hidden="true">🚧</div>
+        <h3 class="gam-modal__title" id="gam-modal-title">Próximamente</h3>
+        <p class="gam-modal__text" id="gam-modal-text"></p>
+        <div class="gam-modal__list" id="gam-modal-list" hidden></div>
+      </div>
     </div>
 
     <!-- ══════════════════════════════════════════════

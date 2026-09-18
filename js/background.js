@@ -63,6 +63,8 @@ let slowRun  = 0;
 let resizeTimer = null;
 let zones    = [];
 let bgPressing = false;   // true mientras el mouse está presionado sobre el fondo
+let gamPlaying = false;   // true mientras el modo .gam está en pantalla completa jugando
+let navBottom  = 110;     // borde inferior de mode-bar+navbar — ver _measureNavBottom()
 
 const pointer = { x: -9999, y: -9999, active: false };
 
@@ -172,6 +174,20 @@ function _measure() {
   canvas.style.width  = vw + 'px';
   canvas.style.height = vh + 'px';
   ctx.setTransform(dprEff, 0, 0, dprEff, 0, 0);
+
+  _measureNavBottom();
+}
+
+/**
+ * Borde inferior real del navbar (mode-bar + navbar), leído de las custom
+ * properties de main.css — los overlays fijos del canvas (nube .dev, medidor
+ * .sec) se anclan debajo de esto para no quedar tapados por el navbar.
+ */
+function _measureNavBottom() {
+  const cs  = getComputedStyle(document.documentElement);
+  const bar = parseFloat(cs.getPropertyValue('--mode-bar-height')) || 40;
+  const nav = parseFloat(cs.getPropertyValue('--nav-height')) || 70;
+  navBottom = bar + nav;
 }
 
 /**
@@ -204,7 +220,7 @@ function _measureZones() {
 
 function _view() {
   return {
-    vw, vh, docH, scrollTop, pointer, lite, density,
+    vw, vh, docH, scrollTop, pointer, lite, density, navBottom,
     top: scrollTop,
     bottom: scrollTop + vh,
   };
@@ -260,6 +276,16 @@ function _watchPerf(frameMs) {
   renderer.init(_view());
 }
 
+function _pauseLoop() {
+  if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+}
+
+function _resumeLoop() {
+  if (rafId || reducedMotion.matches || document.hidden || gamPlaying) return;
+  lastT = performance.now();
+  rafId = requestAnimationFrame(_tick);
+}
+
 /* ── Eventos ── */
 function _bindEvents() {
   window.addEventListener('scroll', () => { scrollTop = window.scrollY; }, { passive: true });
@@ -300,12 +326,26 @@ function _bindEvents() {
 
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
-      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-    } else if (!rafId && !reducedMotion.matches) {
-      lastT = performance.now();
-      rafId = requestAnimationFrame(_tick);
+      _pauseLoop();
+    } else {
+      _resumeLoop();
     }
   });
+
+  // Modo .gam a pantalla completa: el canvas queda tapado por el juego de
+  // Phaser (z-index 9500) y no aporta nada — pausar el rAF entero en vez
+  // de solo dejar de dibujarlo ahorra el costo real de simular partículas
+  // que nadie ve. gam-loader.js es quien pone/saca esta clase del body.
+  if ('MutationObserver' in window) {
+    const mo = new MutationObserver(() => {
+      const playing = document.body.classList.contains('gam-playing');
+      if (playing === gamPlaying) return;
+      gamPlaying = playing;
+      if (gamPlaying) _pauseLoop();
+      else _resumeLoop();
+    });
+    mo.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  }
 
   window.addEventListener('portfolio:modeChange', (e) => {
     const m = e.detail && e.detail.mode;
@@ -325,6 +365,22 @@ function _bindEvents() {
   });
 
   _bindCards();
+  _bindTouchKill();
+}
+
+/**
+ * Tap-to-kill en touch — aislado de _bindCards() (que sigue 100% apagado en
+ * lite): hoy es el único gesto de fondo que tiene sentido sin hover continuo.
+ * Solo SecField implementa onBackgroundTap, así que el filtro por modo sale
+ * gratis con el chequeo de método.
+ */
+function _bindTouchKill() {
+  document.addEventListener('pointerdown', (e) => {
+    if (!lite) return;
+    if (e.target.closest && e.target.closest(BG_CLICK_IGNORE)) return;
+    if (!renderer.onBackgroundTap) return;
+    renderer.onBackgroundTap({ x: e.clientX, y: e.clientY });
+  }, { passive: true });
 }
 
 /**
@@ -393,6 +449,7 @@ const BG_CLICK_IGNORE =
 function _makeRenderer(m) {
   if (m === 'ia')  return IaField;
   if (m === 'sec') return SecField;
+  if (m === 'gam') return GamField;
   return DevField;
 }
 
@@ -411,24 +468,31 @@ const DevField = (() => {
   const REVEAL_R   = 200;   // radio de revelado alrededor del cursor
   const ROUTER_R   = 280;   // radio en el que el cursor desvía paquetes
   const DIRS       = [[1, 0], [0, 1], [-1, 0], [0, -1]];
+  const TOP_ZONE_MARGIN = 90;   // franja bajo el navbar donde "sostener" activa la nube
 
   // Ícono de "cloud" fijo en el viewport (esquina sup. izq., debajo del navbar) —
-  // soltar los paquetes agarrados ahí dispara un "deploy".
-  const CLOUD_X = 40, CLOUD_Y = 96, CLOUD_R = 42;
+  // aparece solo al sostener ahí; soltar con paquetes ya llegados dispara un "deploy".
+  const CLOUD_X = 40, CLOUD_R = 42;
+  let CLOUD_Y = 110;   // recalculado en init(view) contra navBottom — ver _measureNavBottom
 
   let packets = [];
   let pitch   = PITCH;
   let hoverRect = null;
   let deployPulses = [];   // anillos de deploy en curso: { life }
   let cloudGlow = 0;       // fase de la respiración ambiental del ícono
+  let cloudActive = false; // true mientras se sostiene en la zona superior
+  let cloudAlpha  = 0;     // fade in/out de la nube (easing hacia cloudActive)
 
   function init(view) {
     pitch = view.lite ? PITCH * 1.35 : PITCH;
+    CLOUD_Y = view.navBottom + 30;
     const target = Math.round((view.lite ? 7 : 16) * view.density);
     packets = [];
     for (let i = 0; i < target; i++) packets.push(_spawn(view));
     deployPulses = [];
     cloudGlow = 0;
+    cloudActive = false;
+    cloudAlpha = 0;
   }
 
   function _snap(v) { return Math.round(v / pitch) * pitch; }
@@ -443,21 +507,28 @@ const DevField = (() => {
       speed: rnd(0.010, 0.020),
       bright: Math.random() < 0.3,
       pulling: false,
+      arrived: false,
       sending: false,
     };
   }
 
   function _ease(t) { return t * t * (3 - 2 * t); } // smoothstep
 
+  /** Nodo de grilla donde vive la nube, en coords de documento. */
+  function _atCloudNode(p, view) {
+    return p.ax === _snap(CLOUD_X) && p.ay === _snap(CLOUD_Y + view.scrollTop);
+  }
+
   let holding = false;   // true mientras el mouse está presionado sobre el fondo
 
-  /** Mantener presionado: los paquetes se desvían hacia el cursor, a su propia velocidad. */
+  /** Mantener presionado: activa (o no) la nube según la zona — ver _drawPackets. */
   function onBackgroundPress() { holding = true; }
 
   /**
-   * Al soltar, los paquetes agarrados "se envían a la nube": vuelan hacia el
-   * ícono ☁ y se reincorporan a la malla como paquetes nuevos al llegar. La
-   * nube responde con un anillo de pulso y una oleada de paquetes brillantes.
+   * Al soltar, solo los paquetes que efectivamente LLEGARON al nodo de la
+   * nube (`arrived`) se envían — vuelan hacia el ícono y se reincorporan a la
+   * malla al llegar. Los que seguían en tránsito por el camino simplemente
+   * dejan de estar agarrados y continúan su recorrido normal.
    */
   function onBackgroundRelease() {
     if (!holding) return;
@@ -466,10 +537,12 @@ const DevField = (() => {
     for (const p of packets) {
       if (!p.pulling) continue;
       p.pulling = false;
+      if (!p.arrived) continue;
+      p.arrived = false;
       p.sending = true;
       p.sendT = 0;
-      p.sfx = p.px;
-      p.sfy = p.py;
+      p.sfx = p.ax;
+      p.sfy = p.ay;
       any = true;
     }
     if (any) _deploy(_view());
@@ -491,6 +564,16 @@ const DevField = (() => {
 
   /* Elección de dirección en un nodo. El cursor sesga la decisión. */
   function _nextDir(p, view) {
+    if (p.pulling && cloudActive) {
+      // Ruteo goloso Manhattan por la grilla real hacia el nodo de la nube —
+      // ya no interpolación libre en píxeles (ver _drawPackets/_atCloudNode).
+      const tx = _snap(CLOUD_X);
+      const ty = _snap(CLOUD_Y + view.scrollTop);
+      const dx = tx - p.ax, dy = ty - p.ay;
+      if (dx === 0 && dy === 0) return p.dir;
+      return Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 0 : 2) : (dy > 0 ? 1 : 3);
+    }
+
     const straight = Math.random() > 0.34;
     if (straight) return p.dir;
 
@@ -525,26 +608,48 @@ const DevField = (() => {
     if (!view.lite) _drawCloud(dt, ctx, view);
   }
 
-  /* ── Ícono de cloud + pulsos de deploy ── */
+  /* ── Ícono de cloud (vectorial) + pulsos de deploy ── */
   function _drawCloud(dt, ctx, view) {
     cloudGlow += 0.03 * dt;
-    const pulse = 1 + Math.sin(cloudGlow) * 0.12;
-    const near  = holding;   // toda soltada termina en la nube — se destaca mientras se sostiene
-    const r     = CLOUD_R * (near ? 1.3 : 1) * pulse;
 
-    const halo = ctx.createRadialGradient(CLOUD_X, CLOUD_Y, 0, CLOUD_X, CLOUD_Y, r);
-    halo.addColorStop(0, rgba(C2, near ? 0.30 : 0.12));
-    halo.addColorStop(1, rgba(C2, 0));
-    ctx.fillStyle = halo;
-    ctx.beginPath();
-    ctx.arc(CLOUD_X, CLOUD_Y, r, 0, Math.PI * 2);
-    ctx.fill();
+    if (cloudAlpha > 0.01) {
+      const pulse = 1 + Math.sin(cloudGlow) * 0.12;
+      const r = CLOUD_R * (cloudActive ? 1.25 : 1) * pulse;
+      const a = cloudAlpha;
+      const col = cloudActive ? C2 : C;
 
-    ctx.font = `${Math.round(20 * pulse)}px 'Fira Code', 'Courier New', monospace`;
-    ctx.textAlign = 'center';
-    ctx.fillStyle = rgba(near ? C2 : C, near ? 0.95 : 0.5);
-    ctx.fillText('☁', CLOUD_X, CLOUD_Y + 7);
+      const halo = ctx.createRadialGradient(CLOUD_X, CLOUD_Y, 0, CLOUD_X, CLOUD_Y, r * 2.4);
+      halo.addColorStop(0, rgba(C2, 0.32 * a));
+      halo.addColorStop(1, rgba(C2, 0));
+      ctx.fillStyle = halo;
+      ctx.beginPath();
+      ctx.arc(CLOUD_X, CLOUD_Y, r * 2.4, 0, Math.PI * 2);
+      ctx.fill();
 
+      // Silueta vectorial (varios lóbulos superpuestos + base) — mucho más
+      // "presente" que el carácter ☁ suelto de antes.
+      ctx.fillStyle = rgba(col, (cloudActive ? 0.85 : 0.55) * a);
+      const lobes = [
+        [CLOUD_X - r * 0.5,  CLOUD_Y + r * 0.10, r * 0.44],
+        [CLOUD_X - r * 0.08, CLOUD_Y - r * 0.20, r * 0.54],
+        [CLOUD_X + r * 0.42, CLOUD_Y + r * 0.02, r * 0.46],
+        [CLOUD_X + r * 0.02, CLOUD_Y + r * 0.24, r * 0.5],
+      ];
+      ctx.beginPath();
+      for (const [lx, ly, lr] of lobes) {
+        ctx.moveTo(lx + lr, ly);
+        ctx.arc(lx, ly, lr, 0, Math.PI * 2);
+      }
+      ctx.fill();
+
+      ctx.strokeStyle = rgba(col, Math.min(1, a + 0.15));
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+    }
+
+    // Pulsos de deploy: feedback de un envío ya ocurrido — se completan
+    // aunque la nube ya se esté ocultando (el hold suele terminar justo al
+    // dispararse el deploy).
     for (let i = deployPulses.length - 1; i >= 0; i--) {
       const dp = deployPulses[i];
       dp.life -= 0.02 * dt;
@@ -682,7 +787,8 @@ const DevField = (() => {
 
   /* ── Paquetes ── */
   function _drawPackets(dt, ctx, view) {
-    const pulled = holding && view.pointer.active;
+    cloudActive = holding && view.pointer.active && view.pointer.y < view.navBottom + TOP_ZONE_MARGIN;
+    cloudAlpha += ((cloudActive ? 1 : 0) - cloudAlpha) * Math.min(1, 0.08 * dt);
 
     for (const p of packets) {
       if (p.sending) {
@@ -699,39 +805,17 @@ const DevField = (() => {
         continue;
       }
 
-      if (pulled) {
-        if (!p.pulling) {
-          // Primer frame agarrado: la posición de grilla actual pasa a ser libre
-          const [dx0, dy0] = DIRS[p.dir];
-          p.px = p.ax + dx0 * pitch * p.t;
-          p.py = p.ay + dy0 * pitch * p.t;
-          p.pulling = true;
-        }
-        const tx = view.pointer.x;
-        const ty = view.pointer.y + view.scrollTop;
-        const dx = tx - p.px, dy = ty - p.py;
-        // Misma velocidad que tenía en la malla — pero por camino lineal en un
-        // solo eje a la vez, como se mueven naturalmente por la grilla
-        const pxSpeed = p.speed * pitch;
-        const moveAmt = pxSpeed * dt;
-        if (Math.abs(dx) > Math.abs(dy)) {
-          p.px += Math.sign(dx) * Math.min(Math.abs(dx), moveAmt);
-        } else {
-          p.py += Math.sign(dy) * Math.min(Math.abs(dy), moveAmt);
-        }
+      // Entra/sale de "agarrado" según si la nube está activa — salir de la
+      // zona superior sin soltar el click devuelve el paquete a su tránsito
+      // normal de malla, sin pasar por la nube.
+      if (cloudActive && !p.pulling) { p.pulling = true; p.arrived = false; }
+      if (!cloudActive && p.pulling) { p.pulling = false; p.arrived = false; }
 
-        const sy = p.py - view.scrollTop;
-        _drawHalo(ctx, p.px, sy, p.bright ? C2 : C, p.bright ? 0.9 : 0.7);
+      if (p.pulling && p.arrived) {
+        // Estacionado en el nodo de la nube — no avanza hasta que se suelte
+        const sy = p.ay - view.scrollTop;
+        _drawHalo(ctx, p.ax, sy, C2, 0.95);
         continue;
-      }
-
-      if (p.pulling) {
-        // Se soltó sin que el cursor siguiera activo (ej. salió de la ventana):
-        // vuelve a la malla sin pasar por la nube
-        p.ax = _snap(p.px);
-        p.ay = _snap(p.py);
-        p.t = 0;
-        p.pulling = false;
       }
 
       p.t += p.speed * dt * (0.6 + zoneIntensity(p.ay) * 0.8);
@@ -741,7 +825,14 @@ const DevField = (() => {
         const [dx, dy] = DIRS[p.dir];
         p.ax += dx * pitch;
         p.ay += dy * pitch;
+        if (p.pulling && _atCloudNode(p, view)) { p.arrived = true; p.t = 0; break; }
         p.dir = _nextDir(p, view);
+      }
+
+      if (p.pulling && p.arrived) {
+        const sy = p.ay - view.scrollTop;
+        _drawHalo(ctx, p.ax, sy, C2, 0.95);
+        continue;
       }
 
       const [dx, dy] = DIRS[p.dir];
@@ -749,14 +840,15 @@ const DevField = (() => {
       const y  = p.ay + dy * pitch * p.t;
       const sy = y - view.scrollTop;
 
-      // Reciclar los que se alejan demasiado del viewport
-      if (x < -pitch || x > view.vw + pitch || sy < -CULL_PAD || sy > view.vh + CULL_PAD) {
+      // Reciclar los que se alejan demasiado del viewport — nunca mientras
+      // van camino a la nube, que siempre cae cerca del top del viewport
+      if (!p.pulling && (x < -pitch || x > view.vw + pitch || sy < -CULL_PAD || sy > view.vh + CULL_PAD)) {
         Object.assign(p, _spawn(view));
         continue;
       }
 
-      const col   = p.bright ? C2 : C;
-      const alpha = p.bright ? 0.9 : 0.62;
+      const col   = (p.bright || p.pulling) ? C2 : C;
+      const alpha = (p.bright || p.pulling) ? 0.9 : 0.62;
 
       // Estela
       const tail = 30;
@@ -799,7 +891,10 @@ const DevField = (() => {
     while (packets.length > cap) packets.shift();
   }
 
-  function destroy() { packets = []; hoverRect = null; holding = false; deployPulses = []; }
+  function destroy() {
+    packets = []; hoverRect = null; holding = false; deployPulses = [];
+    cloudActive = false; cloudAlpha = 0;
+  }
 
   return { init, step, onCardHover, onCardClick, onBackgroundPress, onBackgroundRelease, destroy };
 })();
@@ -832,6 +927,8 @@ const IaField = (() => {
   let visible = [];     // buffer reutilizado — evita un filter() por frame
   let pendingQuery = []; // { a, b, delay } — chispas de la consulta en espera de disparar
   let holding = false;   // true mientras el mouse está presionado sobre el fondo
+  let holdElapsed = 0;   // frame-units sostenidos — crece el alcance del pulso mientras se mantiene
+  let holdPulseT  = 0;   // cuenta regresiva al próximo pulso repetido durante el hold
 
   function init(view) {
     const n = Math.round((view.vw * view.docH) / AREA_PER_NODE * view.density * (view.lite ? 0.45 : 1));
@@ -867,6 +964,8 @@ const IaField = (() => {
     capture = null;
     pendingQuery = [];
     holding = false;
+    holdElapsed = 0;
+    holdPulseT = 0;
   }
 
   /* Punto del perímetro de un rect para s ∈ [0,1) */
@@ -889,6 +988,7 @@ const IaField = (() => {
     _drawFar(ctx, view);
     _update(dt, view, minY, maxY);
     _updateQuery(dt);
+    _updateHoldPulse(dt, view);
 
     visible.length = 0;
     for (const n of nodes) {
@@ -915,9 +1015,6 @@ const IaField = (() => {
 
   /* ── Integración ── */
   function _update(dt, view, minY, maxY) {
-    const mx = view.pointer.x;
-    const my = view.pointer.y + view.scrollTop;   // cursor en coords de documento
-
     for (const n of nodes) {
       // Fuera de la banda visible no se simula, salvo si está reclutado
       if (n.cap <= 0 && (n.y < minY || n.y > maxY)) continue;
@@ -939,17 +1036,9 @@ const IaField = (() => {
 
       if (n.lit > 0) n.lit = Math.max(0, n.lit - 0.012 * dt);
 
-      if (holding && view.pointer.active && !view.lite) {
-        const dx = mx - n.x;
-        const dy = my - n.y;
-        const d  = Math.hypot(dx, dy);
-        if (d < CURSOR_R && d > 1) {
-          // Mantener presionado: la red se acerca a quien la sostiene
-          const f = (1 - d / CURSOR_R) * 0.014;
-          n.vx += (dx / d) * f * dt;
-          n.vy += (dy / d) * f * dt;
-        }
-      }
+      // Nota: mantener presionado ya NO atrae físicamente los nodos — ver
+      // _updateHoldPulse(), que en su lugar repite/expande el pulso de
+      // consulta sin mover nada. Un tap simple no debe desplazar la red.
 
       n.vx *= 0.995; n.vy *= 0.995;
       const sp = Math.hypot(n.vx, n.vy);
@@ -1150,6 +1239,15 @@ const IaField = (() => {
    * conectó, con un pequeño delay por nivel para que se vea la propagación.
    */
   function onBackgroundClick(pt) {
+    _pulseFrom(pt, { maxDepth: QUERY_MAX_DEPTH, maxNodes: QUERY_MAX_NODES, stagger: QUERY_STAGGER });
+  }
+
+  /**
+   * BFS por proximidad desde el nodo más cercano a `pt` — reusada tanto por
+   * un click simple (alcance normal) como por _updateHoldPulse (alcance
+   * creciente mientras se mantiene presionado).
+   */
+  function _pulseFrom(pt, { maxDepth, maxNodes, stagger }) {
     if (!nodes.length) return;
 
     let seed = null, bestD = Infinity;
@@ -1162,17 +1260,16 @@ const IaField = (() => {
     seed.lit = 1;
     const visited = new Set([seed]);
     let frontier = [seed];
-    pendingQuery = [];
 
-    for (let depth = 1; depth <= QUERY_MAX_DEPTH && frontier.length && visited.size < QUERY_MAX_NODES; depth++) {
+    for (let depth = 1; depth <= maxDepth && frontier.length && visited.size < maxNodes; depth++) {
       const next = [];
       for (const a of frontier) {
         for (const b of nodes) {
-          if (visited.has(b) || visited.size >= QUERY_MAX_NODES) continue;
+          if (visited.has(b) || visited.size >= maxNodes) continue;
           if (Math.hypot(a.x - b.x, a.y - b.y) < LINK_MAX) {
             visited.add(b);
             next.push(b);
-            pendingQuery.push({ a, b, delay: depth * QUERY_STAGGER });
+            pendingQuery.push({ a, b, delay: depth * stagger });
           }
         }
       }
@@ -1193,26 +1290,32 @@ const IaField = (() => {
     }
   }
 
-  /** Mantener presionado: la red se acerca a quien la sostiene (ver _update). */
-  function onBackgroundPress() { holding = true; }
+  /**
+   * Mientras se mantiene presionado, repite el mismo pulso de consulta desde
+   * la posición del cursor, con alcance creciente — nunca mueve nodos.
+   */
+  function _updateHoldPulse(dt, view) {
+    if (!holding || !view.pointer.active || view.lite) return;
+    holdElapsed += dt;
+    holdPulseT  -= dt;
+    if (holdPulseT > 0) return;
 
-  /** Al soltar, la red se repele y se reparte entre las distintas secciones. */
+    const depth    = Math.min(QUERY_MAX_DEPTH + Math.floor(holdElapsed / 40), QUERY_MAX_DEPTH + 3);
+    const nodesCap = Math.min(QUERY_MAX_NODES + Math.floor(holdElapsed / 30) * 8, QUERY_MAX_NODES * 2);
+    _pulseFrom(
+      { x: view.pointer.x, y: view.pointer.y + view.scrollTop },
+      { maxDepth: depth, maxNodes: nodesCap, stagger: QUERY_STAGGER }
+    );
+    holdPulseT = 26; // ~0.43s entre pulsos sucesivos a 60fps
+  }
+
+  /** Mantener presionado ya no mueve nodos — ver _updateHoldPulse(). */
+  function onBackgroundPress() { holding = true; holdElapsed = 0; holdPulseT = 0; }
+
   function onBackgroundRelease() {
     if (!holding) return;
     holding = false;
-    if (!zones.length) return;
     if (capture) onCardRelease();
-
-    const view = _view();
-    for (const n of nodes) {
-      const z = zones[(Math.random() * zones.length) | 0];
-      const tx = rnd(40, Math.max(41, view.vw - 40));
-      const ty = rnd(z.top + 20, Math.max(z.top + 21, z.bottom - 20));
-      const dx = tx - n.x, dy = ty - n.y;
-      const d  = Math.hypot(dx, dy) || 1;
-      n.vx += (dx / d) * rnd(0.5, 1.0);
-      n.vy += (dy / d) * rnd(0.5, 1.0);
-    }
   }
 
   function onCardRelease() {
@@ -1229,6 +1332,7 @@ const IaField = (() => {
   function destroy() {
     nodes = []; far = []; signals = []; visible = [];
     capture = null; pendingQuery = []; holding = false;
+    holdElapsed = 0; holdPulseT = 0;
   }
 
   return {
@@ -1255,6 +1359,7 @@ const SecField = (() => {
   const FAR_F    = LAYER.far;
   const FLEE_R   = 150;     // el virus huye a partir de aquí
   const KILL_R   = 55;      // y se desintegra aquí
+  const TOUCH_KILL_R = 80;  // radio de tap en touch — más generoso que el cursor
   const MAX_VIRUS = 5;
   const BREACH_DAMAGE = 20;   // % de integridad que resta un ataque logrado
   const KILL_REPAIR   = 6;    // % que restaura cazar un virus a tiempo
@@ -1267,6 +1372,7 @@ const SecField = (() => {
   let spawnT = 0;
   let integrity = 100;   // 0-100 — a 0 se dispara el "hackeo"
   let hacked = 0;        // 0 = normal, >0 = secuencia de "sistema comprometido" activa
+  let locked = false;    // true entre _triggerHacked() y portfolio:secRepaired — congela integrity/hacked
 
   const chr = () => CHARS[(Math.random() * CHARS.length) | 0];
 
@@ -1282,9 +1388,22 @@ const SecField = (() => {
   ];
   const _errMsg = () => ERR_MSGS[(Math.random() * ERR_MSGS.length) | 0];
 
-  function init(view) {
+  // El sistema se repara desde sec-terminal.js (comandos nmap/patch/quarantine/
+  // block) — sin acoplarse por import, solo por este evento en window.
+  window.addEventListener('portfolio:secRepaired', () => {
+    locked = false;
     integrity = 100;
     hacked = 0;
+    virus = []; debris = []; flash = [];
+    spawnT = 90;
+  });
+
+  function init(view) {
+    // Mientras está "locked" (sistema comprometido, esperando reparación en la
+    // terminal) el reset normal de modo/crossfade no debe devolver integrity a
+    // 100 — solo portfolio:secRepaired puede hacerlo.
+    if (!locked) { integrity = 100; hacked = 0; }
+    METER_Y = view.navBottom + 26;
     const step = (view.lite ? 22 : 16) / Math.max(0.5, view.density);
     cols = _mkCols(view, step, FS, 0.08, 0.20);
     farCols = view.lite ? [] : _mkCols(view, step * 2.4, FS_FAR, 0.04, 0.09);
@@ -1318,12 +1437,13 @@ const SecField = (() => {
     _rain(dt, ctx, view, farCols, FAR_F, 0.6);
     _rain(dt, ctx, view, cols, RAIN_F, 1);
     _flash(dt, ctx, view);
-    if (!view.lite) {
-      _virus(dt, ctx, view);
-      _debris(dt, ctx, view);
-      _drawErrorNoise(dt, ctx, view);
-      _drawIntegrityMeter(ctx, view);
-    }
+    // Virus/integridad corre también en lite (touch): sin hover no hay "flee",
+    // pero sí hay que poder matarlos a tap (ver onBackgroundTap) — si no, la
+    // mecánica entera queda invisible en mobile.
+    if (!locked) _virus(dt, ctx, view);
+    _debris(dt, ctx, view);
+    _drawErrorNoise(dt, ctx, view);
+    _drawIntegrityMeter(ctx, view);
     if (hacked > 0) _drawHackGlitch(dt, ctx, view);
   }
 
@@ -1340,7 +1460,8 @@ const SecField = (() => {
   }
 
   /* ── HUD: integridad del sistema, fijo en el viewport ── */
-  const METER_X = 24, METER_Y = 86, METER_W = 140, METER_H = 8;
+  const METER_X = 24, METER_W = 140, METER_H = 8;
+  let METER_Y = 96;   // recalculado en init(view) contra navBottom — ver _measureNavBottom
 
   function _drawIntegrityMeter(ctx, view) {
     const pct = integrity / 100;
@@ -1558,11 +1679,15 @@ const SecField = (() => {
     if (integrity <= 0) _triggerHacked();
   }
 
-  /* ── La integridad llegó a 0: el sistema muestra que fue hackeado ── */
+  /* ── La integridad llegó a 0: el sistema queda comprometido hasta reparar ── */
   function _triggerHacked() {
-    hacked = 1;
-    integrity = 100;
-    virus = [];   // el ataque ya "ganó" — tablero limpio para el próximo ciclo
+    // Guarda contra doble disparo: si dos virus expiran en el mismo frame
+    // (mismo loop de _virus()), el segundo _breach() no debe re-emitir el
+    // evento ni pisar el estado ya congelado por el primero.
+    if (locked) return;
+    hacked = 1;     // dispara el glitch visual transitorio (decae solo, ver _drawHackGlitch)
+    locked = true;   // congela integrity/hacked — solo portfolio:secRepaired los libera
+    virus = [];      // el ataque ya "ganó" — sin ataques nuevos mientras está locked (ver step())
     window.dispatchEvent(new CustomEvent('portfolio:secBreach'));
   }
 
@@ -1632,10 +1757,101 @@ const SecField = (() => {
     }
   }
 
+  /* ── Tap-to-kill (touch): mismo hit-test que el hover de _virus(), radio mayor ── */
+  function onBackgroundTap(pt) {
+    const off = scrollTop * RAIN_F;
+    for (let i = virus.length - 1; i >= 0; i--) {
+      const v = virus[i];
+      const sy = v.y - off;
+      if (Math.hypot(v.x - pt.x, sy - pt.y) < TOUCH_KILL_R) {
+        _kill(v, v.x, v.y);
+        virus.splice(i, 1);
+        spawnT = rnd(240, 480);
+        return;
+      }
+    }
+  }
+
   function destroy() {
     cols = []; farCols = []; virus = []; debris = []; flash = [];
-    integrity = 100; hacked = 0;
+    if (!locked) { integrity = 100; hacked = 0; }
   }
+
+  return { init, step, onBackgroundTap, destroy };
+})();
+
+/* ══════════════════════════════════════════════════════
+   MODO .gam — ESTÁTICA DE TV
+   Fondo unificado en vez del canvas propio que tenía la vieja
+   caja de TV (gam-tv.js) — así el resto de la página (no solo
+   el widget) se ve como una pantalla apagada. Se pausa entero
+   cuando arranca el juego (ver _bindEvents(): MutationObserver
+   de .gam-playing → _pauseLoop()), así que esto solo corre en
+   el estado "esperando moneda".
+══════════════════════════════════════════════════════ */
+const GamField = (() => {
+  const STATIC_W = 160, STATIC_H = 120;
+  const FRAME_MS = 70;   // ~14fps — mismo ritmo entrecortado que tenía gam-tv.js
+  const ALPHA    = 0.32; // contraste bajo a propósito — antes 0.6, muy "quemado"
+
+  let off, offCtx, imageData, buf;
+  let frameAcc = 0;
+  let heroBottom = 0; // borde inferior del hero en coords de documento
+
+  function init() {
+    off = document.createElement('canvas');
+    off.width = STATIC_W;
+    off.height = STATIC_H;
+    offCtx = off.getContext('2d');
+    imageData = offCtx.createImageData(STATIC_W, STATIC_H);
+    buf = imageData.data;
+    frameAcc = 0;
+    _drawNoise();
+    _measureHero();
+  }
+
+  /** .gam no tiene about/projects/skills/contact — sin este límite la
+   *  estática (dibujada en coords de viewport) seguía llenando toda la
+   *  pantalla incluso scrolleado más allá del hero, donde debería verse
+   *  oscuro como el resto de la página. */
+  function _measureHero() {
+    const el = document.getElementById('hero');
+    heroBottom = el ? el.getBoundingClientRect().bottom + scrollTop : 0;
+  }
+
+  function _drawNoise() {
+    for (let i = 0; i < buf.length; i += 4) {
+      const v = (Math.random() * 255) | 0;
+      buf[i] = v; buf[i + 1] = v; buf[i + 2] = v; buf[i + 3] = 255;
+    }
+    offCtx.putImageData(imageData, 0, 0);
+  }
+
+  function step(dt, ctx, view) {
+    frameAcc += dt * (16.667 / FRAME_MS);
+    if (frameAcc >= 1) {
+      frameAcc = 0;
+      _drawNoise();
+    }
+
+    const clipTop    = Math.max(0, -view.scrollTop);
+    const clipBottom = Math.min(view.vh, heroBottom - view.scrollTop);
+    if (clipBottom <= clipTop) return; // el hero no está en pantalla — nada que dibujar
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, clipTop, view.vw, clipBottom - clipTop);
+    ctx.clip();
+
+    ctx.imageSmoothingEnabled = false;
+    ctx.globalAlpha = ALPHA;
+    ctx.drawImage(off, 0, 0, STATIC_W, STATIC_H, 0, 0, view.vw, view.vh);
+    ctx.globalAlpha = 1;
+    ctx.imageSmoothingEnabled = true;
+    ctx.restore();
+  }
+
+  function destroy() { off = null; offCtx = null; imageData = null; buf = null; }
 
   return { init, step, destroy };
 })();

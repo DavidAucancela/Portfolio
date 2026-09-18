@@ -62,6 +62,21 @@ const MODES = {
       message: 'Reportes de pentest, herramientas y writeups CTF en construcción.',
     },
   },
+  gam: {
+    suffix:     '.gam',
+    title:      'Jonathan.gam — Game Room',
+    tagline:    'Un cuarto para explorar, no solo leer',
+    badge:      '🎮 Game Room',
+    favicon:    'assets/favicons/gam-favicon.svg',
+    overlayBg:  'rgba(255, 176, 32, 0.08)',
+    aboutText:  'Un cuarto interactivo con los hobbies y proyectos de David: piano, malabares, patineta y más — explorá moviéndote con WASD/flechas.',
+    projectFile: 'data/gam-projects.json',
+    comingSoon: {
+      icon:    '🎮',
+      title:   'Cuarto en construcción',
+      message: 'Los minijuegos van llegando de a poco — arrancá explorando el cuarto arriba.',
+    },
+  },
 };
 
 const VALID_MODES   = Object.keys(MODES);

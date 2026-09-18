@@ -254,7 +254,7 @@ export function initApp() {
   document.querySelectorAll('a[href^="#"]').forEach(link => {
     link.addEventListener('click', e => {
       const id = link.getAttribute('href').slice(1);
-      if (['dev', 'ia', 'sec'].includes(id)) return; // los hashes de modo los maneja theme-switcher
+      if (['dev', 'ia', 'sec', 'gam'].includes(id)) return; // los hashes de modo los maneja theme-switcher
       const target = document.getElementById(id);
       if (!target) return;
       e.preventDefault();

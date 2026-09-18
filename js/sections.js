@@ -74,6 +74,25 @@ import { LangSwitcher } from './lang.js';
         { target: 100, suffix: '%',   label: { es: 'Auditoría cobertura', en: 'Audit coverage'  } },
       ],
     },
+    gam: {
+      headline:    { es: 'Game Room — homenaje a los hobbies', en: 'Game Room — a tribute to the hobbies' },
+      text1:       {
+        es: 'Un cuarto interactivo con lo que hago fuera del código: piano, malabares, patineta y mi perro Pukis. Movete con WASD/flechas y acercate a los objetos para explorar.',
+        en: 'An interactive room with what I do outside of code: piano, juggling, skateboarding and my dog Pukis. Move around with WASD/arrows and get close to the objects to explore.',
+      },
+      focusCard: {
+        icon:  '🎮',
+        title: { es: 'Cuarto interactivo', en: 'Interactive room' },
+        desc:  { es: 'Un mini-juego isométrico construido con Phaser — todavía en construcción, minijuego por minijuego.',
+                 en: 'An isometric mini-game built with Phaser — still under construction, minigame by minigame.' },
+        tags:  ['Phaser 3', 'Piano', 'Malabares', 'Patineta', 'Pukis 🐾'],
+      },
+      stats: [
+        { target: 1, suffix: '',  label: { es: 'Cuarto',    en: 'Room'     } },
+        { target: 0, suffix: '',  label: { es: 'Minijuegos listos', en: 'Minigames ready' } },
+        { target: 1, suffix: '',  label: { es: 'Perro homenajeado', en: 'Dog honored' } },
+      ],
+    },
   };
 
   /* ════════════════════════════════════════════════════════════
@@ -227,6 +246,11 @@ import { LangSwitcher } from './lang.js';
           ],
         },
       ],
+    },
+    gam: {
+      summary: { es: 'Sección en construcción — explorá el cuarto interactivo arriba 🎮', en: 'Section under construction — explore the interactive room above 🎮' },
+      icon:    '🎮',
+      categories: [],
     },
   };
 
@@ -1311,7 +1335,7 @@ import { LangSwitcher } from './lang.js';
   }
 
   function _getModeLabel(mode) {
-    return { dev: 'Software Engineering', ia: 'IA & ML', sec: 'Cybersecurity' }[mode] || mode;
+    return { dev: 'Software Engineering', ia: 'IA & ML', sec: 'Cybersecurity', gam: 'Game Room' }[mode] || mode;
   }
 
   /* ─── EXPERIENCE — Timeline horizontal ──────────────────── */

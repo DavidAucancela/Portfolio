@@ -48,18 +48,18 @@
   font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
   overflow-x: hidden;
   overflow-y: auto;
-  animation: gitActivityEnter 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  /* Reusa el keyframe sd-right de animations.css (mismo look que el resto
+     del sitio) pero como animation normal, no animation-timeline: este
+     widget aparece/desaparece por cambio de modo (display:none↔flex), no
+     por scroll, y animation-timeline:view() se queda pegado en opacity:0
+     cuando un elemento pasa a visible sin que haya scroll de por medio. */
+  animation: sd-right 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: 0.3s;
   opacity: 0;
   /* Ahora que expandir/colapsar es un cambio aislado (no reflowea nada
      más), se puede animar el propio tamaño sin miedo a que el resto de
      la página "salte" en cada frame de la transición. */
   transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes gitActivityEnter {
-  from { opacity: 0; transform: translateY(16px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0)   scale(1);    }
 }
 
 /* ═══ Estados colapsado / expandido ═══════════════════════ */
@@ -123,7 +123,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-theme="dev"] .git-activity { transition: none; }
+  [data-theme="dev"] .git-activity { transition: none; animation: none; opacity: 1; }
   .git-activity[data-widget-state="expanded"] .git-activity__body { animation: none; }
 }
 

@@ -1,0 +1,887 @@
+/* ============================================================
+   GAM TV — cuarto interactivo embebido en el hero (modo .gam)
+   ============================================================
+   Sin marco/bezel: la estática vive en el fondo unificado de toda la
+   página (background.js, GamField) — este widget es solo el prompt
+   "insertar moneda" + el stage donde Phaser monta el juego al arrancar.
+   A diferencia de .git-activity / .ia-tokens / .sec-terminal, no tiene
+   collapsed/expanded: tiene 2 estados propios — "esperando moneda" y
+   "jugando" (Phaser montado) — manejados por gam-tv.js.
+
+   .gam no tiene secciones propias como los otros 3 modos: todo el
+   modo vive en el hero. Las secciones de scroll normal
+   (about/projects/skills/contact) y el puente hacia ellas se ocultan —
+   ver el bloque "SIN SECCIONES DE SCROLL" más abajo. */
+
+.gam-tv {
+  display: none;
+}
+
+/* Mismo criterio que [data-theme="dev"] #hero .container en
+   git-history.css — el widget flota como componente independiente,
+   no comparte fila/columna de grid con .hero-content. */
+[data-theme="gam"] #hero .container {
+  position: relative;
+}
+
+[data-theme="gam"] .gam-tv {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  width: min(360px, 40vw);
+  /* Reusa el keyframe sd-right de animations.css (mismo look que el resto
+     del sitio) pero como animation normal, no animation-timeline: este
+     widget aparece/desaparece por cambio de modo (display:none↔flex), no
+     por scroll, y animation-timeline:view() se queda pegado en opacity:0
+     cuando un elemento pasa a visible sin que haya scroll de por medio. */
+  animation: sd-right 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: 0.3s;
+  opacity: 0;
+}
+
+/* ─── Pantalla — solo un contenedor de posicionamiento en modo idle;
+   se vuelve el stage a pantalla completa en modo jugando (ver abajo) ─── */
+.gam-tv__screen {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+/* ─── Botón "Insertar moneda" — sin caja, texto con glow tipo arcade ───
+   position+z-index a propósito: sin esto, el botón (sin position, pintado
+   en flujo normal) queda TAPADO por #gam-canvas-root (position:absolute,
+   z-index:1) aunque esté vacío — un elemento posicionado siempre pinta
+   (y captura clicks) por encima de uno no posicionado, sin importar el
+   orden en el HTML. Mismo bug que dejaba el botón sin responder al click. */
+.gam-tv__start {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  border: none;
+  background: none;
+  color: var(--color-accent);
+  font-family: var(--font-display);
+  cursor: pointer;
+}
+
+.gam-tv__start-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  margin-bottom: 0.3rem;
+  border-radius: 50%;
+  background: var(--color-accent);
+  color: #1a1206;
+  font-size: 0.9rem;
+}
+
+.gam-tv__start-label {
+  font-size: 1.15rem;
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 12px currentColor, 0 0 26px currentColor;
+  animation: gamCoinBlink 1.2s steps(2, jump-none) infinite;
+}
+
+.gam-tv__start-sub {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+
+@keyframes gamCoinBlink {
+  50% { opacity: 0.4; }
+}
+
+.gam-tv__start[hidden] { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .gam-tv__start-label { animation: none; }
+}
+
+/* ─── Power-on: flash + "encendido" de tubo CRT ─── */
+.gam-tv__screen.is-powering-on::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  background: #fff;
+  animation: gamTvFlash 0.5s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes gamTvFlash {
+  0%   { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+
+/* ─── Loading ─── */
+.gam-tv__loading {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85rem;
+  background: #050301;
+}
+
+.gam-tv__loading[hidden] { display: none; }
+
+.gam-tv__loading-icon {
+  font-size: 1.8rem;
+  animation: gamTvLoadingPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes gamTvLoadingPulse {
+  0%, 100% { transform: scale(1);    opacity: 0.7; }
+  50%      { transform: scale(1.15); opacity: 1;   }
+}
+
+/* ─── Canvas root de Phaser ─── */
+.gam-canvas-root {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gam-canvas-root canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* ─── Contador de objetos explorados ─── */
+.gam-progress {
+  position: absolute;
+  top: 0.7rem;
+  left: 0.7rem;
+  z-index: 3;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(26, 18, 6, 0.75);
+  border: 1px solid rgba(255, 176, 32, 0.35);
+  backdrop-filter: blur(6px);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  color: #f5e9d6;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.gam-progress[hidden] { display: none; }
+
+.gam-progress.is-complete {
+  background: var(--color-accent);
+  color: #1a1206;
+  font-weight: 700;
+}
+
+/* ─── Botón de mute ─── */
+.gam-mute {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  z-index: 3;
+  width: 2.1rem;
+  height: 2.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 176, 32, 0.35);
+  background: rgba(26, 18, 6, 0.75);
+  backdrop-filter: blur(6px);
+  color: #f5e9d6;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.gam-mute:hover { background: rgba(44, 32, 16, 0.85); }
+
+.gam-mute[aria-pressed="true"] { border-color: rgba(255, 46, 166, 0.5); }
+
+/* ─── Prompt de interacción ("Presiona E") ─── */
+.gam-prompt {
+  position: absolute;
+  left: 50%;
+  bottom: 0.85rem;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(26, 18, 6, 0.85);
+  border: 1px solid rgba(255, 176, 32, 0.4);
+  backdrop-filter: blur(8px);
+  font-family: var(--font-mono, monospace);
+  font-size: 0.78rem;
+  color: #f5e9d6;
+  animation: gamPromptBob 1.6s ease-in-out infinite;
+}
+
+.gam-prompt kbd {
+  padding: 0.1em 0.5em;
+  border-radius: 5px;
+  background: var(--color-accent);
+  color: #1a1206;
+  font-weight: 700;
+}
+
+@keyframes gamPromptBob {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%      { transform: translateX(-50%) translateY(-4px); }
+}
+
+/* `display:flex` (arriba) le gana al `display:none` del UA stylesheet
+   para [hidden] por orden de cascada — hace falta este override explícito
+   (mismo caso que .git-activity__history[hidden] en git-history.css). */
+.gam-prompt[hidden] { display: none; }
+
+/* ─── Hint de controles — visible solo mientras se juega ─── */
+.gam-tv__hint {
+  margin: 0;
+  padding: 0 0.3rem;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.gam-tv__hint[hidden] { display: none; }
+
+.gam-tv__hint kbd {
+  display: inline-block;
+  min-width: 1.3em;
+  padding: 0.05em 0.35em;
+  margin: 0 0.05em;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--bg-glass-input, var(--bg-secondary));
+  font-size: 0.85em;
+  color: var(--text-primary);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MODO JUGANDO — pantalla completa
+   Al arrancar el juego (click en la TV) deja de ser un widget del hero:
+   se vuelve un overlay fixed que tapa TODO (navbar, mode-bar, el resto
+   del hero) — la única salida es la puerta del cuarto (gam-loader.js
+   escucha 'gam:interact' kind:'exit' → ThemeSwitcher.switchMode al modo
+   anterior, lo que dispara portfolio:modeChange y saca la clase
+   .gam-playing del body). Fixed (no absolute dentro de .container) para
+   no depender del max-width/padding del container ni del scroll.
+   ═══════════════════════════════════════════════════════════ */
+/* El navbar queda visible a propósito (pedido: "dejando únicamente el
+   navbar superior") — sube de z-index para quedar arriba del stage
+   (9500) y su `top` se resetea a 0 porque el mode-bar (que ocupaba ese
+   espacio) sí se oculta. */
+[data-theme="gam"].gam-playing #mode-bar {
+  display: none;
+}
+
+[data-theme="gam"].gam-playing #navbar {
+  top: 0;
+  z-index: 9600;
+}
+
+[data-theme="gam"].gam-playing #hero .hero-content,
+[data-theme="gam"].gam-playing #hero .hero-decoration {
+  display: none;
+}
+
+[data-theme="gam"].gam-playing .gam-tv {
+  position: fixed;
+  top: var(--nav-height);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9500;
+  width: 100%;
+  background: #050301; /* la franja del hint (debajo del stage) también la necesita */
+  animation: none;
+  opacity: 1;
+}
+
+[data-theme="gam"].gam-playing .gam-tv__screen {
+  flex: 1;
+  min-height: 0;
+  background: #050301;
+  padding: 0;
+}
+
+/* Botones del hero — por las dudas queden expuestos por algún otro
+   selector; el bloque de arriba ya los saca del flujo por completo. */
+[data-theme="gam"].gam-playing .hero-cta-group {
+  display: none;
+}
+
+/* JotAI flota a z-index 9940, por encima del navbar reubicado (9600) —
+   sin esto quedaría flotando sobre el juego, rompiendo la regla de
+   "solo se sale por la puerta". */
+[data-theme="gam"].gam-playing #jotai-widget {
+  display: none;
+}
+
+/* ─── Tablet / Mobile — vuelve al flujo normal, apilado ─── */
+@media (max-width: 960px) {
+  [data-theme="gam"] .gam-tv {
+    position: static;
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="gam"] .gam-tv { animation: none; opacity: 1; }
+  .gam-prompt { animation: none; }
+  .gam-tv__loading-icon { animation: none; }
+}
+
+/* ============================================================
+   SIN SECCIONES DE SCROLL — .gam vive entero en el hero.
+   A diferencia de dev/ia/sec, no hay about/projects/skills/contact
+   ni el puente animado hacia ellas.
+   ============================================================ */
+[data-theme="gam"] #section-divider,
+[data-theme="gam"] #about,
+[data-theme="gam"] #projects,
+[data-theme="gam"] #skills,
+[data-theme="gam"] #contact {
+  display: none;
+}
+
+/* ============================================================
+   CONTROLES TÁCTILES — joystick virtual + botón "E"
+   gam-scene.js les saca el [hidden] solo si detecta pointer:coarse al
+   crear la escena; en desktop quedan ocultos siempre.
+   ============================================================ */
+.gam-touch {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 1.1rem;
+  pointer-events: none; /* solo los hijos (stick/botón) capturan toques */
+}
+
+.gam-touch[hidden] { display: none; }
+
+.gam-touch__stick {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: rgba(26, 18, 6, 0.55);
+  border: 1px solid rgba(255, 176, 32, 0.3);
+  touch-action: none;
+  pointer-events: auto;
+}
+
+.gam-touch__knob {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  border-radius: 50%;
+  background: rgba(255, 176, 32, 0.55);
+  border: 1px solid rgba(255, 176, 32, 0.7);
+  transition: transform 0.05s linear;
+  will-change: transform;
+}
+
+.gam-touch__btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 176, 32, 0.5);
+  background: rgba(255, 176, 32, 0.25);
+  color: #fff7e6;
+  font-family: var(--font-mono, monospace);
+  font-size: 1.1rem;
+  font-weight: 700;
+  touch-action: none;
+  pointer-events: auto;
+}
+
+.gam-touch__btn:active { background: rgba(255, 176, 32, 0.45); }
+
+/* ============================================================
+   MODAL PLACEHOLDER — objetos del cuarto sin minijuego todavía
+   Mismo patrón de overlay que pdf-modal.css.
+   ============================================================ */
+.gam-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9985;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+/* gam-loader.js agrega esta clase un frame después de sacar [hidden] (y la
+   saca antes de volver a poner [hidden] al cerrar) — mismo patrón que
+   .is-swapping en ia-mascot.js: separar el cambio de display del fade para
+   que la transición realmente se vea en vez de saltar de golpe. */
+.gam-modal.is-visible { opacity: 1; }
+
+.gam-modal[hidden] { display: none; }
+
+.gam-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+}
+
+.gam-modal__card {
+  position: relative;
+  z-index: 1;
+  max-width: 420px;
+  width: min(90vw, 420px);
+  padding: 2rem 1.75rem;
+  border-radius: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-card-hover, var(--shadow-card));
+  text-align: center;
+  transform: scale(0.96) translateY(8px);
+  transition: transform 0.18s ease;
+}
+
+.gam-modal.is-visible .gam-modal__card {
+  transform: scale(1) translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gam-modal,
+  .gam-modal__card { transition: none; }
+}
+
+.gam-modal__close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 50%;
+  background: var(--bg-glass-input, var(--bg-secondary));
+  color: var(--text-primary);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.gam-modal__close:hover { background: var(--bg-glass-hover, var(--bg-card-hover)); }
+
+.gam-modal__icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.gam-modal__title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.gam-modal__text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.gam-modal__text[hidden],
+.gam-modal__list[hidden] { display: none; }
+
+/* ─── Variante lista — desk/bookshelf/terminal (gam-loader.js _openListPanel) ───
+   Misma card que el placeholder pero más ancha/alta, con scroll interno
+   para no depender del alto real del contenido (varía con la cantidad
+   de proyectos de cada modo). */
+.gam-modal__card--list {
+  max-width: 560px;
+  width: min(92vw, 560px);
+  max-height: min(80vh, 640px);
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.gam-modal__card--list .gam-modal__icon,
+.gam-modal__card--list .gam-modal__title,
+.gam-modal__card--list .gam-modal__text {
+  text-align: center;
+}
+
+.gam-modal__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 1rem;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.gam-modal__list-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: 10px;
+  background: var(--bg-glass-input, var(--bg-secondary));
+  border: 1px solid var(--border-color);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.gam-modal__list-item:hover,
+.gam-modal__list-item:focus-visible {
+  background: var(--bg-glass-hover, var(--bg-card-hover));
+  border-color: var(--color-accent);
+}
+
+.gam-modal__list-item-title {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.gam-modal__list-item-desc {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.gam-modal__list-empty {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 1rem 0;
+}
+
+/* ─── Chips de skills — solo en el estante (.ia), debajo de la lista ─── */
+.gam-modal__skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.9rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.gam-modal__skills-label {
+  width: 100%;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.1rem;
+}
+
+.gam-modal__skill-chip {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: var(--bg-glass-input, var(--bg-secondary));
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+/* ─── Variante ancha — patineta (gam-skateboard.js), ~75vw/75vh ─── */
+.gam-modal__card--wide {
+  max-width: 720px;
+  width: min(75vw, 720px);
+  max-height: min(75vh, 640px);
+  display: flex;
+  flex-direction: column;
+}
+
+.gam-modal__card--wide .gam-modal__list {
+  flex: 1;
+  min-height: 0;
+}
+
+/* ============================================================
+   PIANO (gam-piano.js)
+   ============================================================ */
+.gam-piano {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding-top: 0.25rem;
+}
+
+.gam-piano__tabs {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: center;
+}
+
+.gam-piano__tab {
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-glass-input, var(--bg-secondary));
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.gam-piano__tab.is-active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #1a1206;
+  font-weight: 600;
+}
+
+.gam-piano__status {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  min-height: 1.3em;
+}
+
+.gam-piano__keys {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 0.35rem;
+}
+
+.gam-piano__key {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.3rem;
+  height: 96px;
+  padding-bottom: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-glass-input, var(--bg-secondary));
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: background 0.1s ease, transform 0.1s ease;
+}
+
+.gam-piano__key.is-active,
+.gam-piano__key:active {
+  background: var(--color-accent);
+  color: #1a1206;
+  transform: translateY(2px);
+}
+
+.gam-piano__key-note {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.gam-piano__key-bind {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.7rem;
+  opacity: 0.65;
+}
+
+.gam-piano__challenge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.gam-piano__start {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-accent);
+  background: var(--color-accent);
+  color: #1a1206;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ============================================================
+   MALABARES (gam-juggling.js)
+   ============================================================ */
+.gam-juggle {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.gam-juggle__status {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-align: center;
+  min-height: 1.3em;
+}
+
+.gam-juggle__track {
+  position: relative;
+  width: 100%;
+  max-width: 220px;
+  height: 260px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-glass-input, var(--bg-secondary));
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.gam-juggle__track.is-fail {
+  border-color: #ff2ea6;
+  animation: gamJuggleShake 0.3s ease;
+}
+
+@keyframes gamJuggleShake {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-4px); }
+  75%      { transform: translateX(4px); }
+}
+
+.gam-juggle__zone {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: rgba(255, 176, 32, 0.18);
+  border-top: 1px dashed rgba(255, 176, 32, 0.5);
+  border-bottom: 1px dashed rgba(255, 176, 32, 0.5);
+}
+
+.gam-juggle__ball {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  font-size: 1.6rem;
+  line-height: 1;
+  transition: filter 0.1s ease;
+}
+
+.gam-juggle__ball.is-caught {
+  filter: drop-shadow(0 0 8px var(--color-accent));
+}
+
+.gam-juggle__controls {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.gam-juggle__catch {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-accent);
+  background: transparent;
+  color: var(--color-accent);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.gam-juggle__video-btn {
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-glass-input, var(--bg-secondary));
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.gam-juggle__video-pending {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.gam-juggle__video {
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 16 / 9;
+}
+
+.gam-juggle__video iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 8px;
+}
+
+/* ============================================================
+   PATINETA — vista previa (gam-skateboard.js)
+   ============================================================ */
+.gam-skate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  height: 100%;
+  padding: 1rem 0;
+}
+
+.gam-skate__stage {
+  perspective: 700px;
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 16 / 9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  touch-action: none;
+}
+
+.gam-skate__stage.is-dragging { cursor: grabbing; }
+
+.gam-skate__deck {
+  width: 80%;
+  filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.35));
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.gam-skate__hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 280px;
+}
+
+/* Drawer de trayectoria por encima de la TV a pantalla completa —
+   normalmente vive en z-index 1100, muy por debajo de .gam-tv (9500). */
+[data-theme="gam"].gam-playing #jonathan-panel {
+  z-index: 9600;
+}

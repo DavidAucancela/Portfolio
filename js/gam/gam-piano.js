@@ -10,25 +10,19 @@
  *  - Libre: tocar las 8 notas con el mouse/touch o el teclado (A S D F G H J K)
  *  - Desafío: JotAI... digo, el piano toca una secuencia creciente
  *    (estilo Simon) que hay que repetir. Récord en localStorage.
+ *
+ * Usa el AudioContext compartido de gam-audio.js (antes tenía uno propio,
+ * paralelo al de gam-ambience.js) — un solo contexto real para todo .gam.
  */
+import { getAudioContext } from './gam-audio.js';
 
 const NOTES = [261.63, 293.66, 329.63, 349.23, 392.0, 440.0, 493.88, 523.25]; // C4..C5
 const KEY_BINDINGS = ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K'];
 const NOTE_LABELS  = ['Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Si', 'Do'];
 const BEST_KEY = 'gam-piano-best';
 
-let _audioCtx = null;
-
-function _ctx() {
-  if (!_audioCtx) {
-    const AC = window.AudioContext || window.webkitAudioContext;
-    _audioCtx = AC ? new AC() : null;
-  }
-  return _audioCtx;
-}
-
 function _playNote(i) {
-  const ctx = _ctx();
+  const ctx = getAudioContext();
   if (!ctx) return; // Web Audio no disponible (muy raro) — el juego sigue siendo usable visualmente
   if (ctx.state === 'suspended') ctx.resume();
 

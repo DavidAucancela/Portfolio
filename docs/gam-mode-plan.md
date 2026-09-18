@@ -252,13 +252,20 @@ que David lo juegue de punta a punta antes de la Fase 3.
 
 ## Pendiente — Fase 3 (arte real) y Fase 4 (pulido)
 
+- **Decisión confirmada (2026-09-18): se mantiene isométrico.** La nota
+  anterior de este documento recomendaba top-down para facilitar la
+  consistencia del sprite del personaje; David decidió quedarse en
+  isométrico de todas formas — el motor ya separa lógica cartesiana de
+  proyección (`isoProject()`, `ISO_X`/`ISO_Y`), así que el costo de
+  mantenerlo es puramente de arte (generar 4 direcciones consistentes), no
+  de motor. No hay migración a top-down pendiente.
 - **Arte real:** hoja de referencia del personaje (fotos reales de David) →
   sprites de caminata en 4 direcciones; sprite de Pukis; reemplazar los
-  `ICON_DRAWERS` de los muebles por arte real, uno por uno. Bloqueado en
-  parte por la decisión isométrico vs. top-down (ver "Riesgo técnico" y
-  "MVP" arriba) — **recomendado: top-down**, más fácil de generar
-  consistente en 4 direcciones y hay tilesets CC0 listos; el cambio de
-  motor es acotado (sacar `isoProject()`, la lógica de colisión no cambia).
+  `ICON_DRAWERS` de los muebles por arte real, uno por uno. Specs y prompts
+  completos en **`docs/gam-art-spec.md`** — mismo patrón de "generar
+  afuera → soltar el archivo → fallback automático" que `docs/jotai-renders.md`,
+  adaptado al loader nativo de Phaser (`preload()` + `textures.exists()`)
+  en vez del probe `new Image()` del DOM que usa JotAI.
 - **Sonido/mute:** sin sonido ambiente propio todavía (el piano usa audio
   como mecánica, no como ambientación) — no hay nada que mutear aún.
 - **`docs/gam-mode-plan.md`/`CLAUDE.md`:** actualizados a esta fecha; seguir
@@ -266,8 +273,70 @@ que David lo juegue de punta a punta antes de la Fase 3.
 - Falta probar en un dispositivo móvil real (no solo el gating por
   `pointer:coarse` revisado en código).
 
+## Fase 3-4 (2026-09-18) — profundidad, arte real, pulido — ✅ enviado
+
+Continuación tras validar Fases 0-2, probado end-to-end en navegador real
+(Chrome, `npm run dev`): cuarto con paredes/sombras/piso/ventana/rug
+renderizando, contador de progreso, panel de Pukis abriendo con fade y
+cerrando, botón de mute alternando ícono/estado/persistencia, sin errores
+de consola (aparte del `console.error` esperado de Phaser al no encontrar
+un asset todavía — ver nota en "Trampas conocidas"). `npm run build` limpio,
+con `gam-audio` como chunk compartido nuevo (usado por `gam-scene` y
+`gam-piano`).
+
+- **Fase 3a — Profundidad del cuarto** (`js/gam/gam-scene.js`, solo código,
+  sin dependencia de arte nuevo): paredes traseras (`_drawWalls()`),
+  ventana con luz ambiental ámbar/magenta + estrellas (`_drawWindow()`),
+  sombras de contacto bajo muebles/jugador, piso subdividido en grilla 6×6
+  (reemplaza el rombo plano único, `_drawFloorGrid()`), alfombra decorativa
+  bajo Pukis (`_drawRug()`), movimiento idle (`_addIdleMotion()` — Pukis
+  respira vía halo pulsante, motas de polvo en la luz de la ventana) —
+  gateado por `prefers-reduced-motion`. `_setupCamera()` suma `WALL_HEIGHT`
+  al margen superior para no recortar la pared/ventana nuevas.
+- **Fase 3b — Arte real (infraestructura)** (`js/gam/gam-scene.js`):
+  `preload()` nuevo (16 claves de `ART_KEYS`), ramas de
+  textura-real-vs-procedural en `_drawFloor()`/`_drawFurniture()`
+  (`this.textures.exists(key)`), `Container` para el jugador
+  (sombra + círculos fallback + `Image` de arte real, un solo
+  `setPosition`/`setDepth`), estado de dirección (`this._player.facing`,
+  derivado de la dirección **proyectada** de movimiento —
+  `screenDx=dx-dy`, `screenDy=dx+dy` — no del cartesiano crudo) con
+  degradación por-dirección (si falta el sprite de una sola dirección, esa
+  dirección específica cae a los círculos). Bobbing vertical sinusoidal
+  mientras camina en vez de walk-cycle real (ver `docs/gam-art-spec.md`).
+  Funciona con cero assets reales presentes — confirmado en navegador
+  (`[GamScene] Arte real: 0/16 assets`, room 100% procedural, sin errores).
+  Specs/prompts completos en `docs/gam-art-spec.md`.
+- **Fase 4 — Pulido**: `AudioContext` compartido (`js/gam/gam-audio.js`,
+  extraído de `gam-piano.js`, que ahora lo importa en vez de tener el suyo
+  propio), ambiente sonoro en loop + footsteps + blip de proximidad
+  (`js/gam/gam-ambience.js`, todo Web Audio generado, sin archivos), botón
+  de mute persistido en `localStorage('gam-muted')` (`#gam-mute` en
+  `index.html`/`css/gam-tv.css`, cableado en `gam-scene.js`), fade
+  opacity+scale en la apertura/cierre de `#gam-modal` vía clase
+  `is-visible` (`gam-loader.js` `_showModal()`/`_closeModal()`,
+  `css/gam-tv.css`), gateado por `prefers-reduced-motion`.
+  Pendiente (no es tarea de código): prueba en dispositivo móvil real.
+
+**Trampa nueva conocida:** en `vite dev` (`publicDir:false`), una ruta de
+asset sin archivo real cae al fallback de historial de Vite y responde 200
+con el HTML de la SPA en vez de un 404 — el loader de Phaser igual falla al
+decodificarlo como imagen (`console.error` propio de Phaser, uno por
+asset faltante, esperado y sin romper nada) y `textures.exists()` sigue
+siendo la fuente de verdad correcta. El contador de diagnóstico en DEV lee
+`textures.exists()` directamente (no eventos `loaderror` del loader) por
+esto mismo — ver comentario en `GamScene.create()`.
+
 ## Abierto / por confirmar con David
 
 - Link de YouTube del video de malabares (pendiente de que lo pases)
 - Patineta: ¿ya existe un modelo 3D (`.glb`) del deck, o hay que generarlo?
   Define si el visor 3D entra en el MVP o en una iteración posterior
+- Walk-cycle real del personaje vs. frame estático + bobbing simulado
+  (propuesto: estático, ver `docs/gam-art-spec.md`) — confirmar si vale la
+  pena el riesgo de consistencia extra de generar frames de caminata
+- Estilo exacto de la ventana/alfombra nuevas del cuarto (Fase 3a) —
+  ajustable en revisión visual una vez enviado
+- Botón de mute (Fase 4): ubicación, ícono y estado por defecto —
+  propuesto arriba-derecha de `.gam-tv__screen`, 🔊/🔇, sin mutear por
+  defecto

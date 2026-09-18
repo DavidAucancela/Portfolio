@@ -17,6 +17,9 @@ let _hotspotsPromise = null;
 let _lastNonGamMode  = null;
 let _panelSeq        = 0; // invalida renders async (fetch de lista) de un panel ya cerrado
 let _minigameUnmount = null; // cleanup del minijuego montado en #gam-modal-list (piano/malabares/patineta)
+let _modalCloseTimer = null;
+
+const MODAL_FADE_MS = 180; // debe coincidir con la transición de .gam-modal en css/gam-tv.css
 
 const GAME_WIDTH  = 800;
 const GAME_HEIGHT = 600;
@@ -191,6 +194,17 @@ function _teardownMinigame() {
   _minigameUnmount = null;
 }
 
+/** Saca [hidden] y arma la clase is-visible un frame después — dispara el
+ *  fade+scale de entrada de .gam-modal (css/gam-tv.css) en vez de saltar
+ *  directo a visible. */
+function _showModal() {
+  clearTimeout(_modalCloseTimer);
+  const modal = document.getElementById('gam-modal');
+  if (!modal) return;
+  modal.hidden = false;
+  requestAnimationFrame(() => modal.classList.add('is-visible'));
+}
+
 function _setCardVariant(variant) {
   const card = document.getElementById('gam-modal-card');
   card?.classList.remove('gam-modal__card--list', 'gam-modal__card--wide');
@@ -216,7 +230,7 @@ function _openTextPanel(detail) {
   _setCardVariant(null);
   if (listEl) listEl.hidden = true;
 
-  modal.hidden = false;
+  _showModal();
   // Sin esto el jugador se sigue moviendo (y puede volver a disparar E)
   // detrás del modal — la escena queda "viva" aunque no se vea.
   _game?.scene.pause('GamScene');
@@ -250,7 +264,7 @@ function _openListPanel(detail) {
   itemsWrap.innerHTML = '<p class="gam-modal__list-empty">Cargando…</p>';
   listEl.appendChild(itemsWrap);
 
-  modal.hidden = false;
+  _showModal();
   _game?.scene.pause('GamScene');
 
   _loadProjects(mode).then(projects => {
@@ -330,7 +344,7 @@ async function _openMinigamePanel(detail, which) {
   listEl.hidden = false;
   listEl.innerHTML = '<p class="gam-modal__list-empty">Cargando…</p>';
 
-  modal.hidden = false;
+  _showModal();
   _game?.scene.pause('GamScene');
 
   try {
@@ -371,11 +385,18 @@ function _closeModal() {
   _teardownMinigame();
   const modal = document.getElementById('gam-modal');
   if (!modal || modal.hidden) return;
-  modal.hidden = true;
-  _setCardVariant(null);
-  const listEl = document.getElementById('gam-modal-list');
-  if (listEl) { listEl.hidden = true; listEl.innerHTML = ''; }
   _game?.scene.resume('GamScene');
+
+  modal.classList.remove('is-visible');
+  const finish = () => {
+    modal.hidden = true;
+    _setCardVariant(null);
+    const listEl = document.getElementById('gam-modal-list');
+    if (listEl) { listEl.hidden = true; listEl.innerHTML = ''; }
+  };
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduced) finish();
+  else _modalCloseTimer = setTimeout(finish, MODAL_FADE_MS);
 }
 
 function _bindModal() {

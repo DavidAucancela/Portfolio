@@ -386,58 +386,48 @@
         </div>
 
         <!-- TV del cuarto interactivo — solo visible en modo .gam.
-             A diferencia de los otros 3 widgets, no tiene collapsed/expanded:
-             son 2 estados propios (estática / jugando) — ver gam-tv.js -->
+             Sin marco/bezel: la estática vive en el fondo unificado de la
+             página (background.js, GamField) — este widget es solo el
+             prompt de "insertar moneda" + el stage donde Phaser monta el
+             juego al arrancar (ver css/gam-tv.css, sección MODO JUGANDO). -->
         <div class="gam-tv" id="gam-tv" role="region" aria-label="Cuarto interactivo — click para comenzar">
-          <div class="gam-tv__frame">
-            <div class="gam-tv__bar" aria-hidden="true">
-              <span class="gam-tv__dot" style="background:#ff5f57"></span>
-              <span class="gam-tv__dot" style="background:#ffbd2e"></span>
-              <span class="gam-tv__dot" style="background:#28ca41"></span>
-              <span class="gam-tv__title">jonathan-tv</span>
+          <div class="gam-tv__screen" id="gam-tv-screen">
+            <button type="button" class="gam-tv__start" id="gam-tv-start">
+              <span class="gam-tv__start-icon" aria-hidden="true">▶</span>
+              <span class="gam-tv__start-label">Insertar moneda</span>
+              <span class="gam-tv__start-sub">click para empezar</span>
+            </button>
+
+            <div class="gam-tv__loading" id="gam-tv-loading" hidden role="status" aria-live="polite">
+              <span class="gam-tv__loading-icon" aria-hidden="true">🎮</span>
+              <span>Cargando el cuarto…</span>
             </div>
 
-            <div class="gam-tv__screen" id="gam-tv-screen">
-              <canvas class="gam-tv__static" id="gam-tv-static" aria-hidden="true"></canvas>
-              <div class="gam-tv__scanlines" aria-hidden="true"></div>
-              <div class="gam-tv__vignette" aria-hidden="true"></div>
+            <!-- Phaser monta el <canvas> del juego acá -->
+            <div id="gam-canvas-root" class="gam-canvas-root"></div>
 
-              <button type="button" class="gam-tv__start" id="gam-tv-start">
-                <span class="gam-tv__start-icon" aria-hidden="true">▶</span>
-                <span>Click para comenzar</span>
-              </button>
+            <!-- Contador de objetos explorados — persiste entre visitas
+                 (gam-loader.js _markDiscovered/_updateProgressUI) -->
+            <div class="gam-progress" id="gam-progress" hidden aria-live="polite"></div>
 
-              <div class="gam-tv__loading" id="gam-tv-loading" hidden role="status" aria-live="polite">
-                <span class="gam-tv__loading-icon" aria-hidden="true">🎮</span>
-                <span>Cargando el cuarto…</span>
-              </div>
-
-              <!-- Phaser monta el <canvas> del juego acá -->
-              <div id="gam-canvas-root" class="gam-canvas-root"></div>
-
-              <!-- Contador de objetos explorados — persiste entre visitas
-                   (gam-loader.js _markDiscovered/_updateProgressUI) -->
-              <div class="gam-progress" id="gam-progress" hidden aria-live="polite"></div>
-
-              <!-- Prompt de interacción por proximidad ("Presiona E") -->
-              <div class="gam-prompt" id="gam-prompt" hidden aria-hidden="true">
-                <kbd>E</kbd> <span id="gam-prompt-label">Interactuar</span>
-              </div>
-
-              <!-- Controles táctiles — gam-scene.js los muestra solo si
-                   detecta pointer:coarse (ver css/gam-tv.css) -->
-              <div class="gam-touch" id="gam-touch" hidden aria-hidden="true">
-                <div class="gam-touch__stick" id="gam-touch-stick">
-                  <div class="gam-touch__knob" id="gam-touch-knob"></div>
-                </div>
-                <button type="button" class="gam-touch__btn" id="gam-touch-interact" aria-label="Interactuar">E</button>
-              </div>
+            <!-- Prompt de interacción por proximidad ("Presiona E") -->
+            <div class="gam-prompt" id="gam-prompt" hidden aria-hidden="true">
+              <kbd>E</kbd> <span id="gam-prompt-label">Interactuar</span>
             </div>
 
-            <p class="gam-tv__hint" id="gam-tv-hint" hidden>
-              Movete con <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> o las flechas · interactuá con <kbd>E</kbd>
-            </p>
+            <!-- Controles táctiles — gam-scene.js los muestra solo si
+                 detecta pointer:coarse (ver css/gam-tv.css) -->
+            <div class="gam-touch" id="gam-touch" hidden aria-hidden="true">
+              <div class="gam-touch__stick" id="gam-touch-stick">
+                <div class="gam-touch__knob" id="gam-touch-knob"></div>
+              </div>
+              <button type="button" class="gam-touch__btn" id="gam-touch-interact" aria-label="Interactuar">E</button>
+            </div>
           </div>
+
+          <p class="gam-tv__hint" id="gam-tv-hint" hidden>
+            Movete con <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> o las flechas · interactuá con <kbd>E</kbd>
+          </p>
         </div>
 
       </div>

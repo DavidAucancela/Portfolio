@@ -111,17 +111,41 @@
     },
     {
       "date": "2026-09-07",
-      "count": 1
+      "count": 2
     },
     {
       "date": "2026-09-12",
+      "count": 3
+    },
+    {
+      "date": "2026-09-13",
+      "count": 2
+    },
+    {
+      "date": "2026-09-15",
+      "count": 3
+    },
+    {
+      "date": "2026-09-16",
       "count": 1
     }
   ],
-  "totalCommits": 63,
-  "totalCommitsAllTime": 204,
+  "totalCommits": 72,
+  "totalCommitsAllTime": 213,
   "totalProjects": 33,
   "prs": [
+    {
+      "number": 53,
+      "title": "i18n bilingual projects",
+      "date": "2026-09-12",
+      "hash": "7bec773"
+    },
+    {
+      "number": 52,
+      "title": "widgets sin intro pr history global",
+      "date": "2026-09-07",
+      "hash": "1e8d31b"
+    },
     {
       "number": 51,
       "title": "unified background v2",
@@ -157,19 +181,7 @@
       "title": "docs: limpiar pendientes manuales resueltos en CLAUDE.md",
       "date": "2026-08-21",
       "hash": "99d9277"
-    },
-    {
-      "number": 46,
-      "title": "Feat/hero widgets history panels",
-      "date": "2026-08-21",
-      "hash": "dacb0b7"
-    },
-    {
-      "number": 44,
-      "title": "docs: documentar fallback de IA, LLM Observatory y fixes de ranking de JotAI",
-      "date": "2026-08-20",
-      "hash": "9d27538"
     }
   ],
-  "generatedAt": "2026-09-13T02:59:27.864Z"
+  "generatedAt": "2026-09-18T14:46:26.388Z"
 }

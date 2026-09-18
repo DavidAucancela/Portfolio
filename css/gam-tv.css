@@ -1,15 +1,17 @@
 /* ============================================================
    GAM TV — cuarto interactivo embebido en el hero (modo .gam)
    ============================================================
-   A diferencia de .git-activity / .ia-tokens / .sec-terminal, este
-   widget no tiene collapsed/expanded: tiene 2 estados propios —
-   "estática" (TV apagada, esperando click) y "jugando" (Phaser
-   montado adentro de la pantalla) — manejados por gam-tv.js.
+   Sin marco/bezel: la estática vive en el fondo unificado de toda la
+   página (background.js, GamField) — este widget es solo el prompt
+   "insertar moneda" + el stage donde Phaser monta el juego al arrancar.
+   A diferencia de .git-activity / .ia-tokens / .sec-terminal, no tiene
+   collapsed/expanded: tiene 2 estados propios — "esperando moneda" y
+   "jugando" (Phaser montado) — manejados por gam-tv.js.
 
    .gam no tiene secciones propias como los otros 3 modos: todo el
-   modo vive en el hero (TV a la derecha). Las secciones de scroll
-   normal (about/projects/skills/contact) y el puente hacia ellas se
-   ocultan — ver el bloque "SIN SECCIONES DE SCROLL" más abajo. */
+   modo vive en el hero. Las secciones de scroll normal
+   (about/projects/skills/contact) y el puente hacia ellas se ocultan —
+   ver el bloque "SIN SECCIONES DE SCROLL" más abajo. */
 
 .gam-tv {
   display: none;
@@ -29,122 +31,45 @@
   z-index: 2;
   display: flex;
   flex-direction: column;
-  width: min(620px, 50vw);
-  animation: gamTvEnter 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  width: min(360px, 40vw);
+  /* Reusa el keyframe sd-right de animations.css (mismo look que el resto
+     del sitio) pero como animation normal, no animation-timeline: este
+     widget aparece/desaparece por cambio de modo (display:none↔flex), no
+     por scroll, y animation-timeline:view() se queda pegado en opacity:0
+     cuando un elemento pasa a visible sin que haya scroll de por medio. */
+  animation: sd-right 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: 0.3s;
   opacity: 0;
 }
 
-@keyframes gamTvEnter {
-  from { opacity: 0; transform: translateY(16px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0)   scale(1);    }
-}
-
-.gam-tv__frame {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  padding: 0.7rem;
-  background: rgba(26, 18, 6, 0.94);
-  border: 1px solid rgba(255, 176, 32, 0.22);
-  border-radius: 14px;
-  box-shadow:
-    0 0 0 1px rgba(255, 176, 32, 0.06),
-    0 24px 64px rgba(0, 0, 0, 0.75),
-    0 0 48px rgba(255, 176, 32, 0.08);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-}
-
-/* ─── Barra de título — mismo chrome que .sec-terminal__bar ─── */
-.gam-tv__bar {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.35rem 0.5rem;
-}
-
-.gam-tv__dot {
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.gam-tv__title {
-  flex: 1;
-  text-align: center;
-  font-family: var(--font-mono, monospace);
-  font-size: 0.67rem;
-  color: rgba(255, 176, 32, 0.55);
-  letter-spacing: 0.06em;
-  user-select: none;
-}
-
-/* ─── Pantalla ─── */
+/* ─── Pantalla — solo un contenedor de posicionamiento en modo idle;
+   se vuelve el stage a pantalla completa en modo jugando (ver abajo) ─── */
 .gam-tv__screen {
   position: relative;
-  aspect-ratio: 4 / 3;
-  width: 100%;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #050301;
-}
-
-.gam-tv__static {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  image-rendering: pixelated;
-  opacity: 0.55;
-}
-
-.gam-tv__scanlines {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.35) 0px,
-    rgba(0, 0, 0, 0.35) 1px,
-    transparent 1px,
-    transparent 3px
-  );
-  mix-blend-mode: multiply;
-  z-index: 2;
-}
-
-.gam-tv__vignette {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.55) 100%);
-  z-index: 2;
-}
-
-/* ─── Botón "Click para comenzar" ─── */
-.gam-tv__start {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.6rem;
-  border: none;
-  background: rgba(5, 3, 1, 0.35);
-  color: #f5e9d6;
-  font-family: var(--font-display);
-  font-size: 1rem;
-  letter-spacing: 0.03em;
-  cursor: pointer;
-  transition: background 0.2s ease;
+  padding: 2rem 1rem;
 }
 
-.gam-tv__start:hover,
-.gam-tv__start:focus-visible {
-  background: rgba(5, 3, 1, 0.15);
+/* ─── Botón "Insertar moneda" — sin caja, texto con glow tipo arcade ───
+   position+z-index a propósito: sin esto, el botón (sin position, pintado
+   en flujo normal) queda TAPADO por #gam-canvas-root (position:absolute,
+   z-index:1) aunque esté vacío — un elemento posicionado siempre pinta
+   (y captura clicks) por encima de uno no posicionado, sin importar el
+   orden en el HTML. Mismo bug que dejaba el botón sin responder al click. */
+.gam-tv__start {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  border: none;
+  background: none;
+  color: var(--color-accent);
+  font-family: var(--font-display);
+  cursor: pointer;
 }
 
 .gam-tv__start-icon {
@@ -153,13 +78,36 @@
   justify-content: center;
   width: 2.2rem;
   height: 2.2rem;
+  margin-bottom: 0.3rem;
   border-radius: 50%;
   background: var(--color-accent);
   color: #1a1206;
   font-size: 0.9rem;
 }
 
+.gam-tv__start-label {
+  font-size: 1.15rem;
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 12px currentColor, 0 0 26px currentColor;
+  animation: gamCoinBlink 1.2s steps(2, jump-none) infinite;
+}
+
+.gam-tv__start-sub {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+
+@keyframes gamCoinBlink {
+  50% { opacity: 0.4; }
+}
+
 .gam-tv__start[hidden] { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .gam-tv__start-label { animation: none; }
+}
 
 /* ─── Power-on: flash + "encendido" de tubo CRT ─── */
 .gam-tv__screen.is-powering-on::after {
@@ -319,9 +267,17 @@
    .gam-playing del body). Fixed (no absolute dentro de .container) para
    no depender del max-width/padding del container ni del scroll.
    ═══════════════════════════════════════════════════════════ */
-[data-theme="gam"].gam-playing #navbar,
+/* El navbar queda visible a propósito (pedido: "dejando únicamente el
+   navbar superior") — sube de z-index para quedar arriba del stage
+   (9500) y su `top` se resetea a 0 porque el mode-bar (que ocupaba ese
+   espacio) sí se oculta. */
 [data-theme="gam"].gam-playing #mode-bar {
   display: none;
+}
+
+[data-theme="gam"].gam-playing #navbar {
+  top: 0;
+  z-index: 9600;
 }
 
 [data-theme="gam"].gam-playing #hero .hero-content,
@@ -331,27 +287,22 @@
 
 [data-theme="gam"].gam-playing .gam-tv {
   position: fixed;
-  inset: 0;
-  top: 0;
+  top: var(--nav-height);
+  left: 0;
   right: 0;
+  bottom: 0;
   z-index: 9500;
   width: 100%;
+  background: #050301; /* la franja del hint (debajo del stage) también la necesita */
   animation: none;
   opacity: 1;
-}
-
-[data-theme="gam"].gam-playing .gam-tv__frame {
-  height: 100%;
-  border-radius: 0;
-  border: none;
-  box-shadow: none;
 }
 
 [data-theme="gam"].gam-playing .gam-tv__screen {
   flex: 1;
   min-height: 0;
-  aspect-ratio: auto;
-  border-radius: 0;
+  background: #050301;
+  padding: 0;
 }
 
 /* Botones del hero — por las dudas queden expuestos por algún otro
@@ -360,9 +311,9 @@
   display: none;
 }
 
-/* JotAI flota a z-index 9940, por encima de la TV a pantalla completa
-   (9500) — sin esto quedaría flotando sobre el juego, rompiendo la regla
-   de "solo se sale por la puerta". */
+/* JotAI flota a z-index 9940, por encima del navbar reubicado (9600) —
+   sin esto quedaría flotando sobre el juego, rompiendo la regla de
+   "solo se sale por la puerta". */
 [data-theme="gam"].gam-playing #jotai-widget {
   display: none;
 }

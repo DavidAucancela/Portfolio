@@ -327,6 +327,107 @@ siendo la fuente de verdad correcta. El contador de diagnóstico en DEV lee
 `textures.exists()` directamente (no eventos `loaderror` del loader) por
 esto mismo — ver comentario en `GamScene.create()`.
 
+**Trampa observada en `npm run dev` (2026-09-18), no reproducida en build de
+producción:** `fetch('data/gam-hotspots.json')` (ruta relativa, tal como la
+usa `_loadHotspots()` en `gam-loader.js`) devolvió intermitentemente el
+fallback SPA de Vite (200 + HTML) en vez del JSON real, incluso con el
+archivo presente en disco — mismo síntoma que la trampa de arte de arriba,
+pero sobre un archivo que sí existe. Con ruta absoluta (`/data/gam-hotspots.json`)
+respondió consistentemente bien. No se investigó a fondo (parece timing del
+middleware de historial de Vite en dev, no algo del código de `.gam`) — si
+vuelve a aparecer, revisar `server.fs`/el orden de middlewares en
+`vite.config.js`, o mover ese fetch a ruta absoluta como los demás.
+
+## Fase 5 (2026-09-18) — game feel / juice, sin arte nuevo — ✅ enviado
+
+A pedido de David ("sigue muy básico") se priorizó juice de game feel sobre
+las otras 3 líneas posibles (minijuegos más profundos, arte real, progresión)
+para esta pasada — explícitamente sin generar assets nuevos: todo con
+`Phaser.Graphics`/tweens/cámara/partículas (textura generada en código, no
+archivos), CSS y Web Audio. Hallazgo que motivó la prioridad:
+`_interact(f)` (`gam-scene.js`) no hacía nada visible antes de que el modal
+apareciera — el verbo principal del juego se sentía "muerto".
+
+- **`js/gam/gam-audio.js`**: `envelope()` (antes privada en
+  `gam-ambience.js`) ahora exportada de acá — infra de audio compartida por
+  cualquier módulo de `.gam` que necesite un SFX corto de un solo disparo.
+- **`js/gam/gam-fx.js` (nuevo)**: helpers de Phaser puros —
+  `burstParticles()` (textura de partícula generada en código,
+  `generateTexture`, nunca un archivo) y `cameraPunch()` (zoom in/out corto
+  vía tween sobre `cameras.main`). Vive junto a `gam-audio.js`/
+  `gam-ambience.js` (misma separación infra/uso, pero para Phaser).
+- **Feedback de interacción** (`gam-scene.js`, `_playInteractFx()` nuevo,
+  llamado desde `_interact()`): glow pulsante en un aro por mueble (creado
+  una vez en `_drawFurniture()`, nunca redibujado), burst de partículas del
+  color del mueble, micro-punch de cámara y chime corto — más grande la
+  primera vez que se visita cada mueble en la sesión
+  (`this._visitedThisSession`). Gateado en bloque por `_reducedMotion`; el
+  audio se gatea aparte solo por `_muted`, igual que footstep/blip.
+- **Celebración de 10/10** (`GamScene.celebrateComplete()`, llamada desde
+  `_celebrateComplete()` en `gam-loader.js` vía una referencia directa a la
+  instancia de escena, `_sceneInstance`): flash de cámara + burst de
+  partículas sobre el jugador + acorde de 3 notas. El toast de texto
+  original queda intacto (sigue accesible con reduced motion).
+- **Piano** (`gam-piano.js`): chime de "ronda completa" en modo desafío
+  (antes solo sonaba la nota, sin refuerzo positivo distinto); racha de 5
+  aciertos seguidos enciende brevemente `.gam-piano__keys.is-hot`.
+- **Malabares** (`gam-juggling.js`): hito cada 5 atrapes (`.is-milestone` +
+  chime); "calor" visual creciente (`--heat`, 0→1 según se acerca al período
+  mínimo) intensificando el `drop-shadow` ya existente de la pelota.
+- **Fix de contenido de paso**: `data/gam-hotspots.json` seguía diciendo
+  "Todavía en construcción" para piano/malabares/patineta pese a estar
+  implementados desde la Fase 2 — corregido a describir lo que abren hoy.
+- **Bug de CSS pre-existente encontrado y corregido**: `.gam-piano__challenge`
+  no respetaba `[hidden]` porque su propio `display:flex` (misma
+  especificidad, origen "autor") le ganaba al `[hidden]{display:none}` del
+  navegador — el panel de modo desafío quedaba visible aunque `mount()` lo
+  marcara oculto en modo libre. Mismo patrón de fix que ya usan
+  `.gam-modal__text[hidden]`/`.gam-modal__list[hidden]` en este archivo.
+
+Verificado con `npm run build` (limpio, chunks intactos) y en navegador real
+(Chrome vía automatización): boot, interacción con varios muebles (glow +
+partículas + cámara + chime confirmados inspeccionando `scene.tweens`/
+`cameras.main.zoom` en vivo, ya que el efecto es demasiado corto para
+capturarlo con una captura de pantalla normal), flujo completo de
+descubrir 9→10/10 disparando `celebrateComplete()` sin errores, gating de
+`_reducedMotion` confirmado (cero tweens nuevos con `_reducedMotion=true`),
+paneles de piano/malabares renderizando sin errores de consola. La
+animación de la pelota de malabares (rAF del DOM, no de Phaser) no llegó a
+verificarse en tiempo real por throttling del navegador automatizado —
+la lógica se revisó por código, no quedó sin probar por elección.
+
+**Corrección post-envío (mismo día):** David reportó los controles
+"bugueados" tras probar en su propio navegador. Encontrado y corregido:
+
+- **Bug real en `cameraPunch()` (`gam-fx.js`):** leía `cam.zoom` en vivo
+  como base de cada "punch". Con interacts seguidos dentro de la ventana
+  del tween (~90ms — fácil explorando rápido/mashing E), `killTweensOf`
+  cortaba el tween anterior a mitad de camino con el zoom todavía elevado,
+  y ese valor quedaba de base del siguiente punch — el zoom nunca volvía
+  a 1.0 y se iba trepando con cada interacción, desincronizando la cámara
+  del cuarto. Fix: cada punch fuerza `cam.setZoom(baseZoom)` (1.0) antes
+  de animar, así nunca acumula sin importar cuán seguido se llame —
+  confirmado con 30 interacts reales consecutivos (`_interact()`, no solo
+  `_playInteractFx()` suelto) sin que el zoom se moviera de 1.
+- **Hardening descubierto de paso:** Phaser (`RequestAnimationFrame.js`)
+  agenda el próximo `requestAnimationFrame` recién DESPUÉS de que el
+  callback del frame actual termine sin tirar — no hay ningún try/catch
+  propio de Phaser en el step. Un throw sin capturar en cualquier punto de
+  `update()` (incluido nuestro código nuevo dentro de `_interact()`) deja
+  el loop entero congelado para siempre, sin recuperación posible salvo
+  recargar la página — encaja con el patrón reportado ("se buherea",
+  recargar lo arregla momentáneamente). Como medida preventiva (no se
+  encontró un throw real reproducible en `_playInteractFx`/
+  `celebrateComplete`, pero el riesgo arquitectónico es real y este código
+  es nuevo): ambos quedaron envueltos en try/catch — un fallo ahí ahora
+  loguea a consola y sigue el frame en vez de congelar el juego. Ver los
+  comentarios en `GamScene._interact()` y `gam-loader.js _celebrateComplete()`.
+
+Fuera de alcance esta pasada (a propósito): patineta (placeholder ya
+documentado, esperando el `.glb`), minijuegos más profundos, arte real y
+progresión/contenido nuevo — quedan para sesiones futuras, ya conversado
+con David.
+
 ## Abierto / por confirmar con David
 
 - Link de YouTube del video de malabares (pendiente de que lo pases)

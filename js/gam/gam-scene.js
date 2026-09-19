@@ -19,8 +19,9 @@
  * círculos del jugador), que queda como capa de fallback permanente.
  */
 import Phaser from 'phaser';
-import { getAudioContext } from './gam-audio.js';
+import { getAudioContext, envelope } from './gam-audio.js';
 import { startAmbience, stopAmbience, playFootstep, playProximityBlip } from './gam-ambience.js';
+import { burstParticles, cameraPunch } from './gam-fx.js';
 
 export const ROOM_W = 600;
 export const ROOM_H = 600;
@@ -268,6 +269,7 @@ export class GamScene extends Phaser.Scene {
     this._keys = this.input.keyboard.addKeys('W,A,S,D,UP,DOWN,LEFT,RIGHT,E');
     this._player = { x: 300, y: 270, facing: 'se' };
     this._activeHotspot = null;
+    this._visitedThisSession = new Set(); // primer interact con cada mueble en esta sesión → efecto más grande
     this._touchVec = { x: 0, y: 0 };
     this._touchInteractPressed = false;
     this._reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -635,7 +637,17 @@ export class GamScene extends Phaser.Scene {
       color: '#f5e9d6',
     }).setOrigin(0.5, 1).setDepth(depth + 0.1);
 
-    return { ...f, depth, _g: g, _label: label };
+    // Aro de highlight — invisible por defecto (alpha 0), se tween-ea en
+    // _playInteractFx() al presionar E. Creado una sola vez acá (patrón del
+    // resto del archivo: nunca redibujar Graphics dentro de update()).
+    const highlightG = this.add.graphics();
+    highlightG.lineStyle(3, f.color, 1);
+    highlightG.strokeEllipse(0, 0, hw * 1.7, hh * 1.7);
+    highlightG.setPosition(c.sx, c.sy);
+    highlightG.setDepth(depth + 0.2);
+    highlightG.setAlpha(0);
+
+    return { ...f, depth, _g: g, _label: label, _highlightG: highlightG, _screen: c, _hw: hw, _hh: hh };
   }
 
   /**
@@ -870,6 +882,21 @@ export class GamScene extends Phaser.Scene {
   }
 
   _interact(f) {
+    const firstVisit = !this._visitedThisSession.has(f.id);
+    this._visitedThisSession.add(f.id);
+    // try/catch a propósito: esto corre dentro de update() (llamado por el
+    // step de Phaser), y Phaser NO envuelve ese step en try/catch — un throw
+    // sin capturar acá aborta el frame entero y, como RequestAnimationFrame.js
+    // recién agenda el próximo requestAnimationFrame() DESPUÉS de que el
+    // callback del frame actual termine sin tirar, el loop completo queda
+    // congelado para siempre (hay que recargar la página). El feedback visual
+    // es cosmético — nunca debería poder tumbar el juego.
+    try {
+      this._playInteractFx(f, { big: firstVisit });
+    } catch (err) {
+      console.error('[GamScene] _playInteractFx falló (no fatal):', err);
+    }
+
     window.dispatchEvent(new CustomEvent('gam:interact', {
       detail: {
         id:      f.id,
@@ -878,5 +905,58 @@ export class GamScene extends Phaser.Scene {
         content: this._hotspotContent.get(f.id) || null,
       },
     }));
+  }
+
+  /**
+   * Feedback inmediato al presionar E — hasta ahora _interact() no hacía
+   * nada visible antes de que el modal apareciera (~180ms después). Glow +
+   * partículas + micro-punch de cámara, más grande la primera vez que se
+   * visita cada mueble en la sesión. Gateado en bloque por _reducedMotion
+   * (mismo criterio que _addIdleMotion); el chime de audio se gatea aparte
+   * solo por _muted, nunca por reduced motion — igual que footstep/blip.
+   */
+  _playInteractFx(f, { big = false } = {}) {
+    if (!this._muted) {
+      envelope(this._audioCtx, { freq: big ? 660 : 880, type: 'triangle', duration: big ? 0.18 : 0.12, gain: 0.12 });
+    }
+
+    if (this._reducedMotion) return;
+
+    if (f._highlightG) {
+      const g = f._highlightG;
+      this.tweens.killTweensOf(g);
+      g.setAlpha(0.45).setScale(0.7);
+      this.tweens.add({ targets: g, alpha: 0, scale: 1.3, duration: 380, ease: 'Sine.easeOut' });
+    }
+
+    if (f._screen) {
+      burstParticles(this, f._screen.sx, f._screen.sy - f._hh, {
+        color: f.color,
+        count: big ? 16 : 8,
+        spread: big ? 100 : 70,
+      });
+    }
+
+    cameraPunch(this, { zoom: big ? 1.035 : 1.02, duration: 90 });
+    if (big) this.cameras.main.flash(120, 255, 176, 32);
+  }
+
+  /**
+   * Llamado desde gam-loader.js cuando se descubren los 10/10 hotspots —
+   * el toast de texto en la TV queda intacto (sigue accesible con reduced
+   * motion); esto es el refuerzo extra en el canvas de Phaser.
+   */
+  celebrateComplete() {
+    if (this._reducedMotion) return;
+
+    const p = isoProject(this._player.x, this._player.y);
+    this.cameras.main.flash(280, 255, 176, 32);
+    burstParticles(this, p.sx, p.sy, { color: 0xffd580, count: 26, spread: 140, lifespan: 700 });
+
+    if (!this._muted) {
+      [523.25, 659.25, 783.99].forEach((freq, i) => {
+        this.time.delayedCall(i * 90, () => envelope(this._audioCtx, { freq, type: 'triangle', duration: 0.35, gain: 0.14 }));
+      });
+    }
   }
 }

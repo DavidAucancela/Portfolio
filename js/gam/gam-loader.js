@@ -12,6 +12,7 @@ import { ProjectGallery } from '../project-gallery.js';
 import { GamTV } from './gam-tv.js';
 
 let _game            = null;
+let _sceneInstance   = null; // referencia directa a la GamScene activa — usada por _celebrateComplete()
 let _booting         = false;
 let _hotspotsPromise = null;
 let _lastNonGamMode  = null;
@@ -74,6 +75,13 @@ function _celebrateComplete() {
   el.classList.add('is-complete');
   const prev = el.textContent;
   el.textContent = LangSwitcher.getLang() === 'en' ? '🎉 Found them all!' : '🎉 ¡Encontraste todo!';
+  // try/catch a propósito: esta llamada corre dentro del mismo stack síncrono
+  // que _interact()/update() en GamScene (via window.dispatchEvent) — un throw
+  // sin capturar acá se propaga hasta el step de Phaser y congela el loop
+  // entero (ver el comentario largo en GamScene._interact()). El toast de
+  // arriba ya se aplicó y no depende de esto.
+  try { _sceneInstance?.celebrateComplete?.(); }
+  catch (err) { console.error('[GamLoader] celebrateComplete falló (no fatal):', err); }
   setTimeout(() => {
     el.classList.remove('is-complete');
     el.textContent = prev;
@@ -130,6 +138,7 @@ async function _boot() {
     if (ThemeSwitcher.getCurrentMode() !== 'gam') { _booting = false; return; }
 
     const scene = new GamScene(hotspots);
+    _sceneInstance = scene;
 
     _game = new Phaser.Game({
       type: Phaser.AUTO,
@@ -174,6 +183,7 @@ function _destroy() {
     _game.destroy(true);
     _game = null;
   }
+  _sceneInstance = null;
   document.body.classList.remove('gam-playing');
   _closeModal();
 }

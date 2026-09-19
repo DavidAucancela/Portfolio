@@ -14,7 +14,7 @@
  * Usa el AudioContext compartido de gam-audio.js (antes tenía uno propio,
  * paralelo al de gam-ambience.js) — un solo contexto real para todo .gam.
  */
-import { getAudioContext } from './gam-audio.js';
+import { getAudioContext, envelope } from './gam-audio.js';
 
 const NOTES = [261.63, 293.66, 329.63, 349.23, 392.0, 440.0, 493.88, 523.25]; // C4..C5
 const KEY_BINDINGS = ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K'];
@@ -82,6 +82,7 @@ function mount(container) {
   let sequence = [];
   let playerStep = 0;
   let accepting = false; // true mientras el jugador puede responder
+  let streak = 0; // aciertos consecutivos en la ronda actual (modo desafío)
   const timers = [];
 
   const setTimer = (fn, ms) => {
@@ -105,15 +106,24 @@ function mount(container) {
     if (mode === 'challenge' && accepting) {
       if (sequence[playerStep] === i) {
         playerStep++;
+        streak++;
+        if (streak > 0 && streak % 5 === 0) _flashHotStreak();
         if (playerStep === sequence.length) {
           accepting = false;
+          envelope(getAudioContext(), { freq: 660, type: 'sine', duration: 0.15, gain: 0.1 });
           statusEl.textContent = `¡Bien! Secuencia de ${sequence.length}. Preparando la siguiente…`;
           setTimer(() => _nextRound(), 700);
         }
       } else {
+        streak = 0;
         _endChallenge();
       }
     }
+  }
+
+  function _flashHotStreak() {
+    keysEl.classList.add('is-hot');
+    setTimer(() => keysEl.classList.remove('is-hot'), reducedMotion ? 0 : 300);
   }
 
   keysEl.addEventListener('click', (e) => {

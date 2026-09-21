@@ -1,137 +1,70 @@
 # Jonathan Aucancela — Portfolio
 
-Portfolio personal de **Jonathan David Aucancela** — Software Engineer · IA Developer · Security Researcher.
+Personal portfolio of **Jonathan David Aucancela** — Software Engineer · AI Developer · Security Researcher.
 
-**URL:** [davidaucancela-portfolio.vercel.app](https://davidaucancela-portfolio.vercel.app/)
+**Live:** [davidaucancela-portfolio.vercel.app](https://davidaucancela-portfolio.vercel.app/)
 
----
+## Four modes, one page
 
-## Tres modos, una sola página
+The site re-themes itself around the profile you pick. The mode is saved in `localStorage` and changes the content, colors, projects, animated background and the hero widget.
 
-El portfolio cambia completamente según el perfil seleccionado:
-
-| Modo | Perfil | Acento |
-|------|--------|--------|
-| `dev` | Software Engineer — sistemas fullstack, arquitectura, deploy | Azul |
-| `ia` | IA Developer — LLMs, RAG, agentes, embeddings | Púrpura |
-| `sec` | Security Researcher — pentesting, CTF, ciberseguridad | Verde terminal |
-
-El modo activo persiste en `localStorage` y cambia contenido, colores, proyectos y secciones visibles.
-
----
+| Mode | Profile | Hero widget |
+|------|---------|-------------|
+| `dev` | Software Engineer | Git activity: commit heatmap + merged PR history |
+| `ia` | AI Developer | LLM token counter from LLM Observatory |
+| `sec` | Security Researcher | Interactive terminal (and a "system breach" to repair from it) |
+| `gam` | Playable room | "Insert coin" prompt → isometric room with 10 objects and minigames |
 
 ## Stack
 
-- **HTML5 + CSS3 + JavaScript vanilla** con ES modules
-- **Vite** como bundler (`npm run dev` / `npm run build`)
-- **Deploy:** Vercel — auto-deploy en push a `main`
-- **Analytics:** `@vercel/analytics` + `@vercel/speed-insights`
+- Vanilla JavaScript (ES modules) + CSS, bundled with **Vite**
+- **Phaser 3** for the `gam` room, lazy-loaded on first click
+- **transformers.js** (MiniLM) in a Web Worker for semantic search
+- **Vercel** for hosting and serverless functions (`api/`); Vercel Analytics + Speed Insights
+- **OpenAI** as JotAI's fallback, reported through `@llm-observatory/sdk`
 
----
+## Features
 
-## Desarrollo local
+- **JotAI** — floating mascot: speech bubbles, section tips, guided tour and a chat backed by local hybrid search (keywords + embeddings), falling back to an LLM
+- **Command palette** (`Cmd/Ctrl+K`) — navigation, mode switching, projects, actions
+- **Project gallery**, **trajectory drawer** and inline **CV/PDF viewer**
+- **One animated canvas** behind the whole page, different per mode and reactive to the cursor
+- **ES / EN** interface
+
+## Run locally
 
 ```bash
 npm install
-npm run dev      # http://localhost:3000 con HMR
-npm run build    # build de producción en dist/
-npm run preview  # previsualizar el build
+cp .env.example .env.local   # optional, see below
+npm run dev                  # http://localhost:3000 (Vite takes the next free port if busy)
+npm run build                # production build in dist/
 ```
 
----
+Vite alone does **not** serve `api/*` — use `vercel dev` when you need JotAI's fallback or the hero widgets' live data.
 
-## Proyectos por modo
+| Variable | Used by | Required |
+|----------|---------|----------|
+| `OPENAI_API_KEY` | JotAI LLM fallback (`api/jotai-chat.js`) | No — falls back to a canned reply |
+| `ALLOWED_ORIGIN` | Restricts who can call `api/jotai-chat.js` | No |
+| `LLM_OBSERVATORY_API_URL`, `LLM_OBSERVATORY_API_TOKEN` | Usage reporting + the `ia` token widget | No |
+| `GITHUB_TOKEN`, `GITHUB_USERNAME`, `GITHUB_REPO` | Full-profile heatmap and PRs in the `dev` widget | No — falls back to local git history |
 
-Los proyectos se cargan con `fetch` desde JSON en runtime:
-
-| Archivo | Modo | Proyectos |
-|---------|------|-----------|
-| `data/dev-projects.json` | `.dev` | ArtEcuador, Ideancestral, MapCriminals, Notes App, Equity, SecuraBank, Gesture Control, ConQuito, Nunna, DualFace, Portfolio Trimodal |
-| `data/ia-projects.json` | `.ia` | LLM Observatory, UBApp, MindLog, Mare Vitae, Social Media AI Agent, AnaOS, CodeReviewX |
-| `data/sec-projects.json` | `.sec` | Labs HTB + prácticas profesionales + certificaciones |
-
----
-
-## Funcionalidades
-
-- **JotAI** — mascot flotante que vive en la página: emerge al cargar con un globo de bienvenida (speech bubbles efímeras con typewriter), lanza tips contextuales por sección con cooldown, y abre el chat inteligente al hacer clic — búsqueda semántica con `Xenova/all-MiniLM-L6-v2` (Web Worker + IndexedDB cache)
-- **Tour guiado** — recorre la trayectoria y los 3 modos cambiándolos en vivo (cada uno muestra sus proyectos); al terminar restaura el modo inicial
-- **Command Palette** (`Cmd+K`) — 21 comandos en 4 grupos: navegación, modo, proyectos, acciones
-- **Project Gallery** — galería fullscreen con filmstrip, navegación táctil y panel de proceso detallado
-- **SecTerminal** — terminal interactiva en modo `.sec` con boot sequence y comandos (`help`, `whoami`, `ls`, `cat`, `ping`, `clear`)
-- **PDF Modal** — visor inline del CV sin abrir nueva pestaña
-- **Trajectory Drawer** — línea de tiempo interactiva de la trayectoria profesional
-- **Scroll-driven Animations** — vía `animation-timeline: view()` con fallback IntersectionObserver
-- **Section Canvas** — fondos dinámicos por modo (partículas azules / red neuronal púrpura / matrix verde)
-- **Bilingüe ES/EN** — internacionalización completa con `LangSwitcher`
-
----
-
-## Estructura
+## Layout
 
 ```
-index.html
-css/
-  main.css              # Variables, reset, layout, hero
-  sections.css          # About, projects, skills, contact
-  animations.css        # Keyframes + scroll-driven animations
-  polish.css            # Jonathan panel, trayectoria, detalles
-  project-gallery.css   # Gallery fullscreen
-  project-detail.css    # Panel de detalle de proyecto
-  command-palette.css   # Command palette overlay
-  ia-mascot.css         # JotAI widget
-  sec-terminal.css      # Terminal modo .sec
-  pdf-modal.css         # Visor PDF
-  trajectory.css        # Drawer de trayectoria
-  section-divider.css   # Divisor interactivo hero→about
-  themes/
-    dev.css | ia.css | sec.css
-
-js/
-  main.js               # Entry point Vite
-  app.js                # Navbar, scroll, contacto
-  theme-switcher.js     # Cambio dev/ia/sec
-  sections.js           # Renderizado de secciones
-  projects.js           # Renderizado de tarjetas
-  project-detail.js     # Panel lateral de detalle
-  project-gallery.js    # Gallery fullscreen
-  ia-mascot.js          # JotAI widget (presencia + chat)
-  ia-bubble.js          # Speech bubbles efímeras del mascot
-  ia-assistant.js       # Motor NLP híbrido + KB dinámica
-  ia-worker.js          # Web Worker: MiniLM + IndexedDB
-  ia-tour.js            # Tour: trayectoria + 3 modos en vivo
-  command-palette.js    # Buscador global Cmd+K
-  sec-terminal.js       # Terminal interactiva .sec
-  pdf-modal.js          # Visor PDF inline
-  trajectory.js         # Drawer de trayectoria
-  animations.js         # Hero canvas (partículas/matrix/neural)
-  effects.js            # SectionReveal + SectionCanvas
-  lang.js               # Internacionalización ES/EN
-  section-nav.js        # Dots de navegación lateral
-  section-divider.js    # Divisor interactivo
-
-data/
-  dev-projects.json
-  ia-projects.json
-  sec-projects.json
-  personal.json
-  skills.json
-
-public/
-  images/projects/<slug>/   # Screenshots por proyecto
-  images/certificados/      # PDFs de certificaciones (modo .sec)
+index.html        single page
+css/              base, sections, per-mode themes (themes/), widgets, background
+js/               ES modules; js/gam/ holds the Phaser room and minigames
+api/              Vercel serverless functions
+data/             projects (dev/ia/sec), skills, personal info — fetched at runtime
+public/           images, project screenshots, certificates, CV
+docs/             design notes (gam mode, hero widgets, JotAI renders)
 ```
 
----
+Project cards come from `data/{dev,ia,sec}-projects.json`; text fields can be `{ "es": …, "en": … }`.
 
-## CI/CD
+## Deploy
 
-- `.github/workflows/deploy.yml` — deploy a Vercel en push a `main`
-- `.github/workflows/ci.yml` — pipeline de CI
-- `.lighthouserc.json` — Lighthouse CI para seguimiento de performance
+Vercel auto-deploys on push to `main` (`.github/workflows/deploy.yml`). CI runs from `ci.yml`; performance is tracked with Lighthouse CI (`.lighthouserc.json`).
 
----
-
-## Licencia
-
-MIT
+Detailed architecture notes and gotchas live in [`CLAUDE.md`](CLAUDE.md).

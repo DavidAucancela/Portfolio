@@ -311,6 +311,14 @@
   display: none;
 }
 
+/* .gam-tv es fixed y vive dentro de #hero .container: el fade de scroll del
+   hero (effects.js HeroParallax, opacity inline en el container) también lo
+   afectaría, y el juego debe verse completo. !important gana al inline. */
+[data-theme="gam"].gam-playing #hero .container {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
 [data-theme="gam"].gam-playing .gam-tv {
   position: fixed;
   top: var(--nav-height);
@@ -347,7 +355,10 @@
 /* ─── Tablet / Mobile — vuelve al flujo normal, apilado ─── */
 @media (max-width: 960px) {
   [data-theme="gam"] .gam-tv {
-    position: static;
+    /* relative, no static: activa el z-index:2 de la regla base. Jugando,
+       `[data-theme="gam"].gam-playing .gam-tv` (más específica) sigue
+       poniéndolo en fixed. */
+    position: relative;
     width: 100%;
   }
 }

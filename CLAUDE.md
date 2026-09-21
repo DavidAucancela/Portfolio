@@ -213,9 +213,29 @@ interno (`max-height: min(640px, calc(100vh - 200px)); overflow-y:auto`) para qu
 tampoco dependa del alto de `.hero-section` para caber. Ahora que expandir/colapsar
 es un cambio aislado, el ancho anima con `transition: width .45s …` sin miedo a que
 el resto de la página salte en cada frame.
-**≤960px** el flotante vuelve al flujo normal (`position:static`, ancho 100%,
+**≤960px** el flotante vuelve al flujo normal (`position:relative`, ancho 100%,
 apilado debajo de `.hero-content`) — el patrón absoluto es cosa de escritorio; en
 mobile no hay columna de grid que proteger y el stack vertical ya es examen estándar.
+Tres reglas que hacen que ese stack funcione (todas rotas antes, ver `main.css`
+bloque `≤960px` del hero):
+- **`relative`, no `static`:** el `z-index:2` de la regla base solo aplica a elementos
+  posicionados. Con `static`, `#section-divider` (`z-index:1`, listeners de click) se
+  pintaba encima del widget y "Ver más / Ver menos" no respondía.
+- **Reserva inferior en `#hero`:** `padding-bottom: calc(var(--sdiv-overlap) + 1.5rem)`.
+  El divisor invade `--sdiv-overlap` px (120, definido en `section-divider.css`) del
+  final del hero; el widget apilado es lo último y quedaría dentro de esa franja.
+  `.gam` queda fuera (oculta el divisor). Va con selector de id para ganarle al
+  `padding-bottom` de `≤768px`, que está más abajo en el archivo. Además
+  `align-items:flex-start` para que expandir el widget no desplace `.hero-content`.
+- **Fade de scroll del widget** (`effects.js` `HeroParallax._fadeWidget`), sobre
+  `#hero .container` y **según el borde inferior del widget respecto al viewport**
+  (`WIDGET_FADE_PX`), no según `scrollY/heroH` como el texto del hero. Con esa fórmula
+  (`pct * 2.5`) desaparecía tras el 40% del hero aunque siguiera a media pantalla, y
+  expandido —más alto— era peor: un panel que se lee tiene que verse entero mientras
+  esté en pantalla. NO poner `opacity` inline en el widget — `sd-right … both` deja
+  `opacity:1` fijo y una animation gana a un estilo inline. Excepciones por CSS con `!important`
+  (`body.gam-playing` y `body.is-sec-hacked`, en `gam-tv.css` / `sec-terminal.css`):
+  el juego debe verse completo y la terminal es la única vía de recuperación.
 **Al tocar el layout de un widget nuevo, replicar este patrón — nunca volver a meter
 el panel en el grid del `.container`.**
 

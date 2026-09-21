@@ -486,7 +486,10 @@
      de .hero-content, como una sección propia) — el flotante absoluto
      es un patrón de escritorio, en mobile ya no hace falta anclar nada. */
   [data-theme="dev"] .git-activity {
-    position: static;
+    /* relative, no static: el z-index:2 de la regla base solo aplica a
+       elementos posicionados — sin él #section-divider (z-index:1) se pinta
+       encima del widget y se lleva los clicks */
+    position: relative;
     max-height: none;
     overflow-y: visible;
   }

@@ -37,7 +37,7 @@ const DISCOVER_KEY = 'gam-discovered';
 // cuarto (ver FURNITURE en gam-three-scene.js, `interactive: false`). El
 // estante volvió: ahora es una estación (libros de proyectos de IA).
 const DISCOVERABLE_IDS = [
-  'piano', 'desk', 'juggling', 'bed', 'reading', 'skateboard', 'pukis', 'bookshelf',
+  'piano', 'desk', 'juggling', 'window', 'skateboard', 'pukis', 'bookshelf', 'chess',
 ];
 
 function _loadDiscovered() {
@@ -165,6 +165,19 @@ async function _boot() {
 function _handleStart() {
   document.body.classList.add('gam-playing');
   _boot();
+}
+
+let _inCredits = false;
+
+/** Puerta del cuarto: créditos y de vuelta al prompt "insertar moneda" (sigue en .gam). */
+async function _exitToCredits() {
+  if (_inCredits) return;
+  _inCredits = true;
+  await GamTV.playCredits({ discovered: _discovered.size, total: DISCOVERABLE_IDS.length });
+  _inCredits = false;
+  if (ThemeSwitcher.getCurrentMode() !== 'gam') return;
+  _destroy();
+  GamTV.enterMode();
 }
 
 function _destroy() {
@@ -374,6 +387,7 @@ function init() {
   window.addEventListener('portfolio:modeChange', (e) => {
     const mode = e.detail.mode;
     if (mode === 'gam') {
+      window.scrollTo(0, 0);
       GamTV.enterMode();
     } else {
       _lastNonGamMode = mode;
@@ -385,7 +399,7 @@ function init() {
   window.addEventListener('gam:interact', (e) => {
     const { kind, id } = e.detail;
     if (kind === 'exit') {
-      ThemeSwitcher.switchMode(_lastNonGamMode || 'dev');
+      _exitToCredits();
       return;
     }
     _markDiscovered(id);

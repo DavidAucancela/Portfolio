@@ -15,11 +15,12 @@
  */
 import { getAudioContext, envelope } from './gam-audio.js';
 
-const NOTES = [261.63, 293.66, 329.63, 349.23, 392.0, 440.0, 493.88, 523.25]; // C4..C5
-export const KEY_BINDINGS = ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K'];
-export const NOTE_LABELS = ['Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Si', 'Do'];
+const NOTES = [261.63, 293.66, 329.63, 349.23, 392.0, 440.0, 493.88, 523.25, 587.33, 659.25, 698.46, 783.99, 880.0, 987.77, 1046.5]; // C4..C6 (teclas blancas)
+const CHALLENGE_NOTES = 8; // el Reto usa solo la primera octava
+export const KEY_BINDINGS = ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', 'Z', 'X', 'C', 'V', 'B'];
+export const NOTE_LABELS = ['Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Si', 'Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Si', 'Do'];
 const BEST_KEY = 'gam-piano-best';
-const FREE_HINT = 'Toca las teclas — mouse, touch o A S D F G H J K';
+const FREE_HINT = 'Toca las teclas — mouse, touch o A S D F G H J K L ; Z X C V B';
 
 function _playNote(i) {
   const ctx = getAudioContext();
@@ -107,7 +108,7 @@ export function createPiano({ onFlash, onStatus, onEnd, onHot }) {
   }
 
   function _nextRound() {
-    sequence.push(Math.floor(Math.random() * NOTES.length));
+    sequence.push(Math.floor(Math.random() * CHALLENGE_NOTES));
     _playSequence();
   }
 

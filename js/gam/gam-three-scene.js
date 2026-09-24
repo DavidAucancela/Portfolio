@@ -37,6 +37,7 @@ import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { createHud } from './gam-hud.js';
 import { createStations } from './gam-stations.js';
 
@@ -73,18 +74,15 @@ const FURN_SCALE = 1.15; // muebles más grandes que su diseño base ("se ven ch
 ──────────────────────────────────────────────────── */
 const WALL_FACING = Math.PI / 2;
 const FURNITURE = [
-  { id: 'piano',      x: -HALF + 0.34, z: -0.4,  rotY: WALL_FACING, color: 0xffb020, label: '🎹 Piano',            kind: 'minigame', zoom: 2.5 },
+  { id: 'piano',      x: -HALF + 0.34, z: 0.85,  rotY: WALL_FACING, color: 0xffb020, label: '🎹 Piano',            kind: 'minigame', zoom: 2.5, viewTilt: 0.45 },
   { id: 'desk',       x: -0.3,         z: -HALF + 0.47, rotY: 0,    color: 0x3b82f6, label: '🖥️ Escritorio',       kind: 'list', zoom: 2.0, artHeight: 1.9 },
-  { id: 'juggling',   x: 3.0,          z: -0.7,  rotY: 0,           color: 0xff8a3d, label: '🤹 Malabares',        kind: 'video', zoom: 3, scale: 1.35 },
-  { id: 'bed',        x: 2.35,         z: 2.05,  rotY: 0,           color: 0xc9a06a, label: '🛏️ Cama',            kind: 'info', zoom: 2.1 },
+  { id: 'juggling',   x: -1.45,        z: 2.35,  rotY: 0,           color: 0xff8a3d, label: '🤹 Malabares',        kind: 'video', zoom: 3, scale: 1.35 },
   { id: 'door',       x: -HALF,        z: 2.55,  rotY: WALL_FACING, color: 0x94a3b8, label: '🚪 Salir',            kind: 'exit', zoom: 2.2, scale: 1 },
-  { id: 'reading',    x: -2.15,        z: 1.65,  rotY: Math.PI / 4, color: 0xc9a06a, label: '📖 Rincón de lectura', kind: 'info', zoom: 2.7 },
   { id: 'skateboard', x: 3.0,          z: -HALF + 0.32, rotY: 0,    color: 0x06ffa5, label: '🛹 Patineta',         kind: '3d', zoom: 2.6 },
-  { id: 'pukis',      x: 0.2,          z: 0.9,   rotY: -0.5,        color: 0x8b5a2b, label: '🐾 Pukis',            kind: 'info', zoom: 3.2, scale: 1.5 },
-  // Decorativos — visibles en el cuarto, sin interacción (ver comentario arriba)
-  { id: 'diplomas',   x: -HALF + 0.03, z: -0.4,  y: 2.3, rotY: WALL_FACING, color: 0xffd580, label: '🏆 Diplomas', kind: 'trajectory', interactive: false, scale: 1 },
-  { id: 'terminal',   x: 2.0,          z: -HALF + 0.36, rotY: 0,    color: 0x00ff41, label: '💚 Terminal',         kind: 'list', interactive: false },
-  { id: 'bookshelf',  x: -HALF + 0.24, z: -2.55, rotY: WALL_FACING, color: 0xb14eff, label: '📚 Estante',          kind: 'list', zoom: 2.6 },
+  { id: 'window',     x: 2.2,          z: -HALF, y: 0,   rotY: 0,           color: 0x7aa2ff, label: '🪟 Ventana',          kind: 'info', zoom: 3.2, scale: 1, noLift: true },
+  { id: 'chess',      x: 0.25,         z: 0.8,    rotY: 0,           color: 0xe8d9b5, label: '♟️ Ajedrez',          kind: 'minigame', zoom: 7.5, elev: 1.15 },
+  { id: 'pukis',      x: 1.95,         z: -2.55, rotY: -Math.PI / 2, color: 0xe9dcc0, label: '🐾 Pukis',            kind: 'info', zoom: 4.2, scale: 1.4, view: Math.PI / 2 },
+  { id: 'bookshelf',  x: -HALF + 0.24, z: -2.55, rotY: WALL_FACING, color: 0xb14eff, label: '📚 Estante',          kind: 'list', zoom: 2.6, viewTilt: 0.5 },
 ];
 
 /* ── Cámara ortográfica isométrica ──
@@ -101,6 +99,8 @@ const CAM_DIST = 30;
 const DEFAULT_LOOK = new THREE.Vector3(0, 1.7, 0);
 const DEFAULT_ZOOM = 1.15;    // acerca el diorama para que ocupe más del encuadre
 const FOCUS_ZOOM = 2.4;
+const FOCUS_ZOOM_BOOST = 1.35;   // el objeto enfocado pasa a ser el protagonista: más grande
+const FRONT_ELEV = 0.65;      // elevación (y de la dirección) de la vista frontal al enfocar un objeto
 const Y_AXIS = new THREE.Vector3(0, 1, 0);
 const PARALLAX_YAW = 0.03;    // rad (~1.7°) — el diorama "gira" levemente siguiendo el puntero
 const PARALLAX_PITCH = 0.02;
@@ -340,6 +340,32 @@ function makeScreenTexture(kind, seed) {
   });
 }
 
+/** Pelota tejida a mano: bandas de 2–3 colores con puntadas en diagonal. */
+function makeYarnTexture(colors, seed) {
+  const tex = canvasTexture(256, 128, (ctx, w, h) => {
+    const rnd = seeded(seed);
+    const bands = colors.length + 1;
+    for (let i = 0; i < bands; i++) {
+      ctx.fillStyle = colors[i % colors.length];
+      ctx.fillRect(0, (i * h) / bands, w, h / bands + 1);
+    }
+    // puntadas: pares de trazos oscuro/claro cruzados
+    for (let y = 0; y < h; y += 5) {
+      for (let x = (y / 5) % 2 ? 0 : 3; x < w; x += 6) {
+        const j = rnd() * 1.5;
+        ctx.strokeStyle = 'rgba(0,0,0,0.28)';
+        ctx.lineWidth = 1.6;
+        ctx.beginPath(); ctx.moveTo(x, y + j); ctx.lineTo(x + 3, y + 4 + j); ctx.stroke();
+        ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+        ctx.beginPath(); ctx.moveTo(x + 3, y + j); ctx.lineTo(x, y + 4 + j); ctx.stroke();
+      }
+    }
+  });
+  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  tex.repeat.set(2, 1);
+  return tex;
+}
+
 /** Extras de material para una pantalla con textura emisiva. */
 function screenExtra(tex, intensity = 1.1) {
   return { map: tex, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: intensity };
@@ -379,22 +405,32 @@ function makePosterSunset() {
   });
 }
 
-function makePosterTerminal() {
-  return canvasTexture(256, 352, (ctx, w, h) => {
-    const rnd = seeded(23);
-    ctx.fillStyle = '#07140b';
+/** Grip de la patineta: negro rugoso + logo rasta (3 barras) + ícono de cuadritos dorados. */
+function makeGripTexture() {
+  return canvasTexture(256, 1024, (ctx, w, h) => {
+    const rnd = seeded(77);
+    ctx.fillStyle = '#131316';
     ctx.fillRect(0, 0, w, h);
-    ctx.fillStyle = '#00ff41';
-    ctx.font = 'bold 30px "Courier New", monospace';
-    ctx.fillText('> _', 20, 50);
-    for (let i = 0; i < 16; i++) {
-      ctx.globalAlpha = 0.35 + rnd() * 0.6;
-      ctx.fillRect(20 + (i % 3 === 0 ? 20 : 0), 82 + i * 16, 30 + rnd() * 170, 6);
+    for (let i = 0; i < 9000; i++) {
+      ctx.fillStyle = rnd() > 0.5 ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.35)';
+      ctx.fillRect(rnd() * w, rnd() * h, 2, 2);
     }
-    ctx.globalAlpha = 1;
-    ctx.strokeStyle = '#00ff41';
-    ctx.lineWidth = 3;
-    ctx.strokeRect(8, 8, w - 16, h - 16);
+    ctx.save();
+    ctx.translate(w * 0.5, h * 0.4);
+    ctx.rotate(-0.12);
+    [['#c0392b', -34], ['#f1c40f', 0], ['#27ae60', 34]].forEach(([col, dy], i) => {
+      ctx.fillStyle = col;
+      ctx.fillRect(-92 + i * 16, dy - 15, 150, 26);
+    });
+    ctx.restore();
+    ctx.fillStyle = '#c9a26a';
+    [[0, 0], [30, 14], [60, 0], [30, -14], [30, 42]].forEach(([dx, dy]) => {
+      ctx.save();
+      ctx.translate(w * 0.5 - 30 + dx, h * 0.62 + dy);
+      ctx.rotate(Math.PI / 4);
+      ctx.fillRect(-9, -9, 18, 18);
+      ctx.restore();
+    });
   });
 }
 
@@ -471,8 +507,9 @@ export function mount(container, hotspots) {
   let yaw = 0;
   let pitch = 0;
   const camDir = new THREE.Vector3();
+  const baseDir = ISO_DIR.clone(); // dirección base: isométrica en reposo, frontal al enfocar
   function applyCamera() {
-    camDir.set(ISO_DIR.x, ISO_DIR.y + pitch, ISO_DIR.z).normalize().applyAxisAngle(Y_AXIS, yaw);
+    camDir.set(baseDir.x, baseDir.y + pitch, baseDir.z).normalize().applyAxisAngle(Y_AXIS, yaw);
     camera.position.copy(camLook).addScaledVector(camDir, CAM_DIST);
     camera.lookAt(camLook);
   }
@@ -512,7 +549,8 @@ export function mount(container, hotspots) {
   sun.castShadow = true;
   sun.shadow.mapSize.set(lite ? 1024 : 2048, lite ? 1024 : 2048);
   Object.assign(sun.shadow.camera, { left: -8, right: 8, top: 8, bottom: -8, near: 1, far: 30 });
-  sun.shadow.normalBias = 0.02;
+  sun.shadow.normalBias = 0.04;
+  sun.shadow.bias = -0.0004;
   scene.add(sun);
 
   const lamp = new THREE.PointLight(0xffa040, base.lamp, 4, 2);
@@ -548,8 +586,10 @@ export function mount(container, hotspots) {
   roomBox(pedSize, PED_H, pedSize, pedMat, 0, pedY, 0);
   roomBox(S, H, T, wallMat, 0, H / 2, -HALF - T / 2);              // pared trasera
   roomBox(T, H, S, wallMat, -HALF - T / 2, H / 2, 0);              // pared izquierda
-  roomBox(S + T, 0.08, T, trimMat, -T / 2, H, -HALF - T / 2);      // borde superior trasero
-  roomBox(T, 0.08, S, trimMat, -HALF - T / 2, H, 0);               // borde superior izquierdo
+  // El borde va ENCIMA de la pared (no solapado) y con un pequeño voladizo: si comparte
+  // planos con la pared hay z-fighting/acné de sombra que titila al derivar la cámara.
+  roomBox(S + T + 0.04, 0.08, T + 0.04, trimMat, -T / 2, H + 0.04, -HALF - T / 2);         // borde superior trasero
+  roomBox(T + 0.04, 0.079, S, trimMat, -HALF - T / 2, H + 0.0395, 0);                      // borde superior izquierdo
   roomBox(S, 0.15, 0.06, trimMat, 0, 0.075, -HALF + 0.03);         // zócalo trasero
   roomBox(0.06, 0.15, S, trimMat, -HALF + 0.03, 0.075, 0);         // zócalo izquierdo
 
@@ -650,14 +690,6 @@ export function mount(container, hotspots) {
       new THREE.MeshStandardMaterial({ color: 0x111111, map: nightTex, emissive: 0xffffff, emissiveMap: nightTex, emissiveIntensity: 1 }),
       wx, wy, wz + 0.012
     );
-    const fz = wz + 0.045;
-    addPart(decor, decorParts, box(ww + 0.16, 0.08, 0.09), 0xe8e4dc, wx, wy + wh / 2 + 0.04, fz);
-    addPart(decor, decorParts, box(ww + 0.16, 0.08, 0.09), 0xe8e4dc, wx, wy - wh / 2 - 0.04, fz);
-    addPart(decor, decorParts, box(0.08, wh, 0.09), 0xe8e4dc, wx - ww / 2 - 0.04, wy, fz);
-    addPart(decor, decorParts, box(0.08, wh, 0.09), 0xe8e4dc, wx + ww / 2 + 0.04, wy, fz);
-    addPart(decor, decorParts, box(0.04, wh, 0.05), 0xe8e4dc, wx, wy, fz);
-    addPart(decor, decorParts, box(ww, 0.04, 0.05), 0xe8e4dc, wx, wy, fz);
-    addPart(decor, decorParts, box(ww + 0.3, 0.05, 0.18), 0xe8e4dc, wx, wy - wh / 2 - 0.1, wz + 0.09); // alféizar
     windowLight.position.set(wx, wy - 0.1, wz + 1.1);
   }
 
@@ -674,9 +706,6 @@ export function mount(container, hotspots) {
     const p1 = new THREE.MeshStandardMaterial({ map: makePosterSunset(), roughness: 0.8 });
     dMesh(new THREE.PlaneGeometry(0.62, 0.86), p1, -2.35, 2.9, -HALF + 0.034);
     addPart(decor, decorParts, box(0.68, 0.92, 0.03), 0x1a1a1a, -2.35, 2.9, -HALF + 0.012);
-    const p2 = new THREE.MeshStandardMaterial({ map: makePosterTerminal(), roughness: 0.8 });
-    dMesh(new THREE.PlaneGeometry(0.52, 0.72), p2, -HALF + 0.034, 3.3, -2.55, Math.PI / 2);
-    addPart(decor, decorParts, box(0.03, 0.78, 0.58), 0x1a1a1a, -HALF + 0.012, 3.3, -2.55);
   }
 
   // Reloj de pared (la manecilla de segundos anima en el loop).
@@ -704,15 +733,7 @@ export function mount(container, hotspots) {
     clockSecond.children[0].material.color.setHex(0xc0392b);
   }
 
-  // Repisa flotante con plantas sobre la puerta + planta grande junto al piano.
-  {
-    addPart(decor, decorParts, box(0.28, 0.05, 1.0), 0xe8e4dc, -HALF + 0.14, 2.95, 2.55);
-    addPlant(decor, decorParts, -HALF + 0.14, 2.975, 2.3, 1.2);
-    addPlant(decor, decorParts, -HALF + 0.14, 2.975, 2.8, 1.0, 0x5fbf7a);
-    addPlant(decor, decorParts, -3.0, 0, 0.95, 2.4);
-  }
-
-  // Parlante de piso (junto al escritorio) y mochila (junto a la puerta).
+  // Parlante de piso (junto al escritorio) y guitarra.
   {
     const spk = new THREE.Group();
     spk.position.set(-2.55, 0, -HALF + 0.3);
@@ -726,16 +747,23 @@ export function mount(container, hotspots) {
       ring.rotation.x = Math.PI / 2;
     });
 
-    const bag = new THREE.Group();
-    bag.position.set(-2.7, 0, 2.95);
-    bag.rotation.y = -0.7;
-    decor.add(bag);
-    addPart(bag, decorParts, box(0.42, 0.55, 0.25), 0x2b4a6b, 0, 0.275, 0, { roughness: 0.9 });
-    addPart(bag, decorParts, box(0.32, 0.22, 0.07), 0x223b56, 0, 0.16, 0.14, { roughness: 0.9 });
-    addPart(bag, decorParts, box(0.05, 0.36, 0.05), 0x14202e, -0.14, 0.32, -0.14);
-    addPart(bag, decorParts, box(0.05, 0.36, 0.05), 0x14202e, 0.14, 0.32, -0.14);
-    const handle = addPart(bag, decorParts, new THREE.TorusGeometry(0.06, 0.012, 8, 16, Math.PI), 0x14202e, 0, 0.56, 0);
-    handle.rotation.z = 0;
+    // Guitarra acústica apoyada contra la pared izquierda (frente hacia +x).
+    const guitar = new THREE.Group();
+    guitar.position.set(-HALF + 0.3, 0, -1.4);
+    guitar.rotation.z = 0.1;
+    decor.add(guitar);
+    const wood = 0xc98a4b;
+    const lower = addPart(guitar, decorParts, cyl(0.17, 0.09), wood, 0, 0.3, 0, { roughness: 0.55 });
+    lower.rotation.z = Math.PI / 2;
+    const upper = addPart(guitar, decorParts, cyl(0.13, 0.09), wood, 0, 0.55, 0, { roughness: 0.55 });
+    upper.rotation.z = Math.PI / 2;
+    addPart(guitar, decorParts, box(0.09, 0.14, 0.2), wood, 0, 0.43, 0, { roughness: 0.55 });        // cintura
+    const hole = addPart(guitar, decorParts, cyl(0.045, 0.006), 0x1a0f08, 0.047, 0.5, 0);
+    hole.rotation.z = Math.PI / 2;
+    addPart(guitar, decorParts, box(0.012, 0.03, 0.14), 0x2b1a10, 0.05, 0.22, 0);                     // puente
+    addPart(guitar, decorParts, box(0.035, 0.6, 0.05), 0x2b1a10, 0.02, 0.98, 0);                      // mástil
+    addPart(guitar, decorParts, box(0.04, 0.16, 0.07), 0x2b1a10, 0.02, 1.34, 0);                      // clavijero
+    [-0.02, 0.02].forEach((dz) => addPart(guitar, decorParts, box(0.004, 1.0, 0.004), 0xd8d8d0, 0.05, 0.82, dz)); // cuerdas
   }
 
   /** Devuelve { group, baseY, parts, lampAnchor?, breathe?, floaters?,
@@ -751,22 +779,41 @@ export function mount(container, hotspots) {
 
     switch (f.id) {
       case 'piano': {
-        // Piano vertical contra la pared: cuerpo, tapa, teclado saliente con
-        // teclas blancas + negras, patas del teclado y banqueta al frente.
-        const wood = 0x2a1a10;
-        add(box(1.4, 1.1, 0.5), wood, 0, 0.55, -0.02);
-        add(box(1.44, 0.05, 0.54), wood, 0, 1.125, -0.02);
-        add(box(1.4, 0.08, 0.3), wood, 0, 0.72, 0.37);
-        add(box(1.32, 0.02, 0.24), 0x2a1a10, 0, 0.765, 0.39); // lecho del teclado
-        // 8 teclas blancas (una por nota, ver gam-piano.js) + negras decorativas
+        // Teclado eléctrico sobre soporte en X: cuerpo negro con panel de control
+        // (parlantes, pantalla, botones), 15 teclas blancas (2 octavas) + negras,
+        // soporte cruzado con patas y banqueta al frente.
+        const black = 0x15171b;
+        const topY = 0.77;
+        add(box(1.3, 0.07, 0.36), black, 0, topY - 0.035, 0.02);            // cuerpo
+        add(box(1.3, 0.05, 0.17), 0x0f1013, 0, topY + 0.02, -0.1);          // panel de control trasero
+        [-0.5, 0.5].forEach(x => add(box(0.22, 0.012, 0.12), 0x07080a, x, topY + 0.05, -0.1)); // parlantes
+        add(box(0.2, 0.012, 0.06), 0x1a2a3a, 0, topY + 0.05, -0.1, glow(0x4aa8ff, 0.7)); // pantalla LCD
+        [-0.24, -0.17, 0.17, 0.24].forEach((x, k) => add(box(0.045, 0.012, 0.03), k % 2 ? 0xc9c9c9 : 0x8a8f98, x, topY + 0.05, -0.12));
+        [-0.11, 0.11].forEach(x => add(cyl(0.02, 0.02), 0x8a8f98, x, topY + 0.055, -0.07));      // perillas
+        add(box(1.32, 0.02, 0.03), 0x0b0c0e, 0, topY - 0.005, 0.2);                            // labio frontal
+
+        // 15 teclas blancas (una por nota, ver gam-piano.js) + 10 negras decorativas
+        const KEYS = 15, kw = 1.2 / KEYS;
         out.refs.keys = [];
-        for (let i = 0; i < 8; i++) {
-          const key = add(box(0.15, 0.03, 0.22), 0xf2e6d2, -0.56 + i * 0.16, 0.79, 0.39);
-          key.userData.baseY = 0.79;
+        for (let i = 0; i < KEYS; i++) {
+          const key = add(box(kw * 0.94, 0.03, 0.2), 0xf2e6d2, (i - (KEYS - 1) / 2) * kw, topY + 0.015, 0.1);
+          key.userData.baseY = topY + 0.015;
           out.refs.keys.push(key);
         }
-        [0, 1, 3, 4, 5].forEach(i => add(box(0.08, 0.03, 0.13), 0x111111, -0.48 + i * 0.16, 0.82, 0.34));
-        [-0.62, 0.62].forEach(x => add(cyl(0.03, 0.68), wood, x, 0.34, 0.45));
+        [0, 1, 3, 4, 5, 7, 8, 10, 11, 12].forEach(i => add(box(kw * 0.56, 0.03, 0.12), 0x0b0b0d, (i - (KEYS - 1) / 2 + 0.5) * kw, topY + 0.035, 0.05));
+
+        // soporte en X: dos barras cruzadas, patas de piso y perilla central
+        const dx = 0.5, yTop = topY - 0.075, yBot = 0.03;
+        const len = Math.hypot(2 * dx, yTop - yBot), ang = Math.atan2(yTop - yBot, 2 * dx);
+        [ang, -ang].forEach(a => {
+          const bar = add(box(len, 0.035, 0.035), 0x101114, 0, (yTop + yBot) / 2, 0.02);
+          bar.rotation.z = a;
+        });
+        add(cyl(0.035, 0.05), 0x2a2d35, 0, (yTop + yBot) / 2, 0.045).rotation.x = Math.PI / 2;   // perilla
+        [-dx, dx].forEach(x => {
+          add(box(0.05, 0.03, 0.36), 0x101114, x, 0.015, 0.02);            // pata de piso
+          add(box(0.06, 0.02, 0.06), 0x2a2d35, x, yTop, 0.02);             // soporte del teclado
+        });
         add(box(0.8, 0.08, 0.32), 0x3d2a18, 0, 0.46, 0.85);
         [[-0.34, 0.74], [0.34, 0.74], [-0.34, 0.96], [0.34, 0.96]].forEach(([x, z]) => add(cyl(0.025, 0.42), 0x3d2a18, x, 0.21, z));
         out.baseY = 0.8;
@@ -784,15 +831,16 @@ export function mount(container, hotspots) {
         add(box(1.5, 0.01, 0.5), 0x1a1d24, 0.1, topY + 0.005, 0.14);                 // tapete
         add(box(1.5, 0.012, 0.02), 0xffb020, 0.1, topY + 0.006, 0.4);                // borde ámbar
 
-        // monitor principal (las texturas de código se desplazan en la estación del escritorio)
+        // Mac de escritorio (estilo iMac: aluminio, mentón inferior, pie plano)
         const codeTex = makeScreenTexture('code', 3);
-        const lapTex = makeScreenTexture('code', 17);
-        codeTex.wrapT = lapTex.wrapT = THREE.RepeatWrapping;
-        out.refs.scrollTex = [codeTex, lapTex];
-        add(box(0.25, 0.02, 0.18), 0x1a1a1a, -0.35, topY + 0.01, -0.26);
-        add(box(0.06, 0.3, 0.06), 0x1a1a1a, -0.35, topY + 0.16, -0.3);
-        add(box(0.92, 0.52, 0.04), 0x151515, -0.35, topY + 0.5, -0.27);
-        out.flickers.push(add(box(0.86, 0.46, 0.01), 0x222222, -0.35, topY + 0.5, -0.245, screenExtra(codeTex)));
+        codeTex.wrapT = THREE.RepeatWrapping;
+        out.refs.scrollTex = [codeTex];
+        add(box(0.24, 0.014, 0.19), 0xc9ccd2, -0.35, topY + 0.007, -0.24);            // base
+        add(box(0.07, 0.3, 0.03), 0xc9ccd2, -0.35, topY + 0.17, -0.3);                // cuello
+        add(box(0.96, 0.6, 0.035), 0xd9dce1, -0.35, topY + 0.52, -0.27);              // cuerpo
+        out.flickers.push(add(box(0.9, 0.5, 0.01), 0x222222, -0.35, topY + 0.565, -0.25, screenExtra(codeTex)));
+        add(box(0.03, 0.03, 0.005), 0x9a9da3, -0.35, topY + 0.26, -0.25);             // logo del mentón
+
         // monitor secundario, girado hacia el usuario
         const m2 = new THREE.Group();
         m2.position.set(0.72, 0, -0.22);
@@ -804,20 +852,8 @@ export function mount(container, hotspots) {
         add2(box(0.72, 0.44, 0.04), 0x151515, 0, topY + 0.44, -0.02);
         out.flickers.push(add2(box(0.66, 0.38, 0.01), 0x222222, 0, topY + 0.44, 0.005, screenExtra(makeScreenTexture('gallery', 9))));
 
-        // laptop
-        const lap = new THREE.Group();
-        lap.position.set(-1.05, 0, 0.12);
-        lap.rotation.y = 0.35;
-        group.add(lap);
-        const addL = (...args) => addPart(lap, parts, ...args);
-        addL(box(0.46, 0.03, 0.32), 0x8a8f98, 0, topY + 0.015, 0);
-        addL(box(0.46, 0.3, 0.02), 0x8a8f98, 0, topY + 0.17, -0.15);
-        addL(box(0.4, 0.24, 0.01), 0x222222, 0, topY + 0.17, -0.135, screenExtra(lapTex));
-
-        // teclado con tira RGB + mouse
-        add(box(0.6, 0.025, 0.2), 0x15171c, -0.2, topY + 0.02, 0.24);
-        add(box(0.56, 0.008, 0.15), 0x2a2d35, -0.2, topY + 0.036, 0.25);
-        out.rgb = add(box(0.58, 0.006, 0.012), 0xffffff, -0.2, topY + 0.034, 0.143, glow(0xff3aa0, 1.2));
+        // trackpad + mouse (sin teclado)
+        add(box(0.16, 0.01, 0.12), 0xe6e8ec, -0.2, topY + 0.02, 0.26);
         add(box(0.06, 0.03, 0.1), 0xf5f5f5, 0.42, topY + 0.02, 0.26);
 
         // lámpara (base, brazo, pantalla, bombilla emisiva) → PointLight real
@@ -829,6 +865,14 @@ export function mount(container, hotspots) {
 
         // taza + auriculares en su soporte
         add(cyl(0.04, 0.09), 0xf5efe0, -0.72, topY + 0.045, 0.3);
+        add(cyl(0.034, 0.006), 0x3a2216, -0.72, topY + 0.087, 0.3, { roughness: 0.3 });   // café
+        out.steam = [];
+        for (let i = 0; i < 3; i++) {
+          const puff = add(sph(0.022), 0xffffff, -0.72, topY + 0.1, 0.3, { transparent: true, opacity: 0.3, roughness: 1, depthWrite: false });
+          puff.castShadow = false;
+          puff.userData.steam = { base: topY + 0.1, phase: i / 3, x: -0.72, z: 0.3 };
+          out.steam.push(puff);
+        }
         add(new THREE.TorusGeometry(0.028, 0.008, 8, 12), 0xf5efe0, -0.68, topY + 0.05, 0.3);
         add(cyl(0.05, 0.01), 0x1a1a1a, 1.12, topY + 0.005, 0.1);
         add(cyl(0.01, 0.22), 0x1a1a1a, 1.12, topY + 0.115, 0.1);
@@ -876,30 +920,75 @@ export function mount(container, hotspots) {
         break;
       }
 
+      case 'chess': {
+        // Mesita con tablero de 8×8 casillas (las piezas las arma la estación).
+        const topY = 0.6;
+        const cell = 0.08;
+        add(box(0.78, 0.05, 0.78), 0x5a3d28, 0, topY - 0.025, 0);
+        [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sz]) => add(box(0.05, topY - 0.05, 0.05), 0x3d2a18, sx * 0.34, (topY - 0.05) / 2, sz * 0.34));
+        add(box(0.7, 0.02, 0.7), 0x2b1a10, 0, topY + 0.01, 0);
+        out.refs.squares = [];
+        out.refs.cell = cell;
+        out.refs.boardY = topY + 0.02;
+        for (let r = 0; r < 8; r++) {
+          for (let c = 0; c < 8; c++) {
+            const light = (r + c) % 2 === 0;
+            const sq = add(box(cell * 0.985, 0.014, cell * 0.985), light ? 0xe0c497 : 0x8b5a3a, (c - 3.5) * cell, topY + 0.02 + 0.007, (r - 3.5) * cell, { roughness: 0.6 });
+            sq.userData.sq = r * 8 + c;
+            out.refs.squares.push(sq);
+          }
+        }
+        // dos banquitos a los lados de la mesa
+        [-0.66, 0.66].forEach((x) => {
+          add(cyl(0.15, 0.05), 0x3d2a18, x, 0.36, 0.02);
+          [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sz]) => add(cyl(0.02, 0.34), 0x2a1a10, x + sx * 0.09, 0.17, 0.02 + sz * 0.09));
+        });
+        out.baseY = topY + 0.05;
+        break;
+      }
+
       case 'juggling': {
-        // Pedestal con las 3 pelotas tejidas a mano (ver gam-hotspots.json):
-        // 2 de base + 1 arriba, flotando apenas sobre la tapa.
+        // Pedestal con las 6 pelotas tejidas a mano: 3 abajo, 2 en medio, 1 arriba.
         add(box(0.4, 0.7, 0.4), 0x3d2a18, 0, 0.35, 0);
         add(box(0.46, 0.04, 0.46), 0x5a3d28, 0, 0.72, 0);
-        const r = 0.1;
+        const r = 0.078;
+        const palettes = [
+          ['#e8543a', '#ffd23f', '#2a9d8f'],
+          ['#ffb020', '#7b2cbf', '#f7f0e0'],
+          ['#3a86ff', '#ff7aa2', '#ffd23f'],
+          ['#4ade80', '#e8543a', '#f7f0e0'],
+          ['#b14eff', '#ffb020', '#2a9d8f'],
+          ['#ff7aa2', '#3a86ff', '#4ade80'],
+        ];
+        const pos = [
+          [-0.16, 0.74 + r, 0.0], [0, 0.74 + r, 0.0], [0.16, 0.74 + r, 0.0],
+          [-0.08, 0.74 + r * 2.75, 0], [0.08, 0.74 + r * 2.75, 0],
+          [0, 0.74 + r * 4.5, 0],
+        ];
         out.refs.balls = [];
-        [[-0.09, 0.74 + r, 0, 0xff6b4a], [0.09, 0.74 + r, 0, 0xffb020], [0, 0.74 + r * 2.55, 0, 0x4ade80]]
-          .forEach(([x, y, z, c], i) => {
-            const ball = add(sph(r), c, x, y, z, { roughness: 0.95 });
-            out.floaters.push({ mesh: ball, base: y, phase: i * 2.1 });
-            out.refs.balls.push({ mesh: ball, rest: ball.position.clone() });
-          });
+        pos.forEach(([x, y, z], i) => {
+          const tex = makeYarnTexture(palettes[i], 40 + i);
+          const ball = add(sph(r), 0xffffff, x, y, z, { roughness: 0.98, map: tex });
+          ball.rotation.set(i * 0.7, i * 1.3, 0);
+          out.refs.balls.push({ mesh: ball, rest: ball.position.clone() });
+        });
         out.baseY = 0.85;
         break;
       }
 
-      case 'bed': {
-        add(box(1.5, 0.3, 2.1), 0x6b4a30, 0, 0.15, 0);
-        add(box(1.4, 0.18, 2.0), 0xf2e6d2, 0, 0.39, 0);
-        out.refs.blanket = add(box(1.44, 0.06, 1.3), 0xd9822b, 0, 0.5, 0.35);
-        add(box(0.6, 0.12, 0.35), 0xffffff, 0, 0.54, -0.72);
-        add(box(1.5, 0.8, 0.08), 0x6b4a30, 0, 0.4, -1.05);
-        out.baseY = 0.45;
+      case 'window': {
+        // Marco de la ventana (el cielo vive en la decoración; ver `sky`) + zona de click invisible.
+        const ww = 1.2, wh = 1.3, wy = 3.0, fz = 0.045;
+        add(box(ww + 0.16, 0.08, 0.09), 0xe8e4dc, 0, wy + wh / 2 + 0.04, fz);
+        add(box(ww + 0.16, 0.08, 0.09), 0xe8e4dc, 0, wy - wh / 2 - 0.04, fz);
+        add(box(0.08, wh, 0.09), 0xe8e4dc, -ww / 2 - 0.04, wy, fz);
+        add(box(0.08, wh, 0.09), 0xe8e4dc, ww / 2 + 0.04, wy, fz);
+        add(box(0.04, wh, 0.05), 0xe8e4dc, 0, wy, fz);
+        add(box(ww, 0.04, 0.05), 0xe8e4dc, 0, wy, fz);
+        add(box(ww + 0.3, 0.05, 0.18), 0xe8e4dc, 0, wy - wh / 2 - 0.1, 0.09);   // alféizar
+        const hit = add(box(ww, wh, 0.1), 0xffffff, 0, wy, 0.05);
+        hit.visible = false;   // el raycast no mira `visible`: el cristal (decoración) queda clicable
+        out.baseY = wy;
         break;
       }
 
@@ -916,30 +1005,6 @@ export function mount(container, hotspots) {
         break;
       }
 
-      case 'reading': {
-        // Puf + libro abierto encima + pila de libros al lado.
-        add(sph(0.45), 0xc2553a, 0, 0.25, 0, { roughness: 0.95 }).scale.set(1, 0.55, 1);
-        add(sph(0.3), 0xa8452e, 0, 0.42, -0.05, { roughness: 0.95 }).scale.set(1, 0.4, 1);
-        // libro abierto: 2 tapas, 2 pilas de páginas y una hoja que gira sobre el lomo
-        const bookG = new THREE.Group();
-        bookG.position.set(0.02, 0.5, 0.12);
-        bookG.rotation.x = -0.2;
-        group.add(bookG);
-        const addB = (...args) => addPart(bookG, parts, ...args);
-        [-0.078, 0.078].forEach(x => addB(box(0.15, 0.012, 0.21), 0xc0392b, x, 0, 0));
-        [-0.075, 0.075].forEach(x => addB(box(0.14, 0.018, 0.2), 0xf5efe0, x, 0.012, 0));
-        const flipG = new THREE.Group();
-        flipG.position.set(0, 0.024, 0);
-        bookG.add(flipG);
-        addPart(flipG, parts, box(0.14, 0.004, 0.2), 0xfffaf0, 0.07, 0, 0);
-        out.refs.book = { group: bookG, flip: flipG };
-        [0xc0392b, 0x2d6a9f, 0x3fa66b].forEach((c, i) => {
-          add(box(0.3, 0.06, 0.22), c, 0.62, 0.03 + i * 0.06, 0.1).rotation.y = (i - 1) * 0.25;
-        });
-        out.baseY = 0.4;
-        break;
-      }
-
       case 'skateboard': {
         // Apoyada contra la pared trasera (parada, tope inclinado hacia la
         // pared, ruedas a cámara). `holder` gira alrededor del centro de la
@@ -953,16 +1018,24 @@ export function mount(container, hotspots) {
         pivot.rotation.x = -0.18;
         holder.add(pivot);
         const addP = (...args) => addPart(pivot, parts, ...args);
-        addP(box(0.3, 1.15, 0.05), f.color, 0, 0.6, 0);
-        addP(box(0.28, 1.1, 0.004), 0x1a1a1a, 0, 0.6, -0.027);            // grip
+        addP(box(0.3, 1.15, 0.05), 0xc9a26a, 0, 0.6, 0);                    // madera (canto)
+        // cara inferior: foto real de los stickers (public/images/gam/skate-bottom.webp)
+        const gfx = new THREE.TextureLoader().load('public/images/gam/skate-bottom.webp');
+        gfx.colorSpace = THREE.SRGBColorSpace;
+        gfx.anisotropy = maxAniso;
+        addP(new THREE.PlaneGeometry(0.29, 1.13), 0xffffff, 0, 0.6, 0.0265, { map: gfx, roughness: 0.55 });
+        // cara superior: grip negro con el logo rasta y el ícono de cuadritos
+        const gripTex = makeGripTexture();
+        const grip = addP(new THREE.PlaneGeometry(0.29, 1.13), 0xffffff, 0, 0.6, -0.0265, { map: gripTex, roughness: 0.95 });
+        grip.rotation.y = Math.PI;
         [[0.02, 0.4], [1.18, -0.4]].forEach(([y, tilt]) => {                // nose / tail
-          addP(box(0.3, 0.14, 0.05), f.color, 0, y + 0.02, 0.01).rotation.x = tilt;
+          addP(box(0.3, 0.14, 0.05), 0xc9a26a, 0, y + 0.02, 0.01).rotation.x = tilt;
         });
         [0.25, 0.95].forEach((y) => {
           addP(box(0.22, 0.04, 0.05), 0x9aa0a8, 0, y, 0.05, { metalness: 0.6, roughness: 0.4 });
           [-0.12, 0.12].forEach((x) => {
             // eje de la rueda en X (acostada como rueda, no parada como pata)
-            addP(cyl(0.045, 0.04), 0xf2e6d2, x, y, 0.09).rotation.z = Math.PI / 2;
+            addP(cyl(0.045, 0.04), 0x5f646b, x, y, 0.09).rotation.z = Math.PI / 2;
           });
         });
         out.refs.skate = { holder, pivot };
@@ -971,42 +1044,52 @@ export function mount(container, hotspots) {
       }
 
       case 'pukis': {
-        // Durmiendo enroscado sobre la alfombra. El cuerpo "respira" (ver loop);
+        // Pukis dormida de costado (cruce labrador/shar-pei): pelaje crema, orejas
+        // canela, hocico gris oscuro y nariz rosada. Cuerpo "respira" (ver loop);
         // cabeza, orejas y cola responden a las caricias (estación de Pukis).
-        const fur = f.color;
-        const body = add(sph(0.24), fur, 0, 0.17, 0, { roughness: 0.95 });
-        body.scale.set(1.3, 0.7, 1);
-        const head = add(sph(0.14), fur, 0.26, 0.15, 0.12, { roughness: 0.95 });
-        const ear1 = add(sph(0.06), 0x5e3a1a, 0.24, 0.26, 0.04);
-        ear1.scale.set(0.7, 0.4, 1.2);
-        const ear2 = add(sph(0.06), 0x5e3a1a, 0.3, 0.24, 0.2);
-        ear2.scale.set(0.7, 0.4, 1.2);
-        add(sph(0.025), 0x1a1006, 0.39, 0.14, 0.2);
-        const tail = add(sph(0.07), fur, -0.3, 0.1, 0.12, { roughness: 0.95 });
-        tail.scale.set(2, 0.6, 0.6);
+        const cream = 0xe9dcc0, cream2 = 0xd9c9a6, tan = 0xb87a3e, muzzle = 0x4b4039, nose = 0x8f5d58;
+        const fu = { roughness: 0.95 };
+        const body = add(sph(0.22), cream, -0.02, 0.17, 0, fu);
+        body.scale.set(1.5, 0.78, 1.0);
+        body.userData.baseScaleY = 0.78;
+        const haunch = add(sph(0.17), cream, -0.24, 0.14, 0.02, fu);
+        haunch.scale.set(1.0, 0.85, 1.05);
+        add(sph(0.17), cream, 0.2, 0.15, 0, fu).scale.set(1.1, 0.85, 1.0);          // pecho
+        // cabeza descansando en el piso, hocico hacia +x
+        const head = add(sph(0.13), cream, 0.43, 0.115, 0.05, fu);
+        add(sph(0.075), cream2, 0.56, 0.085, 0.06, fu).scale.set(1.35, 0.85, 1.0);   // hocico
+        add(sph(0.06), muzzle, 0.55, 0.055, 0.065, fu).scale.set(1.35, 0.6, 1.0);   // mandíbula oscura
+        add(sph(0.026), nose, 0.64, 0.095, 0.065, { roughness: 0.6 });               // nariz
+        // ojos cerrados + arrugas de shar-pei
+        [-1, 1].forEach((sd) => {
+          const eye = add(box(0.035, 0.006, 0.006), 0x2a211c, 0.5, 0.15, 0.05 + sd * 0.085);
+          eye.rotation.y = sd * 0.25;
+          const wr = add(new THREE.TorusGeometry(0.05, 0.007, 6, 14, Math.PI), cream2, 0.47, 0.165, 0.05 + sd * 0.09, fu);
+          wr.rotation.y = Math.PI / 2;
+        });
+        // orejas canela (una arriba, otra contra el piso)
+        const ear1 = add(sph(0.06), tan, 0.38, 0.235, 0.0, fu);
+        ear1.scale.set(0.8, 0.35, 1.15);
+        const ear2 = add(sph(0.06), tan, 0.4, 0.09, 0.19, fu);
+        ear2.scale.set(0.8, 0.5, 1.0);
+        // patas delanteras estiradas hacia el frente, traseras recogidas
+        [[0.42, 0.045, -0.1], [0.4, 0.045, 0.16]].forEach(([x, y, z]) => {
+          const leg = add(cyl(0.042, 0.3), cream, x, y, z, fu);
+          leg.rotation.z = Math.PI / 2;
+          add(sph(0.05), cream, x + 0.15, y, z, fu).scale.set(1.1, 0.8, 1.0);
+        });
+        [[-0.34, 0.06, 0.18, 0.5], [-0.4, 0.05, -0.05, -0.3]].forEach(([x, y, z, rz]) => {
+          const leg = add(cyl(0.04, 0.26), cream, x, y, z, fu);
+          leg.rotation.set(0.2, 0, Math.PI / 2 + rz);
+          add(sph(0.05), cream, x - 0.12, y, z + 0.02, fu);
+        });
+        const tail = add(cyl(0.032, 0.32), cream, -0.5, 0.08, -0.03, fu);
+        tail.rotation.z = Math.PI / 2;
         out.breathe = body;
         out.refs.pukis = { body, head, tail, ears: [ear1, ear2], all: parts };
         out.baseY = 0.25;
         break;
       }
-
-      case 'diplomas':
-        // Tres cuadros colgados en la pared izquierda, sobre el piano.
-        [[-0.55, 0.05], [0, 0.15], [0.55, 0]].forEach(([x, y]) => {
-          add(box(0.5, 0.38, 0.04), 0xc9a24a, x, y, 0.02, { metalness: 0.5, roughness: 0.4 });
-          add(box(0.42, 0.3, 0.01), 0xf5efe0, x, y, 0.045);
-          add(sph(0.03), 0xc0392b, x + 0.13, y - 0.08, 0.05);
-        });
-        out.baseY = 0;
-        break;
-
-      case 'terminal':
-        add(box(0.8, 1.25, 0.6), 0x1e2126, 0, 0.625, 0);
-        add(box(0.6, 0.45, 0.02), 0x222222, 0, 0.92, 0.31, screenExtra(makeScreenTexture('term', 31), 1.0));
-        [0.3, 0.38, 0.46].forEach(y => add(box(0.5, 0.03, 0.01), 0x0c0d0f, 0, y, 0.305));
-        add(sph(0.02), f.color, 0.3, 0.12, 0.31, glow(f.color, 1.6));
-        out.baseY = 0.8;
-        break;
 
       case 'bookshelf': {
         const wood = 0x4a3220;
@@ -1074,6 +1157,7 @@ export function mount(container, hotspots) {
   const floaters = [];
   const flickers = [];
   const rgbStrips = [];
+  const steamers = [];
   const lampBulbs = [];
   const objects = new Map(); // id → { root, refs, parts, f } para las estaciones
   FURNITURE.forEach((f) => {
@@ -1099,6 +1183,7 @@ export function mount(container, hotspots) {
     built.floaters.forEach(fl => floaters.push(fl));
     built.flickers.forEach((m, i) => { m.userData.phase = i * 1.7; flickers.push(m); });
     if (built.rgb) rgbStrips.push(built.rgb);
+    built.steam?.forEach(m => steamers.push(m));
     if (built.bulb) lampBulbs.push(built.bulb);
     if (f.interactive !== false) interactiveMeshes.push(group);
     loadArt(group, f);
@@ -1130,12 +1215,26 @@ export function mount(container, hotspots) {
     sky.paint(t);
     background.paint(a.bg.map((c, i) => new THREE.Color(c).lerp(new THREE.Color(b.bg[i]), w).getStyle()));
   }
+  /** Momento del día según la hora local del visitante (0 día · 0.5 atardecer · 1 noche). */
+  function envFromClock(d = new Date()) {
+    const h = d.getHours() + d.getMinutes() / 60;
+    if (h < 6) return 1;
+    if (h < 8) return 1 - (h - 6) / 2;
+    if (h < 16) return 0;
+    if (h < 18.5) return ((h - 16) / 2.5) * 0.5;
+    if (h < 20.5) return 0.5 + ((h - 18.5) / 2) * 0.5;
+    return 1;
+  }
+  let envManual = false;   // el jugador tocó la cama: deja de seguir el reloj
+  let envClockAt = 0;
   const env = {
     get t() { return envT; },
     animateTo(target, ms, done) {
+      envManual = true;
       envAnim = { from: envT, to: target, start: performance.now(), dur: reducedMotion ? 1 : ms, done };
     },
   };
+  applyEnv(envFromClock());
 
   /* ── Postprocesado: GTAO (oscurece esquinas/contactos) + contorno ámbar
      del objeto bajo el cursor — ambos apagados en táctil — + bloom con
@@ -1158,7 +1257,52 @@ export function mount(container, hotspots) {
     composer.addPass(outlinePass);
   }
   composer.addPass(new UnrealBloomPass(new THREE.Vector2(initW, initH), 0.6, 0.4, 0.9));
+  /* Desenfoque de fondo al enfocar un objeto: el objeto enfocado se renderiza
+     aparte (layer 1) a un RT cuyo alfa es la máscara; este pase difumina todo
+     lo que NO es máscara. `amount` = focusT (0 = sin efecto). */
+  const FOCUS_LAYER = 1;
+  const maskRT = new THREE.WebGLRenderTarget(initW, initH, { type: THREE.UnsignedByteType });
+  const blurPass = new ShaderPass({
+    uniforms: {
+      tDiffuse: { value: null },
+      tMask: { value: maskRT.texture },
+      texel: { value: new THREE.Vector2(1 / initW, 1 / initH) },
+      radius: { value: 0 },
+    },
+    vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
+    fragmentShader: `
+      uniform sampler2D tDiffuse; uniform sampler2D tMask;
+      uniform vec2 texel; uniform float radius;
+      varying vec2 vUv;
+      void main() {
+        vec4 sharp = texture2D(tDiffuse, vUv);
+        float m = texture2D(tMask, vUv).a;
+        // borde suave de la máscara
+        float ms = m;
+        for (int i = 0; i < 4; i++) {
+          float a = 1.5708 * float(i);
+          ms += texture2D(tMask, vUv + vec2(cos(a), sin(a)) * texel * 2.0).a;
+        }
+        ms /= 5.0;
+        vec3 acc = vec3(0.0); float wsum = 0.0;
+        for (int i = 0; i < 24; i++) {
+          float fi = float(i) + 0.5;
+          float r = sqrt(fi / 24.0) * radius;
+          float a = fi * 2.39996;
+          vec2 uv = vUv + vec2(cos(a), sin(a)) * r * texel;
+          float w = 1.0 - texture2D(tMask, uv).a; // el objeto enfocado no "sangra" al fondo
+          acc += texture2D(tDiffuse, uv).rgb * w; wsum += w;
+        }
+        vec3 blurred = wsum > 0.001 ? acc / wsum : sharp.rgb;
+        gl_FragColor = vec4(mix(blurred, sharp.rgb, clamp(ms * 1.25, 0.0, 1.0)), 1.0);
+      }`,
+  });
+  // ShaderPass clona los uniforms (y las texturas de un RT no se pueden clonar): reasignar la real
+  blurPass.uniforms.tMask.value = maskRT.texture;
+  blurPass.enabled = false;
+  composer.addPass(blurPass);
   composer.addPass(new OutputPass());
+  const _clearCol = new THREE.Color();
 
   /* ── Resize: observa el contenedor, no la ventana (la TV cambia de
      tamaño entre desktop/mobile sin resize de página) ── */
@@ -1174,6 +1318,9 @@ export function mount(container, hotspots) {
     camera.updateProjectionMatrix();
     renderer.setSize(w, h, false);
     composer.setSize(w, h);
+    const bw = renderer.domElement.width, bh = renderer.domElement.height;
+    maskRT.setSize(bw, bh);
+    blurPass.uniforms.texel.value.set(1 / bw, 1 / bh);
   }
   const ro = new ResizeObserver(resize);
   ro.observe(container);
@@ -1272,7 +1419,27 @@ export function mount(container, hotspots) {
     return hit ? hit.object.userData.rootGroup : null;
   }
 
+  /* Pellizco con dos dedos (táctil): zoom manual sobre el objeto enfocado. */
+  const touches = new Map(); // pointerId → { x, y }
+  let pinch = null;          // { d0, z0 }
+  const pinchState = () => {
+    const [a, b] = [...touches.values()];
+    const r = renderer.domElement.getBoundingClientRect();
+    return {
+      d: Math.hypot(a.x - b.x, a.y - b.y) || 1,
+      ndc: { x: (((a.x + b.x) / 2 - r.left) / r.width) * 2 - 1, y: -((((a.y + b.y) / 2 - r.top) / r.height) * 2 - 1) },
+    };
+  };
+
   function onPointerMove(e) {
+    if (e.pointerType === 'touch' && touches.has(e.pointerId)) {
+      touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pinch && touches.size >= 2) {
+        const st = pinchState();
+        setUserZoom(pinch.z0 * (st.d / pinch.d0), st.ndc, false);
+        return;
+      }
+    }
     updatePointer(e);
     if (paused) return;
     if (active) { active.pointerMove?.(pointerNDC, e); return; }
@@ -1281,6 +1448,15 @@ export function mount(container, hotspots) {
   }
 
   function onPointerDown(e) {
+    if (e.pointerType === 'touch') {
+      touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (touches.size === 2 && zoomed && !paused) {
+        if (dragging) { dragging = false; active?.pointerUp?.(pointerNDC, e); }
+        pinch = { d0: pinchState().d, z0: userZoom };
+        return;
+      }
+      if (pinch) return;
+    }
     if (paused || !active) return;
     updatePointer(e);
     dragging = true;
@@ -1289,18 +1465,22 @@ export function mount(container, hotspots) {
   }
 
   function onPointerUp(e) {
+    touches.delete(e.pointerId);
+    if (touches.size < 2) pinch = null;
     if (!dragging) return;
     dragging = false;
     try { renderer.domElement.releasePointerCapture(e.pointerId); } catch { /* ya liberado */ }
     if (active) active.pointerUp?.(pointerNDC, e);
   }
 
-  function startTransition(toLook, toZoom, onComplete) {
+  function startTransition(toLook, toZoom, onComplete, toDir) {
     camAnim = {
       fromLook: camLook.clone(),
       toLook: toLook.clone(),
       fromZoom: camera.zoom,
       toZoom,
+      fromDir: baseDir.clone(),
+      toDir: (toDir || ISO_DIR).clone(),
       start: performance.now(),
       duration: reducedMotion ? 1 : TRANSITION_MS,
       onComplete: onComplete || null,
@@ -1310,40 +1490,110 @@ export function mount(container, hotspots) {
   /** Corre la mirada para que el objeto quede a un lado y la tarjeta del HUD
    *  no lo tape: a la izquierda en desktop, arriba en portrait (la tarjeta
    *  va abajo). `shift` es fracción del semi-ancho/alto visible. */
-  function shiftLook(look, zoom, shift) {
-    camera.updateMatrixWorld();
+  function shiftLook(look, zoom, shift, dir) {
     const aspect = container.clientWidth / Math.max(1, container.clientHeight);
     const out = look.clone();
+    // ejes de la cámara de DESTINO (la vista frontal aún no está aplicada)
+    const right = new THREE.Vector3().crossVectors(Y_AXIS, dir).normalize();
+    const up = new THREE.Vector3().crossVectors(dir, right).normalize();
     if (aspect >= 0.9) {
-      const right = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0);
       out.addScaledVector(right, shift * ((camera.right - camera.left) / 2 / zoom));
     } else {
-      const up = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 1);
       out.addScaledVector(up, -shift * ((camera.top - camera.bottom) / 2 / zoom));
     }
     return out;
   }
 
+  let zoomedRoot = null;
+  let focusView = null;   // { look, zoom, dir } de la vista base del objeto enfocado
+  let userZoom = 1;       // zoom extra del usuario (rueda / doble click / +−) sobre focusView.zoom
+  const MAX_USER_ZOOM = 3.5;
+
+  /** Zoom manual sobre el objeto enfocado, anclado al punto bajo el cursor (ndc). */
+  function setUserZoom(next, ndc, animate) {
+    if (!zoomed || !focusView) return;
+    next = Math.min(MAX_USER_ZOOM, Math.max(1, next));
+    const oldZoom = camera.zoom;
+    const newZoom = focusView.zoom * next;
+    let look = camLook.clone();
+    if (next <= 1.001) {
+      look = focusView.look.clone();
+    } else if (ndc) {
+      camera.updateMatrixWorld();
+      const right = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0);
+      const up = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 1);
+      const halfW = (camera.right - camera.left) / 2;
+      const halfH = (camera.top - camera.bottom) / 2;
+      const k = 1 / oldZoom - 1 / newZoom;
+      look.addScaledVector(right, ndc.x * halfW * k).addScaledVector(up, ndc.y * halfH * k);
+    }
+    userZoom = next;
+    // Si la cámara aún vuela hacia el objeto, su onComplete (enter() de la estación) no debe perderse.
+    const pending = camAnim?.onComplete || null;
+    if ((animate && !reducedMotion) || pending) {
+      startTransition(look, newZoom, pending, focusView.dir);
+    } else {
+      camAnim = null;
+      camLook.copy(look);
+      camera.zoom = newZoom;
+      camera.updateProjectionMatrix();
+    }
+  }
+
+  function onWheel(e) {
+    if (!zoomed || paused) return;
+    e.preventDefault();
+    updatePointer(e);
+    const step = Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0015));
+    setUserZoom(userZoom * step, pointerNDC, false);
+  }
+
+  function onDblClick(e) {
+    if (!zoomed || paused || zoomed.id === 'piano') return;
+    updatePointer(e);
+    setUserZoom(userZoom > 1.05 ? 1 : 2.4, pointerNDC, true);
+  }
+  function setFocusLayer(root, on) {
+    if (!root) return;
+    root.traverse((o) => { if (on) o.layers.enable(FOCUS_LAYER); else o.layers.disable(FOCUS_LAYER); });
+  }
+
   function focusFurniture(root, onArrived) {
     const f = root.userData.furniture;
     let look = new THREE.Vector3(f.x, root.userData.baseY, f.z);
-    let zoom = f.zoom || FOCUS_ZOOM;
+    let zoom = (f.zoom || FOCUS_ZOOM) * FOCUS_ZOOM_BOOST;
     const fx = stations.get(f.id)?.focus?.();
+    // Vista frontal: la cámara se coloca delante del objeto (según hacia dónde mira)
+    // Ángulo de la cámara: por defecto de frente al objeto (rotY); `view` lo fija a mano y
+    // `viewTilt` lo gira hacia la vista isométrica para que se vea la pared/rincón de al lado.
+    let ang = f.view ?? (f.rotY || 0);
+    if (f.viewTilt) {
+      const d = Math.atan2(Math.sin(Math.PI / 4 - ang), Math.cos(Math.PI / 4 - ang));
+      ang += Math.max(-f.viewTilt, Math.min(f.viewTilt, d));
+    }
+    const frontDir = new THREE.Vector3(Math.sin(ang), f.elev ?? FRONT_ELEV, Math.cos(ang)).normalize();
     if (fx) {
       look = fx.look;
-      zoom = fx.zoom ?? zoom;
-      if (fx.shift) look = shiftLook(look, zoom, fx.shift);
+      zoom = fx.zoom != null ? fx.zoom * FOCUS_ZOOM_BOOST : zoom;
+      if (fx.shift) look = shiftLook(look, zoom, fx.shift, frontDir);
     }
-    startTransition(look, zoom, onArrived);
+    startTransition(look, zoom, onArrived, frontDir);
+    focusView = { look: look.clone(), zoom, dir: frontDir.clone() };
+    userZoom = 1;
+    setFocusLayer(zoomedRoot, false);
     zoomed = f;
-    focusLight.position.copy(look).addScaledVector(ISO_DIR, 1.2).add(new THREE.Vector3(0, 0.6, 0));
+    zoomedRoot = root;
+    setFocusLayer(root, true);
+    focusLight.position.copy(look).addScaledVector(frontDir, 1.2).add(new THREE.Vector3(0, 0.6, 0));
     setHover(null);
   }
 
   function returnToDefault() {
     if (!zoomed) return;
-    startTransition(DEFAULT_LOOK, DEFAULT_ZOOM);
+    startTransition(DEFAULT_LOOK, DEFAULT_ZOOM, null, ISO_DIR);
     zoomed = null;
+    userZoom = 1;
+    // la capa de máscara se apaga al terminar de relajar el desenfoque (ver frame)
   }
 
   /** Sale de la estación (si hay una activa), apaga el HUD y vuelve la cámara. */
@@ -1395,6 +1645,10 @@ export function mount(container, hotspots) {
   function onKeyDown(e) {
     if (paused) return;
     if (e.target?.closest?.('input, textarea, [contenteditable="true"]')) return;
+    if (zoomed && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      if (e.key === '+' || e.key === '=') { setUserZoom(userZoom * 1.35, null, true); e.preventDefault(); return; }
+      if (e.key === '-' || e.key === '_') { setUserZoom(userZoom / 1.35, null, true); e.preventDefault(); return; }
+    }
     if (active) {
       if (e.key === 'Escape') { leaveFocus(); return; }
       if (active.key?.(e)) e.preventDefault();
@@ -1424,6 +1678,8 @@ export function mount(container, hotspots) {
 
   renderer.domElement.addEventListener('pointermove', onPointerMove);
   renderer.domElement.addEventListener('click', onClick);
+  renderer.domElement.addEventListener('dblclick', onDblClick);
+  renderer.domElement.addEventListener('wheel', onWheel, { passive: false });
   renderer.domElement.addEventListener('pointerdown', onPointerDown);
   renderer.domElement.addEventListener('pointerup', onPointerUp);
   renderer.domElement.addEventListener('pointercancel', onPointerUp);
@@ -1458,12 +1714,19 @@ export function mount(container, hotspots) {
       const e = easeInOutCubic(t);
       camLook.lerpVectors(camAnim.fromLook, camAnim.toLook, e);
       camera.zoom = camAnim.fromZoom + (camAnim.toZoom - camAnim.fromZoom) * e;
+      baseDir.lerpVectors(camAnim.fromDir, camAnim.toDir, e).normalize();
       camera.updateProjectionMatrix();
       if (t >= 1) {
         const onComplete = camAnim.onComplete;
         camAnim = null;
         onComplete?.();
       }
+    }
+
+    // Sigue la hora local (cada minuto) mientras el jugador no haya tocado la cama.
+    if (!envManual && !envAnim && now - envClockAt > 60000) {
+      envClockAt = now;
+      applyEnv(envFromClock());
     }
 
     // Momento del día (estación de la cama)
@@ -1486,11 +1749,18 @@ export function mount(container, hotspots) {
       pitch += (pitchTarget - pitch) * 0.05;
 
       // Animaciones en reposo — todas apagadas con prefers-reduced-motion.
-      breathers.forEach((m) => { m.scale.y = 0.7 + Math.sin(now * 0.0025) * 0.025; });
+      breathers.forEach((m) => { m.scale.y = (m.userData.baseScaleY ?? 0.7) + Math.sin(now * 0.0025) * 0.025; });
       floaters.forEach((fl) => { if (fl.mesh.userData.locked) return; fl.mesh.position.y = fl.base + 0.04 + Math.sin(now * 0.002 + fl.phase) * 0.035; });
       flickers.forEach((m) => {
         const drop = Math.random() < 0.004 ? 0.3 : 0;
         m.material.emissiveIntensity = m.userData.baseEmissiveIntensity * (1 + 0.05 * Math.sin(now * 0.0031 + m.userData.phase) - drop);
+      });
+      steamers.forEach((m) => {
+        const st = m.userData.steam;
+        const k = (now * 0.00035 + st.phase) % 1;
+        m.position.set(st.x + Math.sin(k * 6 + st.phase * 9) * 0.012, st.base + k * 0.17, st.z);
+        m.scale.setScalar(0.6 + k * 0.9);
+        m.material.opacity = 0.32 * Math.sin(Math.PI * k);
       });
       rgbStrips.forEach((m) => {
         rgbColor.setHSL((now * 0.00018) % 1, 1, 0.55);
@@ -1508,7 +1778,7 @@ export function mount(container, hotspots) {
     // Hover: el objeto sube un poco; la etiqueta lo sigue en pantalla.
     allMeshes.forEach((root) => {
       const ud = root.userData;
-      const target = root === hovered ? HOVER_LIFT : 0;
+      const target = root === hovered && !root.userData.furniture.noLift ? HOVER_LIFT : 0;
       ud.lift += (target - ud.lift) * (reducedMotion ? 1 : 0.2);
       root.position.y = ud.baseGroupY + ud.lift;
     });
@@ -1559,6 +1829,29 @@ export function mount(container, hotspots) {
       });
     }
 
+    if (zoomedRoot && (zoomed || focusT > 0.001)) {
+      // máscara del objeto enfocado (alfa) + desenfoque proporcional a focusT
+      const prevBg = scene.background;
+      const prevAlpha = renderer.getClearAlpha();
+      renderer.getClearColor(_clearCol);
+      const prevMask = camera.layers.mask;
+      scene.background = null;
+      renderer.setClearColor(0x000000, 0);
+      camera.layers.set(FOCUS_LAYER);
+      renderer.setRenderTarget(maskRT);
+      renderer.clear();
+      renderer.render(scene, camera);
+      renderer.setRenderTarget(null);
+      camera.layers.mask = prevMask;
+      renderer.setClearColor(_clearCol, prevAlpha);
+      scene.background = prevBg;
+      blurPass.uniforms.radius.value = 6.5 * focusT * (renderer.getPixelRatio() || 1);
+      blurPass.enabled = focusT > 0.001;
+    } else {
+      if (zoomedRoot) { setFocusLayer(zoomedRoot, false); zoomedRoot = null; }
+      blurPass.enabled = false;
+    }
+
     composer.render();
     renderer.autoClear = false;
     renderer.clearDepth();
@@ -1577,6 +1870,8 @@ export function mount(container, hotspots) {
     modalObserver?.disconnect();
     renderer.domElement.removeEventListener('pointermove', onPointerMove);
     renderer.domElement.removeEventListener('click', onClick);
+    renderer.domElement.removeEventListener('dblclick', onDblClick);
+    renderer.domElement.removeEventListener('wheel', onWheel);
     renderer.domElement.removeEventListener('pointerdown', onPointerDown);
     renderer.domElement.removeEventListener('pointerup', onPointerUp);
     renderer.domElement.removeEventListener('pointercancel', onPointerUp);

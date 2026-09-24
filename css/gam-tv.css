@@ -279,12 +279,11 @@
    absolute dentro de .container) para no depender del max-width/padding
    del container ni del scroll.
    ═══════════════════════════════════════════════════════════ */
-/* A pedido: el navbar ya no queda visible en .gam (antes se mantenía
-   reposicionado a propósito) — se oculta igual que el mode-bar. */
-[data-theme="gam"] #mode-bar,
-[data-theme="gam"] #navbar {
-  display: none;
-}
+/* A pedido: el mode-bar y el navbar quedan SIEMPRE visibles en .gam (también
+   jugando y en los créditos) para poder cambiar de modo en cualquier momento.
+   Suben por encima del stage (9500) y el stage arranca debajo de ambos. */
+[data-theme="gam"] #mode-bar { z-index: 9601; }
+[data-theme="gam"] #navbar   { z-index: 9600; }
 
 [data-theme="gam"] #hero .hero-content,
 [data-theme="gam"] #hero .hero-decoration {
@@ -301,10 +300,10 @@
 
 [data-theme="gam"] .gam-tv {
   position: fixed;
-  top: 0;
+  top: calc(var(--mode-bar-height) + var(--nav-height));
+  bottom: var(--gam-footer-h);
   left: 0;
   right: 0;
-  bottom: 0;
   z-index: 9500;
   width: 100%;
   display: flex;
@@ -1186,4 +1185,204 @@
 @media (prefers-reduced-motion: reduce) {
   .gam-hud__bar, .gam-hud__card { transition: none; }
   .gam-hud__pin-dot { animation: none; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   TRANSICIÓN "INSERTAR MONEDA" → JUEGO
+   1) la moneda cae en la ranura y el prompt se apaga,
+   2) el tubo CRT se enciende (línea → pantalla completa) sobre el cuarto.
+   ═══════════════════════════════════════════════════════════ */
+.gam-tv__start.is-inserting { pointer-events: none; }
+.gam-tv__start.is-inserting .gam-tv__start-icon {
+  animation: gamCoinDrop 0.55s cubic-bezier(.5, 0, .9, .6) forwards;
+}
+.gam-tv__start.is-inserting .gam-tv__start-label {
+  animation: none;
+  transition: opacity .3s ease, letter-spacing .5s ease;
+  opacity: 0;
+  letter-spacing: 0.4em;
+}
+.gam-tv__start.is-inserting .gam-tv__start-sub { opacity: 0; transition: opacity .2s; }
+
+@keyframes gamCoinDrop {
+  0%   { transform: translateY(0) rotateY(0); opacity: 1; }
+  60%  { transform: translateY(1.6rem) rotateY(540deg); opacity: 1; }
+  100% { transform: translateY(2.6rem) rotateY(720deg) scale(.6); opacity: 0; }
+}
+
+.gam-canvas-root.is-crt-on {
+  animation: gamCrtOn 0.9s cubic-bezier(.2, .8, .2, 1) both;
+  transform-origin: center;
+}
+
+@keyframes gamCrtOn {
+  0%   { clip-path: inset(49.6% 0 49.6% 0); filter: brightness(3) saturate(0); opacity: 1; }
+  35%  { clip-path: inset(49.6% 0 49.6% 0); filter: brightness(3) saturate(0); }
+  70%  { clip-path: inset(0 0 0 0); filter: brightness(1.8) saturate(.4); }
+  100% { clip-path: inset(0 0 0 0); filter: none; }
+}
+
+.gam-tv__loading { transition: opacity .35s ease; }
+.gam-tv__loading.is-leaving { opacity: 0; }
+
+/* ═══════════════════════════════════════════════════════════
+   CRÉDITOS — al cruzar la puerta; al terminar vuelve a "insertar moneda"
+   ═══════════════════════════════════════════════════════════ */
+.gam-credits {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  overflow: hidden;
+  background: #050301;
+  color: var(--text-primary);
+  text-align: center;
+  cursor: pointer;
+  opacity: 0;
+  animation: gamCreditsIn .7s ease forwards;
+}
+.gam-credits[hidden] { display: none; }
+.gam-credits.is-leaving { animation: gamCreditsOut .5s ease forwards; }
+
+.gam-credits::after { /* scanlines */
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0 1px, transparent 1px 3px);
+}
+
+.gam-credits__roll {
+  position: absolute;
+  left: 0; right: 0;
+  top: 0;
+  transform: translateY(100vh);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.2rem;
+  padding: 0 1rem 10vh;
+  animation: gamCreditsRoll var(--credits-dur, 16s) linear forwards;
+}
+.gam-credits__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 5vw, 2.8rem);
+  letter-spacing: .12em;
+  color: var(--color-accent);
+  text-shadow: 0 0 14px currentColor, 0 0 34px currentColor;
+}
+.gam-credits__group { display: flex; flex-direction: column; gap: .3rem; }
+.gam-credits__role {
+  font-family: var(--font-mono, monospace);
+  font-size: .75rem;
+  letter-spacing: .25em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.gam-credits__name { font-family: var(--font-display); font-size: clamp(1.05rem, 2.6vw, 1.5rem); }
+.gam-credits__end {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: var(--color-accent);
+  text-shadow: 0 0 12px currentColor;
+  animation: gamCoinBlink 1.2s steps(2, jump-none) infinite;
+}
+.gam-credits__skip {
+  position: absolute;
+  right: 1rem; bottom: .8rem;
+  z-index: 2;
+  font-family: var(--font-mono, monospace);
+  font-size: .72rem;
+  color: var(--text-muted);
+}
+
+@keyframes gamCreditsRoll { from { transform: translateY(100vh); } to { transform: translateY(-100%); } }
+@keyframes gamCreditsIn  { to { opacity: 1; } }
+@keyframes gamCreditsOut { from { opacity: 1; } to { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .gam-tv__start.is-inserting .gam-tv__start-icon,
+  .gam-canvas-root.is-crt-on { animation: none; }
+  .gam-credits__roll { animation: none; top: 50%; transform: translateY(-50%); padding: 0; }
+  .gam-credits__end { animation: none; }
+}
+
+/* .gam no tiene secciones: fuera los links del navbar (About/Projects/…),
+   el hamburger/menú móvil, la barra de progreso y los dots laterales. */
+[data-theme="gam"] .navbar__links,
+[data-theme="gam"] .navbar__hamburger,
+[data-theme="gam"] #mobile-menu,
+[data-theme="gam"] .scroll-progress,
+[data-theme="gam"] #sn-panel { display: none !important; }
+
+/* El cuarto no se ve hasta que termina la transición de encendido. */
+.gam-canvas-root.is-pre-reveal { visibility: hidden; }
+
+
+/* ═══════════════════════════════════════════════════════════
+   UNA SOLA PANTALLA — .gam no scrollea: navbar arriba, cuarto en el medio
+   y el footer fijo abajo, todo dentro del viewport.
+   ═══════════════════════════════════════════════════════════ */
+body[data-theme="gam"] { --gam-footer-h: 2.4rem; }
+html:has(> body[data-theme="gam"]),
+body[data-theme="gam"] {
+  overflow: hidden !important;
+  height: 100%;
+}
+
+[data-theme="gam"] .footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9600;
+  height: var(--gam-footer-h);
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+[data-theme="gam"] .footer__inner {
+  flex-direction: row;
+  gap: 1.2rem;
+  width: 100%;
+  font-size: 0.78rem;
+}
+[data-theme="gam"] .footer__inner p { margin: 0; }
+
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE — .gam en móvil / tablet / horizontal corto
+   ═══════════════════════════════════════════════════════════ */
+/* El canvas maneja sus propios gestos (toque, arrastre, pellizco): sin scroll ni zoom del navegador. */
+.gam-canvas-root canvas { touch-action: none; }
+
+@media (max-width: 760px), (max-aspect-ratio: 9/10) {
+  /* barra del HUD compacta: solo el ícono, botones más chicos, sin atajo de teclado */
+  .gam-hud__name,
+  .gam-hud__back kbd { display: none; }
+  .gam-hud__bar { gap: 0.35rem 0.5rem; padding: 0.3rem 0.4rem; }
+  .gam-hud__tab,
+  .gam-hud__btn,
+  .gam-hud__back { font-size: 0.72rem; padding: 0.32rem 0.5rem; min-height: 32px; }
+  .gam-hud__hint { max-width: calc(100% - 1.5rem); }
+  .gam-progress { top: 0.5rem; left: 0.5rem; font-size: 0.7rem; }
+  .gam-mute { top: 0.5rem; right: 0.5rem; }
+  .gam-credits__title { letter-spacing: 0.06em; }
+}
+
+@media (max-width: 480px) {
+  [data-theme="gam"] .footer__inner { gap: 0.6rem; font-size: 0.7rem; }
+  [data-theme="gam"] .footer__mode { display: none; }
+  .gam-tv__start-label { font-size: 1rem; }
+}
+
+/* Teléfono en horizontal: poco alto → barras más finas para que el cuarto tenga espacio. */
+@media (max-height: 520px) {
+  [data-theme="gam"] { --mode-bar-height: 28px; --nav-height: 52px; --gam-footer-h: 1.8rem; }
+  [data-theme="gam"] .mode-bar { font-size: 0.72rem; }
+  .gam-hud__bar { top: 0.4rem; }
+  .gam-hud__status { top: 3.4rem; }
+  .gam-hud__hint { display: none; }
+  .gam-hud__card { top: 3.6rem; max-height: calc(100% - 4.4rem); }
+  .gam-credits__roll { gap: 1.4rem; }
 }

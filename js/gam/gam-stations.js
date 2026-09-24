@@ -8,11 +8,11 @@
  *   piano       → teclas 3D tocables + pestañas Libre / Reto
  *   desk        → tarjeta con proyectos + pines con detalles + pantallas vivas
  *   bookshelf   → libros que se sacan al pasar el mouse; click = proyecto de IA
- *   bed         → anochece / amanece (luces, cielo de la ventana, Zzz)
+ *   window      → anochece / amanece (luces, cielo de la ventana)
  *   skateboard  → se despega de la pared: arrastrar para girarla en 3D + trucos
- *   juggling    → cascada de 3 pelotas + reto de atrapar en la zona
- *   reading     → el libro se abre y pasa páginas solo
+ *   juggling    → cascada de 6 pelotas + reto de atrapar en la zona
  *   pukis       → acariciarlo: corazones, cola, orejas
+ *   chess       → tablero 3D: juegas con blancas contra una IA sencilla
  *
  * Contrato: `createStations(base, objects)` devuelve Map(id → estación). Una
  * estación es { focus(), enter(), exit(), update(now, dt), busy?(), pointerMove?,
@@ -24,6 +24,7 @@ import * as THREE from 'three';
 import { getAudioContext, envelope } from './gam-audio.js';
 import { createPiano, KEY_BINDINGS } from './gam-piano.js';
 import { createJuggling, ZONE_CENTER } from './gam-juggling.js';
+import { newGame, legalMoves, applyMove, chooseMove, status as chessStatus, isWhite } from './gam-chess.js';
 import { LangSwitcher } from '../lang.js';
 import { ProjectGallery } from '../project-gallery.js';
 
@@ -149,7 +150,7 @@ function pianoStation(c) {
   let engine = null;
   let hovered = -1;
 
-  const keyWorld = (i) => root.localToWorld(V(-0.56 + i * 0.16, 0.92, 0.36));
+  const keyWorld = (i) => keys[i].getWorldPosition(new THREE.Vector3()).add(V(0, 0.12, 0));
 
   function flash(i) {
     press[i] = 1;
@@ -162,7 +163,7 @@ function pianoStation(c) {
   }
 
   return {
-    focus: () => ({ look: root.localToWorld(V(0, 0.9, 0.35)), zoom: 4.2 }),
+    focus: () => ({ look: root.localToWorld(V(0, 0.8, 0.08)), zoom: 4.6 }),
 
     enter() {
       engine = createPiano({
@@ -184,7 +185,7 @@ function pianoStation(c) {
           id: 'start', label: '▶ Empezar secuencia', hidden: true,
           onClick: () => { engine.start(); hud.setAction('start', { hidden: true }); },
         }],
-        hint: 'Haz clic en las teclas · o usa A S D F G H J K',
+        hint: 'Haz clic en las teclas · o usa A S D F G H J K L ; Z X C V B',
         onBack: c.leave,
       });
       engine.setMode('free');
@@ -444,11 +445,10 @@ function bookshelfStation(c) {
 }
 
 /* ────────────────────────────────────────────────────
-   BED — anochece / amanece: luces, cielo de la ventana, Zzz.
+   WINDOW — al hacer click cambia el momento del día (anochece / amanece).
 ──────────────────────────────────────────────────── */
-function bedStation(c) {
-  const { root, refs, hud, env } = c;
-  let zzzT = 0;
+function windowStation(c) {
+  const { root, hud, env } = c;
   let target = 1; // 1 = noche, 0 = día
 
   function goTo(t) {
@@ -456,20 +456,20 @@ function bedStation(c) {
     hud.setAction('toggle', { disabled: true });
     hud.setStatus(t === 1 ? 'Anocheciendo… 🌙' : 'Amaneciendo… ☀️');
     env.animateTo(t, 4200, () => {
-      hud.setStatus(t === 1 ? 'Buenas noches, David 💤' : '¡Buenos días! ☀️ A seguir construyendo');
-      hud.setAction('toggle', { disabled: false, label: t === 1 ? '☀️ Despertar' : '🌙 A dormir' });
+      hud.setStatus(t === 1 ? 'Ya es de noche 🌙' : '¡Buenos días! ☀️');
+      hud.setAction('toggle', { disabled: false, label: t === 1 ? '☀️ Amanecer' : '🌙 Anochecer' });
     });
   }
 
   return {
-    focus: () => ({ look: root.localToWorld(V(0, 0.5, 0)), zoom: 2.5 }),
+    focus: () => ({ look: root.localToWorld(V(0, 3.0, 0)), zoom: 3.2 }),
 
     enter() {
       hud.show({
-        icon: '🛏️',
-        title: 'Cama',
-        actions: [{ id: 'toggle', label: '☀️ Despertar', onClick: () => goTo(target === 1 ? 0 : 1) }],
-        hint: 'Este cuarto también es un cuarto de verdad — acá descansa David entre proyecto y proyecto',
+        icon: '🪟',
+        title: 'Ventana',
+        actions: [{ id: 'toggle', label: '☀️ Amanecer', onClick: () => goTo(target === 1 ? 0 : 1) }],
+        hint: 'El cielo cambia con la hora del día',
         onBack: c.leave,
       });
       // desde el atardecer (o de día) anochece solo; si ya era de noche, amanece
@@ -478,16 +478,7 @@ function bedStation(c) {
 
     exit() { /* el momento del día se queda como el jugador lo dejó */ },
 
-    update(now, dt) {
-      const night = env.t > 0.6;
-      // la manta respira cuando se duerme
-      refs.blanket.scale.y = 1 + (night ? Math.sin(now * 0.0021) * 0.05 : 0);
-      zzzT -= dt;
-      if (night && zzzT <= 0) {
-        zzzT = 1.1;
-        c.glyphs.emit('z', '#a5b4ff', root.localToWorld(V(0, 0.75, -0.7)), { size: 0.22 + Math.random() * 0.14, rise: 0.75, drift: 0.15, life: 2.4 });
-      }
-    },
+    update() {},
   };
 }
 
@@ -499,7 +490,7 @@ function skateStation(c) {
   const { holder, pivot } = refs.skate;
   const tw = createTweens(c.reducedMotion);
   const REST = { pos: V(0, 0.6, 0), rotX: -0.18 };
-  const SHOW = { pos: V(-0.55, 1.9, 1.7), rotX: Math.PI / 2 }; // libre en el aire, lejos de la pared y la terminal
+  const SHOW = { pos: V(-0.4, 1.3, 1.5), rotX: 0 }; // de pie, la cara de stickers hacia la cámara
   let dragging = false;
   let last = { x: 0, y: 0 };
   let vel = { x: 0, y: 0 };
@@ -538,7 +529,7 @@ function skateStation(c) {
   }
 
   return {
-    focus: () => ({ look: root.localToWorld(SHOW.pos.clone()), zoom: 3.0 }),
+    focus: () => ({ look: root.localToWorld(SHOW.pos.clone()), zoom: 3.8 }),
 
     enter() {
       active = true;
@@ -548,9 +539,10 @@ function skateStation(c) {
         actions: [
           { id: 'kickflip', label: 'Kickflip', onClick: () => doTrick('kickflip') },
           { id: 'shove', label: 'Shove-it', onClick: () => doTrick('shove') },
+          { id: 'flip', label: '↻ Voltear', onClick: () => { if (!trick) { const y0 = holder.rotation.y; tw.add(700, (p) => { holder.rotation.y = y0 + Math.PI * ease(p); }); idleAt = performance.now() + 2500; } } },
           { id: 'reset', label: '↺ Reiniciar', onClick: () => { if (!trick) tw.add(500, (() => { const a = holder.rotation.clone(); return (p) => { holder.rotation.set(lerp(a.x, 0, ease(p)), lerp(a.y, 0, ease(p)), 0); }; })()); } },
         ],
-        hint: 'Arrastra para girarla en 3D · prueba un truco',
+        hint: 'Arrastra para girarla en 3D · mira los stickers · voltéala para ver el grip',
         status: 'Se despegó de la pared 🛹',
         onBack: c.leave,
       });
@@ -581,10 +573,15 @@ function skateStation(c) {
       if (!active) return;
       if (!dragging && !trick) {
         // inercia del arrastre y giro lento de exhibición
-        holder.rotation.y += vel.x * dt * 60 + (now > idleAt ? dt * 0.7 : 0);
+        holder.rotation.y += vel.x * dt * 60;
         holder.rotation.x = clamp(holder.rotation.x + vel.y * dt * 60, -1.2, 1.2);
         vel.x *= 0.92; vel.y *= 0.92;
-        if (now > idleAt) holder.rotation.x += (0.12 - holder.rotation.x) * Math.min(1, dt * 1.5);
+        if (now > idleAt) {
+          // reposo: vuelve suave a mirar de frente (stickers) con un leve balanceo, sin girar de espaldas
+          const front = Math.round(holder.rotation.y / Math.PI) * Math.PI;
+          holder.rotation.y += (front + Math.sin(now * 0.0009) * 0.25 - holder.rotation.y) * Math.min(1, dt * 1.2);
+          holder.rotation.x += (0.08 - holder.rotation.x) * Math.min(1, dt * 1.5);
+        }
       }
     },
 
@@ -615,7 +612,7 @@ function skateStation(c) {
 }
 
 /* ────────────────────────────────────────────────────
-   JUGGLING — cascada de 3 pelotas + reto de atrapar en la zona.
+   JUGGLING — cascada de 6 pelotas + reto de atrapar en la zona.
 ──────────────────────────────────────────────────── */
 function jugglingStation(c) {
   const { root, refs, hud } = c;
@@ -665,7 +662,7 @@ function jugglingStation(c) {
       balls.forEach(({ mesh, rest }, i) => { mesh.position.copy(rest); });
     } else {
       dropRing();
-      hud.setStatus('Cascada de 3 pelotas tejidas a mano 🧶');
+      hud.setStatus('Cascada de 6 pelotas tejidas a mano 🧶');
     }
   }
 
@@ -702,7 +699,7 @@ function jugglingStation(c) {
           { id: 'start', label: '▶ Empezar', hidden: true, onClick: () => { running = true; engine.start(performance.now()); hud.setAction('start', { hidden: true }); hud.setAction('catch', { hidden: false }); } },
           { id: 'catch', label: '¡Atrapar! (Espacio)', hidden: true, onClick: () => attempt(performance.now()) },
         ],
-        hint: 'Las 3 pelotas las tejió David a mano cuando le enseñaron a hacer malabares',
+        hint: 'Las 6 pelotas las tejió David a mano cuando le enseñaron a hacer malabares',
         onBack: c.leave,
       });
       setMode('watch');
@@ -725,7 +722,7 @@ function jugglingStation(c) {
         // cascada: cada pelota va y viene entre las dos manos en arcos parabólicos
         const P = 1.6;
         balls.forEach(({ mesh }, i) => {
-          const phi = (t / P + i / 3) % 1;
+          const phi = (t / P + i / balls.length) % 1;
           const k = Math.floor(phi * 2);
           const psi = phi * 2 - k;
           const x = (k % 2 === 0 ? 1 : -1) * HAND * (2 * psi - 1);
@@ -755,94 +752,6 @@ function jugglingStation(c) {
     key(e) {
       if (e.code === 'Space') { e.preventDefault(); attempt(performance.now()); return true; }
       return false;
-    },
-  };
-}
-
-/* ────────────────────────────────────────────────────
-   READING — el libro se abre y pasa las páginas solo.
-──────────────────────────────────────────────────── */
-function readingStation(c) {
-  const { root, refs, hud } = c;
-  const { group: book, flip } = refs.book;
-  const tw = createTweens(c.reducedMotion);
-  const REST = { y: 0.5, rx: -0.2, s: 1 };
-  const UP = { y: 1.0, rx: 0.55, s: 2.6 }; // se levanta, se agranda y se inclina hacia la cámara
-  let active = false;
-  let flipping = false;
-  let flipped = false;
-  let flipAt = 0;
-  let sparkT = 0;
-
-  function moveBook(to, ms, done) {
-    const y0 = book.position.y;
-    const r0 = book.rotation.x;
-    const s0 = book.scale.x;
-    tw.add(ms, (p) => {
-      const e = ease(p);
-      book.position.y = lerp(y0, to.y, e);
-      book.rotation.x = lerp(r0, to.rx, e);
-      book.scale.setScalar(lerp(s0, to.s, e));
-    }, done);
-  }
-
-  function flipPage() {
-    if (flipping || !active) return;
-    flipping = true;
-    const from = flipped ? Math.PI : 0;
-    const to = flipped ? 0 : Math.PI;
-    envelope(getAudioContext(), { freq: 700, type: 'sine', duration: 0.05, gain: 0.03 });
-    tw.add(750, (p) => {
-      const e = ease(p);
-      flip.rotation.z = lerp(from, to, e);
-      flip.position.y = 0.024 + Math.sin(Math.PI * p) * 0.01;
-    }, () => { flipped = !flipped; flipping = false; });
-  }
-
-  return {
-    focus: () => ({ look: root.localToWorld(V(0.02, 0.85, 0.1)), zoom: 3.2, shift: 0.28 }),
-
-    enter() {
-      active = true;
-      hud.show({
-        icon: '📖',
-        title: 'Rincón de lectura',
-        actions: [{ id: 'flip', label: 'Pasar página ↷', onClick: flipPage }],
-        hint: 'El libro se abre solo · o pasa las páginas tú',
-        onBack: c.leave,
-      });
-      const card = el('div', 'gam-card');
-      card.innerHTML = `
-        <h3 class="gam-card__title">📖 ${esc(L(c.content.title) || 'Rincón de lectura')}</h3>
-        <p class="gam-card__text">${esc(L(c.content.message))}</p>
-        <p class="gam-card__hint">Aquí irán los libros favoritos de David.</p>`;
-      hud.setCard(card);
-      moveBook(UP, 900);
-      flipAt = performance.now() + 1400;
-    },
-
-    exit() {
-      active = false;
-      tw.clear();
-      flipping = false;
-      const f0 = flip.rotation.z;
-      tw.add(500, (p) => { flip.rotation.z = lerp(f0, 0, ease(p)); flip.position.y = 0.024; });
-      flipped = false;
-      moveBook(REST, 700);
-    },
-
-    busy: () => tw.busy,
-
-    update(now, dt) {
-      tw.update(now);
-      if (!active) return;
-      if (!tw.busy) book.position.y = UP.y + Math.sin(now * 0.002) * 0.02; // flota apenas
-      if (now > flipAt && !flipping) { flipPage(); flipAt = now + 2600; }
-      sparkT -= dt;
-      if (sparkT <= 0) {
-        sparkT = 0.7;
-        c.glyphs.emit('✦', '#ffd580', book.localToWorld(V((Math.random() - 0.5) * 0.3, 0.05, (Math.random() - 0.5) * 0.15)), { size: 0.16, rise: 0.4, life: 1.8 });
-      }
     },
   };
 }
@@ -880,7 +789,7 @@ function pukisStation(c) {
   }
 
   return {
-    focus: () => ({ look: root.localToWorld(V(0, 0.3, 0.05)), zoom: 3.6 }),
+    focus: () => ({ look: root.localToWorld(V(0.2, 0.15, 0.05)), zoom: 4.6 }),
 
     enter() {
       active = true;
@@ -932,15 +841,287 @@ function pukisStation(c) {
   };
 }
 
+
+/* ────────────────────────────────────────────────────
+   CHESS — tablero 3D. Blancas = jugador; la IA lleva las negras.
+   Las piezas viven siempre sobre el tablero (también fuera de la estación).
+──────────────────────────────────────────────────── */
+function chessStation(c) {
+  const { root, refs, hud } = c;
+  const squares = refs.squares;
+  const cell = refs.cell;
+  const boardY = refs.boardY + 0.014;
+  const tw = createTweens(c.reducedMotion);
+  const matW = new THREE.MeshStandardMaterial({ color: 0xf1e6cc, roughness: 0.45 });
+  const matB = new THREE.MeshStandardMaterial({ color: 0x2a1f1a, roughness: 0.4 });
+  const sqPos = (i) => V(((i & 7) - 3.5) * cell, boardY, ((i >> 3) - 3.5) * cell);
+
+  const LATHE = {
+    p: [[0.03, 0], [0.03, 0.008], [0.018, 0.016], [0.012, 0.04], [0.02, 0.046]],
+    r: [[0.033, 0], [0.033, 0.01], [0.022, 0.02], [0.02, 0.06], [0.03, 0.066], [0.03, 0.09]],
+    n: [[0.033, 0], [0.033, 0.01], [0.022, 0.02], [0.02, 0.035]],
+    b: [[0.032, 0], [0.032, 0.01], [0.02, 0.02], [0.012, 0.055], [0.022, 0.065], [0.016, 0.09]],
+    q: [[0.035, 0], [0.035, 0.01], [0.022, 0.02], [0.014, 0.07], [0.03, 0.085], [0.024, 0.105]],
+    k: [[0.035, 0], [0.035, 0.01], [0.022, 0.02], [0.016, 0.075], [0.028, 0.09], [0.02, 0.108]],
+  };
+
+  function buildPiece(ch, sq) {
+    const white = isWhite(ch);
+    const kind = ch.toLowerCase();
+    const m = white ? matW : matB;
+    const g = new THREE.Group();
+    const add = (geo, x = 0, y = 0, z = 0) => {
+      const mesh = new THREE.Mesh(geo, m);
+      mesh.position.set(x, y, z);
+      mesh.castShadow = mesh.receiveShadow = true;
+      g.add(mesh);
+      return mesh;
+    };
+    const prof = LATHE[kind].map(([r, y]) => new THREE.Vector2(r, y));
+    prof.unshift(new THREE.Vector2(0, 0));
+    prof.push(new THREE.Vector2(0, prof[prof.length - 1].y));   // tapa: sin agujero arriba
+    add(new THREE.LatheGeometry(prof, 18));
+    g.scale.setScalar(0.85);
+    if (kind === 'p') add(new THREE.SphereGeometry(0.02, 14, 10), 0, 0.058);
+    if (kind === 'b') { add(new THREE.SphereGeometry(0.008, 10, 8), 0, 0.102); }
+    if (kind === 'q') { add(new THREE.SphereGeometry(0.012, 10, 8), 0, 0.118); }
+    if (kind === 'k') {
+      add(new THREE.BoxGeometry(0.008, 0.03, 0.008), 0, 0.128);
+      add(new THREE.BoxGeometry(0.024, 0.008, 0.008), 0, 0.132);
+    }
+    if (kind === 'r') [[-0.02, 0], [0.02, 0], [0, -0.02], [0, 0.02]].forEach(([x, z]) => add(new THREE.BoxGeometry(0.014, 0.014, 0.014), x, 0.097, z));
+    if (kind === 'n') {
+      const neck = add(new THREE.BoxGeometry(0.03, 0.06, 0.022), 0, 0.06, 0);
+      neck.rotation.z = white ? -0.25 : -0.25;
+      const head = add(new THREE.BoxGeometry(0.038, 0.026, 0.022), white ? 0.014 : 0.014, 0.093, 0);
+      head.rotation.z = -0.1;
+      g.rotation.y = white ? 0 : Math.PI;
+    }
+    g.userData.sq = sq;
+    g.userData.ch = ch;
+    g.position.copy(sqPos(sq));
+    root.add(g);
+    return g;
+  }
+
+  let gs = newGame();
+  let history = [];
+  let meshes = new Map(); // casilla → grupo de la pieza
+  let selected = -1;
+  let targets = [];
+  let hovered = -1;
+  let thinking = false;
+  let over = false;
+  let depth = 2;
+  let aiTimer = null;
+  let markers = [];
+
+  function rebuild() {
+    meshes.forEach((g) => { root.remove(g); });
+    meshes = new Map();
+    gs.b.forEach((ch, i) => { if (ch) meshes.set(i, buildPiece(ch, i)); });
+  }
+  rebuild();
+
+  function clearMarkers() {
+    markers.forEach((mk) => { root.remove(mk); mk.geometry.dispose(); mk.material.dispose(); });
+    markers = [];
+  }
+  function showTargets() {
+    clearMarkers();
+    targets.forEach((m) => {
+      const capture = gs.b[m.to] !== null || m.enPassant;
+      const mk = new THREE.Mesh(new THREE.CylinderGeometry(capture ? 0.034 : 0.014, capture ? 0.034 : 0.014, 0.004, 20),
+        new THREE.MeshBasicMaterial({ color: capture ? 0xff5a4d : 0x4ade80, transparent: true, opacity: 0.85 }));
+      mk.position.copy(sqPos(m.to)).setY(boardY + 0.004);
+      root.add(mk);
+      markers.push(mk);
+    });
+  }
+
+  function say(html) { hud.setStatus(html); }
+
+  function statusText() {
+    const st = chessStatus(gs);
+    if (st === 'checkmate') { over = true; return gs.turn === 'w' ? '☠ <strong>Jaque mate</strong> — ganó la IA' : '🏆 <strong>Jaque mate</strong> — ¡ganaste!'; }
+    if (st === 'stalemate') { over = true; return '🤝 <strong>Tablas</strong> por rey ahogado'; }
+    if (st === 'draw') { over = true; return '🤝 <strong>Tablas</strong> por material insuficiente'; }
+    const chk = st === 'check' ? ' · <strong>¡Jaque!</strong>' : '';
+    return (gs.turn === 'w' ? 'Tu turno (blancas)' : 'Piensa la IA…') + chk;
+  }
+
+  function move3D(from, to, epSq, rookMove, promo, onDone) {
+    const g = meshes.get(from);
+    const victimSq = epSq ?? to;
+    const victim = meshes.get(victimSq);
+    if (victim && victim !== g) {
+      meshes.delete(victimSq);
+      const s0 = victim.scale.clone();
+      tw.add(280, (p) => victim.scale.copy(s0).multiplyScalar(1 - p), () => root.remove(victim));
+      c.glyphs.emit('✦', '#ffb020', root.localToWorld(sqPos(victimSq).setY(boardY + 0.09)), { size: 0.2, rise: 0.25 });
+    }
+    meshes.delete(from);
+    meshes.set(to, g);
+    g.userData.sq = to;
+    const a = sqPos(from), b = sqPos(to);
+    const dist = a.distanceTo(b);
+    tw.add(c.reducedMotion ? 1 : 160 + dist * 900, (p) => {
+      g.position.lerpVectors(a, b, ease(p));
+      g.position.y = boardY + Math.sin(Math.PI * p) * Math.min(0.09, 0.02 + dist * 0.25);
+    }, () => {
+      g.position.copy(b);
+      if (promo) {
+        root.remove(g);
+        const q = buildPiece(gs.b[to], to);
+        meshes.set(to, q);
+      }
+      onDone?.();
+    });
+    if (rookMove) {
+      const rg = meshes.get(rookMove.from);
+      if (rg) {
+        meshes.delete(rookMove.from);
+        meshes.set(rookMove.to, rg);
+        rg.userData.sq = rookMove.to;
+        const ra = sqPos(rookMove.from), rb = sqPos(rookMove.to);
+        tw.add(400, (p) => { rg.position.lerpVectors(ra, rb, ease(p)); rg.position.y = boardY + Math.sin(Math.PI * p) * 0.05; }, () => rg.position.copy(rb));
+      }
+    }
+  }
+
+  function play(m, then) {
+    history.push({ gs, });
+    const white = gs.turn === 'w';
+    const row = white ? 7 : 0;
+    const rookMove = m.castle === 'k' ? { from: row * 8 + 7, to: row * 8 + 5 } : m.castle === 'q' ? { from: row * 8, to: row * 8 + 3 } : null;
+    const epSq = m.enPassant ? m.to + (white ? 8 : -8) : null;
+    gs = applyMove(gs, m);
+    move3D(m.from, m.to, epSq, rookMove, !!m.promo, then);
+    selected = -1; targets = []; clearMarkers();
+    say(statusText());
+  }
+
+  function aiMove() {
+    if (over || gs.turn !== 'b') return;
+    thinking = true;
+    aiTimer = setTimeout(() => {
+      aiTimer = null;
+      const m = chooseMove(gs, depth);
+      thinking = false;
+      if (!m) return;
+      play(m, () => { say(statusText()); });
+    }, c.reducedMotion ? 10 : 500);
+  }
+
+  function sqFromHit(hit) {
+    let o = hit?.object;
+    while (o && o.userData.sq === undefined) o = o.parent;
+    return o ? o.userData.sq : -1;
+  }
+  function pickSq() {
+    return sqFromHit(c.pick([...squares, ...meshes.values()]));
+  }
+
+  function newMatch() {
+    clearTimeout(aiTimer); aiTimer = null;
+    tw.clear();
+    gs = newGame(); history = []; over = false; thinking = false; selected = -1; targets = []; clearMarkers();
+    rebuild();
+    say(statusText());
+  }
+
+  function undo() {
+    if (thinking || tw.busy) return;
+    // deshace la jugada de la IA y la tuya (o solo la tuya si la IA no llegó a mover)
+    const steps = gs.turn === 'w' ? 2 : 1;
+    if (history.length < steps) return;
+    for (let i = 0; i < steps; i++) gs = history.pop().gs;
+    over = false; selected = -1; targets = []; clearMarkers();
+    tw.clear();
+    rebuild();
+    say(statusText());
+  }
+
+  function tint(mesh, hex, k) {
+    mesh.material.emissive.setHex(hex);
+    mesh.material.emissiveIntensity = k;
+  }
+
+  return {
+    focus: () => ({ look: root.localToWorld(V(0, boardY, 0)), zoom: 7.5 }),
+
+    enter() {
+      hud.show({
+        icon: '♟️',
+        title: 'Ajedrez',
+        tabs: [{ id: '1', label: 'Fácil' }, { id: '2', label: 'Normal' }, { id: '3', label: 'Difícil' }],
+        active: String(depth),
+        onTab: (id) => { depth = Number(id); },
+        actions: [
+          { id: 'undo', label: '↶ Deshacer', onClick: undo },
+          { id: 'new', label: '↻ Nueva partida', onClick: newMatch },
+        ],
+        hint: 'Clic en una pieza blanca y luego en la casilla destino',
+        onBack: c.leave,
+      });
+      say(statusText());
+      if (gs.turn === 'b' && !over && !thinking) aiMove();
+    },
+
+    exit() {
+      selected = -1; targets = []; hovered = -1;
+      clearMarkers();
+      squares.forEach((s) => tint(s, 0x000000, 1));
+      c.setOutline([]);
+    },
+
+    busy: () => tw.busy || thinking,
+
+    update(now) {
+      tw.update(now);
+      squares.forEach((s, i) => {
+        if (i === selected) tint(s, 0xffb020, 0.9);
+        else if (i === hovered && !thinking) tint(s, 0xffffff, 0.25);
+        else tint(s, 0x000000, 1);
+      });
+    },
+
+    pointerMove() {
+      hovered = pickSq();
+      const p = hovered >= 0 ? gs.b[hovered] : null;
+      const clickable = !thinking && !over && gs.turn === 'w' && hovered >= 0 && ((p && isWhite(p)) || targets.some((m) => m.to === hovered));
+      c.setCursor(clickable ? 'pointer' : 'default');
+    },
+
+    pointerDown() {
+      if (thinking || over || gs.turn !== 'w' || tw.busy) return;
+      const sq = pickSq();
+      if (sq < 0) return;
+      const move = targets.find((m) => m.to === sq);
+      if (move) { play(move, aiMove); return; }
+      const p = gs.b[sq];
+      if (p && isWhite(p)) {
+        selected = sq;
+        targets = legalMoves(gs).filter((m) => m.from === sq);
+        showTargets();
+        if (!targets.length) say('Esa pieza no puede moverse ahora');
+        else say(statusText());
+      } else {
+        selected = -1; targets = []; clearMarkers();
+      }
+    },
+  };
+}
+
 const FACTORIES = {
   piano: pianoStation,
   desk: deskStation,
   bookshelf: bookshelfStation,
-  bed: bedStation,
+  window: windowStation,
   skateboard: skateStation,
   juggling: jugglingStation,
-  reading: readingStation,
   pukis: pukisStation,
+  chess: chessStation,
 };
 
 /**

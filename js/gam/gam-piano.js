@@ -1,32 +1,33 @@
 /**
- * gam-piano.js — Minijuego del piano (modo .gam)
+ * gam-piano.js — Motor del piano (modo .gam)
  *
- * Autocontenido: gam-loader.js solo llama mount(container) y guarda el
- * cleanup que devuelve para llamarlo al cerrar el panel. No depende de
- * Phaser ni del resto de la escena — es DOM + Web Audio puro, montado
- * dentro de #gam-modal-list como cualquier otro contenido del panel.
+ * Solo lógica + audio (Web Audio); no dibuja nada. Las teclas son 3D dentro
+ * de la escena (ver la estación `piano` en gam-stations.js) y el HUD pone las
+ * pestañas Libre/Reto — este módulo avisa qué pasa con callbacks.
  *
  * Dos modos:
  *  - Libre: tocar las 8 notas con el mouse/touch o el teclado (A S D F G H J K)
- *  - Desafío: JotAI... digo, el piano toca una secuencia creciente
- *    (estilo Simon) que hay que repetir. Récord en localStorage.
+ *  - Reto: el piano toca una secuencia creciente (estilo Simon) que hay que
+ *    repetir. Récord en localStorage.
  *
- * Usa el AudioContext compartido de gam-audio.js (antes tenía uno propio,
- * paralelo al de gam-ambience.js) — un solo contexto real para todo .gam.
+ * Usa el AudioContext compartido de gam-audio.js — un solo contexto real
+ * para todo .gam.
  */
 import { getAudioContext, envelope } from './gam-audio.js';
 
-const NOTES = [261.63, 293.66, 329.63, 349.23, 392.0, 440.0, 493.88, 523.25]; // C4..C5
-const KEY_BINDINGS = ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K'];
-const NOTE_LABELS  = ['Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Si', 'Do'];
+const NOTES = [261.63, 293.66, 329.63, 349.23, 392.0, 440.0, 493.88, 523.25, 587.33, 659.25, 698.46, 783.99, 880.0, 987.77, 1046.5]; // C4..C6 (teclas blancas)
+const CHALLENGE_NOTES = 8; // el Reto usa solo la primera octava
+export const KEY_BINDINGS = ['A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', 'Z', 'X', 'C', 'V', 'B'];
+export const NOTE_LABELS = ['Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Si', 'Do', 'Re', 'Mi', 'Fa', 'Sol', 'La', 'Si', 'Do'];
 const BEST_KEY = 'gam-piano-best';
+const FREE_HINT = 'Toca las teclas — mouse, touch o A S D F G H J K L ; Z X C V B';
 
 function _playNote(i) {
   const ctx = getAudioContext();
-  if (!ctx) return; // Web Audio no disponible (muy raro) — el juego sigue siendo usable visualmente
+  if (!ctx) return; // Web Audio no disponible (muy raro) — sigue usable visualmente
   if (ctx.state === 'suspended') ctx.resume();
 
-  const osc  = ctx.createOscillator();
+  const osc = ctx.createOscillator();
   const gain = ctx.createGain();
   osc.type = 'triangle';
   osc.frequency.value = NOTES[i];
@@ -45,74 +46,37 @@ function _bestScore() {
   return Number(localStorage.getItem(BEST_KEY) || 0);
 }
 
-function mount(container) {
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  const root = document.createElement('div');
-  root.className = 'gam-piano';
-  root.innerHTML = `
-    <div class="gam-piano__tabs" role="tablist">
-      <button type="button" class="gam-piano__tab is-active" data-mode="free">Modo libre</button>
-      <button type="button" class="gam-piano__tab" data-mode="challenge">Modo desafío</button>
-    </div>
-    <div class="gam-piano__status" id="gam-piano-status">Tocá las teclas — mouse, touch o A S D F G H J K</div>
-    <div class="gam-piano__keys" id="gam-piano-keys">
-      ${NOTES.map((_, i) => `
-        <button type="button" class="gam-piano__key" data-i="${i}" aria-label="Nota ${NOTE_LABELS[i]}">
-          <span class="gam-piano__key-note">${NOTE_LABELS[i]}</span>
-          <span class="gam-piano__key-bind">${KEY_BINDINGS[i]}</span>
-        </button>
-      `).join('')}
-    </div>
-    <div class="gam-piano__challenge" id="gam-piano-challenge" hidden>
-      <p>Récord: <strong id="gam-piano-best">${_bestScore()}</strong></p>
-      <button type="button" class="gam-piano__start" id="gam-piano-start">▶ Empezar secuencia</button>
-    </div>
-  `;
-  container.appendChild(root);
-
-  const keysEl     = root.querySelector('#gam-piano-keys');
-  const statusEl   = root.querySelector('#gam-piano-status');
-  const challengeEl = root.querySelector('#gam-piano-challenge');
-  const startBtn   = root.querySelector('#gam-piano-start');
-  const bestEl     = root.querySelector('#gam-piano-best');
-  const keyEls     = [...root.querySelectorAll('.gam-piano__key')];
-
+/**
+ * callbacks: onFlash(i) — se tocó la nota i (teclado, mouse o secuencia)
+ *            onStatus(text) — mensaje para el HUD
+ *            onEnd(score, best) — se rompió la racha en modo Reto
+ *            onHot() — 5 aciertos seguidos
+ */
+export function createPiano({ onFlash, onStatus, onEnd, onHot }) {
   let mode = 'free';
   let sequence = [];
   let playerStep = 0;
   let accepting = false; // true mientras el jugador puede responder
-  let streak = 0; // aciertos consecutivos en la ronda actual (modo desafío)
+  let streak = 0;        // aciertos consecutivos en la ronda actual (Reto)
   const timers = [];
 
-  const setTimer = (fn, ms) => {
-    const id = setTimeout(fn, ms);
-    timers.push(id);
-    return id;
-  };
+  const setTimer = (fn, ms) => { timers.push(setTimeout(fn, ms)); };
   const clearTimers = () => { timers.forEach(clearTimeout); timers.length = 0; };
-
-  function flashKey(i, cls = 'is-active') {
-    const el = keyEls[i];
-    if (!el) return;
-    el.classList.add(cls);
-    setTimeout(() => el.classList.remove(cls), reducedMotion ? 0 : 220);
-  }
 
   function press(i) {
     _playNote(i);
-    flashKey(i);
+    onFlash?.(i);
 
     if (mode === 'challenge' && accepting) {
       if (sequence[playerStep] === i) {
         playerStep++;
         streak++;
-        if (streak > 0 && streak % 5 === 0) _flashHotStreak();
+        if (streak > 0 && streak % 5 === 0) onHot?.();
         if (playerStep === sequence.length) {
           accepting = false;
           envelope(getAudioContext(), { freq: 660, type: 'sine', duration: 0.15, gain: 0.1 });
-          statusEl.textContent = `¡Bien! Secuencia de ${sequence.length}. Preparando la siguiente…`;
-          setTimer(() => _nextRound(), 700);
+          onStatus?.(`¡Bien! Secuencia de ${sequence.length}. Preparando la siguiente…`);
+          setTimer(_nextRound, 700);
         }
       } else {
         streak = 0;
@@ -121,55 +85,30 @@ function mount(container) {
     }
   }
 
-  function _flashHotStreak() {
-    keysEl.classList.add('is-hot');
-    setTimer(() => keysEl.classList.remove('is-hot'), reducedMotion ? 0 : 300);
+  function setMode(m) {
+    mode = m;
+    clearTimers();
+    accepting = false;
+    sequence = [];
+    onStatus?.(m === 'challenge'
+      ? `Récord: <strong>${_bestScore()}</strong> — pulsa Empezar, escucha la secuencia y repítela.`
+      : FREE_HINT);
   }
 
-  keysEl.addEventListener('click', (e) => {
-    const btn = e.target.closest('.gam-piano__key');
-    if (!btn) return;
-    press(Number(btn.dataset.i));
-  });
-
-  const keydownHandler = (e) => {
-    const idx = KEY_BINDINGS.indexOf(e.key.toUpperCase());
-    if (idx === -1) return;
-    press(idx);
-  };
-  window.addEventListener('keydown', keydownHandler);
-
-  root.querySelectorAll('.gam-piano__tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      root.querySelectorAll('.gam-piano__tab').forEach(t => t.classList.remove('is-active'));
-      tab.classList.add('is-active');
-      mode = tab.dataset.mode;
-      clearTimers();
-      accepting = false;
-      if (mode === 'challenge') {
-        challengeEl.hidden = false;
-        statusEl.textContent = 'Escuchá la secuencia y repetila.';
-      } else {
-        challengeEl.hidden = true;
-        statusEl.textContent = 'Tocá las teclas — mouse, touch o A S D F G H J K';
-      }
-    });
-  });
-
   function _playSequence() {
-    statusEl.textContent = `Secuencia de ${sequence.length} — mirá bien…`;
+    onStatus?.(`Secuencia de ${sequence.length} — mira bien…`);
     sequence.forEach((note, i) => {
-      setTimer(() => { _playNote(note); flashKey(note); }, i * 550);
+      setTimer(() => { _playNote(note); onFlash?.(note); }, i * 550);
     });
     setTimer(() => {
       playerStep = 0;
       accepting = true;
-      statusEl.textContent = 'Tu turno.';
+      onStatus?.('Tu turno.');
     }, sequence.length * 550 + 250);
   }
 
   function _nextRound() {
-    sequence.push(Math.floor(Math.random() * NOTES.length));
+    sequence.push(Math.floor(Math.random() * CHALLENGE_NOTES));
     _playSequence();
   }
 
@@ -178,27 +117,22 @@ function mount(container) {
     const score = sequence.length - 1;
     const best = Math.max(_bestScore(), score);
     localStorage.setItem(BEST_KEY, String(best));
-    bestEl.textContent = String(best);
     window.dispatchEvent(new CustomEvent('gam:score', { detail: { game: 'piano', score } }));
-    statusEl.textContent = score > 0
-      ? `Se rompió en ${score} 🎹 — ¿otra vuelta?`
-      : 'Se rompió en la primera — ¿otra vuelta?';
+    onStatus?.(score > 0
+      ? `Se rompió en ${score} 🎹 — récord <strong>${best}</strong>`
+      : `Se rompió en la primera — récord <strong>${best}</strong>`);
     sequence = [];
-    startBtn.hidden = false;
+    onEnd?.(score, best);
   }
 
-  startBtn.addEventListener('click', () => {
+  function start() {
     clearTimers();
     sequence = [];
-    startBtn.hidden = true;
+    streak = 0;
     _nextRound();
-  });
+  }
 
-  return function unmount() {
-    clearTimers();
-    window.removeEventListener('keydown', keydownHandler);
-    root.remove();
-  };
+  function destroy() { clearTimers(); }
+
+  return { press, setMode, start, destroy };
 }
-
-export const GamPiano = { mount };

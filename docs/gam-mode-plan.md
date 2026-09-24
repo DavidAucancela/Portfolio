@@ -428,16 +428,325 @@ documentado, esperando el `.glb`), minijuegos más profundos, arte real y
 progresión/contenido nuevo — quedan para sesiones futuras, ya conversado
 con David.
 
+## Pivote a Three.js (2026-09-23, en curso) — spike Fase 1
+
+David trajo una propuesta externa (pegada en el chat) para reemplazar Phaser
+por Three.js: sin personaje caminando, navegación por selección de objeto
+(hover/click, cámara vuela hacia la estación), justificado porque un visor
+3D real de la patineta, arcos de malabares reales y cámaras cinemáticas no
+son viables bien en un motor 2D. Se ejecutó la **Fase 1 (spike)** de esa
+propuesta — validar el enfoque antes de invertir en el resto de las fases —
+y se siguió iterando en la misma sesión con varias rondas de feedback en
+vivo de David sobre el resultado.
+
+**Rama:** `feat/gam-mode-threejs-spike` (creada desde el HEAD de
+`fix/hero-widgets-mobile-scroll` — PR #56 abierto, no mergeado a `main`
+todavía — porque esa rama ya tenía el Fase 5 de arriba, que `main` todavía
+no tiene). **Nada de esto está commiteado** — todo vive en el working tree
+sin commits propios. Hay además cambios previos sin relación (stray, no
+tocados): `data/git-history.json` modificado (autogenerado en cada
+`vite build`/`dev`, no importa), `public/CV-DavidAucancela.pdf` borrado,
+`graphify-out/` y un par de imágenes nuevas sin trackear — nada de esto es
+de esta sesión, se dejó como estaba.
+
+**Hallazgo clave que abarató todo el spike:** `js/gam/gam-loader.js` ya era
+agnóstico del motor de render — el contrato entero con la escena es el
+evento `window.dispatchEvent('gam:interact', { detail: { id, kind, label,
+content } })`. Paneles, `ProjectGallery`, el drawer de trayectoria, el
+progreso y los minijuegos (piano/malabares/patineta) siguen funcionando sin
+tocarlos. Lo único acoplado a Phaser dentro de `gam-loader.js` era el
+`_game?.scene.pause('GamScene')`/`.resume(...)` al abrir/cerrar un panel —
+resuelto con un shim: `GamThreeScene.mount()` devuelve
+`{ scene: { pause, resume }, destroy }`, mismo shape que un `Phaser.Game`
+en los puntos que `gam-loader.js` toca.
+
+**`js/gam/gam-scene.js` (Phaser) queda intacto, sin usarse** — revertir el
+spike es volver `_boot()` en `gam-loader.js` a importar `phaser` +
+`gam-scene.js` en vez de `gam-three-scene.js`. `phaser` sigue en
+`package.json` (no se desinstaló).
+
+### `js/gam/gam-three-scene.js` (nuevo) — qué hace
+
+- **Cámara fija con parallax + deriva autónoma** (no depende de mover el
+  mouse) en reposo; al hacer click/Enter sobre un objeto, vuela con easing
+  hacia una pose cercana a él y el resto del cuarto se atenúa (luces
+  bajan de intensidad, un `focusLight` puntual sube sobre el objeto
+  enfocado). El evento `gam:interact` (que dispara el panel de
+  `gam-loader.js`) se dispara **recién cuando la cámara termina de
+  llegar** — antes el panel (pantalla completa) tapaba el viaje de cámara
+  antes de que se llegara a ver.
+- **Controles:** click/tap sobre un objeto, o flechas ←→↑↓ para mover la
+  selección + Enter/Espacio, o directo con teclas 1-9/0. Esc vuelve la
+  cámara (además de cerrar el panel, que ya lo hacía `gam-loader.js`).
+- **Objetos:** cada uno es un `THREE.Group` de formas compuestas simples
+  (cajas/cilindros/esferas) — mismo criterio que `ICON_DRAWERS` en
+  `gam-scene.js` (Phaser): un placeholder que ya se distingue a simple
+  vista sin depender de arte generado afuera. Piano (cuerpo + tira de
+  teclas), escritorio (tapa + 4 patas + monitor con brillo), malabares
+  (pedestal + 3 pelotas de colores apiladas — referencia a que son pelotas
+  reales tejidas a mano), cama (marco + colchón + almohada), puerta (hoja +
+  picaporte), rincón de lectura (pila de libros), patineta (tabla + 4
+  ruedas — cilindros rotados 90° para que se vean acostadas como rueda,
+  no paradas como pata), Pukis (blob ovalado + cabeza + nariz). `diplomas`/
+  `terminal`/`bookshelf` también tienen forma propia (marco, gabinete con
+  pantalla, mueble con repisas) pero **ya no son hotspots** — ver abajo.
+- **Sombra de contacto:** un blob radial oscuro (textura generada en
+  `<canvas>`, un solo material compartido) debajo de cada objeto — sin
+  esto, con solo 4 luces puntuales, cualquier cosa se lee como flotando
+  aunque su geometría toque y=0 exacto. Se agregó después de que David
+  reportara "elementos flotando en la nada"; en esa misma ronda se
+  encontraron y corrigieron bugs reales de posicionamiento (patas del
+  escritorio que medían el doble de alto que la tapa y sobresalían por
+  arriba, el marco de diplomas con el centro mal calculado y flotando
+  ~10% de su alto sobre el piso, las pelotas de malabares sueltas en el
+  aire sin apoyo visible, las ruedas de la patineta orientadas como
+  cilindros verticales en vez de horizontales).
+- **Iluminación/atmósfera:** ACES tone mapping, exposure subido dos veces
+  en la sesión (1.0 → 1.3 → 1.6) más piso/paredes más claros y fog más
+  débil, en respuesta directa a feedback de "muy oscuro" — puede necesitar
+  más ajuste, no se verificó en navegador real por Claude (ver más abajo).
+- **Arte real por objeto (opcional, sin tocar código):** `loadArt()` prueba
+  `public/images/gam/<id>.webp` al montar cada objeto — si existe, lo
+  reemplaza por un `THREE.Sprite` (billboard, siempre mirando a cámara,
+  así no hace falta dibujarlo en perspectiva) y esconde el placeholder
+  compuesto (que sigue existiendo para el raycast/hitbox). Si no existe
+  (404), sigue el placeholder. Mismo patrón que `docs/jotai-renders.md`.
+  Spec completo + prompt para el escritorio (generado a partir de una foto
+  real del escritorio de David) en **`docs/gam-three-art-spec.md`** —
+  **todavía no se generó/soltó el archivo**, el escritorio sigue mostrando
+  el placeholder compuesto. El resto de los objetos no tienen spec de arte
+  real todavía (se define uno por uno, a pedido de David, mismo patrón).
+
+### Cambios pedidos por David en esta sesión (aplicados)
+
+- **`terminal`/`bookshelf`/`diplomas` dejaron de ser hotspots** — sin
+  click, sin entrada en `data/gam-hotspots.json`, sin contar en
+  `DISCOVERABLE_IDS` (`gam-loader.js`, bajó de 10 a 7 — piano, desk,
+  juggling, bed, reading, skateboard, pukis). Siguen presentes como
+  decoración (`interactive:false` en `FURNITURE`). **Interpretación de
+  Claude, no confirmada explícitamente por David:** "eliminar" se tomó
+  como "sacar la interactividad, dejarlos de ambientación" en vez de
+  borrarlos del todo — revisar si es lo que quería.
+- **Malabares:** el texto (`data/gam-hotspots.json`) ahora menciona que las
+  3 pelotas son tejidas a mano por David — el minijuego en sí
+  (`gam-juggling.js`, mecánica de "atrapar en la zona") **todavía no se
+  cambió** por algo más completo (arcos reales tipo cascada, como pedía la
+  propuesta original pegada) — pendiente, tarea aparte.
+- **Navbar/mode-bar/contenido del hero/JotAI ocultos en TODO el modo
+  `.gam`**, no solo mientras se juega — revierte una decisión anterior
+  explícita (`css/gam-tv.css` tenía un comentario "el navbar queda visible
+  a propósito"). Ahora solo se ve `.gam-tv` a pantalla completa. **Efecto
+  secundario:** antes de arrancar el juego (pantalla "insertar moneda"),
+  la única forma de salir del modo es el Command Palette (`Cmd+K`) — no
+  confirmado con David si esto es aceptable o si hace falta algún indicio
+  visual de "volver".
+- **Sin iconos flotantes** sobre los muebles (se probaron y se sacaron a
+  pedido — "quita los iconos").
+- **Hint de controles** (`index.html`, `.gam-tv__hint`) actualizado de
+  WASD a la navegación nueva. El joystick táctil (`#gam-touch`) quedó sin
+  uso (no hay personaje que mover) — no se borró del DOM, solo se comentó.
+
+### v2 — diorama (2026-09-23, misma rama, sin commitear)
+
+Segunda propuesta de David (pegada en el chat) aplicada entera sobre
+`gam-three-scene.js` — el objetivo era pasar de "caja oscura con cubos" a
+**maqueta isométrica cortada**. `gam-loader.js`, paneles, minijuegos y
+`data/gam-hotspots.json` no cambian (mismos `id`/`kind`/`label`).
+
+- **Cámara ortográfica isométrica** (`FRUSTUM = 12`, dirección `(20,16,20)`).
+  La cámara siempre está en `camLook + dir * CAM_DIST`; enfocar una estación
+  anima `camera.zoom` (`f.zoom`, ~2.2–3.2) + el punto al que mira — nunca se
+  mueve hacia adelante. Parallax/deriva = giro sutil (yaw/pitch) de esa
+  dirección, que vuelve a 0 al enfocar. En portrait el frustum crece
+  (`ROOM_SCREEN_W / aspect`) para que el diorama no se corte a los costados.
+- **Cuarto diorama:** piso de 0.3 de grosor + pared trasera (`z=-4`) +
+  pared izquierda (`x=-4`) + borde claro arriba (`S=8, H=5, T=0.25`). Sin
+  pared derecha, sin grilla, sin niebla.
+- **Luz:** `HemisphereLight` de relleno + sol `DirectionalLight` con sombras
+  reales (PCFSoft, 2048 / 1024 en táctil) + `PointLight` de la lámpara del
+  escritorio (posicionada con `group.localToWorld` desde `lampAnchor`).
+  Pantallas, bombilla y la tira LED cian de la repisa son solo emisivos.
+  Se borraron las sombras de contacto falsas (blobs) — las reemplazan las
+  sombras reales + GTAO. El dimming de foco sigue (`focusT` sobre hemi/sol).
+- **Postprocesado:** `EffectComposer` → `RenderPass` → `GTAOPass` (**no en
+  `pointer:coarse`**) → `UnrealBloomPass(0.6, 0.4, 0.9)` → `OutputPass`. El
+  umbral 0.9 se mide en luminancia: un emisivo azul puro con intensidad 3
+  NO lo pasa (el verde pesa 0.72 en la fórmula) — por eso las pantallas usan
+  celeste `0x7cc4ff`. La lámpara arrancó en 8 y lavaba todo el rincón del
+  escritorio; quedó en 3.
+- **Bordes redondeados:** todo mueble usa `RoundedBoxGeometry` con radio
+  `min(0.06, lado_menor * 0.3)` (así teclas/pantallas finas no se deforman).
+- **Fondo:** `CanvasTexture` con degradado radial ámbar `#ffb020` → marrón
+  casi negro, como `scene.background`.
+- **Layout por rincones:** pared trasera = escritorio (laptop, monitor,
+  lámpara, silla) + repisa de trofeos con LED encima + terminal + patineta
+  apoyada; pared izquierda = estante + piano vertical con banqueta + 3
+  diplomas colgados encima + puerta incrustada cerca del frente; esquina
+  frontal-derecha = cama + pedestal de malabares; centro = alfombra con
+  Pukis durmiendo (el cuerpo "respira"); frontal-izquierda = rincón de
+  lectura (puf + libros — la propuesta no lo ubicaba, decisión de Claude).
+- **Bugs corregidos en el camino:**
+  - Quitar el hover ponía `emissive = 0` en todas las piezas y apagaba las
+    pantallas. Ahora cada pieza guarda `baseEmissive`/`baseEmissiveIntensity`
+    y el glow de hover solo se aplica a piezas no emisivas.
+  - En táctil no hay `pointermove` antes del tap → `hovered` vacío y el tap
+    no hacía nada. `onClick` ahora hace su propio raycast.
+  - El contador marcaba `10/7` para quien jugó antes del spike (ids viejos
+    de terminal/estante/diplomas en `localStorage('gam-discovered')`) —
+    `_loadDiscovered()` en `gam-loader.js` ahora filtra contra
+    `DISCOVERABLE_IDS`.
+  - `destroy()` usa `scene.traverse` para liberar todo + `forceContextLoss()`
+    para no acumular contextos WebGL al entrar/salir de `.gam`.
+- **Verificado en Chrome** (esta vez sí conectó): encuadre en desktop y en
+  contenedor de 390×760, sin errores de consola, zoom a piano/Pukis con
+  apertura del panel al llegar, Esc vuelve al plano general, la puerta
+  cambia a `.dev`. Ojo al probar con automatización: con la pestaña oculta
+  Chrome pausa `requestAnimationFrame` y el vuelo de cámara (y con él
+  `gam:interact`) queda congelado hasta que la pestaña vuelve a pintar.
+
+### v3 — fondo, habitación y hover (2026-09-23, misma rama, sin commitear)
+
+Segunda ronda de feedback de David (pegada en el chat) sobre el diorama:
+fondo naranja que competía con el sitio, cuarto que "flotaba", paredes y
+centro vacíos, muebles chicos, piso sin textura, escritorio sin protagonismo
+y sensación de "imagen" en vez de algo jugable. Todo en
+`gam-three-scene.js` + un bloque `.gam-label` al final de `css/gam-tv.css`.
+
+- **Fondo integrado:** `makeBackgroundTexture()` = negro de la página
+  (`#050505`) con un resplandor ámbar apagado (`#3a2408`) detrás del cuarto.
+  Sigue siendo `scene.background` (un canvas transparente rompe con el
+  bloom).
+- **Anclaje:** pedestal oscuro de museo bajo el piso (`PED_H`/`PED_MARGIN`),
+  plaquita `Jonathan.gam` en la cara frontal `+z` y sombra de contacto
+  difusa debajo (`makeContactShadow`). Es la única sombra falsa que queda —
+  los objetos se anclan con sombras reales + GTAO.
+- **Escala y encuadre:** piso `S = 8 → 6.8`, muebles ×`FURN_SCALE` (1.15;
+  `scale` por objeto: Pukis 1.5, malabares 1.35, puerta/diplomas 1 porque
+  van pegados a la pared), `DEFAULT_ZOOM = 1.15`. `ROOM_WORLD_W` × zoom
+  define el ancho mínimo en portrait. Al escalar los grupos hubo que
+  quitar el scale bump del hover (pisaba `root.scale`).
+- **Texturas (todas pintadas en `<canvas>`, cero archivos nuevos):** piso de
+  tablones (array de materiales en el `BoxGeometry`: la cara de arriba
+  lleva la textura, la losa es más oscura), zócalo, ventana con cielo
+  nocturno + cerros + luces de ciudad y **luz fría** (`windowLight`) que
+  contrasta con la lámpara cálida, neón `.gam` (color HDR >1 en un
+  `MeshBasicMaterial` para pasar el umbral del bloom), 2 pósters, reloj con
+  segundero real, repisa flotante con plantas, planta de piso, alfombra con
+  patrón, parlante y mochila.
+- **Escritorio protagonista:** 2.6 de ancho, dos monitores + laptop con
+  **pantallas texturadas** (editor de código / galería de proyectos —
+  `makeScreenTexture` + `screenExtra`; una pantalla emisiva de color plano
+  se quema a blanco con el bloom), teclado con tira RGB que cicla de
+  matiz, tapete, cables (`TubeGeometry`), taza, auriculares, lámpara con
+  `PointLight` real y silla gamer. La silla va **retirada hacia atrás** y
+  girada: pegada al escritorio, su respaldo alto tapa las pantallas desde
+  la cámara isométrica.
+- **Jugable:** animaciones en reposo (Pukis respira, pelotas flotan,
+  monitores/lámpara titilan, RGB, segundero — todas gateadas por
+  `prefers-reduced-motion`); hover = el objeto **sube** `HOVER_LIFT`
+  (lerp) + **contorno ámbar `OutlinePass`** + **etiqueta DOM** `.gam-label`
+  proyectada sobre la cima del objeto (también con navegación por
+  teclado); parallax bajado a ~1.7° (`PARALLAX_YAW`). En táctil no hay GTAO
+  ni contorno (queda lift + etiqueta).
+- **Decisiones de Claude (cambiables):** la ventana va en la pared trasera
+  (no hay pared derecha real en el diorama); objetos "míos" elegidos sin
+  consultar (taza, auriculares, mochila, parlante); pedestal + plaquita
+  incluidos (David los ofreció como "un paso más").
+- **Verificado en Chrome:** encuadre desktop (cuarto centrado, ~90% del
+  alto) y contenedor 390×760 sin cortes, hover con contorno + etiqueta,
+  zoom al escritorio con apertura del panel, puerta → `.dev` con
+  `destroy()` limpio, sin errores de consola. **No verificado:** FPS real
+  (la pestaña de automatización queda oculta y `requestAnimationFrame` se
+  pausa, así que no se pudo medir) y táctil en dispositivo real —
+  conviene mirar el rendimiento con GTAO + OutlinePass + sombras 2048 en
+  una GPU modesta antes de dar el v3 por bueno.
+
+### v4 — estaciones: cada objeto se vuelve dinámico al hacer zoom (2026-09-23)
+
+Pedido de David: al hacer click en un objeto **no debe abrirse un panel** — la
+cámara hace zoom, el objeto pasa a primer plano y se vuelve interactivo con
+efectos/animaciones propias. Ejemplos que dio: piano con teclas tocables y
+pestañas Libre/Reto arriba; computadora con tarjeta de características y
+pequeños detalles; estante que muestra los libros; cama con animación de
+día↔noche; patineta que se mueve en 3D.
+
+- **Arquitectura:** `gam-three-scene.js` sigue dueño de cámara/luces/raycast y
+  delega en `js/gam/gam-stations.js` (una fábrica por objeto, ver contrato en
+  `CLAUDE.md`). `buildFurnitureGroup` deja `out.refs` para las estaciones.
+  `gam-hud.js` dibuja la barra superior, estado, tarjeta y pines. Al llegar la
+  cámara: `station.enter()` + `gam:interact` con `inScene:true` (el loader
+  marca el progreso y **no abre panel**). Esc / "← Volver" → `leaveFocus()`.
+- **Estaciones:** piano (8 teclas 3D + negras, ♪ de colores, pestañas
+  Libre/Reto, teclado A S D F G H J K), escritorio (pantallas con código que se
+  desplaza, `</>` flotantes, 7 pines de detalle, tarjeta con los proyectos
+  `.dev` → `ProjectGallery`), estante (**vuelve a ser interactivo**: libros con
+  el título de cada proyecto IA, se sacan al pasar el mouse, click = tarjeta +
+  "Abrir proyecto"; 8 objetos descubribles ahora), cama (anochece/amanece con
+  luces, cielo de la ventana, Zzz y botón para alternar; el momento del día se
+  conserva), patineta (se despega de la pared, arrastrar para girarla, Kickflip /
+  Shove-it), malabares (cascada de 3 pelotas + reto de atrapar con aro), lectura
+  (libro que se levanta, se abre y pasa páginas), Pukis (caricias → corazones,
+  cola y orejas). Piano y malabares reutilizan `gam-piano.js`/`gam-juggling.js`,
+  reescritos como **motores sin DOM** (mismo récord en localStorage). Se borró
+  `gam-skateboard.js` y el minijuego en modal de `gam-loader.js`.
+- **Cámara:** `station.focus()` devuelve `{look, zoom, shift}`; `shift` corre la
+  mirada para que el objeto quede a un lado y la tarjeta no lo tape (izquierda
+  en desktop, arriba en portrait).
+- **Decisiones/trampas:** glifos flotantes en escena `overlay` dibujada tras el
+  composer (GTAO los convertía en cuadros negros); `localToWorld` **muta** el
+  vector — clonar siempre; `PCFSoftShadowMap` ya no existe en esta versión de
+  three → `PCFShadowMap`; el estante decidió reactivarse aunque en v1 se había
+  vuelto decorativo (David lo pidió explícitamente); terminal y diplomas siguen
+  decorativos — pendiente confirmar si también quiere estaciones para ellos.
+- **Entorno:** el repo está en `~/Documents` (iCloud) y macOS evictó ~8.000
+  archivos de `node_modules` (`dataless`, contenido vacío) en plena sesión →
+  Vite fallaba con `pico is not a function` y el dev server dejó de responder.
+  Se rehidrataron leyendo los archivos de `vite`/`rolldown`/`picomatch`/`three`
+  (addons usados)/`data`/`js`/`css`. Si vuelve a pasar: `npm ci` o mover el repo
+  fuera de iCloud.
+- **Verificado en Chrome** (dev server propio): piano (teclado, notas), escritorio
+  (pines + tarjeta), cama (noche y día), patineta (despegue, arrastre, kickflip),
+  malabares (cascada + reto con atrape y caída), lectura, Pukis (caricias) y
+  estante (hover, título, tarjeta) — sin errores de consola. **No verificado:**
+  el layout portrait del HUD con viewport real de móvil (la ventana no se pudo
+  achicar), táctil real (arrastre de la patineta, taps) y rendimiento/FPS.
+  `npm run build` compila limpio con todo (chunk `gam-three-scene` ≈ 679 kB).
+
+### Sin verificar en navegador real (v1 — ver v2/v3/v4 arriba)
+
+**Claude no pudo abrir el navegador en ningún momento de esta sesión** — la
+extensión de Chrome no estaba conectada (`tabs_context_mcp` falló todas las
+veces que se intentó). Todo lo de esta sección se validó con
+`npm run build` (sin errores, `gam-three-scene` queda en su propio chunk
+lazy, `phaser` desapareció del bundle porque ya nada lo importa) y con
+David mirando su propio `npm run dev` en vivo, dando feedback por texto.
+Antes de dar el spike por bueno, probarlo en navegador de punta a punta
+(desktop y mobile — el modo táctil/`pointer:coarse` de esta escena nueva
+**no se probó nada todavía**, ni siquiera por código).
+
 ## Abierto / por confirmar con David
 
-- Link de YouTube del video de malabares (pendiente de que lo pases)
-- Patineta: ¿ya existe un modelo 3D (`.glb`) del deck, o hay que generarlo?
-  Define si el visor 3D entra en el MVP o en una iteración posterior
-- Walk-cycle real del personaje vs. frame estático + bobbing simulado
-  (propuesto: estático, ver `docs/gam-art-spec.md`) — confirmar si vale la
-  pena el riesgo de consistencia extra de generar frames de caminata
-- Estilo exacto de la ventana/alfombra nuevas del cuarto (Fase 3a) —
-  ajustable en revisión visual una vez enviado
-- Botón de mute (Fase 4): ubicación, ícono y estado por defecto —
-  propuesto arriba-derecha de `.gam-tv__screen`, 🔊/🔇, sin mutear por
-  defecto
+- **¿El spike de Three.js se siente bien?** — pregunta central de la Fase 1
+  original: si sí, seguir con el resto del plan (Fase 2: sacar Phaser del
+  repo del todo; Fase 3+: framework de estaciones, piano/malabares/patineta
+  3D reales, trofeos/pulido/mobile/fallback — ver el mensaje pegado
+  original para el detalle completo de fases)
+- Confirmar la interpretación de "eliminar terminal/estante/diplomas" (ver
+  arriba) — ¿decorativo está bien, o van fuera del todo?
+- ¿Hace falta un indicio de "volver" en la pantalla de "insertar moneda"
+  ahora que no hay navbar/mode-bar visibles en `.gam`?
+- Arte real: escritorio (prompt listo en `docs/gam-three-art-spec.md`,
+  falta generarlo y soltar el archivo) + definir specs para el resto de
+  los objetos uno por uno
+- Minijuego de malabares: rediseñar a algo más completo (arcos reales) —
+  alcance todavía no definido
+- Brillo/atmósfera del cuarto: subido dos veces en la sesión, puede seguir
+  necesitando ajuste — pendiente de feedback visual real
+- Probar en dispositivo táctil real (sin verificar ni siquiera por código
+  en esta escena nueva)
+- Link de YouTube del video de malabares (pendiente de que lo pases) —
+  arrastrado de antes del pivote, sigue sin resolver
+- Patineta: ¿ya existe un modelo 3D real del deck, o se genera igual que
+  el resto de los objetos (spec + prompt, sprite billboard)? — con el
+  pivote a Three.js esto se resuelve con el mismo mecanismo de
+  `docs/gam-three-art-spec.md`, no hace falta un `.glb` necesariamente

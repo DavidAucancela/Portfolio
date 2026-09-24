@@ -385,11 +385,12 @@
           </div>
         </div>
 
-        <!-- TV del cuarto interactivo — solo visible en modo .gam.
-             Sin marco/bezel: la estática vive en el fondo unificado de la
-             página (background.js, GamField) — este widget es solo el
-             prompt de "insertar moneda" + el stage donde Phaser monta el
-             juego al arrancar (ver css/gam-tv.css, sección MODO JUGANDO). -->
+        <!-- TV del cuarto interactivo — pantalla completa propia en modo
+             .gam (navbar/mode-bar/hero ocultos, ver css/gam-tv.css sección
+             PANTALLA COMPLETA). Sin marco/bezel: la estática vive en el
+             fondo unificado de la página (background.js, GamField) — este
+             widget es solo el prompt de "insertar moneda" + el stage donde
+             Three.js monta el cuarto al arrancar. -->
         <div class="gam-tv" id="gam-tv" role="region" aria-label="Cuarto interactivo — click para comenzar">
           <div class="gam-tv__screen" id="gam-tv-screen">
             <button type="button" class="gam-tv__start" id="gam-tv-start">
@@ -421,8 +422,9 @@
               <kbd>E</kbd> <span id="gam-prompt-label">Interactuar</span>
             </div>
 
-            <!-- Controles táctiles — gam-scene.js los muestra solo si
-                 detecta pointer:coarse (ver css/gam-tv.css) -->
+            <!-- Joystick virtual — sin uso en el motor Three.js del spike
+                 (no hay personaje caminando, ver gam-three-scene.js); queda
+                 en el DOM oculto por si se retoma el motor Phaser. -->
             <div class="gam-touch" id="gam-touch" hidden aria-hidden="true">
               <div class="gam-touch__stick" id="gam-touch-stick">
                 <div class="gam-touch__knob" id="gam-touch-knob"></div>
@@ -432,7 +434,7 @@
           </div>
 
           <p class="gam-tv__hint" id="gam-tv-hint" hidden>
-            Movete con <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> o las flechas · interactuá con <kbd>E</kbd>
+            Clic en un objeto · o flechas + <kbd>Enter</kbd> / número · <kbd>Esc</kbd> para volver
           </p>
         </div>
 

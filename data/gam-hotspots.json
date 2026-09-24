@@ -20,36 +20,11 @@
       "en": "Bookshelf"
     },
     "message": {
-      "es": "Proyectos de IA y las herramientas de IA que más usa.",
-      "en": "AI projects, plus the AI tools he uses the most."
+      "es": "Cada libro es un proyecto de IA de David — sácalo del estante y ábrelo. Abajo, las herramientas de IA que más usa.",
+      "en": "Each book is one of David's AI projects — pull it off the shelf and open it. Below, the AI tools he uses the most."
     },
     "projectMode": "ia",
     "showAiSkills": true
-  },
-  {
-    "id": "terminal",
-    "icon": "💚",
-    "title": {
-      "es": "Terminal",
-      "en": "Terminal"
-    },
-    "message": {
-      "es": "Labs de HackTheBox, prácticas y certificaciones de seguridad.",
-      "en": "HackTheBox labs, hands-on practice and security certifications."
-    },
-    "projectMode": "sec"
-  },
-  {
-    "id": "diplomas",
-    "icon": "🏆",
-    "title": {
-      "es": "Pared de diplomas",
-      "en": "Wall of diplomas"
-    },
-    "message": {
-      "es": "Trayectoria completa: proyectos, prácticas y certificaciones en orden.",
-      "en": "Full timeline: projects, internships and certifications in order."
-    }
   },
   {
     "id": "piano",
@@ -59,8 +34,8 @@
       "en": "Piano"
     },
     "message": {
-      "es": "Tocá una melodía libre o probá el modo desafío — repetí la secuencia antes de que se rompa la racha.",
-      "en": "Play a free tune or try challenge mode — repeat the sequence before the streak breaks."
+      "es": "Toca las teclas con el mouse o el teclado. Cambia a Reto y repite la secuencia antes de que se rompa la racha.",
+      "en": "Play the keys with the mouse or keyboard. Switch to Challenge and repeat the sequence before the streak breaks."
     }
   },
   {
@@ -71,8 +46,8 @@
       "en": "Juggling"
     },
     "message": {
-      "es": "Atrapá la pelota justo en la zona antes de que se te caiga — cada atrape la acelera un poco más.",
-      "en": "Catch the ball right in the zone before it drops — each catch speeds it up a little more."
+      "es": "Las 3 pelotas las tejió David a mano cuando le enseñaron a hacer malabares. Míralas en cascada o pasa al Reto y atrápalas justo cuando cruzan el aro.",
+      "en": "The 3 balls are ones David crocheted by hand when he was taught to juggle. Watch them cascade or switch to Challenge and catch them just as they cross the ring."
     },
     "videoUrl": null
   },
@@ -84,10 +59,9 @@
       "en": "Skateboard"
     },
     "message": {
-      "es": "Un adelanto de la patineta — arrastrá para girarla. El visor 3D real llega con el modelo definitivo del deck.",
-      "en": "A preview of the skateboard — drag to spin it. The real 3D viewer is coming once the final deck model is ready."
-    },
-    "modelUrl": null
+      "es": "La patineta se despega de la pared: arrástrala para girarla en 3D y prueba un truco.",
+      "en": "The skateboard lifts off the wall: drag it to spin it in 3D and try a trick."
+    }
   },
   {
     "id": "reading",
@@ -97,8 +71,8 @@
       "en": "Reading corner"
     },
     "message": {
-      "es": "Libros favoritos — próximamente.",
-      "en": "Favorite books — coming soon."
+      "es": "El libro se abre solo y pasa las páginas. Los libros favoritos de David llegan pronto.",
+      "en": "The book opens on its own and turns its pages. David's favorite books are coming soon."
     }
   },
   {
@@ -109,8 +83,8 @@
       "en": "Bed"
     },
     "message": {
-      "es": "Este cuarto también es un cuarto de verdad — acá descansa David entre proyecto y proyecto.",
-      "en": "This room is also a real room — David rests here between projects."
+      "es": "Este cuarto también es un cuarto de verdad — mira cómo anochece y acá descansa David entre proyecto y proyecto.",
+      "en": "This room is also a real room — watch night fall; this is where David rests between projects."
     }
   },
   {
@@ -121,8 +95,8 @@
       "en": "Pukis"
     },
     "message": {
-      "es": "El perro de David. Un homenaje. 🐶",
-      "en": "David's dog. A tribute. 🐶"
+      "es": "El perro de David. Un homenaje. Acarícialo. 🐶",
+      "en": "David's dog. A tribute. Pet him. 🐶"
     }
   }
 ]

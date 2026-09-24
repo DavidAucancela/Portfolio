@@ -1,12 +1,21 @@
 /* ============================================================
-   GAM TV — cuarto interactivo embebido en el hero (modo .gam)
+   GAM TV — cuarto interactivo, pantalla completa propia (modo .gam)
    ============================================================
    Sin marco/bezel: la estática vive en el fondo unificado de toda la
    página (background.js, GamField) — este widget es solo el prompt
-   "insertar moneda" + el stage donde Phaser monta el juego al arrancar.
+   "insertar moneda" + el stage donde Three.js monta el cuarto al arrancar.
    A diferencia de .git-activity / .ia-tokens / .sec-terminal, no tiene
    collapsed/expanded: tiene 2 estados propios — "esperando moneda" y
-   "jugando" (Phaser montado) — manejados por gam-tv.js.
+   "jugando" — manejados por gam-tv.js.
+
+   A pedido (revierte la decisión anterior de dejar navbar/mode-bar
+   visibles): .gam es una sección aparte de verdad — ni bien se entra al
+   modo (sin esperar al click de "insertar moneda") se oculta TODO el
+   resto (navbar, mode-bar, contenido del hero, JotAI) y el widget pasa a
+   ocupar la pantalla completa. Antes esto solo pasaba en body.gam-playing
+   (una vez arrancado el juego); ahora aplica en todo el modo — ver el
+   bloque "PANTALLA COMPLETA" más abajo (ya no diferenciado por
+   .gam-playing salvo donde hace falta).
 
    .gam no tiene secciones propias como los otros 3 modos: todo el
    modo vive en el hero. Las secciones de scroll normal
@@ -15,31 +24,6 @@
 
 .gam-tv {
   display: none;
-}
-
-/* Mismo criterio que [data-theme="dev"] #hero .container en
-   git-history.css — el widget flota como componente independiente,
-   no comparte fila/columna de grid con .hero-content. */
-[data-theme="gam"] #hero .container {
-  position: relative;
-}
-
-[data-theme="gam"] .gam-tv {
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  width: min(360px, 40vw);
-  /* Reusa el keyframe sd-right de animations.css (mismo look que el resto
-     del sitio) pero como animation normal, no animation-timeline: este
-     widget aparece/desaparece por cambio de modo (display:none↔flex), no
-     por scroll, y animation-timeline:view() se queda pegado en opacity:0
-     cuando un elemento pasa a visible sin que haya scroll de por medio. */
-  animation: sd-right 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: 0.3s;
-  opacity: 0;
 }
 
 /* ─── Pantalla — solo un contenedor de posicionamiento en modo idle;
@@ -284,55 +268,51 @@
 }
 
 /* ═══════════════════════════════════════════════════════════
-   MODO JUGANDO — pantalla completa
-   Al arrancar el juego (click en la TV) deja de ser un widget del hero:
-   se vuelve un overlay fixed que tapa TODO (navbar, mode-bar, el resto
-   del hero) — la única salida es la puerta del cuarto (gam-loader.js
-   escucha 'gam:interact' kind:'exit' → ThemeSwitcher.switchMode al modo
-   anterior, lo que dispara portfolio:modeChange y saca la clase
-   .gam-playing del body). Fixed (no absolute dentro de .container) para
-   no depender del max-width/padding del container ni del scroll.
+   PANTALLA COMPLETA — todo el modo .gam, no solo mientras se juega
+   Ni bien se entra a .gam (sin esperar el click de "insertar moneda") deja
+   de compartir pantalla con el resto del sitio: es un overlay fixed que
+   tapa TODO (navbar, mode-bar, contenido del hero, JotAI) — solo queda
+   visible .gam-tv. Mientras se juega, la única salida es la puerta del
+   cuarto (gam-loader.js escucha 'gam:interact' kind:'exit' →
+   ThemeSwitcher.switchMode al modo anterior, lo que dispara
+   portfolio:modeChange y saca [data-theme="gam"] del body). Fixed (no
+   absolute dentro de .container) para no depender del max-width/padding
+   del container ni del scroll.
    ═══════════════════════════════════════════════════════════ */
-/* El navbar queda visible a propósito (pedido: "dejando únicamente el
-   navbar superior") — sube de z-index para quedar arriba del stage
-   (9500) y su `top` se resetea a 0 porque el mode-bar (que ocupaba ese
-   espacio) sí se oculta. */
-[data-theme="gam"].gam-playing #mode-bar {
+/* A pedido: el navbar ya no queda visible en .gam (antes se mantenía
+   reposicionado a propósito) — se oculta igual que el mode-bar. */
+[data-theme="gam"] #mode-bar,
+[data-theme="gam"] #navbar {
   display: none;
 }
 
-[data-theme="gam"].gam-playing #navbar {
-  top: 0;
-  z-index: 9600;
-}
-
-[data-theme="gam"].gam-playing #hero .hero-content,
-[data-theme="gam"].gam-playing #hero .hero-decoration {
+[data-theme="gam"] #hero .hero-content,
+[data-theme="gam"] #hero .hero-decoration {
   display: none;
 }
 
 /* .gam-tv es fixed y vive dentro de #hero .container: el fade de scroll del
    hero (effects.js HeroParallax, opacity inline en el container) también lo
-   afectaría, y el juego debe verse completo. !important gana al inline. */
-[data-theme="gam"].gam-playing #hero .container {
+   afectaría, y el cuarto debe verse completo. !important gana al inline. */
+[data-theme="gam"] #hero .container {
   opacity: 1 !important;
   pointer-events: auto !important;
 }
 
-[data-theme="gam"].gam-playing .gam-tv {
+[data-theme="gam"] .gam-tv {
   position: fixed;
-  top: var(--nav-height);
+  top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: 9500;
   width: 100%;
+  display: flex;
+  flex-direction: column;
   background: #050301; /* la franja del hint (debajo del stage) también la necesita */
-  animation: none;
-  opacity: 1;
 }
 
-[data-theme="gam"].gam-playing .gam-tv__screen {
+[data-theme="gam"] .gam-tv__screen {
   flex: 1;
   min-height: 0;
   background: #050301;
@@ -341,30 +321,18 @@
 
 /* Botones del hero — por las dudas queden expuestos por algún otro
    selector; el bloque de arriba ya los saca del flujo por completo. */
-[data-theme="gam"].gam-playing .hero-cta-group {
+[data-theme="gam"] .hero-cta-group {
   display: none;
 }
 
-/* JotAI flota a z-index 9940, por encima del navbar reubicado (9600) —
-   sin esto quedaría flotando sobre el juego, rompiendo la regla de
-   "solo se sale por la puerta". */
-[data-theme="gam"].gam-playing #jotai-widget {
+/* JotAI flotaba a z-index 9940 sobre el stage (9500) — sin esto quedaría
+   flotando sobre el cuarto, rompiendo la regla de "solo se sale por la
+   puerta". */
+[data-theme="gam"] #jotai-widget {
   display: none;
-}
-
-/* ─── Tablet / Mobile — vuelve al flujo normal, apilado ─── */
-@media (max-width: 960px) {
-  [data-theme="gam"] .gam-tv {
-    /* relative, no static: activa el z-index:2 de la regla base. Jugando,
-       `[data-theme="gam"].gam-playing .gam-tv` (más específica) sigue
-       poniéndolo en fixed. */
-    position: relative;
-    width: 100%;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-theme="gam"] .gam-tv { animation: none; opacity: 1; }
   .gam-prompt { animation: none; }
   .gam-tv__loading-icon { animation: none; }
   .gam-piano__keys { transition: none; }
@@ -924,4 +892,298 @@
    normalmente vive en z-index 1100, muy por debajo de .gam-tv (9500). */
 [data-theme="gam"].gam-playing #jonathan-panel {
   z-index: 9600;
+}
+
+/* Etiqueta flotante del objeto bajo el cursor (gam-three-scene.js) — DOM
+   encima del canvas para que el texto quede nítido y con el estilo del sitio.
+   Se posiciona por transform desde JS; pointer-events:none para no robar el
+   hover del raycast. */
+.gam-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  padding: 0.25rem 0.65rem;
+  font: 600 0.78rem var(--font-mono, monospace);
+  letter-spacing: 0.02em;
+  color: #ffb020;
+  background: rgba(5, 5, 5, 0.78);
+  border: 1px solid rgba(255, 176, 32, 0.45);
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.18s ease;
+  will-change: transform;
+}
+.gam-label.is-visible { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .gam-label { transition: none; }
+}
+
+/* ────────────────────────────────────────────────────
+   HUD de las estaciones (gam-hud.js) — al hacer click en un objeto del
+   cuarto la cámara hace zoom y el objeto se vuelve interactivo en la
+   escena. El HUD es la barra superior (título · pestañas · acciones ·
+   volver), la línea de estado, la tarjeta lateral y los pines de detalle.
+   Todo el contenedor es pointer-events:none; solo los controles reales
+   capturan el mouse, así el canvas de abajo sigue recibiendo los clicks
+   sobre el objeto.
+──────────────────────────────────────────────────── */
+.gam-hud {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  font-family: var(--font-mono, monospace);
+  color: #f3e9d2;
+}
+.gam-hud[hidden] { display: none; }
+
+.gam-hud__bar {
+  position: absolute;
+  top: 0.75rem;
+  left: 50%;
+  transform: translate(-50%, -8px);
+  opacity: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  max-width: calc(100% - 11rem);
+  padding: 0.4rem 0.6rem;
+  background: rgba(5, 5, 5, 0.84);
+  border: 1px solid rgba(255, 176, 32, 0.4);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  pointer-events: auto;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.gam-hud.is-visible .gam-hud__bar { opacity: 1; transform: translate(-50%, 0); }
+
+.gam-hud__title { display: flex; align-items: center; gap: 0.4rem; font-weight: 700; color: #ffb020; white-space: nowrap; }
+.gam-hud__tabs { display: flex; gap: 0.25rem; padding: 0.15rem; background: rgba(255, 255, 255, 0.06); border-radius: 8px; }
+.gam-hud__tabs[hidden], .gam-hud__actions[hidden] { display: none; }
+.gam-hud__actions { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+
+.gam-hud__tab,
+.gam-hud__btn,
+.gam-hud__back {
+  font: inherit;
+  font-size: 0.78rem;
+  color: #f3e9d2;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  padding: 0.3rem 0.65rem;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.gam-hud__tab:hover { background: rgba(255, 176, 32, 0.15); }
+.gam-hud__tab.is-active { background: #ffb020; color: #1a1206; font-weight: 700; }
+.gam-hud__btn { border-color: rgba(255, 176, 32, 0.5); color: #ffb020; }
+.gam-hud__btn:hover:not(:disabled) { background: rgba(255, 176, 32, 0.18); }
+.gam-hud__btn:disabled { opacity: 0.45; cursor: default; }
+.gam-hud__btn[hidden] { display: none; }
+.gam-hud__back { border-color: rgba(255, 255, 255, 0.2); }
+.gam-hud__back:hover { background: rgba(255, 255, 255, 0.1); }
+.gam-hud__back kbd {
+  font: inherit;
+  font-size: 0.68rem;
+  padding: 0 0.3rem;
+  margin-left: 0.2rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  opacity: 0.8;
+}
+.gam-hud__tab:focus-visible,
+.gam-hud__btn:focus-visible,
+.gam-hud__back:focus-visible,
+.gam-hud__pin:focus-visible,
+.gam-card__item:focus-visible,
+.gam-card__cta:focus-visible { outline: 2px solid #ffb020; outline-offset: 2px; }
+
+.gam-hud__status {
+  position: absolute;
+  top: 4.2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 2rem);
+  margin: 0;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+  text-align: center;
+  background: rgba(5, 5, 5, 0.7);
+  border-radius: 999px;
+  pointer-events: none;
+}
+.gam-hud__status:empty { display: none; }
+.gam-hud__status strong { color: #ffb020; }
+.gam-hud__count { color: #ff6b8a; font-weight: 700; }
+
+.gam-hud__hint {
+  position: absolute;
+  left: 50%;
+  bottom: 2.4rem;
+  transform: translateX(-50%);
+  max-width: calc(100% - 2rem);
+  margin: 0;
+  font-size: 0.74rem;
+  text-align: center;
+  color: rgba(243, 233, 210, 0.75);
+  text-shadow: 0 1px 6px #000;
+  pointer-events: none;
+}
+
+/* Tarjeta: a la derecha en desktop, hoja inferior en portrait */
+.gam-hud__card {
+  position: absolute;
+  top: 5.2rem;
+  right: 1rem;
+  width: min(380px, 36vw);
+  max-height: calc(100% - 9rem);
+  overflow-y: auto;
+  padding: 1rem 1.1rem;
+  background: rgba(8, 6, 4, 0.88);
+  border: 1px solid rgba(255, 176, 32, 0.35);
+  border-radius: 14px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+  opacity: 0;
+  transform: translateX(16px);
+  transition: opacity 0.35s ease 0.1s, transform 0.35s ease 0.1s;
+}
+.gam-hud__card[hidden] { display: none; }
+.gam-hud.is-visible .gam-hud__card { opacity: 1; transform: none; }
+
+@media (max-width: 760px), (max-aspect-ratio: 9/10) {
+  .gam-hud__bar { max-width: calc(100% - 1.5rem); top: 3rem; }
+  .gam-hud__status { top: 7.6rem; }
+  .gam-hud__card {
+    top: auto;
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: 2.6rem;
+    width: auto;
+    max-height: 38%;
+  }
+  .gam-hud__hint { bottom: auto; top: 10rem; }
+}
+
+.gam-card__title { margin: 0 0 0.5rem; font-size: 1.05rem; color: #ffb020; }
+.gam-card__text { margin: 0 0 0.75rem; font-size: 0.82rem; line-height: 1.5; }
+.gam-card__hint { margin: 0 0 0.75rem; font-size: 0.74rem; color: rgba(243, 233, 210, 0.6); }
+.gam-card__label { margin: 0.9rem 0 0.4rem; font-size: 0.7rem; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(243, 233, 210, 0.55); }
+.gam-card__chips { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-bottom: 0.4rem; }
+.gam-card__chip {
+  padding: 0.15rem 0.55rem;
+  font-size: 0.7rem;
+  color: #ffb020;
+  border: 1px solid rgba(255, 176, 32, 0.4);
+  border-radius: 999px;
+}
+.gam-card__list { display: flex; flex-direction: column; gap: 0.4rem; }
+.gam-card__empty { margin: 0; font-size: 0.78rem; opacity: 0.6; }
+.gam-card__item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  padding: 0.5rem 0.65rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+.gam-card__item:hover { background: rgba(255, 176, 32, 0.1); border-color: rgba(255, 176, 32, 0.5); transform: translateX(2px); }
+.gam-card__item-title { font-weight: 700; font-size: 0.82rem; }
+.gam-card__item-desc {
+  font-size: 0.72rem;
+  opacity: 0.7;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.gam-card__cta {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.55rem;
+  font: inherit;
+  font-weight: 700;
+  color: #1a1206;
+  background: #ffb020;
+  border: 0;
+  border-radius: 9px;
+  cursor: pointer;
+}
+.gam-card__cta:hover { filter: brightness(1.1); }
+.gam-card__link {
+  display: block;
+  margin: 0.6rem auto 0;
+  font: inherit;
+  font-size: 0.74rem;
+  color: rgba(243, 233, 210, 0.7);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Pines de detalle (escritorio): puntito pulsante; el tooltip sale al pasar el mouse */
+.gam-hud__pins { position: absolute; inset: 0; }
+.gam-hud__pin {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: help;
+  pointer-events: auto;
+}
+.gam-hud__pin-dot {
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: #ffb020;
+  box-shadow: 0 0 0 0 rgba(255, 176, 32, 0.6);
+  animation: gam-pin-pulse 1.8s ease-out infinite;
+}
+.gam-hud__pin-tip {
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translate(-50%, 4px);
+  width: max-content;
+  max-width: 220px;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  text-align: center;
+  color: #f3e9d2;
+  background: rgba(5, 5, 5, 0.92);
+  border: 1px solid rgba(255, 176, 32, 0.5);
+  border-radius: 8px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.gam-hud__pin:hover .gam-hud__pin-tip,
+.gam-hud__pin:focus-visible .gam-hud__pin-tip { opacity: 1; transform: translate(-50%, 0); }
+@keyframes gam-pin-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 176, 32, 0.6); }
+  100% { box-shadow: 0 0 0 12px rgba(255, 176, 32, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gam-hud__bar, .gam-hud__card { transition: none; }
+  .gam-hud__pin-dot { animation: none; }
 }

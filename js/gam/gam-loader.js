@@ -17,7 +17,6 @@ let _booting         = false;
 let _hotspotsPromise = null;
 let _lastNonGamMode  = null;
 let _panelSeq        = 0; // invalida renders async (fetch de lista) de un panel ya cerrado
-let _minigameUnmount = null; // cleanup del minijuego montado en #gam-modal-list (piano/malabares/patineta)
 let _modalCloseTimer = null;
 
 const MODAL_FADE_MS = 180; // debe coincidir con la transición de .gam-modal en css/gam-tv.css
@@ -34,13 +33,17 @@ let _skillsPromise = null;
    juego de una sentada). La puerta ('exit') no cuenta como objeto.
 ──────────────────────────────────────────────────── */
 const DISCOVER_KEY = 'gam-discovered';
+// terminal/diplomas salieron de la lista — son solo objetos decorativos del
+// cuarto (ver FURNITURE en gam-three-scene.js, `interactive: false`). El
+// estante volvió: ahora es una estación (libros de proyectos de IA).
 const DISCOVERABLE_IDS = [
-  'piano', 'desk', 'juggling', 'diplomas', 'bed',
-  'reading', 'terminal', 'skateboard', 'bookshelf', 'pukis',
+  'piano', 'desk', 'juggling', 'bed', 'reading', 'skateboard', 'pukis', 'bookshelf',
 ];
 
 function _loadDiscovered() {
-  try { return new Set(JSON.parse(localStorage.getItem(DISCOVER_KEY) || '[]')); }
+  // Filtrado contra DISCOVERABLE_IDS: visitas previas pueden traer ids que
+  // ya no son hotspots (terminal/bookshelf/diplomas) y el contador marcaba 10/7.
+  try { return new Set(JSON.parse(localStorage.getItem(DISCOVER_KEY) || '[]').filter(id => DISCOVERABLE_IDS.includes(id))); }
   catch { return new Set(); }
 }
 function _saveDiscovered() {
@@ -128,37 +131,23 @@ async function _boot() {
   if (!rootEl) { _booting = false; return; }
 
   try {
-    const [{ default: Phaser }, { GamScene }, hotspots] = await Promise.all([
-      import('phaser'),
-      import('./gam-scene.js'),
+    // SPIKE (docs/gam-mode-plan.md § Three.js): motor swapeado de Phaser a
+    // Three.js para evaluar el enfoque de cámara fija + estaciones sin
+    // personaje caminando. gam-scene.js (Phaser) queda intacto sin usarse —
+    // revertir el spike es volver a este bloque a su versión con Phaser.
+    const [{ GamThreeScene }, hotspots] = await Promise.all([
+      import('./gam-three-scene.js'),
       _loadHotspots(),
     ]);
 
-    // Si el usuario salió de .gam mientras Phaser cargaba, abortar boot
+    // Si el usuario salió de .gam mientras el motor cargaba, abortar boot
     if (ThemeSwitcher.getCurrentMode() !== 'gam') { _booting = false; return; }
 
-    const scene = new GamScene(hotspots);
-    _sceneInstance = scene;
-
-    _game = new Phaser.Game({
-      type: Phaser.AUTO,
-      parent: rootEl,
-      width: GAME_WIDTH,
-      height: GAME_HEIGHT,
-      backgroundColor: '#050301',
-      scene: [scene],
-      render: { antialias: true },
-      // FIT: resolución lógica fija (800x600) escalada al contenedor real
-      // (pantalla completa en desktop, ancho completo apilado en mobile —
-      // ver .gam-tv__screen en css/gam-tv.css) sin distorsionar el aspect
-      // ratio ni depender de max-width/max-height en CSS.
-      scale: {
-        mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH,
-        width: GAME_WIDTH,
-        height: GAME_HEIGHT,
-      },
-    });
+    _game = GamThreeScene.mount(rootEl, hotspots);
+    // celebrateComplete() es Phaser-only (ver _celebrateComplete() más abajo);
+    // con _sceneInstance en null esa llamada se salta en silencio (?.), el
+    // toast de #gam-progress sigue funcionando igual.
+    _sceneInstance = null;
 
     GamTV.onBooted();
     window.dispatchEvent(new CustomEvent('gam:start'));
@@ -198,12 +187,6 @@ function _destroy() {
    Todas pausan la escena de Phaser mientras están abiertas.
 ──────────────────────────────────────────────────── */
 
-/** Limpia cualquier minijuego montado — timers/audio/listeners propios. */
-function _teardownMinigame() {
-  _minigameUnmount?.();
-  _minigameUnmount = null;
-}
-
 /** Saca [hidden] y arma la clase is-visible un frame después — dispara el
  *  fade+scale de entrada de .gam-modal (css/gam-tv.css) en vez de saltar
  *  directo a visible. */
@@ -223,7 +206,6 @@ function _setCardVariant(variant) {
 
 function _openTextPanel(detail) {
   ++_panelSeq;
-  _teardownMinigame();
   const modal   = document.getElementById('gam-modal');
   const iconEl  = document.getElementById('gam-modal-icon');
   const titleEl = document.getElementById('gam-modal-title');
@@ -248,7 +230,6 @@ function _openTextPanel(detail) {
 
 function _openListPanel(detail) {
   const seq = ++_panelSeq;
-  _teardownMinigame();
   const modal   = document.getElementById('gam-modal');
   const iconEl  = document.getElementById('gam-modal-icon');
   const titleEl = document.getElementById('gam-modal-title');
@@ -329,70 +310,8 @@ function _renderSkillsBlock(listEl, skills) {
   listEl.appendChild(wrap);
 }
 
-/**
- * Minijuegos reales montados dentro de #gam-modal-list — cada módulo es
- * autocontenido (DOM propio, sus timers/listeners) y se importa recién al
- * interactuar con el objeto, no al entrar a .gam (mismo criterio de carga
- * perezosa que Phaser). `which` decide qué módulo cargar.
- */
-async function _openMinigamePanel(detail, which) {
-  const seq = ++_panelSeq;
-  _teardownMinigame();
-  const modal   = document.getElementById('gam-modal');
-  const iconEl  = document.getElementById('gam-modal-icon');
-  const titleEl = document.getElementById('gam-modal-title');
-  const textEl  = document.getElementById('gam-modal-text');
-  const listEl  = document.getElementById('gam-modal-list');
-  if (!modal || !listEl) return;
-
-  const content = detail.content || {};
-  iconEl.textContent  = content.icon || '🎮';
-  titleEl.textContent = LangSwitcher.L(content.title) || detail.label || '';
-  textEl.hidden = true;
-
-  _setCardVariant(which === 'skateboard' ? 'gam-modal__card--wide' : 'gam-modal__card--list');
-  listEl.hidden = false;
-  listEl.innerHTML = '<p class="gam-modal__list-empty">Cargando…</p>';
-
-  _showModal();
-  _game?.scene.pause('GamScene');
-
-  try {
-    let unmount;
-    if (which === 'piano') {
-      const { GamPiano } = await import('./gam-piano.js');
-      if (seq !== _panelSeq) return;
-      listEl.innerHTML = '';
-      unmount = GamPiano.mount(listEl);
-    } else if (which === 'juggling') {
-      const { GamJuggling } = await import('./gam-juggling.js');
-      if (seq !== _panelSeq) return;
-      listEl.innerHTML = '';
-      unmount = GamJuggling.mount(listEl, { videoUrl: content.videoUrl || null });
-    } else if (which === 'skateboard') {
-      const { GamSkateboard } = await import('./gam-skateboard.js');
-      if (seq !== _panelSeq) return;
-      listEl.innerHTML = '';
-      unmount = GamSkateboard.mount(listEl);
-    }
-
-    if (seq === _panelSeq) {
-      _minigameUnmount = unmount;
-    } else {
-      // El panel se cerró (o se abrió otro) mientras el módulo cargaba
-      unmount?.();
-    }
-  } catch (err) {
-    console.warn('[GamLoader] No se pudo cargar el minijuego:', err);
-    if (seq === _panelSeq) {
-      listEl.innerHTML = '<p class="gam-modal__list-empty">No se pudo cargar. Probá de nuevo.</p>';
-    }
-  }
-}
-
 function _closeModal() {
   ++_panelSeq;
-  _teardownMinigame();
   const modal = document.getElementById('gam-modal');
   if (!modal || modal.hidden) return;
   _game?.scene.resume('GamScene');
@@ -470,12 +389,13 @@ function init() {
       return;
     }
     _markDiscovered(id);
+    // Las estaciones (piano, escritorio, cama…) se vuelven interactivas dentro
+    // de la escena (gam-stations.js) — no abren ningún panel.
+    if (e.detail.inScene) return;
     if (kind === 'list') {
       _openListPanel(e.detail);
     } else if (kind === 'trajectory') {
       _openTrajectory();
-    } else if (id === 'piano' || id === 'juggling' || id === 'skateboard') {
-      _openMinigamePanel(e.detail, id);
     } else {
       _openTextPanel(e.detail);
     }

@@ -16,4 +16,27 @@ export function getAudioContext() {
   return _audioCtx;
 }
 
-export const GamAudio = { getAudioContext };
+/**
+ * Envolvente simple para un SFX de un solo disparo: ataque rápido + decaimiento
+ * exponencial. Antes vivía privada en gam-ambience.js (usada solo por
+ * footstep/blip) — ahora exportada de acá para que cualquier módulo de .gam
+ * (gam-scene.js, gam-piano.js, gam-juggling.js) pueda disparar un chime corto
+ * sin reinventar el boilerplate de Web Audio.
+ */
+export function envelope(ctx, { freq, type, duration, gain }) {
+  const osc  = ctx.createOscillator();
+  const gainNode = ctx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+
+  const t0 = ctx.currentTime;
+  gainNode.gain.setValueAtTime(0.0001, t0);
+  gainNode.gain.exponentialRampToValueAtTime(gain, t0 + 0.008);
+  gainNode.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+
+  osc.connect(gainNode).connect(ctx.destination);
+  osc.start(t0);
+  osc.stop(t0 + duration + 0.02);
+}
+
+export const GamAudio = { getAudioContext, envelope };

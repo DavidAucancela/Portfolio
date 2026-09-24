@@ -10,6 +10,7 @@
  * objeto, se puede ver bajo demanda (sin autoplay) — hoy sigue en null,
  * pendiente de que llegue el link (ver docs/gam-mode-plan.md).
  */
+import { getAudioContext, envelope } from './gam-audio.js';
 
 const BEST_KEY = 'gam-juggling-best';
 const ZONE_TOP_PCT = 78;   // % del carril donde empieza la zona de atrape
@@ -82,6 +83,7 @@ function mount(container, { videoUrl } = {}) {
     running = true;
     score = 0;
     period = BASE_PERIOD_MS;
+    ballEl.style.setProperty('--heat', '0');
     startT = performance.now();
     startBtn.hidden = true;
     catchBtn.hidden = false;
@@ -103,8 +105,16 @@ function mount(container, { videoUrl } = {}) {
     if (inZone(pct)) {
       score++;
       period = Math.max(MIN_PERIOD_MS, period - SPEEDUP_MS);
+      ballEl.style.setProperty('--heat', String((BASE_PERIOD_MS - period) / (BASE_PERIOD_MS - MIN_PERIOD_MS)));
       ballEl.classList.add('is-caught');
       setTimeout(() => ballEl.classList.remove('is-caught'), reducedMotion ? 0 : 160);
+      if (score > 0 && score % 5 === 0) {
+        if (!reducedMotion) {
+          ballEl.classList.add('is-milestone');
+          setTimeout(() => ballEl.classList.remove('is-milestone'), 420);
+        }
+        envelope(getAudioContext(), { freq: 783.99, type: 'triangle', duration: 0.2, gain: 0.12 });
+      }
       statusEl.innerHTML = `Atrapes: <strong>${score}</strong> — récord ${Math.max(_bestScore(), score)}`;
       startT = performance.now(); // reinicia la fase para que la próxima zona sea justa
     } else {

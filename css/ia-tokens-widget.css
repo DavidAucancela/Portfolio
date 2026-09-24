@@ -345,7 +345,9 @@
   /* El panel flotante es un patrón de escritorio; en mobile vuelve al
      flujo normal, apilado debajo de .hero-content. */
   [data-theme="ia"] .ia-tokens {
-    position: static;
+    /* relative, no static: activa el z-index:2 de la regla base (ver
+       git-history.css) para quedar por encima de #section-divider */
+    position: relative;
     max-height: none;
     overflow-y: visible;
   }

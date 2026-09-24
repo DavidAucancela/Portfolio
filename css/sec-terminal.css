@@ -226,12 +226,22 @@ body.is-sec-hacked .footer {
   transition: filter 0.6s ease;
 }
 
+/* La terminal es la única vía de recuperación: el fade de scroll del hero
+   (effects.js HeroParallax, inline en #hero .container) no puede apagarla ni
+   quitarle los clicks. !important gana a ese estilo inline. */
+body.is-sec-hacked #hero .container {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
 /* ─── Tablet / Mobile ─── */
 @media (max-width: 960px) {
   /* El panel flotante es un patrón de escritorio; en mobile vuelve al
      flujo normal, apilado debajo de .hero-content. */
   [data-theme="sec"] .sec-terminal {
-    position: static;
+    /* relative, no static: activa el z-index:2 de la regla base (ver
+       git-history.css) para quedar por encima de #section-divider */
+    position: relative;
     width: 100%;
     min-height: 200px;
     max-height: 260px;

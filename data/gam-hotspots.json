@@ -59,8 +59,8 @@
       "en": "Piano"
     },
     "message": {
-      "es": "Acá va a ir un minijuego para tocar una melodía simple. Todavía en construcción.",
-      "en": "A mini-game for playing a simple tune goes here. Still under construction."
+      "es": "Tocá una melodía libre o probá el modo desafío — repetí la secuencia antes de que se rompa la racha.",
+      "en": "Play a free tune or try challenge mode — repeat the sequence before the streak breaks."
     }
   },
   {
@@ -71,8 +71,8 @@
       "en": "Juggling"
     },
     "message": {
-      "es": "Acá van a ir un minijuego de malabares y un video de ejemplo. Todavía en construcción.",
-      "en": "A juggling mini-game and an example video go here. Still under construction."
+      "es": "Atrapá la pelota justo en la zona antes de que se te caiga — cada atrape la acelera un poco más.",
+      "en": "Catch the ball right in the zone before it drops — each catch speeds it up a little more."
     },
     "videoUrl": null
   },
@@ -84,8 +84,8 @@
       "en": "Skateboard"
     },
     "message": {
-      "es": "Acá va a abrir un visor 3D del arte de la patineta. Todavía en construcción.",
-      "en": "A 3D viewer for the skateboard's artwork opens here. Still under construction."
+      "es": "Un adelanto de la patineta — arrastrá para girarla. El visor 3D real llega con el modelo definitivo del deck.",
+      "en": "A preview of the skateboard — drag to spin it. The real 3D viewer is coming once the final deck model is ready."
     },
     "modelUrl": null
   },

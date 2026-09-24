@@ -594,6 +594,26 @@ ul, ol { list-style: none; }
   max-width: 800px;
 }
 
+/* ≤960px los widgets del hero (.git-activity / .ia-tokens / .sec-terminal /
+   .gam-tv) pasan a flujo normal, apilados debajo de .hero-content — sin este
+   margen quedan pegados a los botones. Va aquí y no en cada widget: en .gam
+   jugando .hero-content es display:none y .gam-tv es fixed, así que un
+   margin-top en el widget lo desplazaría.
+
+   El widget apilado es ahora lo último del hero, y #section-divider invade
+   --sdiv-overlap px de su borde inferior (z-index:1, con listeners de click):
+   sin reserva, "Ver más / Ver menos" queda debajo del divisor y no responde.
+   Selector con id a propósito — el padding-bottom de ≤768px va más abajo en
+   este archivo y de otro modo le ganaría por orden.
+   align-items:flex-start: con center, expandir el widget primero consume la
+   holgura de min-height y desplaza .hero-content hacia arriba (salto). */
+@media (max-width: 960px) {
+  .hero-section { align-items: flex-start; }
+  #hero { padding-bottom: calc(var(--sdiv-overlap) + 1.5rem); }
+  [data-theme="gam"] #hero { padding-bottom: 3rem; } /* sin divisor en .gam */
+  #hero .hero-content { margin-bottom: 1.75rem; }
+}
+
 .hero-badge {
   display: inline-flex;
   align-items: center;

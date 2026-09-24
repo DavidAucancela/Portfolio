@@ -1,11 +1,18 @@
 /* ─────────────────────────────────────────────────────────────
    SECTION DIVIDER — Puente interactivo hero → about
    ───────────────────────────────────────────────────────────── */
+/* Cuánto invade el divisor en el hero (arriba) y en #about (abajo). main.css
+   la usa para reservar ese mismo espacio al final del hero en ≤960px, donde
+   el widget apilado quedaría debajo del divisor. */
+:root {
+  --sdiv-overlap: 120px;
+}
+
 #section-divider {
   position: relative;
-  height: 240px;
-  margin-top: -120px;
-  margin-bottom: -120px;
+  height: calc(var(--sdiv-overlap) * 2);
+  margin-top: calc(var(--sdiv-overlap) * -1);
+  margin-bottom: calc(var(--sdiv-overlap) * -1);
   display: flex;
   align-items: center;
   justify-content: center;

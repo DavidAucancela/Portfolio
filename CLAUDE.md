@@ -84,7 +84,11 @@ js/
     gam-tv.js                  # GamTV — prompt "insertar moneda", loading, hint (sin estática
                                # propia — la pinta background.js GamField como fondo unificado)
     gam-loader.js              # Orquestador: boot/destroy de Phaser, paneles de objetos, progreso
-    gam-scene.js                # GamScene (Phaser) — cuarto, colisiones, hotspots, cámara, táctil
+    gam-scene.js                # GamScene (Phaser) — cuarto, colisiones, hotspots, cámara, táctil,
+                               # feedback de interacción (glow/partículas/cámara/chime)
+    gam-audio.js                 # AudioContext compartido + envelope() (SFX de un disparo)
+    gam-ambience.js              # Pad ambiental en loop + footsteps/blip (usa gam-audio.js)
+    gam-fx.js                    # Helpers de Phaser: burstParticles() + cameraPunch()
     gam-piano.js                # Minijuego piano (Web Audio, sin Phaser)
     gam-juggling.js             # Minijuego malabares (reflejos, sin Phaser)
     gam-skateboard.js           # Vista previa de la patineta (adelanto, sin @google/model-viewer)
@@ -209,9 +213,29 @@ interno (`max-height: min(640px, calc(100vh - 200px)); overflow-y:auto`) para qu
 tampoco dependa del alto de `.hero-section` para caber. Ahora que expandir/colapsar
 es un cambio aislado, el ancho anima con `transition: width .45s …` sin miedo a que
 el resto de la página salte en cada frame.
-**≤960px** el flotante vuelve al flujo normal (`position:static`, ancho 100%,
+**≤960px** el flotante vuelve al flujo normal (`position:relative`, ancho 100%,
 apilado debajo de `.hero-content`) — el patrón absoluto es cosa de escritorio; en
 mobile no hay columna de grid que proteger y el stack vertical ya es examen estándar.
+Tres reglas que hacen que ese stack funcione (todas rotas antes, ver `main.css`
+bloque `≤960px` del hero):
+- **`relative`, no `static`:** el `z-index:2` de la regla base solo aplica a elementos
+  posicionados. Con `static`, `#section-divider` (`z-index:1`, listeners de click) se
+  pintaba encima del widget y "Ver más / Ver menos" no respondía.
+- **Reserva inferior en `#hero`:** `padding-bottom: calc(var(--sdiv-overlap) + 1.5rem)`.
+  El divisor invade `--sdiv-overlap` px (120, definido en `section-divider.css`) del
+  final del hero; el widget apilado es lo último y quedaría dentro de esa franja.
+  `.gam` queda fuera (oculta el divisor). Va con selector de id para ganarle al
+  `padding-bottom` de `≤768px`, que está más abajo en el archivo. Además
+  `align-items:flex-start` para que expandir el widget no desplace `.hero-content`.
+- **Fade de scroll del widget** (`effects.js` `HeroParallax._fadeWidget`), sobre
+  `#hero .container` y **según el borde inferior del widget respecto al viewport**
+  (`WIDGET_FADE_PX`), no según `scrollY/heroH` como el texto del hero. Con esa fórmula
+  (`pct * 2.5`) desaparecía tras el 40% del hero aunque siguiera a media pantalla, y
+  expandido —más alto— era peor: un panel que se lee tiene que verse entero mientras
+  esté en pantalla. NO poner `opacity` inline en el widget — `sd-right … both` deja
+  `opacity:1` fijo y una animation gana a un estilo inline. Excepciones por CSS con `!important`
+  (`body.gam-playing` y `body.is-sec-hacked`, en `gam-tv.css` / `sec-terminal.css`):
+  el juego debe verse completo y la terminal es la única vía de recuperación.
 **Al tocar el layout de un widget nuevo, replicar este patrón — nunca volver a meter
 el panel en el grid del `.container`.**
 
@@ -371,6 +395,47 @@ descubierto en `localStorage('gam-discovered')`; `#gam-progress` (esquina sup. i
 de la TV) muestra `X/10` y persiste entre visitas. Al completar los 10 objetos, un
 toast breve una vez por sesión (no un panel — no compite con el que ya se abre para
 el objeto que completó la ronda).
+
+**Audio y feedback de interacción (`gam-audio.js` + `gam-ambience.js` + `gam-fx.js`)** —
+tres módulos chicos, cada uno con un rol distinto:
+- `gam-audio.js` — infraestructura compartida de todo `.gam`: un único `AudioContext`
+  lazy (`getAudioContext()`) y `envelope(ctx, {freq,type,duration,gain})`, la envolvente
+  genérica (ataque + decaimiento exponencial) para cualquier SFX de un solo disparo.
+  Cualquier módulo nuevo de `.gam` que necesite un sonido corto importa `envelope` de acá
+  en vez de reimplementar el boilerplate de Web Audio.
+- `gam-ambience.js` — *uso* de esa infra para el cuarto: pad ambiental en loop
+  (`startAmbience`/`stopAmbience`, dos osciladores en quinta + LFO de "respiración") y dos
+  SFX vía `envelope()`: `playFootstep` (al caminar) y `playProximityBlip` (al entrar en
+  rango de un hotspot, solo en el flanco ausente→presente). Todo gateado por
+  `this._muted` en `gam-scene.js` (botón `#gam-mute`, persistido en
+  `localStorage('gam-muted')`), **nunca** por `prefers-reduced-motion` — el audio no es
+  movimiento.
+- `gam-fx.js` — helpers puros de Phaser (sin audio): `burstParticles(scene, x, y, opts)`
+  (textura de partícula generada en código con `Graphics.generateTexture`, nunca un
+  archivo — cacheada como `'gam-fx-dot'`) y `cameraPunch(scene, {zoom, duration, baseZoom=1})`
+  (punch corto de zoom sobre `cameras.main`). **Importante:** `cameraPunch` fuerza
+  `cam.setZoom(baseZoom)` antes de cada tween en vez de leer `cam.zoom` en vivo — hubo un
+  bug real donde interacts rápidos seguidos cortaban el tween anterior a mitad de camino
+  (`killTweensOf`) con el zoom todavía elevado, y ese valor quedaba de base del siguiente
+  punch, haciendo que el zoom nunca volviera a 1.0 y se fuera "trepando". No reintroducir
+  esa lectura en vivo.
+- `_interact(f)` (`gam-scene.js`) llama a `_playInteractFx(f, {big})` antes de despachar
+  `gam:interact` — glow en un aro por mueble (creado una sola vez en `_drawFurniture`,
+  nunca redibujado), `burstParticles` del color del mueble, `cameraPunch` y un chime;
+  más grande (`big:true`) la primera vez que se visita cada mueble en la sesión
+  (`this._visitedThisSession`, un `Set` que vive solo en memoria, no en localStorage).
+  Gateado en bloque por `this._reducedMotion` — el chime de audio se gatea aparte, solo
+  por `_muted`. `GamScene.celebrateComplete()` (llamada desde `_celebrateComplete()` en
+  `gam-loader.js` al llegar a 10/10, vía una referencia directa `_sceneInstance` guardada
+  en `_boot()`) hace lo mismo a mayor escala: flash de cámara + partículas sobre el
+  jugador + acorde de 3 notas.
+- **Por qué try/catch alrededor de `_playInteractFx()`/`celebrateComplete()`:** Phaser
+  (`RequestAnimationFrame.js`) agenda el próximo `requestAnimationFrame` recién *después*
+  de que el callback del frame actual corra sin tirar — no hay ningún try/catch propio de
+  Phaser en su `step`. Un throw sin capturar en cualquier punto de `update()` (este código
+  corre ahí, dentro de `_interact()`) deja el loop entero congelado para siempre, sin más
+  recuperación que recargar la página. Cualquier código nuevo que se agregue dentro de
+  `update()`/`_updateFrame()` debería considerar el mismo riesgo.
 
 **Eventos custom propios de `.gam`** (además de `portfolio:*` reutilizados arriba):
 ```js

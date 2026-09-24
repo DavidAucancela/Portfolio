@@ -700,6 +700,7 @@ const HeroParallax = (() => {
     const pct    = scrollY / heroH;
     const bgText = document.getElementById('hero-bg-text');
     const content = heroEl.querySelector('.hero-content');
+    const container = heroEl.querySelector('.container');
 
     // El parallax del fondo lo lleva ahora background.js (campo en coords de
     // documento); aquí solo quedan los elementos propios del hero.
@@ -713,7 +714,45 @@ const HeroParallax = (() => {
     // Fade out del hero content al hacer scroll
     if (content) content.style.opacity = Math.max(0, 1 - pct * 2.5);
 
+    _fadeWidget(heroEl.querySelector('.container'));
+
     ticking = false;
+  }
+
+  // Px sobre el borde superior del viewport en los que el widget termina de
+  // desvanecerse (el navbar ocupa ~94px de ese borde, así que se apaga "bajo"
+  // él). Más alto = empieza a irse antes.
+  const WIDGET_FADE_PX = 180;
+
+  /* El widget se desvanece SOLO al salir de pantalla, según dónde queda su
+     borde inferior — no según cuánto se ha scrolleado del hero (`pct`, que es
+     lo que usa el texto): un panel que se lee, y más expandido, tiene que
+     verse entero mientras siga en pantalla. Con `pct * 2.5` desaparecía tras
+     recorrer el 40% del hero, con el panel aún a media pantalla.
+     Va sobre .container y no sobre el widget: su animación de entrada
+     `sd-right … both` deja opacity:1 fijo y una animation gana a un estilo
+     inline; .container no tiene animación propia. Con opacity < 1 se crea un
+     stacking context (el widget pierde su backdrop-filter mientras se
+     desvanece) — por eso se deja '' cuando vale 1.
+     .gam-playing / .is-sec-hacked se excluyen por CSS (`opacity:1 !important`
+     en gam-tv.css / sec-terminal.css), no aquí: este handler solo corre en
+     eventos de scroll y un valor viejo se quedaría pegado. */
+  function _fadeWidget(container) {
+    if (!container) return;
+
+    // En escritorio el widget es absolute y puede sobresalir por debajo del
+    // container (expandido llega a 640px): se mide el widget visible, no solo
+    // el container. offsetParent es null en los widgets de otros modos
+    // (display:none) y en .gam jugando (fixed).
+    let bottom = container.getBoundingClientRect().bottom;
+    for (const w of container.querySelectorAll('.git-activity, .ia-tokens, .sec-terminal, .gam-tv')) {
+      if (w.offsetParent !== null) bottom = Math.max(bottom, w.getBoundingClientRect().bottom);
+    }
+
+    const o = Math.min(1, Math.max(0, bottom / WIDGET_FADE_PX));
+    container.style.opacity = o >= 1 ? '' : String(o);
+    // Invisible pero aún en pantalla: que no reciba toques fantasma
+    container.style.pointerEvents = o < 0.05 ? 'none' : '';
   }
 
   function _onMouseMove(e) {

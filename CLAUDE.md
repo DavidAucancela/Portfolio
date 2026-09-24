@@ -83,15 +83,18 @@ js/
   gam/
     gam-tv.js                  # GamTV — prompt "insertar moneda", loading, hint (sin estática
                                # propia — la pinta background.js GamField como fondo unificado)
-    gam-loader.js              # Orquestador: boot/destroy de Phaser, paneles de objetos, progreso
-    gam-scene.js                # GamScene (Phaser) — cuarto, colisiones, hotspots, cámara, táctil,
-                               # feedback de interacción (glow/partículas/cámara/chime)
+    gam-loader.js              # Orquestador: boot/destroy del cuarto (Three.js), progreso, fallback de paneles
+    gam-three-scene.js         # Cuarto diorama (Three.js): cámara ortográfica, luces, postprocesado,
+                               # muebles, ciclo día/noche, ruteo de pointer/teclado hacia las estaciones
+    gam-stations.js            # Estaciones: cada objeto se vuelve interactivo al hacer zoom (piano,
+                               # escritorio, estante, cama, patineta, malabares, lectura, Pukis)
+    gam-hud.js                 # HUD DOM de las estaciones: barra superior, tarjeta, pines, estado
+    gam-scene.js                # LEGADO — GamScene (Phaser), ya no se importa (queda para revertir)
     gam-audio.js                 # AudioContext compartido + envelope() (SFX de un disparo)
     gam-ambience.js              # Pad ambiental en loop + footsteps/blip (usa gam-audio.js)
     gam-fx.js                    # Helpers de Phaser: burstParticles() + cameraPunch()
-    gam-piano.js                # Minijuego piano (Web Audio, sin Phaser)
-    gam-juggling.js             # Minijuego malabares (reflejos, sin Phaser)
-    gam-skateboard.js           # Vista previa de la patineta (adelanto, sin @google/model-viewer)
+    gam-piano.js                # Motor del piano (lógica + Web Audio; las teclas son 3D en la estación)
+    gam-juggling.js             # Motor del reto de malabares (lógica; la pelota/aro son 3D)
 
 data/
   dev-projects.json           # 11 proyectos del modo .dev (cargados con fetch en runtime)
@@ -313,6 +316,34 @@ cambia el estilo de las mismas cards — es una escena jugable (Phaser 3) que vi
 **entera dentro del hero**. `#section-divider`/`#about`/`#projects`/`#skills`/`#contact`
 se ocultan por completo en este modo. Diseño completo, decisiones y roadmap en
 **`docs/gam-mode-plan.md`** — acá solo el resumen de arquitectura.
+
+**Estado actual del motor (leer primero — lo de Phaser más abajo es histórico).** El cuarto
+ya no usa Phaser: es un **diorama isométrico en Three.js** (`gam-three-scene.js`, cámara
+ortográfica, sol con sombras, GTAO + contorno + bloom, muebles hechos en código). No hay
+personaje caminando: se navega por objeto (hover/click/tap, flechas + Enter, teclas 1–8).
+Al hacer click la cámara **hace zoom** (`camera.zoom` + punto de mirada, nunca avanza) y el
+objeto se vuelve interactivo **dentro de la escena** — ya no se abre un panel modal:
+- **`gam-stations.js`** — una fábrica por objeto: `{ focus(), enter(), exit(), update(now,dt),
+  busy?(), pointerMove/Down/Up?(ndc), key?(e) }`. Piano = teclas 3D tocables + pestañas
+  Libre/Reto; escritorio = pantallas vivas + pines + tarjeta de proyectos; estante = libros
+  de proyectos IA que se sacan al pasar el mouse; cama = anochece/amanece; patineta =
+  se despega de la pared y se gira arrastrando (+ kickflip/shove-it); malabares = cascada +
+  reto; lectura = libro que se abre y pasa páginas; Pukis = acariciarlo. Terminal/diplomas
+  siguen siendo decoración no interactiva (`interactive:false` en `FURNITURE`).
+- **`gam-hud.js`** — barra superior (título, pestañas, acciones, "← Volver Esc"), línea de
+  estado, tarjeta lateral (hoja inferior en portrait) y pines. Estilos `.gam-hud*`/`.gam-card*`.
+- **Contrato con `gam-loader.js`:** la escena sigue emitiendo `gam:interact` (progreso y
+  analítica), ahora con `detail.inScene:true` — el loader marca el descubrimiento y **no abre
+  panel**. La puerta (`kind:'exit'`) sigue cambiando de modo. `buildFurnitureGroup` deja
+  `out.refs` (teclas, libros, holder de la patineta…) que consumen las estaciones.
+- **Ciclo día/noche:** `applyEnv(t)` en la escena (0 día · 0.5 atardecer = aspecto por
+  defecto · 1 noche) mueve sol, relleno, luz de ventana, lámpara, neón, cielo de la ventana
+  y fondo; lo anima la estación de la cama y **se queda como el jugador lo dejó**.
+- **Trampa:** los glifos flotantes (♪ ❤ z) van en una escena `overlay` dibujada DESPUÉS del
+  composer — dentro de la escena principal el pase GTAO los trata como geometría opaca.
+- **Desarrollo:** el repo vive en `~/Documents` (iCloud) y macOS puede dejar `node_modules`
+  como archivos `dataless` vacíos → Vite falla con `pico is not a function`. Se arregla
+  releyendo los archivos (`find node_modules -flags +dataless … | xargs cat`) o reinstalando.
 
 **Sin caja de TV — la estática es el fondo unificado.** El widget de entrada ya no es
 una cajita con marco/barra de puntitos/canvas de estática propio: es solo el prompt

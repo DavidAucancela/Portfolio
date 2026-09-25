@@ -714,7 +714,7 @@ const HeroParallax = (() => {
     // Fade out del hero content al hacer scroll
     if (content) content.style.opacity = Math.max(0, 1 - pct * 2.5);
 
-    _fadeWidget(heroEl.querySelector('.container'));
+    _fadeWidget(container);
 
     ticking = false;
   }

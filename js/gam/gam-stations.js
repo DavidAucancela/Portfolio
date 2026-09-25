@@ -13,6 +13,7 @@
  *   juggling    → cascada de 6 pelotas + reto de atrapar en la zona
  *   pukis       → acariciarlo: corazones, cola, orejas
  *   chess       → tablero 3D: juegas con blancas contra una IA sencilla
+ *   lumbre      → póster de mi juego Lumbre: capturas + enlaces
  *
  * Contrato: `createStations(base, objects)` devuelve Map(id → estación). Una
  * estación es { focus(), enter(), exit(), update(now, dt), busy?(), pointerMove?,
@@ -1113,6 +1114,79 @@ function chessStation(c) {
   };
 }
 
+/* ────────────────────────────────────────────────────
+   LUMBRE — póster de mi juego: capturas, descripción y enlaces.
+──────────────────────────────────────────────────── */
+const LUMBRE_SHOTS = [
+  { src: 'public/images/projects/lumbre/lumbre-01.webp', aspect: 2.446 },
+  { src: 'public/images/projects/lumbre/lumbre-02.webp', aspect: 1.804 },
+  { src: 'public/images/projects/lumbre/lumbre-03.webp', aspect: 1.804 },
+  { src: 'public/images/projects/lumbre/lumbre-04.webp', aspect: 1.804 },
+];
+
+function lumbreStation(c) {
+  const { root, refs, hud } = c;
+  const { img } = refs.poster;
+  const PW = 1.1;
+  const textures = [refs.poster.shot];
+  let current = 0;
+
+  function show(i) {
+    current = i;
+    const { src, aspect } = LUMBRE_SHOTS[i];
+    if (!textures[i]) {
+      const t = new THREE.TextureLoader().load(src);
+      t.colorSpace = THREE.SRGBColorSpace;
+      textures[i] = t;
+    }
+    img.material.map = textures[i];
+    img.material.emissiveMap = textures[i];
+    img.material.needsUpdate = true;
+    img.scale.y = (PW / aspect) / (PW / LUMBRE_SHOTS[0].aspect);
+  }
+
+  return {
+    focus: () => ({ look: root.localToWorld(V(0, 2.55, 0)), zoom: 6.5, shift: 0.15 }),
+
+    enter() {
+      const ct = c.content;
+      hud.show({
+        icon: '🕯️',
+        title: 'Lumbre',
+        tabs: LUMBRE_SHOTS.map((_, i) => ({ id: String(i), label: `${i + 1}` })),
+        active: '0',
+        onTab: (id) => show(Number(id)),
+        actions: [
+          { id: 'play', label: '▶ Jugar en itch.io', onClick: () => window.open(ct.liveUrl, '_blank', 'noopener') },
+          { id: 'code', label: '</> Código', onClick: () => window.open(ct.repoUrl, '_blank', 'noopener') },
+        ],
+        hint: 'Cambia de captura con los números',
+        onBack: c.leave,
+      });
+      const card = el('div', 'gam-card');
+      card.innerHTML = `
+        <h3 class="gam-card__title">🕯️ ${esc(L(ct.title) || 'Lumbre')}</h3>
+        <p class="gam-card__text">${esc(L(ct.message))}</p>
+        <div class="gam-card__chips">${(ct.tags || []).map(t => `<span class="gam-card__chip">${esc(t)}</span>`).join('')}</div>`;
+      hud.setCard(card);
+      show(0);
+    },
+
+    exit() { show(0); },
+
+    update() {},
+
+    key(e) {
+      const n = Number(e.key);
+      if (n >= 1 && n <= LUMBRE_SHOTS.length && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        show(n - 1);
+        return true;
+      }
+      return false;
+    },
+  };
+}
+
 const FACTORIES = {
   piano: pianoStation,
   desk: deskStation,
@@ -1122,6 +1196,7 @@ const FACTORIES = {
   juggling: jugglingStation,
   pukis: pukisStation,
   chess: chessStation,
+  lumbre: lumbreStation,
 };
 
 /**

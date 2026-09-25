@@ -80,10 +80,17 @@ export function createHud(container) {
     onBackCb = cfg.onBack || null;
     onTabCb = cfg.onTab || null;
 
-    tabsEl.innerHTML = (cfg.tabs || []).map(t => `
-      <button type="button" class="gam-hud__tab${t.id === cfg.active ? ' is-active' : ''}" role="tab"
-        aria-selected="${t.id === cfg.active}" data-id="${t.id}">${t.label}</button>
-    `).join('');
+    tabsEl.textContent = '';
+    (cfg.tabs || []).forEach((t) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'gam-hud__tab' + (t.id === cfg.active ? ' is-active' : '');
+      btn.setAttribute('role', 'tab');
+      btn.setAttribute('aria-selected', String(t.id === cfg.active));
+      btn.dataset.id = t.id;
+      btn.textContent = t.label;
+      tabsEl.appendChild(btn);
+    });
     tabsEl.hidden = !(cfg.tabs && cfg.tabs.length);
 
     actionHandlers.clear();

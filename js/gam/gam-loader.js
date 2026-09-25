@@ -37,7 +37,7 @@ const DISCOVER_KEY = 'gam-discovered';
 // cuarto (ver FURNITURE en gam-three-scene.js, `interactive: false`). El
 // estante volvió: ahora es una estación (libros de proyectos de IA).
 const DISCOVERABLE_IDS = [
-  'piano', 'desk', 'juggling', 'window', 'skateboard', 'pukis', 'bookshelf', 'chess',
+  'piano', 'desk', 'juggling', 'window', 'skateboard', 'pukis', 'bookshelf', 'chess', 'lumbre',
 ];
 
 function _loadDiscovered() {

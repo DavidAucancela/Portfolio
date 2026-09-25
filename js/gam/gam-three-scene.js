@@ -83,6 +83,7 @@ const FURNITURE = [
   { id: 'chess',      x: 0.25,         z: 0.8,    rotY: 0,           color: 0xe8d9b5, label: '♟️ Ajedrez',          kind: 'minigame', zoom: 7.5, elev: 1.15 },
   { id: 'pukis',      x: 1.95,         z: -2.55, rotY: -Math.PI / 2, color: 0xe9dcc0, label: '🐾 Pukis',            kind: 'info', zoom: 4.2, scale: 1.4, view: Math.PI / 2 },
   { id: 'bookshelf',  x: -HALF + 0.24, z: -2.55, rotY: WALL_FACING, color: 0xb14eff, label: '📚 Estante',          kind: 'list', zoom: 2.6, viewTilt: 0.5 },
+  { id: 'lumbre',     x: -HALF,        z: -1.25, y: 0,   rotY: WALL_FACING, color: 0xffb020, label: '🕯️ Lumbre',           kind: 'info', zoom: 6.5, scale: 1, noLift: true, viewTilt: 0.5 },
 ];
 
 /* ── Cámara ortográfica isométrica ──
@@ -985,6 +986,25 @@ export function mount(container, hotspots) {
         add(box(0.08, wh, 0.09), 0xe8e4dc, ww / 2 + 0.04, wy, fz);
         add(box(0.04, wh, 0.05), 0xe8e4dc, 0, wy, fz);
         add(box(ww, 0.04, 0.05), 0xe8e4dc, 0, wy, fz);
+      case 'lumbre': {
+        // Póster enmarcado de mi juego Lumbre en la pared izquierda (las capturas se cambian en la estación).
+        const wy = 2.55, pw = 1.1;
+        add(box(pw + 0.12, 0.84, 0.04), 0x1a1410, 0.0, wy - 0.04, 0.02);                         // marco
+        const shot = new THREE.TextureLoader().load('public/images/projects/lumbre/lumbre-01.webp');
+        shot.colorSpace = THREE.SRGBColorSpace;
+        shot.anisotropy = maxAniso;
+        const img = add(new THREE.PlaneGeometry(pw, pw / 2.446), 0xffffff, 0, wy + 0.05, 0.043, { map: shot, roughness: 0.6, emissive: 0xffffff, emissiveMap: shot, emissiveIntensity: 0.35 });
+        const plate = canvasTexture(512, 64, (ctx, w, h) => {
+          ctx.fillStyle = '#120d08'; ctx.fillRect(0, 0, w, h);
+          ctx.fillStyle = '#ffb020'; ctx.font = 'bold 30px "Courier New", monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText('L U M B R E  ·  Game Jam 2026', w / 2, h / 2 + 2);
+        });
+        add(new THREE.PlaneGeometry(pw, pw * 0.125), 0xffffff, 0, wy - 0.33, 0.043, { map: plate, roughness: 0.6 });
+        out.refs.poster = { img, shot };
+        out.baseY = wy;
+        break;
+      }
+
         add(box(ww + 0.3, 0.05, 0.18), 0xe8e4dc, 0, wy - wh / 2 - 0.1, 0.09);   // alféizar
         const hit = add(box(ww, wh, 0.1), 0xffffff, 0, wy, 0.05);
         hit.visible = false;   // el raycast no mira `visible`: el cristal (decoración) queda clicable

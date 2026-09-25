@@ -24,6 +24,7 @@ export function getAudioContext() {
  * sin reinventar el boilerplate de Web Audio.
  */
 export function envelope(ctx, { freq, type, duration, gain }) {
+  if (!ctx) return; // sin Web Audio: el SFX se omite en silencio
   const osc  = ctx.createOscillator();
   const gainNode = ctx.createGain();
   osc.type = type;

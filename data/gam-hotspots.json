@@ -98,5 +98,25 @@
       "es": "Mira cómo cambia el cielo: anochece y amanece.",
       "en": "Watch the sky change — dusk and dawn."
     }
+  },
+  {
+    "id": "lumbre",
+    "icon": "🕯️",
+    "title": {
+      "es": "Lumbre",
+      "en": "Lumbre"
+    },
+    "message": {
+      "es": "Mi juego de terror 2D en Unity 6. Un niño explora la casa de su abuela de noche con una caja de fósforos limitada: cada fósforo da luz para explorar, pero acerca a algo.",
+      "en": "My 2D horror game in Unity 6. A boy explores his grandmother's house at night with a limited box of matches: each match gives light to explore, but draws something closer."
+    },
+    "tags": [
+      "Unity",
+      "C#",
+      "Horror",
+      "WebGL"
+    ],
+    "liveUrl": "https://lager.itch.io/lumbre",
+    "repoUrl": "https://github.com/Lager-GJ/main"
   }
 ]

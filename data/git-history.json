@@ -2,18 +2,6 @@
   "weeks": 12,
   "days": [
     {
-      "date": "2026-06-29",
-      "count": 8
-    },
-    {
-      "date": "2026-07-01",
-      "count": 2
-    },
-    {
-      "date": "2026-07-02",
-      "count": 2
-    },
-    {
       "date": "2026-07-03",
       "count": 2
     },
@@ -119,7 +107,7 @@
     },
     {
       "date": "2026-09-13",
-      "count": 2
+      "count": 3
     },
     {
       "date": "2026-09-15",
@@ -128,12 +116,40 @@
     {
       "date": "2026-09-16",
       "count": 1
+    },
+    {
+      "date": "2026-09-18",
+      "count": 3
+    },
+    {
+      "date": "2026-09-19",
+      "count": 2
+    },
+    {
+      "date": "2026-09-21",
+      "count": 2
+    },
+    {
+      "date": "2026-09-24",
+      "count": 3
     }
   ],
-  "totalCommits": 72,
-  "totalCommitsAllTime": 213,
-  "totalProjects": 33,
+  "totalCommits": 71,
+  "totalCommitsAllTime": 224,
+  "totalProjects": 32,
   "prs": [
+    {
+      "number": 55,
+      "title": "gam mode fase0",
+      "date": "2026-09-18",
+      "hash": "29b9fb1"
+    },
+    {
+      "number": 54,
+      "title": "dynamic bg interactions",
+      "date": "2026-09-13",
+      "hash": "b45e16b"
+    },
     {
       "number": 53,
       "title": "i18n bilingual projects",
@@ -169,19 +185,7 @@
       "title": "observability tracking jotai history",
       "date": "2026-08-24",
       "hash": "57a9e86"
-    },
-    {
-      "number": 47,
-      "title": "Feat/mode discovery ia tokens",
-      "date": "2026-08-22",
-      "hash": "755999a"
-    },
-    {
-      "number": 45,
-      "title": "docs: limpiar pendientes manuales resueltos en CLAUDE.md",
-      "date": "2026-08-21",
-      "hash": "99d9277"
     }
   ],
-  "generatedAt": "2026-09-18T14:46:26.388Z"
+  "generatedAt": "2026-09-25T05:47:00.674Z"
 }

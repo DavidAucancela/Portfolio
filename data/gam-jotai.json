@@ -1,0 +1,18 @@
+{
+  "hello": [
+    { "es": "¡Hola! Soy JotAI y vivo en este cuarto. Toca lo que quieras 👀", "en": "Hi! I'm JotAI and I live in this room. Touch anything 👀" }
+  ],
+  "poke": [
+    { "es": "¿Sí? 👋", "en": "Yes? 👋" },
+    { "es": "Pukis ronca más fuerte que el ventilador de mi CPU.", "en": "Pukis snores louder than my CPU fan." },
+    { "es": "Esas pelotas de malabares están tejidas a mano. Yo solo sé mirarlas.", "en": "Those juggling balls are hand-knitted. I just watch them." },
+    { "es": "Estoy aprendiendo a andar en patineta… más o menos.", "en": "I'm learning to skate… sort of." },
+    { "es": "¿Una partida de ajedrez? Te advierto que pienso rápido.", "en": "Up for chess? Fair warning: I think fast." },
+    { "es": "Desde la ventana se ve Quito de noche 🌙", "en": "You can see Quito at night from the window 🌙" },
+    { "es": "En el estante están los proyectos de IA. Algunos los ayudé a pensar 🤖", "en": "The AI projects live on the shelf. I helped think up a few 🤖" }
+  ],
+  "tickle": [
+    { "es": "¡Oye! ¡Me haces cosquillas en los circuitos! 😵‍💫", "en": "Hey! That tickles my circuits! 😵‍💫" },
+    { "es": "¡Jaja, basta! Tengo sensores muy sensibles 🤭", "en": "Haha, stop! My sensors are very sensitive 🤭" }
+  ]
+}

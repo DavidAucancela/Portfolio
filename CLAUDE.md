@@ -87,8 +87,11 @@ js/
     gam-three-scene.js         # Cuarto diorama (Three.js): cámara ortográfica, luces, postprocesado,
                                # muebles, ciclo día/noche, ruteo de pointer/teclado hacia las estaciones
     gam-stations.js            # Estaciones: cada objeto se vuelve interactivo al hacer zoom (piano,
-                               # escritorio, estante, cama, patineta, malabares, lectura, Pukis)
+                               # escritorio, estante, ventana, patineta, malabares, Pukis, ajedrez, Lumbre)
     gam-hud.js                 # HUD DOM de las estaciones: barra superior, tarjeta, pines, estado
+    gam-jotai.js               # JotAI 3D en el cuarto: modelo en código, rig, poses/clips, caras, vida
+    gam-jotai-brain.js         # Comportamiento de JotAI (hoy: saludo + reacción al click; luego rutinas)
+    gam-jotai-bubble.js        # Globo de diálogo DOM proyectado sobre su cabeza (typewriter + aria-live)
     gam-scene.js                # LEGADO — GamScene (Phaser), ya no se importa (queda para revertir)
     gam-audio.js                 # AudioContext compartido + envelope() (SFX de un disparo)
     gam-ambience.js              # Pad ambiental en loop + footsteps/blip (usa gam-audio.js)
@@ -97,10 +100,11 @@ js/
     gam-juggling.js             # Motor del reto de malabares (lógica; la pelota/aro son 3D)
 
 data/
-  dev-projects.json           # 11 proyectos del modo .dev (cargados con fetch en runtime)
+  dev-projects.json           # 13 proyectos del modo .dev (cargados con fetch en runtime)
   ia-projects.json            # 7 proyectos del modo .ia (cargados con fetch en runtime)
   sec-projects.json           # 7 proyectos del modo .sec (labs HTB + prácticas + certs)
-  gam-hotspots.json           # Contenido bilingüe de los 10 objetos interactuables del modo .gam
+  gam-hotspots.json           # Contenido bilingüe de los 9 objetos interactuables del modo .gam
+  gam-jotai.json              # Frases bilingües de JotAI dentro del cuarto (hello / poke / tickle)
   gam-projects.json           # Vacío — fallback para projects.js en modo .gam (no se usa hoy)
   personal.json               # Bio, email, redes, timeline
   skills.json                 # Skills por categoría
@@ -319,17 +323,20 @@ se ocultan por completo en este modo. Diseño completo, decisiones y roadmap en
 
 **Estado actual del motor (leer primero — lo de Phaser más abajo es histórico).** El cuarto
 ya no usa Phaser: es un **diorama isométrico en Three.js** (`gam-three-scene.js`, cámara
-ortográfica, sol con sombras, GTAO + contorno + bloom, muebles hechos en código). No hay
-personaje caminando: se navega por objeto (hover/click/tap, flechas + Enter, teclas 1–8).
+ortográfica, sol con sombras, GTAO + contorno + bloom, muebles hechos en código). El jugador
+no controla ningún personaje: se navega por objeto (hover/click/tap, flechas + Enter, teclas
+1–9). JotAI vive en el cuarto como personaje propio (ver más abajo), no como avatar.
 Al hacer click la cámara **hace zoom** (`camera.zoom` + punto de mirada, nunca avanza) y el
 objeto se vuelve interactivo **dentro de la escena** — ya no se abre un panel modal:
 - **`gam-stations.js`** — una fábrica por objeto: `{ focus(), enter(), exit(), update(now,dt),
   busy?(), pointerMove/Down/Up?(ndc), key?(e) }`. Piano = teclas 3D tocables + pestañas
   Libre/Reto; escritorio = pantallas vivas + pines + tarjeta de proyectos; estante = libros
-  de proyectos IA que se sacan al pasar el mouse; cama = anochece/amanece; patineta =
+  de proyectos IA que se sacan al pasar el mouse; ventana = anochece/amanece; patineta =
   se despega de la pared y se gira arrastrando (+ kickflip/shove-it); malabares = cascada +
-  reto; lectura = libro que se abre y pasa páginas; Pukis = acariciarlo. Terminal/diplomas
-  siguen siendo decoración no interactiva (`interactive:false` en `FURNITURE`).
+  reto; Pukis = acariciarlo; ajedrez = tablero 3D contra una IA (`gam-chess.js`); Lumbre =
+  póster del juego en la pared izquierda (capturas 1–4 + enlaces a itch.io y al repo — antes
+  era una card de `dev-projects.json`, ahora vive solo acá). `interactive:false` en
+  `FURNITURE` sigue disponible para dejar un mueble como pura decoración.
 - **`gam-hud.js`** — barra superior (título, pestañas, acciones, "← Volver Esc"), línea de
   estado, tarjeta lateral (hoja inferior en portrait) y pines. Estilos `.gam-hud*`/`.gam-card*`.
 - **Contrato con `gam-loader.js`:** la escena sigue emitiendo `gam:interact` (progreso y
@@ -338,7 +345,18 @@ objeto se vuelve interactivo **dentro de la escena** — ya no se abre un panel 
   `out.refs` (teclas, libros, holder de la patineta…) que consumen las estaciones.
 - **Ciclo día/noche:** `applyEnv(t)` en la escena (0 día · 0.5 atardecer = aspecto por
   defecto · 1 noche) mueve sol, relleno, luz de ventana, lámpara, neón, cielo de la ventana
-  y fondo; lo anima la estación de la cama y **se queda como el jugador lo dejó**.
+  y fondo; lo anima la estación de la ventana y **se queda como el jugador lo dejó**.
+- **JotAI vive en el cuarto** (plan completo y fases en **`docs/gam-jotai-plan.md`**). Hecho
+  100% en código (`gam-jotai.js`), calcado del render `public/images/jotai/body.png`: ojos LED
+  en aro, boca LED en canvas (oscura se perdía sobre la cara gris), cuello de resorte, placa
+  "JotAI", piernas con **ruedas** (rueda, no camina). Rig = `Group`s con nombre; animación =
+  poses `{ joint: [rx,ry,rz] }` amortiguadas + clips (`wave`/`nod`/`giggle`) + capas de vida
+  (parpadeo, respiración, antena, mirada) + las caras del widget + `sleeping`. Hoy (Fase 1)
+  está quieto en `JOTAI_HOME`: mira el cursor o el objeto enfocado, saluda 1×/sesión y
+  reacciona al click/tap o a la tecla `J` (4 toques seguidos = cosquillas). `pickAny()` en la
+  escena lo compara por distancia con los muebles. Su `update` va en `try/catch`
+  (`jotaiFailed`): un error lo desactiva sin congelar el loop. En dev,
+  `window.__gamJotai = { jotai, brain }` para QA desde consola.
 - **Trampa:** los glifos flotantes (♪ ❤ z) van en una escena `overlay` dibujada DESPUÉS del
   composer — dentro de la escena principal el pase GTAO los trata como geometría opaca.
 - **Desarrollo:** el repo vive en `~/Documents` (iCloud) y macOS puede dejar `node_modules`
@@ -423,7 +441,7 @@ están abiertas (`scene.pause`/`resume`, así el jugador no se mueve detrás del
 
 **Progreso** (`gam-loader.js`): cada interacción no-`exit` marca su `id` como
 descubierto en `localStorage('gam-discovered')`; `#gam-progress` (esquina sup. izq.
-de la TV) muestra `X/10` y persiste entre visitas. Al completar los 10 objetos, un
+de la TV) muestra `X/9` (`DISCOVERABLE_IDS`) y persiste entre visitas. Al completar los 9 objetos, un
 toast breve una vez por sesión (no un panel — no compite con el que ya se abre para
 el objeto que completó la ronda).
 
@@ -494,7 +512,7 @@ const projects = await res.json();
 ```
 Los datos personales (`ABOUT_DATA`, `EXPERIENCE_DATA`, `SKILLS_DATA`) **sí están embebidos**
 como constantes en `sections.js`. `EXPERIENCE_DATA` alimenta el drawer de trayectoria
-(22 items: proyectos + prácticas + certificaciones); al agregar un proyecto a los JSON
+(30 ítems: proyectos + prácticas + certificaciones); al agregar un proyecto a los JSON
 hay que añadirlo también ahí para que aparezca en la trayectoria.
 
 ### Campos bilingües en los JSON de proyectos (`LangSwitcher.L`)
@@ -517,7 +535,7 @@ la tarjeta de respuesta de JotAI siga el idioma de la UI.
   `p.title` bilingüe — necesario desde que `prac-001`/`cert-002` lo tienen como objeto.
 
 ### Drawer de trayectoria (`EXPERIENCE_DATA` en `sections.js`)
-`EXPERIENCE_DATA` (31 ítems) sigue teniendo sus campos **en español dentro del objeto**
+`EXPERIENCE_DATA` (30 ítems) sigue teniendo sus campos **en español dentro del objeto**
 (no usa `{es,en}` inline como los JSON de proyectos), pero `desc`, `highlights` y
 `metricas[].label/value` sí son `{es,en}`. `_localizedExperience()` resuelve todo el
 array al idioma activo antes de pasarlo a `Trajectory.render()` — se recalcula en cada

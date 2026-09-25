@@ -40,6 +40,9 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { createHud } from './gam-hud.js';
 import { createStations } from './gam-stations.js';
+import { createJotai } from './gam-jotai.js';
+import { createJotaiBubble } from './gam-jotai-bubble.js';
+import { createJotaiBrain } from './gam-jotai-brain.js';
 
 /* ────────────────────────────────────────────────────
    CUARTO — S = lado del piso, H = alto de pared, T = grosor. Piso con la
@@ -80,11 +83,17 @@ const FURNITURE = [
   { id: 'door',       x: -HALF,        z: 2.55,  rotY: WALL_FACING, color: 0x94a3b8, label: '🚪 Salir',            kind: 'exit', zoom: 2.2, scale: 1 },
   { id: 'skateboard', x: 3.0,          z: -HALF + 0.32, rotY: 0,    color: 0x06ffa5, label: '🛹 Patineta',         kind: '3d', zoom: 2.6 },
   { id: 'window',     x: 2.2,          z: -HALF, y: 0,   rotY: 0,           color: 0x7aa2ff, label: '🪟 Ventana',          kind: 'info', zoom: 3.2, scale: 1, noLift: true },
+  { id: 'lumbre',     x: -HALF,        z: -1.25, y: 0,   rotY: WALL_FACING, color: 0xffb020, label: '🕯️ Lumbre',           kind: 'info', zoom: 6.5, scale: 1, noLift: true, viewTilt: 0.5 },
   { id: 'chess',      x: 0.25,         z: 0.8,    rotY: 0,           color: 0xe8d9b5, label: '♟️ Ajedrez',          kind: 'minigame', zoom: 7.5, elev: 1.15 },
   { id: 'pukis',      x: 1.95,         z: -2.55, rotY: -Math.PI / 2, color: 0xe9dcc0, label: '🐾 Pukis',            kind: 'info', zoom: 4.2, scale: 1.4, view: Math.PI / 2 },
   { id: 'bookshelf',  x: -HALF + 0.24, z: -2.55, rotY: WALL_FACING, color: 0xb14eff, label: '📚 Estante',          kind: 'list', zoom: 2.6, viewTilt: 0.5 },
-  { id: 'lumbre',     x: -HALF,        z: -1.25, y: 0,   rotY: WALL_FACING, color: 0xffb020, label: '🕯️ Lumbre',           kind: 'info', zoom: 6.5, scale: 1, noLift: true, viewTilt: 0.5 },
 ];
+
+/* JotAI (docs/gam-jotai-plan.md) — vive en el cuarto. Su rincón: frente-
+   derecha, entre la alfombra y el borde del piso, mirando a la cámara.
+   Se sale de este punto en las fases con locomoción. */
+const JOTAI_HOME = { x: 2.45, z: 1.35, rotY: Math.PI / 4 };
+const JOTAI_LOOK_IDLE_MS = 4000;   // sin mover el mouse este tiempo → vuelve a mirar por su cuenta
 
 /* ── Cámara ortográfica isométrica ──
    La cámara siempre está en `look + dir * CAM_DIST`, con `dir` = ISO_DIR
@@ -977,15 +986,6 @@ export function mount(container, hotspots) {
         break;
       }
 
-      case 'window': {
-        // Marco de la ventana (el cielo vive en la decoración; ver `sky`) + zona de click invisible.
-        const ww = 1.2, wh = 1.3, wy = 3.0, fz = 0.045;
-        add(box(ww + 0.16, 0.08, 0.09), 0xe8e4dc, 0, wy + wh / 2 + 0.04, fz);
-        add(box(ww + 0.16, 0.08, 0.09), 0xe8e4dc, 0, wy - wh / 2 - 0.04, fz);
-        add(box(0.08, wh, 0.09), 0xe8e4dc, -ww / 2 - 0.04, wy, fz);
-        add(box(0.08, wh, 0.09), 0xe8e4dc, ww / 2 + 0.04, wy, fz);
-        add(box(0.04, wh, 0.05), 0xe8e4dc, 0, wy, fz);
-        add(box(ww, 0.04, 0.05), 0xe8e4dc, 0, wy, fz);
       case 'lumbre': {
         // Póster enmarcado de mi juego Lumbre en la pared izquierda (las capturas se cambian en la estación).
         const wy = 2.55, pw = 1.1;
@@ -1005,6 +1005,15 @@ export function mount(container, hotspots) {
         break;
       }
 
+      case 'window': {
+        // Marco de la ventana (el cielo vive en la decoración; ver `sky`) + zona de click invisible.
+        const ww = 1.2, wh = 1.3, wy = 3.0, fz = 0.045;
+        add(box(ww + 0.16, 0.08, 0.09), 0xe8e4dc, 0, wy + wh / 2 + 0.04, fz);
+        add(box(ww + 0.16, 0.08, 0.09), 0xe8e4dc, 0, wy - wh / 2 - 0.04, fz);
+        add(box(0.08, wh, 0.09), 0xe8e4dc, -ww / 2 - 0.04, wy, fz);
+        add(box(0.08, wh, 0.09), 0xe8e4dc, ww / 2 + 0.04, wy, fz);
+        add(box(0.04, wh, 0.05), 0xe8e4dc, 0, wy, fz);
+        add(box(ww, 0.04, 0.05), 0xe8e4dc, 0, wy, fz);
         add(box(ww + 0.3, 0.05, 0.18), 0xe8e4dc, 0, wy - wh / 2 - 0.1, 0.09);   // alféizar
         const hit = add(box(ww, wh, 0.1), 0xffffff, 0, wy, 0.05);
         hit.visible = false;   // el raycast no mira `visible`: el cristal (decoración) queda clicable
@@ -1209,6 +1218,19 @@ export function mount(container, hotspots) {
     loadArt(group, f);
   });
 
+  /* ── JotAI: personaje del cuarto (modelo + globo + comportamiento) ── */
+  const jotai = createJotai({ reducedMotion, lite });
+  jotai.root.position.set(JOTAI_HOME.x, 0, JOTAI_HOME.z);
+  jotai.root.rotation.y = JOTAI_HOME.rotY;
+  scene.add(jotai.root);
+  const jotaiBubble = createJotaiBubble(container, { reducedMotion });
+  const jotaiBrain = createJotaiBrain({ jotai, bubble: jotaiBubble });
+  const jotaiLook = new THREE.Vector3();
+  const jotaiAnchor = new THREE.Vector3();
+  let jotaiHovered = false;
+  let jotaiFailed = false;    // un error en su update no debe congelar el loop del cuarto
+  if (import.meta.env.DEV) window.__gamJotai = { jotai, brain: jotaiBrain };   // QA desde consola
+
   /* ── Momento del día: 0 = día · 0.5 = atardecer (el aspecto por defecto) ·
      1 = noche. Lo anima la estación de la cama (`env.animateTo`): mueve el
      sol, el relleno, la luz de la ventana, la lámpara, el neón, el cielo de
@@ -1361,6 +1383,7 @@ export function mount(container, hotspots) {
   let lastNow = 0;
   let labelOverride = null; // { text, pos } — etiqueta que pone una estación (ej. libro bajo el cursor)
   let active = null;        // estación activa (la cámara ya llegó y `enter()` corrió)
+  let lastPointerMoveAt = -Infinity;
   let dragging = false;
 
   /* ── Estaciones: al hacer click la cámara hace zoom y el objeto se vuelve
@@ -1407,6 +1430,7 @@ export function mount(container, hotspots) {
   }
 
   function setHover(root) {
+    if (root) jotaiHovered = false;
     if (hovered === root) return;
     if (hovered) setMeshHoverVisual(hovered, false);
     hovered = root;
@@ -1434,9 +1458,30 @@ export function mount(container, hotspots) {
    *  pega en el mesh hijo concreto; userData.rootGroup lo devuelve al objeto
    *  raíz (mismo que espera setHover/interact/meshById). */
   function pick() {
+    const hit = pickAny();
+    return hit === 'jotai' ? null : hit;
+  }
+
+  /** Igual que pick() pero incluye a JotAI: devuelve 'jotai', el grupo raíz
+   *  de un mueble o null — el más cercano a la cámara gana. */
+  function pickAny() {
     raycaster.setFromCamera(pointerNDC, camera);
-    const hit = raycaster.intersectObjects(interactiveMeshes, true)[0];
-    return hit ? hit.object.userData.rootGroup : null;
+    const hit = raycaster.intersectObjects([...interactiveMeshes, jotai.root], true)[0];
+    if (!hit) return null;
+    return hit.object.userData.jotai ? 'jotai' : hit.object.userData.rootGroup;
+  }
+
+  function setJotaiHover(on) {
+    if (on === jotaiHovered) return;
+    jotaiHovered = on;
+    if (on) {
+      renderer.domElement.style.cursor = 'pointer';
+      label.textContent = '🤖 JotAI';
+      if (outlinePass) outlinePass.selectedObjects = jotai.meshes;
+    } else if (!hovered) {
+      renderer.domElement.style.cursor = 'default';
+      if (outlinePass) outlinePass.selectedObjects = [];
+    }
   }
 
   /* Pellizco con dos dedos (táctil): zoom manual sobre el objeto enfocado. */
@@ -1461,10 +1506,18 @@ export function mount(container, hotspots) {
       }
     }
     updatePointer(e);
+    lastPointerMoveAt = performance.now();
     if (paused) return;
     if (active) { active.pointerMove?.(pointerNDC, e); return; }
     if (zoomed) return;
-    setHover(pick());
+    const hit = pickAny();
+    if (hit === 'jotai') {
+      setHover(null);
+      setJotaiHover(true);
+    } else {
+      setJotaiHover(false);
+      setHover(hit);
+    }
   }
 
   function onPointerDown(e) {
@@ -1606,6 +1659,7 @@ export function mount(container, hotspots) {
     setFocusLayer(root, true);
     focusLight.position.copy(look).addScaledVector(frontDir, 1.2).add(new THREE.Vector3(0, 0.6, 0));
     setHover(null);
+    setJotaiHover(false);
   }
 
   function returnToDefault() {
@@ -1655,8 +1709,9 @@ export function mount(container, hotspots) {
   function onClick(e) {
     if (paused || zoomed) return;
     updatePointer(e);
-    const root = pick();
-    if (root) interact(root);
+    const hit = pickAny();
+    if (hit === 'jotai') jotaiBrain.poke();
+    else if (hit) interact(hit);
   }
 
   const ORDER = FURNITURE.filter(f => f.id !== 'door' && f.interactive !== false).map(f => f.id);
@@ -1677,6 +1732,10 @@ export function mount(container, hotspots) {
     if (zoomed) {
       // la cámara todavía vuela hacia el objeto: Esc cancela y vuelve
       if (e.key === 'Escape') returnToDefault();
+      return;
+    }
+    if ((e.key === 'j' || e.key === 'J') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      jotaiBrain.poke();
       return;
     }
     const digit = e.key >= '1' && e.key <= '9' ? Number(e.key) - 1 : (e.key === '0' ? 9 : -1);
@@ -1807,6 +1866,31 @@ export function mount(container, hotspots) {
     stationSys.updateGlyphs(dt);
     if (active) hud.updatePins(camera, container.clientWidth, container.clientHeight);
 
+    // JotAI: mira el objeto enfocado, o el cursor mientras se mueva (el punto
+    // del rayo a la altura de su cabeza, adelantado hacia la cámara → mira
+    // "hacia afuera" de la pantalla); si no, su mirada errante.
+    if (!jotaiFailed) {
+      try {
+        if (zoomed && focusView) {
+          jotai.setLookTarget(focusView.look);
+        } else if (now - lastPointerMoveAt < JOTAI_LOOK_IDLE_MS) {
+          raycaster.setFromCamera(pointerNDC, camera);
+          const { origin, direction } = raycaster.ray;
+          jotai.headWorld(jotaiLook).sub(origin);
+          jotaiLook.copy(origin).addScaledVector(direction, jotaiLook.dot(direction) - 1.5);
+          jotai.setLookTarget(jotaiLook);
+        } else {
+          jotai.setLookTarget(null);
+        }
+        jotaiBrain.update(now, { zoomed: !!zoomed });
+        jotai.update(now, dt);
+        jotaiBubble.update(now, camera, jotai.headTop(jotaiAnchor), container.clientWidth, container.clientHeight);
+      } catch (err) {
+        jotaiFailed = true;   // el cuarto sigue funcionando sin el personaje
+        console.error('[gam] JotAI desactivado por un error:', err);
+      }
+    }
+
     if (active && labelOverride) {
       projected.copy(labelOverride.pos).project(camera);
       const px = (projected.x * 0.5 + 0.5) * container.clientWidth;
@@ -1819,6 +1903,13 @@ export function mount(container, hotspots) {
       projected.set(f.x, hovered.userData.labelTop + hovered.userData.lift, f.z).project(camera);
       const px = (projected.x * 0.5 + 0.5) * container.clientWidth;
       const py = (-projected.y * 0.5 + 0.5) * container.clientHeight;
+      label.style.transform = `translate(${px.toFixed(1)}px, ${py.toFixed(1)}px) translate(-50%, -100%)`;
+      label.classList.add('is-visible');
+    } else if (jotaiHovered && !zoomed && !jotaiBubble.visible) {
+      jotai.headTop(projected).project(camera);
+      const px = (projected.x * 0.5 + 0.5) * container.clientWidth;
+      const py = (-projected.y * 0.5 + 0.5) * container.clientHeight;
+      if (label.textContent !== '🤖 JotAI') label.textContent = '🤖 JotAI';
       label.style.transform = `translate(${px.toFixed(1)}px, ${py.toFixed(1)}px) translate(-50%, -100%)`;
       label.classList.add('is-visible');
     } else {
@@ -1898,6 +1989,7 @@ export function mount(container, hotspots) {
     window.removeEventListener('keydown', onKeyDown);
     if (active) active.exit?.();
     stationSys.dispose();
+    jotaiBubble.destroy();
     hud.destroy();
     label.remove();
     // Un solo recorrido: geometrías, materiales y sus texturas (sprites de

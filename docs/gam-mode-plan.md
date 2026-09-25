@@ -724,6 +724,15 @@ Antes de dar el spike por bueno, probarlo en navegador de punta a punta
 (desktop y mobile — el modo táctil/`pointer:coarse` de esta escena nueva
 **no se probó nada todavía**, ni siquiera por código).
 
+## v5 — Lumbre + JotAI en el cuarto (2026-09-24/25)
+
+- **Lumbre** salió de `dev-projects.json` / `EXPERIENCE_DATA` y pasó a ser un
+  póster interactivo en la pared izquierda del cuarto (estación `lumbre`:
+  capturas 1–4, enlaces a itch.io y al repo). Cuenta para el progreso (9 objetos).
+- **JotAI vive en el cuarto** como personaje 3D hecho en código. Plan, decisiones
+  y fases en **`docs/gam-jotai-plan.md`**. Fase 1 (modelo, caras, vida, mirada,
+  saludo y reacción al click) enviada; siguiente: Fase 2 (locomoción).
+
 ## Abierto / por confirmar con David
 
 - **¿El spike de Three.js se siente bien?** — pregunta central de la Fase 1

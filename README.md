@@ -54,11 +54,11 @@ Vite alone does **not** serve `api/*` — use `vercel dev` when you need JotAI's
 ```
 index.html        single page
 css/              base, sections, per-mode themes (themes/), widgets, background
-js/               ES modules; js/gam/ holds the Phaser room and minigames
+js/               ES modules; js/gam/ holds the Three.js room, its stations and JotAI in 3D
 api/              Vercel serverless functions
 data/             projects (dev/ia/sec), skills, personal info — fetched at runtime
 public/           images, project screenshots, certificates, CV
-docs/             design notes (gam mode, hero widgets, JotAI renders)
+docs/             design notes (gam mode, JotAI in the room, hero widgets, JotAI renders)
 ```
 
 Project cards come from `data/{dev,ia,sec}-projects.json`; text fields can be `{ "es": …, "en": … }`.

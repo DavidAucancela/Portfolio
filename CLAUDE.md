@@ -346,7 +346,9 @@ objeto se vuelve interactivo **dentro de la escena** — ya no se abre un panel 
 - **Ciclo día/noche:** `applyEnv(t)` en la escena (0 día · 0.5 atardecer = aspecto por
   defecto · 1 noche) mueve sol, relleno, luz de ventana, lámpara, neón, cielo de la ventana
   y fondo; lo anima la estación de la ventana y **se queda como el jugador lo dejó**.
-- **JotAI vive en el cuarto** (plan completo y fases en **`docs/gam-jotai-plan.md`**). Hecho
+- **JotAI vive en el cuarto** (plan completo y fases en **`docs/gam-jotai-plan.md`** — su
+  **§11 "Traspaso"** tiene el estado actual, convenciones del rig, el arranque de la Fase 2
+  y cómo verificar en headless: leerla antes de seguir). Hecho
   100% en código (`gam-jotai.js`), calcado del render `public/images/jotai/body.png`: ojos LED
   en aro, boca LED en canvas (oscura se perdía sobre la cara gris), cuello de resorte, placa
   "JotAI", piernas con **ruedas** (rueda, no camina). Rig = `Group`s con nombre; animación =

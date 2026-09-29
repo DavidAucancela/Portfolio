@@ -1,7 +1,8 @@
 # Modo `.gam` — JotAI como personaje del cuarto (plan)
 
-> Estado: **aprobado** (2026-09-24) — **Fase 1 enviada** (revisada por David en
-> navegador el 2026-09-25). Siguiente: Fase 2 (locomoción). Se apoya en el diorama
+> Estado: **aprobado** (2026-09-24) — **fases 1 a 3 hechas** (la 1 revisada por
+> David en navegador el 2026-09-25; la 2 y la 3 verificadas en headless el
+> 2026-09-29). Siguiente: Fase 4 (estaciones). Se apoya en el diorama
 > Three.js actual (`gam-three-scene.js` + `gam-stations.js`); ver
 > `docs/gam-mode-plan.md` para el contexto del modo.
 >
@@ -276,14 +277,14 @@ autónomo de día.
 otro.* (verificado: los 90 pares de spots tienen camino y cada tramo tiene
 línea de vista)
 
-**Fase 3: la noche (el caso principal pedido).** — ⏭ **SIGUIENTE** (ver §11). Rutina completa: se estira →
+**Fase 3: la noche (el caso principal pedido).** — ✔ **HECHA** (ver §11). Rutina completa: se estira →
 Pukis → escritorio → escribe → se duerme. Amanecer → despierta. Arranque
 nocturno ya dormido, cámara cinemática en la ventana, skip, y click o
 escritorio para despertarlo.
 ✅ *La secuencia se lee como una pequeña historia sin que el visitante
 toque nada más.*
 
-**Fase 4: estaciones.** Piano (manos por IK + demo del Reto) → ajedrez (rival)
+**Fase 4: estaciones.** — ⏭ **SIGUIENTE** (ver §11). Piano (manos por IK + demo del Reto) → ajedrez (rival)
 → malabares (cascada en sus manos) → patineta (pestaña Montar + caída) →
 Pukis, estante, Lumbre, puerta. Una estación por commit.
 ✅ *Ninguna estación agrega espera y todas funcionan igual con JotAI
@@ -320,7 +321,7 @@ Todas resueltas el 2026-09-24 — ver el bloque al inicio del documento.
 
 ---
 
-## 11. Traspaso — estado actual y cómo continuar (2026-09-29, tras la Fase 2)
+## 11. Traspaso — estado actual y cómo continuar (2026-09-29, tras la Fase 3)
 
 > Pensado para retomar en un chat nuevo sin contexto previo. Leer esto + §8.
 
@@ -329,20 +330,21 @@ Todas resueltas el 2026-09-24 — ver el bloque al inicio del documento.
 - **Rama:** `feat/gam-jotai` (sale de `feat/gam-mode-threejs-spike`, pusheada a
   `origin`). Sin PR todavía. Commits: `66ef3d6` Lumbre como póster ·
   `ebaa30d` fix effects · `49049aa`/`633e7e9` git-history · `8c7e319` **JotAI Fase 1** ·
-  **Fase 2** en el commit siguiente al traspaso `ff7e2af` (`git log --grep "Fase 2"`).
+  **Fase 2** `50cd1b7` · **Fase 3** en el commit siguiente (`git log --grep "Fase 3"`).
 - `data/git-history.json` lo regenera `npm run dev` al arrancar: aparece
   modificado casi siempre y se commitea aparte como `chore(data)`.
 
-### Qué hay hecho (fases 1 y 2)
+### Qué hay hecho (fases 1 a 3)
 
 | Archivo | Qué contiene |
 |---|---|
-| `js/gam/gam-jotai.js` | `createJotai({ reducedMotion, lite, scale=0.92 })`. Modelo en código (~1.05 u de alto). Constantes arriba: `COLORS`, `MOVE` (locomoción), `POSES` (solo `stand`), `CLIPS` (`wave`, `nod`, `giggle`), `FACES` (9 caras). API: `root`, `meshes`, `setFace(name, holdMs)`, `play(clip) → Promise`, `setLookTarget(v3\|null)`, `setTalking(bool)`, `headTop()`, `headWorld()`, `followPath(pts, { facing }) → Promise<bool>`, `faceTo(rad)`, `stop()`, getters `moving` / `busy`, `update(now, dt)`, `dispose()` |
+| `js/gam/gam-jotai.js` | `createJotai({ reducedMotion, lite, scale=0.92 })`. Modelo en código (~1.05 u de alto). Constantes arriba: `COLORS`, `MOVE` (locomoción), `POSES` (`stand`, `sit`, `type`, `sleepDesk`, `crouch`), `CLIPS` (`wave`, `nod`, `giggle`, `stretch`, `typing` (loop), `pet`, `startle`), `FACES` (10 caras, con `yawn`). API: `root`, `meshes`, `setFace(name, holdMs)`, `setPose(name)`, `play(clip, { loop }) → Promise`, `stopClip()`, `setLookTarget(v3\|null)`, `setTalking(bool)`, `headTop()`, `headWorld()`, `followPath(pts, { facing }) → Promise<bool>`, `faceTo(rad)`, `slideTo({x,z}, ms, heading) → Promise<bool>`, `stop()`, getters `moving` / `busy` / `face`, `update(now, dt)`, `dispose()`. Clips y caras usan el reloj del loop (`clockNow` = el `now` del último update), no `performance.now()` |
 | `js/gam/gam-jotai-nav.js` | `createNavGrid(boxes, { half, cell, radius })` → `findPath(from, to)`, `nearestFree(x, z)`, `isFree`, `clear(a, b)` (línea de vista), `debugString()` (mapa ASCII). A\* 8-conexo sin cortar esquinas + suavizado. Si el destino cae en una celda bloqueada, termina en la libre más cercana |
-| `js/gam/gam-jotai-bubble.js` | `createJotaiBubble(container, { reducedMotion })` → `say(text, {duration})`, `hide()`, `update(now, camera, anchorV3, w, h)`, getters `typing` / `visible`, `destroy()` |
-| `js/gam/gam-jotai-brain.js` | `createJotaiBrain({ jotai, bubble, nav, spots, viewHeading })` → `poke()`, `goTo(id)` (QA), `current`, `update(now, { zoomed, focusLook, cursorLook })`. Saludo 1×/sesión (`sessionStorage 'gam-jotai-hello'`), 4 toques en 4 s = cosquillas, paseo autónomo, `makeRoom`. **Acá se cuelgan las rutinas de las fases 3–4** |
-| `data/gam-jotai.json` | Frases `{es,en}`: `hello`, `poke`, `tickle`, `muse_<spot>`. Agregar claves nuevas acá (y un fallback en `FALLBACK` del brain si no puede faltar) |
-| `css/gam-tv.css` | `.gam-jotai-bubble*` (justo debajo de `.gam-label`) |
+| `js/gam/gam-jotai-bubble.js` | `createJotaiBubble(container, { reducedMotion })` → `say(text, {duration})`, `hide()`, `update(now, camera, anchorV3, w, h)`, getters `typing` / `visible`, `destroy()`. **`createJotaiCaption(container)`** → `show(text, onSkip, skipLabel)`, `hide()`: subtítulo de escena abajo al centro con botón "Saltar" (`.gam-jotai-caption*` en `gam-tv.css`) |
+| `js/gam/gam-jotai-brain.js` | `createJotaiBrain({ jotai, bubble, caption, nav, spots, props, viewHeading, reducedMotion })` → `poke()`, `skip()`, `wantsStage(t)`, `update(now, { zoomed, focusLook, cursorLook, envT })`, QA: `goTo(id)`, `night()`, `dawn()`, getters `current` / `routine` / `seated` / `sleeping`. `props` = `{ chair, petPukis, emit }` (ver abajo). **Acá se cuelgan las estaciones de la Fase 4** |
+| `data/gam-jotai.json` | Frases `{es,en}`: `hello`, `poke`, `tickle`, `night`, `wake`, `morning`, `muse_<spot>`. Agregar claves nuevas acá (y un fallback en `FALLBACK` del brain si no puede faltar) |
+| `css/gam-tv.css` | `.gam-jotai-bubble*` y `.gam-jotai-caption*` (justo debajo de `.gam-label`) |
+| `js/gam/gam-stations.js` | Pukis expone `react({ sound })` (corazones, cola, orejas, sin HUD). La ventana llama `c.onEnvScene(t)` y, si JotAI va a hacer su rutina, vuelve sola a la vista general a los 800 ms. `createStations` devuelve además `emit(glyph, color, pos, opts)` |
 
 **Integración en `gam-three-scene.js`** (buscar por estos nombres):
 - Junto a `FURNITURE`: `JOTAI_HOME` (posición inicial y spot `home`), `JOTAI_SPOTS`
@@ -384,34 +386,58 @@ Todas resueltas el 2026-09-24 — ver el bloque al inicio del documento.
   está a menos de `CLEARANCE` (1.4 u), se va a `home` (evita taparle a la cámara el
   ajedrez/piano). En la Fase 4 las estaciones lo usan en vez de apartarlo.
 
-### Arranque concreto de la Fase 3 (la noche)
+### La noche (Fase 3) — cómo funciona
 
-1. **Enterar al brain del día/noche.** `env.animateTo` y `applyEnv(envFromClock())` en
-   la escena (bloque `/* ── Momento del día`); la estación de la ventana llama
-   `env.animateTo(t, 4200, …)` en su `goTo(t)` (`gam-stations.js`). Agregar
-   `brain.cue('env', t)` (o pasar `env.t` en `update`) y disparar la rutina `night` al
-   cruzar ~0.75 hacia arriba y `dawn` al bajar de ~0.25. Arranque con `envFromClock()`
-   de noche → ya dormido en el escritorio (sin rutina).
-2. **Poses/clips nuevos** en `gam-jotai.js` (convenciones del rig abajo): `stretch`
-   (cuello de resorte al máximo: `J.neck.scale.y`), `crouch` (pose, para Pukis), `sit`
-   (pose; bajar `hipsY` y doblar `hipL/R`/`kneeL/R`), `type` (clip en loop, manos
-   alternando), `sleep` (cabeza sobre el escritorio, con la cara `sleeping` que ya existe).
-   Los clips de loop no existen todavía: `play()` resuelve al final; hará falta un
-   `loop: true` o re-lanzarlo desde el brain.
-3. **Silla.** Exponer `out.refs.chair` en `case 'desk'` (hoy es un `Group` local sin
-   ref, girado 0.5 rad a propósito). Para sentarse: ir al spot `desk` (libre) con
-   `findPath`, después un último tramo **sin grilla** hasta la silla
-   (`jotai.followPath([silla], { facing })` — la silla está bloqueada en la grilla),
-   girar la silla hacia el escritorio y arrimarla; al levantarse, al revés.
-4. **Pukis.** La reacción (cola, orejas, corazones) vive en `pet()` de `pukisStation`
-   (`gam-stations.js`, ~línea 781). Extraerla a una función reutilizable para que la
-   rutina nocturna la dispare sin abrir la estación.
-5. **Rutina** en el brain con los mismos `goTo`/`sleep`/token: `stretch` → `goTo('pukis')`
-   + `crouch` + acariciar → `goTo('desk')` + sentarse + `type` ~8 s → `sleep`
-   (queda `sleeping` hasta amanecer o click). Prioridad: rutina de ambiente > paseo;
-   poke/estación la interrumpen (si duerme, se despierta sobresaltado con "!").
-6. **Cámara:** al pulsar "Anochecer" la estación de la ventana vuelve sola a la vista
-   general tras ~0.8 s, con subtítulo en el HUD y botón para saltar (ver §3).
+- **Fase día/noche** en el brain con histéresis sobre `env.t` (lo pasa la escena en
+  `update`): `≥ NIGHT_T` (0.75) → noche, `≤ DAY_T` (0.25) → día. El primer `update`
+  decide: si el cuarto arranca de noche (`envFromClock()`), `startAsleep()` lo deja ya
+  dormido en la silla, sin rutina ni subtítulo. El saludo espera a que esté despierto.
+- **Rutinas** con `run(nombre, fn)` (token `seq`; cada paso chequea `ok()` al volver de
+  un `await`): `stroll` (día), `night`, `bed` (la corta: silla → teclear 2.5 s → dormir),
+  `dawn`, `goTo`. `interrupt()` corta la vigente y deja el cuerpo coherente: termina las
+  animaciones de la silla de golpe (`finishAnims`), y si estaba subiéndose o bajándose
+  de la silla aplica `snap` (estado final). `sleep`/`anim` corren con el reloj del loop.
+- **`night`**: bostezo + `stretch` → Pukis (`crouch`, `slideTo` hasta ~0.35 de la cabeza,
+  clip `pet` + 3 × `props.petPukis()`) → `sitDown` → `typeThenSleep` (pose `type` + loop
+  `typing` mirando el monitor secundario, bostezo, `sleepDesk` + cara `sleeping`; una "z"
+  cada `Z_EVERY`). ~26 s en total.
+- **`dawn`**: bosteza, `stretch` (sentado si estaba en la silla), `getUp`, saluda con
+  `morning`. **`skip()`** (botón Saltar) salta al estado final de la que esté corriendo.
+- **Silla** (`makeChairProp()` en la escena, `out.refs.chair` en `case 'desk'`):
+  `set(k)` va de su lugar (k=0) a arrimada (k=1, `TUCK`) **girada −0.6 rad hacia el
+  monitor secundario** — recta, el respaldo quedaba entre la cámara isométrica y JotAI y
+  lo tapaba. `seat()` → `{ x, z, heading, side, look }`. `sitDown`: `travel('desk')` →
+  silla a k=1 → rueda al `side` (fuera de la grilla) → `setPose('sit')` + `slideTo` al
+  asiento. `getUp` al revés. Sentado, la escena le suma a `root.y` el `lift` del hover
+  del escritorio.
+- **Despertarse**: toque mientras duerme o abrir el escritorio (`onZoom` con `seated`)
+  → `wakeStartled()` (cara `confused`, clip `startle`, glifo "!"); queda sentado y a los
+  `BACK_TO_SLEEP` (10 s) de estar solo corre `bed`. De noche y despierto nunca pasea.
+- **Cámara**: la ventana (`windowStation.goTo`) pregunta `c.onEnvScene(t)` →
+  `brain.wantsStage(t)`; si hay rutina, sale a la vista general a los 800 ms. El
+  subtítulo se oculta mientras hay zoom y vuelve al salir.
+- Reduced-motion: las rutinas pasan igual, por cortes (sin rodar ni clips).
+
+### Arranque concreto de la Fase 4 (estaciones)
+
+Una estación por commit, en el orden de §8. Pautas comunes:
+1. **Reemplazar `onZoom` por estación.** Hoy, al enfocar un objeto junto al que está,
+   se aparta (`makeRoom`, dentro de `onZoom`). Para las estaciones con papel de JotAI,
+   `onZoom(f)` debe ir al spot de esa estación (`run('station', …)`) y hacer lo suyo; al
+   salir del zoom, volver a la iniciativa propia. Sin JotAI (`jotaiFailed`) todo tiene
+   que seguir igual.
+2. **Capa de foco:** mientras esté en la estación activa, `setFocusLayer(jotai.root,
+   true)` (función de la escena) para que no salga desenfocado; apagarla al salir.
+3. **Bus de eventos:** pasar `cue: (evento, datos) => jotaiBrain.cue?.(evento, datos)`
+   en el `base` de `createStations` y llamarlo con `c.cue?.(…)` desde las estaciones
+   (tabla de §4: `piano:key`, `chess:*`, `pukis:pet`, …).
+4. **Sentarse en otros lados** (banqueta del piano, banquito del ajedrez): generalizar
+   `sitDown`/`getUp` para recibir un "prop" como `chair` (`set(k)` opcional + `seat()`).
+   La banqueta del piano es más baja que la silla: la pose `sit` tiene `hipsY` fijo
+   (0.285 ≈ asiento a 0.6 u) — hará falta pasar la altura o una variante de pose.
+5. **Piano** (primera): `createPiano({ onFlash })` ya avisa cada nota (jugador o
+   demo). Sin IK todavía: alcanza con mover la mano del lado de la tecla (dos poses
+   por lado) y que la cabeza la siga con `gaze`.
 
 ### Cómo verificar (sin la extensión de Chrome)
 
@@ -447,10 +473,10 @@ y `nav.clear()` en cada tramo.
 
 ### Pendientes y deudas conocidas
 
-- JotAI no entra en `FOCUS_LAYER`: al enfocar un objeto sale desenfocado (se
-  resuelve en la Fase 4 cuando esté junto a la estación, ver §3).
-- El brain todavía no sabe de estaciones ni de día/noche (`env.t`) — Fase 3/4.
+- JotAI no entra en `FOCUS_LAYER`: al enfocar un objeto sale desenfocado (Fase 4, ver arriba).
+- Las estaciones no saben de JotAI (salvo la ventana y Pukis vía `react`) — Fase 4.
 - Paseando puede cruzar por delante de un objeto mientras la cámara vuela hacia él
   (`makeRoom` solo mira dónde está y a dónde va, no el rayo de la cámara).
+- La pantalla del escritorio no pasa a "protector" mientras duerme (el plan lo sugería).
 - Nada de analítica todavía (`gam_jotai` en `js/analytics.js`, Fase 5).
 - No se probó en un dispositivo táctil real ni en un navegador con GPU (solo headless).

@@ -41,7 +41,7 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { createHud } from './gam-hud.js';
 import { createStations } from './gam-stations.js';
 import { createJotai } from './gam-jotai.js';
-import { createJotaiBubble } from './gam-jotai-bubble.js';
+import { createJotaiBubble, createJotaiCaption } from './gam-jotai-bubble.js';
 import { createJotaiBrain } from './gam-jotai-brain.js';
 import { createNavGrid } from './gam-jotai-nav.js';
 
@@ -930,6 +930,7 @@ export function mount(container, hotspots) {
         chair.position.set(-0.15, 0, 1.35);
         chair.rotation.y = 0.5;
         group.add(chair);
+        out.refs.chair = chair;   // JotAI la arrima al escritorio para sentarse (ver makeChairProp)
         const addC = (...args) => addPart(chair, parts, ...args);
         for (let i = 0; i < 5; i++) {
           const a = (i / 5) * Math.PI * 2;
@@ -1284,16 +1285,56 @@ export function mount(container, hotspots) {
   } catch (err) {
     console.error('[gam] JotAI sin navegación (se queda en su rincón):', err);
   }
+  /** La silla del escritorio como "prop" para el brain: `set(k)` la lleva de
+   *  su lugar (k=0, girada para no tapar las pantallas) a arrimada al
+   *  escritorio (k=1); `seat()` = dónde queda JotAI sentado (mundo), hacia
+   *  dónde mira, el costado libre desde el que se sube y la pantalla que mira.
+   *  Arrimada queda GIRADA hacia el monitor secundario (que ya mira al
+   *  usuario): recta, el respaldo quedaba entre la cámara isométrica y JotAI
+   *  y lo tapaba casi entero. */
+  function makeChairProp() {
+    const desk = objects.get('desk');
+    const ch = desk?.refs.chair;
+    if (!ch) return null;
+    const REST = { x: ch.position.x, z: ch.position.z, ry: ch.rotation.y };
+    const TUCK = { x: 0.35, z: 0.72, ry: -0.6 };
+    const v = new THREE.Vector3();
+    const w = (x, y, z) => { const p = desk.root.localToWorld(v.set(x, y, z)); return { x: p.x, y: p.y, z: p.z }; };
+    return {
+      set(k) {
+        ch.position.x = REST.x + (TUCK.x - REST.x) * k;
+        ch.position.z = REST.z + (TUCK.z - REST.z) * k;
+        ch.rotation.y = REST.ry + (TUCK.ry - REST.ry) * k;
+      },
+      seat() {
+        const s = w(TUCK.x, 0, TUCK.z);
+        // costado = eje +x local de la silla girada (por ahí se sube/baja)
+        const side = w(TUCK.x + 0.5 * Math.cos(TUCK.ry), 0, TUCK.z - 0.5 * Math.sin(TUCK.ry));
+        const look = desk.root.localToWorld(new THREE.Vector3(0.72, 1.19, -0.22));   // monitor secundario
+        return { x: s.x, z: s.z, heading: desk.f.rotY + Math.PI + TUCK.ry, side: { x: side.x, z: side.z }, look };
+      },
+    };
+  }
+
+  const jotaiCaption = createJotaiCaption(container);
   const jotaiBrain = createJotaiBrain({
-    jotai, bubble: jotaiBubble, nav: jotaiNav, spots: jotaiSpots,
+    jotai, bubble: jotaiBubble, caption: jotaiCaption, nav: jotaiNav, spots: jotaiSpots,
+    reducedMotion,
     viewHeading: Math.atan2(ISO_DIR.x, ISO_DIR.z),   // de frente a la cámara
+    props: {
+      chair: makeChairProp(),
+      // `stations` / `stationSys` se crean más abajo: estas flechas recién corren desde el loop
+      petPukis: () => stations.get('pukis')?.react?.({ sound: false }),
+      emit: (...args) => stationSys.emit(...args),
+    },
   });
+  const deskRoot = objects.get('desk')?.root;
   const jotaiLook = new THREE.Vector3();
   const jotaiAnchor = new THREE.Vector3();
   let jotaiHovered = false;
   let jotaiFailed = false;    // un error en su update no debe congelar el loop del cuarto
   // QA desde consola: __gamJotai.brain.goTo('pukis') · console.log(__gamJotai.nav.debugString())
-  if (import.meta.env.DEV) window.__gamJotai = { jotai, brain: jotaiBrain, nav: jotaiNav, spots: jotaiSpots };
+  if (import.meta.env.DEV) window.__gamJotai = { jotai, brain: jotaiBrain, bubble: jotaiBubble, nav: jotaiNav, spots: jotaiSpots };
 
   /* ── Momento del día: 0 = día · 0.5 = atardecer (el aspecto por defecto) ·
      1 = noche. Lo anima la estación de la cama (`env.animateTo`): mueve el
@@ -1341,6 +1382,7 @@ export function mount(container, hotspots) {
     },
   };
   applyEnv(envFromClock());
+  if (import.meta.env.DEV && window.__gamJotai) window.__gamJotai.env = env;   // QA: env.animateTo(1, 4200)
 
   /* ── Postprocesado: GTAO (oscurece esquinas/contactos) + contorno ámbar
      del objeto bajo el cursor — ambos apagados en táctil — + bloom con
@@ -1465,6 +1507,8 @@ export function mount(container, hotspots) {
     setLabel: (text, pos) => { labelOverride = text ? { text, pos } : null; },
     leave: () => leaveFocus(),
     hotspotFor: (id) => hotspotsById.get(id),
+    // la ventana vuelve sola a la vista general si JotAI va a dormirse / despertarse
+    onEnvScene: (t) => !jotaiFailed && jotaiBrain.wantsStage(t),
   }, objects);
   const stations = stationSys.stations;
 
@@ -1944,7 +1988,9 @@ export function mount(container, hotspots) {
           jotaiLook.copy(origin).addScaledVector(direction, jotaiLook.dot(direction) - 1.5);
           cursorLook = jotaiLook;
         }
-        jotaiBrain.update(now, { zoomed, focusLook, cursorLook });
+        jotaiBrain.update(now, { zoomed, focusLook, cursorLook, envT });
+        // sentado, sube y baja con el escritorio cuando este se levanta por el hover
+        jotai.root.position.y = jotaiBrain.seated && deskRoot ? deskRoot.userData.lift : 0;
         jotai.update(now, dt);
         // si se aleja rodando de debajo del cursor, deja de estar resaltado
         if (jotaiHovered && jotai.moving && !zoomed && pickAny() !== 'jotai') setJotaiHover(false);
@@ -2054,6 +2100,7 @@ export function mount(container, hotspots) {
     if (active) active.exit?.();
     stationSys.dispose();
     jotaiBubble.destroy();
+    jotaiCaption.destroy();
     hud.destroy();
     label.remove();
     // Un solo recorrido: geometrías, materiales y sus texturas (sprites de

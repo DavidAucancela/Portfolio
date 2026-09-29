@@ -28,8 +28,13 @@
  *   { root, meshes, setFace(name, holdMs?), play(clip) → Promise,
  *     setLookTarget(vec3|null), setTalking(bool), headTop(out?),
  *     headWorld(out?), followPath(pts, { facing }) → Promise<bool>,
- *     faceTo(rad) → Promise<bool>, stop(), moving, busy, update(now, dt),
- *     dispose() }
+ *     faceTo(rad) → Promise<bool>, slideTo({x,z}, ms, heading) → Promise<bool>,
+ *     stop(), setPose(name), play(clip, { loop }), stopClip(), moving, busy,
+ *     face, update(now, dt), dispose() }
+ *
+ * Fase 3: poses `sit` / `type` / `sleepDesk` / `crouch`, clips `stretch`
+ * (cuello de resorte al máximo) / `typing` (loop) / `pet` / `startle`, cara
+ * `yawn`. `slideTo` = tramos cortos fuera de la grilla (subirse a la silla).
  */
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
@@ -65,20 +70,57 @@ const WHEEL_TRACK = 0.1;   // media trocha: distancia de cada rueda al centro
    (+x) hacia afuera, rz < 0 el derecho; rx < 0 lleva el brazo/antebrazo
    hacia adelante (+z). `hipsY` (número) sube/baja la cadera.
 ──────────────────────────────────────────────────── */
+const STAND_ARMS = {
+  shoulderL: [0.05, 0, 0.12], shoulderR: [0.05, 0, -0.12],
+  elbowL: [-0.25, 0, 0], elbowR: [-0.25, 0, 0],
+};
+/* Sentado en la silla del escritorio: muslos adelante, canillas abajo y la
+   cadera subida hasta el asiento (≈0.6 u de mundo; ver `chair` en la escena). */
+const SIT_LEGS = { hipL: [-1.45, 0, 0], hipR: [-1.45, 0, 0], kneeL: [1.45, 0, 0], kneeR: [1.45, 0, 0], hipsY: 0.285 };
+/* Brazos sobre el escritorio (trackpad): el torso se inclina para llegar. */
+const TYPE_ARMS = {
+  torso: [0.32, 0, 0],
+  shoulderL: [-1.22, 0, 0.12], shoulderR: [-1.22, 0, -0.12],
+  elbowL: [-0.4, 0, 0], elbowR: [-0.4, 0, 0],
+};
+/* `neckS` (número) estira el cuello de resorte: la escala extra en Y. */
 const POSES = {
-  stand: {
-    shoulderL: [0.05, 0, 0.12], shoulderR: [0.05, 0, -0.12],
-    elbowL: [-0.25, 0, 0], elbowR: [-0.25, 0, 0],
+  stand: { ...STAND_ARMS },
+  sit: { ...STAND_ARMS, ...SIT_LEGS },
+  type: { ...SIT_LEGS, ...TYPE_ARMS },
+  // dormido sobre el escritorio: brazos cruzados (antebrazos hacia adentro) y la cabeza encima
+  sleepDesk: {
+    ...SIT_LEGS,
+    torso: [0.55, 0, 0], head: [0.35, 0, 0.18],
+    shoulderL: [-1.3, 0, 0.35], shoulderR: [-1.3, 0, -0.35],
+    elbowL: [0, 0, -1.35], elbowR: [0, 0, 1.35],
+  },
+  // agachado junto a Pukis: rodillas flexionadas (la cadera baja para que las ruedas sigan en el piso)
+  crouch: {
+    ...STAND_ARMS,
+    hipL: [-0.6, 0, 0], hipR: [-0.6, 0, 0], kneeL: [1.2, 0, 0], kneeR: [1.2, 0, 0],
+    hipsY: -0.055, torso: [0.4, 0, 0],
   },
 };
 
 /* CLIPS — [ms, pose] ; `{}` = volver a la pose base. Se interpolan con
-   smoothstep entre claves y terminan siempre en la pose base.
+   smoothstep entre claves y terminan siempre en la pose base (salvo los que
+   se tocan en loop, cuya última clave es igual a la primera). Las
+   articulaciones que un clip no nombra siguen la pose base, y `hipsY` /
+   `neckS` de un clip se SUMAN a los de la base: así saludar o reírse
+   sentado no lo baja de la silla.
    Saludo: brazo derecho afuera (hombro rz −1.9 ≈ un poco sobre la horizontal)
    y el antebrazo apuntando arriba (codo rz ≈ −π − hombro), oscilando a los
    lados de la vertical. rx < 0 lo adelanta un poco para que no quede detrás
    del torso visto desde la cámara isométrica. */
 const WAVE_UP = { shoulderR: [-0.35, 0, -1.9], head: [0, 0, 0.12] };
+const STRETCH_UP = {
+  shoulderL: [-0.25, 0, 2.75], shoulderR: [-0.25, 0, -2.75], elbowL: [0, 0, 0], elbowR: [0, 0, 0],
+  torso: [-0.12, 0, 0], head: [-0.3, 0, 0], neckS: 1.4, hipsY: 0.02,
+};
+const TYPE_KEYS = { shoulderL: TYPE_ARMS.shoulderL, shoulderR: TYPE_ARMS.shoulderR };
+const PET_A = { shoulderR: [-0.95, 0, -0.18], elbowR: [-0.4, 0, 0] };
+const PET_B = { shoulderR: [-1.25, 0, -0.18], elbowR: [-0.1, 0, 0] };
 const CLIPS = {
   wave: [
     [0, {}],
@@ -106,6 +148,34 @@ const CLIPS = {
     [720, { shoulderL: [-0.9, 0, 0.35], shoulderR: [-0.9, 0, -0.35], elbowL: [-1.5, 0, 0], elbowR: [-1.5, 0, 0], torso: [0.1, 0.1, 0], hipsY: -0.02, head: [0, 0, 0.2] }],
     [1100, {}],
   ],
+  // se estira: brazos arriba, cuello de resorte al máximo, un vaivén a los lados
+  stretch: [
+    [0, {}],
+    [650, STRETCH_UP],
+    [1400, { ...STRETCH_UP, torso: [-0.12, 0, 0.1] }],
+    [2100, { ...STRETCH_UP, torso: [-0.12, 0, -0.1] }],
+    [2600, STRETCH_UP],
+    [3200, {}],
+  ],
+  // teclea: los antebrazos alternan sobre el trackpad (loop; el torso lo pone la pose `type`)
+  typing: [
+    [0, { ...TYPE_KEYS, elbowL: [-0.62, 0, 0], elbowR: [-0.3, 0, 0], wristL: [0.35, 0, 0] }],
+    [170, { ...TYPE_KEYS, elbowL: [-0.3, 0, 0], elbowR: [-0.62, 0, 0], wristR: [0.35, 0, 0] }],
+    [340, { ...TYPE_KEYS, elbowL: [-0.62, 0, 0], elbowR: [-0.3, 0, 0], wristL: [0.35, 0, 0] }],
+  ],
+  // acaricia con la mano derecha, de adelante hacia atrás (sobre la pose `crouch`)
+  pet: [
+    [0, {}],
+    [350, PET_A], [700, PET_B], [1050, PET_A], [1400, PET_B], [1750, PET_A],
+    [2150, {}],
+  ],
+  // sobresalto: salta, brazos afuera, cabeza atrás
+  startle: [
+    [0, {}],
+    [110, { hipsY: 0.07, shoulderL: [0, 0, 0.95], shoulderR: [0, 0, -0.95], elbowL: [-0.4, 0, 0], elbowR: [-0.4, 0, 0], head: [-0.25, 0, 0] }],
+    [330, { hipsY: 0.015, shoulderL: [0, 0, 0.7], shoulderR: [0, 0, -0.7], elbowL: [-0.4, 0, 0], elbowR: [-0.4, 0, 0], head: [-0.1, 0, 0] }],
+    [750, {}],
+  ],
 };
 
 /* CARAS — mismos estados que el widget (ia-mascot.js) + sleeping.
@@ -121,6 +191,7 @@ const FACES = {
   confused:  { mouth: 'wavy',  eye: 1,    brows: [-0.35, 0.3],  browY: 0.006, led: 2.0 },
   pointing:  { mouth: 'smile', eye: 1,    brows: [0.1, -0.1],   browY: 0.006, led: 2.4 },
   sleeping:  { mouth: 'o',     eye: 0.1,  brows: [-0.12, 0.12], browY: -0.006, led: 0.6 },
+  yawn:      { mouth: 'open',  eye: 0.3,  brows: [-0.15, 0.15], browY: -0.004, led: 1.5 },
 };
 
 /** Boca LED en canvas (transparente, trazo cian como los ojos) — se repinta al
@@ -350,8 +421,10 @@ export function createJotai({ reducedMotion = false, lite = false, scale = 0.92 
   const cur = {};
   JOINT_NAMES.forEach((n) => { cur[n] = [0, 0, 0]; });
   let curHipsY = 0;
+  let curNeck = 0;
+  let clockNow = performance.now();   // reloj del loop (el `now` del último update)
   let basePose = POSES.stand;
-  let clip = null;          // { keys, t0, resolve }
+  let clip = null;          // { keys, t0, resolve, loop }
 
   let faceName = 'idle';
   let faceUntil = 0;
@@ -372,9 +445,10 @@ export function createJotai({ reducedMotion = false, lite = false, scale = 0.92 
   function evalClip(now) {
     if (!clip) return null;
     const keys = clip.keys;
-    const t = now - clip.t0;
+    let t = now - clip.t0;
     const end = keys[keys.length - 1][0];
-    if (t >= end) {
+    if (clip.loop) t %= Math.max(1, end);
+    else if (t >= end) {
       const r = clip.resolve;
       clip = null;
       r?.();
@@ -394,15 +468,34 @@ export function createJotai({ reducedMotion = false, lite = false, scale = 0.92 
   function setFace(name, holdMs = 0) {
     if (!FACES[name]) return;
     faceName = name;
-    faceUntil = holdMs ? performance.now() + holdMs : 0;
+    faceUntil = holdMs ? clockNow + holdMs : 0;
     if (!talking) mouth.paint(FACES[name].mouth);
   }
 
-  function play(name) {
+  /** Toca un clip (reemplaza al que estuviera sonando). `loop: true` lo
+   *  repite hasta `stopClip()` o el próximo `play()`; la promesa resuelve
+   *  al terminar o al ser reemplazado. */
+  function play(name, { loop = false } = {}) {
     const keys = CLIPS[name];
     if (!keys || reducedMotion) return Promise.resolve();
     clip?.resolve?.();
-    return new Promise((resolve) => { clip = { keys, t0: performance.now(), resolve }; });
+    return new Promise((resolve) => { clip = { keys, t0: clockNow, resolve, loop }; });
+  }
+  function stopClip() {
+    const r = clip?.resolve;
+    clip = null;
+    r?.();
+  }
+
+  /** Cambia la pose base (la transición la hace la misma amortiguación). */
+  function setPose(name) {
+    if (POSES[name]) basePose = POSES[name];
+  }
+
+  /** Canal escalar (`hipsY` / `neckS`): el de la base + lo que sume el clip. */
+  function channel(c, key) {
+    const b = basePose[key] ?? 0;
+    return c ? b + (c.pa[key] ?? 0) + ((c.pb[key] ?? 0) - (c.pa[key] ?? 0)) * c.k : b;
   }
 
   function setLookTarget(v) {
@@ -458,7 +551,10 @@ export function createJotai({ reducedMotion = false, lite = false, scale = 0.92 
   }
 
   const faceTo = (heading) => followPath([], { facing: heading });
-  function stop() { if (move) { speed = 0; finishMove(false); } }
+  function stop() {
+    if (move) { speed = 0; finishMove(false); }
+    if (slide) { const r = slide.resolve; slide = null; r(false); }
+  }
 
   /** Gira el cuerpo hacia `want` con la velocidad acotada; las ruedas giran
    *  en sentidos opuestos (giro sobre el eje). Devuelve el error restante. */
@@ -528,9 +624,43 @@ export function createJotai({ reducedMotion = false, lite = false, scale = 0.92 
     }
   }
 
+  /* Deslizamiento corto fuera de la grilla (subirse a la silla, arrimarse a
+     Pukis): interpola posición y rumbo con smoothstep; las ruedas giran por
+     la distancia. Cancela un followPath en curso. */
+  let slide = null;   // { fx, fz, tx, tz, fh, th, t0, ms, resolve }
+
+  function slideTo(p, ms = 450, heading = root.rotation.y) {
+    if (move) finishMove(false);
+    slide?.resolve?.(false);
+    if (reducedMotion) {
+      slide = null;
+      root.position.x = p.x; root.position.z = p.z; root.rotation.y = heading;
+      return Promise.resolve(true);
+    }
+    const fh = root.rotation.y;
+    return new Promise((resolve) => {
+      slide = { fx: root.position.x, fz: root.position.z, tx: p.x, tz: p.z, fh, th: fh + angDiff(heading, fh), t0: null, ms, resolve };
+    });
+  }
+
+  function updateSlide(now) {
+    if (!slide) return;
+    if (slide.t0 === null) slide.t0 = now;
+    const u = smooth(clamp((now - slide.t0) / slide.ms, 0, 1));
+    const px = root.position.x, pz = root.position.z;
+    root.position.x = slide.fx + (slide.tx - slide.fx) * u;
+    root.position.z = slide.fz + (slide.tz - slide.fz) * u;
+    root.rotation.y = slide.fh + (slide.th - slide.fh) * u;
+    const roll = Math.hypot(root.position.x - px, root.position.z - pz) / (WHEEL_R * scale);
+    J.wheelL.rotation.x += roll;
+    J.wheelR.rotation.x += roll;
+    if (u >= 1) { const r = slide.resolve; slide = null; r(true); }
+  }
+
   function update(now, dt) {
+    clockNow = now;
     const k = reducedMotion ? 1 : damp(14, dt);
-    if (!reducedMotion) updateMove(dt);
+    if (!reducedMotion) { updateMove(dt); updateSlide(now); }
 
     /* 1. Pose base + clip, amortiguada */
     const c = evalClip(now);
@@ -546,8 +676,8 @@ export function createJotai({ reducedMotion = false, lite = false, scale = 0.92 
       for (let i = 0; i < 3; i++) v[i] += (target[i] - v[i]) * k;
       J[n].rotation.set(v[0], v[1], v[2]);
     });
-    const hy = c ? ((c.pa.hipsY ?? basePose.hipsY ?? 0) + ((c.pb.hipsY ?? basePose.hipsY ?? 0) - (c.pa.hipsY ?? basePose.hipsY ?? 0)) * c.k) : (basePose.hipsY ?? 0);
-    curHipsY += (hy - curHipsY) * k;
+    curHipsY += (channel(c, 'hipsY') - curHipsY) * k;
+    curNeck += (channel(c, 'neckS') - curNeck) * (reducedMotion ? 1 : damp(8, dt));
 
     /* 2. Vida continua (respiración, balanceo, antena) */
     const alive = !reducedMotion && faceName !== 'sleeping';
@@ -571,7 +701,10 @@ export function createJotai({ reducedMotion = false, lite = false, scale = 0.92 
       J.shoulderR.rotation.z -= 0.1 * rollW;
       J.hips.position.y += Math.sin(rollDist * 26) * 0.004 * rollW;
     }
-    J.neck.scale.y = 1 + breath * (faceName === 'sleeping' ? 0.12 : 0.04);
+    // el resorte se estira (neckS) y respira; la cabeza es hija del cuello, así
+    // que se contra-escala para que solo suba, sin deformarse
+    J.neck.scale.y = (1 + curNeck) * (1 + breath * (faceName === 'sleeping' ? 0.12 : 0.04));
+    J.head.scale.y = 1 / J.neck.scale.y;
     if (!reducedMotion) {
       J.hips.rotation.z += Math.sin(now * 0.0006) * 0.012;
       J.antenna.rotation.z = Math.sin(now * 0.0013) * 0.1;
@@ -663,8 +796,9 @@ export function createJotai({ reducedMotion = false, lite = false, scale = 0.92 
 
   return {
     root, meshes, setFace, play, setLookTarget, setTalking, headTop, headWorld,
-    followPath, faceTo, stop, update, dispose,
-    get moving() { return !!move; },
-    get busy() { return !!move || !!clip; },   // rodando o en medio de un clip
+    followPath, faceTo, slideTo, stop, setPose, stopClip, update, dispose,
+    get moving() { return !!move || !!slide; },
+    get busy() { return !!move || !!slide || !!clip; },   // rodando o en medio de un clip
+    get face() { return faceName; },
   };
 }

@@ -981,6 +981,48 @@
   .gam-jotai-bubble__caret { animation: none; }
 }
 
+/* Subtítulo de escena de JotAI (anochecer / amanecer) + botón Saltar —
+   abajo al centro del cuarto. El contenedor no bloquea el cuarto; solo el
+   botón recibe clicks. */
+.gam-jotai-caption {
+  position: absolute;
+  left: 50%;
+  bottom: 1.25rem;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: calc(100% - 2rem);
+  padding: 0.45rem 0.5rem 0.45rem 0.9rem;
+  font: 500 0.8rem/1.4 var(--font-mono, monospace);
+  color: #eef7ff;
+  background: rgba(8, 14, 20, 0.88);
+  border: 1px solid rgba(56, 200, 255, 0.45);
+  border-radius: 999px;
+  box-shadow: 0 0 18px rgba(56, 200, 255, 0.15);
+  transform: translate(-50%, 8px);
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+}
+.gam-jotai-caption.is-visible { opacity: 1; transform: translate(-50%, 0); }
+.gam-jotai-caption__skip {
+  pointer-events: auto;
+  flex: none;
+  padding: 0.25rem 0.7rem;
+  font: 600 0.75rem var(--font-mono, monospace);
+  color: #38c8ff;
+  background: rgba(56, 200, 255, 0.1);
+  border: 1px solid rgba(56, 200, 255, 0.5);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.gam-jotai-caption__skip:hover,
+.gam-jotai-caption__skip:focus-visible { background: rgba(56, 200, 255, 0.22); outline: none; }
+@media (prefers-reduced-motion: reduce) {
+  .gam-jotai-caption { transition: none; }
+}
+
 /* ────────────────────────────────────────────────────
    HUD de las estaciones (gam-hud.js) — al hacer click en un objeto del
    cuarto la cámara hace zoom y el objeto se vuelve interactivo en la

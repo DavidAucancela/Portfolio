@@ -80,3 +80,43 @@ export function createJotaiBubble(container, { reducedMotion = false } = {}) {
     destroy() { el.remove(); sr.remove(); },
   };
 }
+
+/**
+ * Subtítulo de escena (Fase 3): una línea fija abajo del cuarto mientras
+ * JotAI hace una rutina "de película" (anochecer / amanecer), con un botón
+ * para saltarla. Es DOM real (el botón es clicable y enfocable); el texto va
+ * en `role="status"`. Estilos: `.gam-jotai-caption*` en css/gam-tv.css.
+ */
+export function createJotaiCaption(container, { skipLabel = 'Saltar ⏭' } = {}) {
+  const el = document.createElement('div');
+  el.className = 'gam-jotai-caption';
+  el.hidden = true;
+  el.innerHTML = '<span class="gam-jotai-caption__text" role="status" aria-live="polite"></span><button type="button" class="gam-jotai-caption__skip"></button>';
+  const textEl = el.querySelector('.gam-jotai-caption__text');
+  const btn = el.querySelector('.gam-jotai-caption__skip');
+  btn.textContent = skipLabel;
+  let onSkip = null;
+  btn.addEventListener('click', (e) => { e.stopPropagation(); onSkip?.(); });
+  // que el click no llegue al canvas (no debe contar como click en el cuarto)
+  el.addEventListener('pointerdown', (e) => e.stopPropagation());
+  container.appendChild(el);
+
+  return {
+    show(text, skip, label) {
+      textEl.textContent = text;
+      if (label) btn.textContent = label;
+      onSkip = skip;
+      btn.hidden = !skip;
+      el.hidden = false;
+      requestAnimationFrame(() => el.classList.add('is-visible'));
+    },
+    hide() {
+      if (el.hidden) return;
+      el.classList.remove('is-visible');
+      el.hidden = true;
+      onSkip = null;
+    },
+    get visible() { return !el.hidden; },
+    destroy() { el.remove(); },
+  };
+}

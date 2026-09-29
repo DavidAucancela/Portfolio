@@ -90,9 +90,10 @@ js/
                                # escritorio, estante, ventana, patineta, malabares, Pukis, ajedrez, Lumbre)
     gam-hud.js                 # HUD DOM de las estaciones: barra superior, tarjeta, pines, estado
     gam-jotai.js               # JotAI 3D en el cuarto: modelo en código, rig, poses/clips, caras, vida
-    gam-jotai-brain.js         # Comportamiento de JotAI (saludo, click, paseo autónomo; luego noche/estaciones)
+    gam-jotai-brain.js         # Comportamiento de JotAI (saludo, click, paseo, rutina de noche; luego estaciones)
     gam-jotai-nav.js           # Grilla del piso desde las piezas de los muebles + A* + suavizado
     gam-jotai-bubble.js        # Globo de diálogo DOM proyectado sobre su cabeza (typewriter + aria-live)
+                               # + subtítulo de escena con botón "Saltar" (createJotaiCaption)
     gam-scene.js                # LEGADO — GamScene (Phaser), ya no se importa (queda para revertir)
     gam-audio.js                 # AudioContext compartido + envelope() (SFX de un disparo)
     gam-ambience.js              # Pad ambiental en loop + footsteps/blip (usa gam-audio.js)
@@ -348,7 +349,7 @@ objeto se vuelve interactivo **dentro de la escena** — ya no se abre un panel 
   defecto · 1 noche) mueve sol, relleno, luz de ventana, lámpara, neón, cielo de la ventana
   y fondo; lo anima la estación de la ventana y **se queda como el jugador lo dejó**.
 - **JotAI vive en el cuarto** (plan completo y fases en **`docs/gam-jotai-plan.md`** — su
-  **§11 "Traspaso"** tiene el estado actual, convenciones del rig, el arranque de la Fase 3
+  **§11 "Traspaso"** tiene el estado actual, convenciones del rig, el arranque de la Fase 4
   y cómo verificar en headless: leerla antes de seguir). Hecho
   100% en código (`gam-jotai.js`), calcado del render `public/images/jotai/body.png`: ojos LED
   en aro, boca LED en canvas (oscura se perdía sobre la cara gris), cuello de resorte, placa
@@ -363,8 +364,16 @@ objeto se vuelve interactivo **dentro de la escena** — ya no se abre un panel 
   inclina el torso, ruedas por distancia). Cada 10–20 s sin que lo toquen pasea a un spot de
   `JOTAI_SPOTS` (coordenadas **locales** del mueble) y hace un gesto mirando el objeto
   (`SPOT_ACTS` en el brain; a veces comenta — claves `muse_<id>` de `gam-jotai.json`). Si
-  enfocan el objeto junto al que está, se aparta a su rincón (`makeRoom`). Rutinas con token
-  `seq` cancelable y esperas atadas al reloj del loop (la pausa del cuarto las pausa).
+  enfocan el objeto junto al que está, se aparta a su rincón (`makeRoom`). **La noche
+  (Fase 3):** el brain sigue `env.t` con histéresis (≥0.75 noche, ≤0.25 día). Al anochecer
+  se estira, acaricia a Pukis (`react()` de la estación de Pukis), arrima la silla
+  (`out.refs.chair` → `makeChairProp()`, queda girada hacia el monitor secundario para que
+  el respaldo no lo tape), escribe y se duerme; al amanecer se levanta y se estira. Si el
+  cuarto arranca de noche ya está dormido. Tocarlo o abrir el escritorio lo despierta de un
+  salto y a los 10 s vuelve a dormirse. La ventana vuelve sola a la vista general
+  (`onEnvScene`) y un subtítulo con "Saltar" (`createJotaiCaption`) acompaña la rutina.
+  Rutinas con `run()` + token `seq` cancelable, esperas/animaciones atadas al reloj del
+  loop (la pausa del cuarto las pausa).
   `pickAny()` en la escena lo compara por distancia con los muebles. Su `update` va en
   `try/catch` (`jotaiFailed`): un error lo desactiva sin congelar el loop. En dev,
   `window.__gamJotai = { jotai, brain, nav, spots }` para QA desde consola

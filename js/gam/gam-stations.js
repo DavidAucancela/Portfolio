@@ -451,6 +451,7 @@ function bookshelfStation(c) {
 function windowStation(c) {
   const { root, hud, env } = c;
   let target = 1; // 1 = noche, 0 = día
+  let leaveAt = 0;
 
   function goTo(t) {
     target = t;
@@ -460,6 +461,9 @@ function windowStation(c) {
       hud.setStatus(t === 1 ? 'Ya es de noche 🌙' : '¡Buenos días! ☀️');
       hud.setAction('toggle', { disabled: false, label: t === 1 ? '☀️ Amanecer' : '🌙 Anochecer' });
     });
+    // Si JotAI va a hacer su rutina (dormirse / despertarse), la cámara vuelve
+    // sola a la vista general para verla: el cielo y las luces siguen cambiando.
+    if (c.onEnvScene?.(t)) leaveAt = performance.now() + 800;
   }
 
   return {
@@ -477,9 +481,11 @@ function windowStation(c) {
       goTo(env.t > 0.75 ? 0 : 1);
     },
 
-    exit() { /* el momento del día se queda como el jugador lo dejó */ },
+    exit() { leaveAt = 0; /* el momento del día se queda como el jugador lo dejó */ },
 
-    update() {},
+    update(now) {
+      if (leaveAt && now >= leaveAt) { leaveAt = 0; c.leave(); }
+    },
   };
 }
 
@@ -778,15 +784,21 @@ function pukisStation(c) {
   ];
   const statusFor = (n) => STATUS.filter(([min]) => n >= min).pop()[1];
 
-  function pet() {
-    pets++;
+  /** La reacción de Pukis (corazones, cola, orejas, cabeza) sin el HUD: la
+   *  usa también JotAI cuando la acaricia en su rutina nocturna, con la
+   *  estación cerrada (`busy()` mantiene vivo su update mientras anima). */
+  function react({ sound = true } = {}) {
     wag = 1;
-    hud.setStatus(`${statusFor(pets)} <span class="gam-hud__count">×${pets}</span>`);
     const p = root.localToWorld(head.position.clone().add(V(0, 0.2, 0)));
     for (let i = 0; i < 2; i++) c.glyphs.emit('❤', '#ff6b8a', p.clone().add(V((Math.random() - 0.5) * 0.25, 0, (Math.random() - 0.5) * 0.15)), { size: 0.24 + Math.random() * 0.1, rise: 0.7, drift: 0.2, life: 1.8 });
-    envelope(getAudioContext(), { freq: 520 + Math.random() * 120, type: 'sine', duration: 0.09, gain: 0.05 });
-    const s0 = head.scale.x;
-    tw.add(320, (t) => { head.scale.setScalar(s0 * (1 + 0.14 * Math.sin(Math.PI * t))); });
+    if (sound) envelope(getAudioContext(), { freq: 520 + Math.random() * 120, type: 'sine', duration: 0.09, gain: 0.05 });
+    tw.add(320, (t) => { head.scale.setScalar(1 + 0.14 * Math.sin(Math.PI * t)); });
+  }
+
+  function pet() {
+    pets++;
+    hud.setStatus(`${statusFor(pets)} <span class="gam-hud__count">×${pets}</span>`);
+    react();
   }
 
   return {
@@ -821,6 +833,7 @@ function pukisStation(c) {
     },
 
     busy: () => tw.busy || wag > 0.01,
+    react,
 
     update(now, dt) {
       tw.update(now);
@@ -1201,7 +1214,7 @@ const FACTORIES = {
 
 /**
  * base: { scene, overlay, camera, container, hud, env, reducedMotion, pick, setOutline,
- *         setCursor, setLabel, leave, hotspotFor(id) }
+ *         setCursor, setLabel, leave, hotspotFor(id), onEnvScene?(t) → bool }
  * objects: Map(id → { root, refs, parts, f })
  */
 export function createStations(base, objects) {
@@ -1215,6 +1228,7 @@ export function createStations(base, objects) {
   return {
     stations,
     updateGlyphs: (dt) => glyphs.update(dt),
+    emit: (...args) => glyphs.emit(...args),   // JotAI: "z" al dormir, "!" al despertarse
     dispose: () => glyphs.dispose(),
   };
 }

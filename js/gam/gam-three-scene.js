@@ -43,6 +43,7 @@ import { createStations } from './gam-stations.js';
 import { createJotai } from './gam-jotai.js';
 import { createJotaiBubble } from './gam-jotai-bubble.js';
 import { createJotaiBrain } from './gam-jotai-brain.js';
+import { createNavGrid } from './gam-jotai-nav.js';
 
 /* ────────────────────────────────────────────────────
    CUARTO — S = lado del piso, H = alto de pared, T = grosor. Piso con la
@@ -89,11 +90,30 @@ const FURNITURE = [
   { id: 'bookshelf',  x: -HALF + 0.24, z: -2.55, rotY: WALL_FACING, color: 0xb14eff, label: '📚 Estante',          kind: 'list', zoom: 2.6, viewTilt: 0.5 },
 ];
 
-/* JotAI (docs/gam-jotai-plan.md) — vive en el cuarto. Su rincón: frente-
-   derecha, entre la alfombra y el borde del piso, mirando a la cámara.
-   Se sale de este punto en las fases con locomoción. */
+/* JotAI (docs/gam-jotai-plan.md) — vive en el cuarto. Arranca en su rincón
+   (frente-derecha, entre la alfombra y el borde del piso, mirando a la
+   cámara), que después es un spot más de su paseo. */
 const JOTAI_HOME = { x: 2.45, z: 1.35, rotY: Math.PI / 4 };
 const JOTAI_LOOK_IDLE_MS = 4000;   // sin mover el mouse este tiempo → vuelve a mirar por su cuenta
+/* Spots de JotAI: dónde se para junto a cada objeto (`at` = [x, z] en el
+   piso) y qué mira (`look` = [x, y, z]), en coordenadas LOCALES del mueble
+   — giran/escalan con él y sobreviven si se mueve en FURNITURE. El rumbo
+   final sale de mirar hacia `look`. Si `at` cae dentro de un mueble, la
+   navegación lo corre a la celda libre más cercana. */
+const JOTAI_SPOTS = {
+  piano:      { at: [0, 1.4],     look: [0, 0.8, 0.1] },
+  desk:       { at: [0.75, 1.2],  look: [-0.35, 1.3, -0.25] },
+  window:     { at: [0.6, 2.1],   look: [0, 3.0, 0] },
+  pukis:      { at: [0.54, -0.39], look: [0.45, 0.12, 0.05] },   // del lado de la cámara: se le ve la cara
+  bookshelf:  { at: [0, 0.75],    look: [0, 1.1, 0] },
+  chess:      { at: [0, 0.75],    look: [0, 0.62, 0] },
+  juggling:   { at: [0, -0.65],   look: [0, 0.9, 0] },
+  skateboard: { at: [0, 0.5],     look: [0, 0.6, 0] },
+  lumbre:     { at: [0, 0.8],     look: [0, 2.55, 0] },
+};
+/* Grilla de navegación: solo bloquea lo que ocupa piso a la altura del
+   cuerpo (la alfombra no, lo colgado en la pared tampoco). */
+const NAV = { cell: 0.17, radius: 0.25, minY: 0.06, maxY: 1.1 };
 
 /* ── Cámara ortográfica isométrica ──
    La cámara siempre está en `look + dir * CAM_DIST`, con `dir` = ISO_DIR
@@ -1224,12 +1244,56 @@ export function mount(container, hotspots) {
   jotai.root.rotation.y = JOTAI_HOME.rotY;
   scene.add(jotai.root);
   const jotaiBubble = createJotaiBubble(container, { reducedMotion });
-  const jotaiBrain = createJotaiBrain({ jotai, bubble: jotaiBubble });
+
+  /** Cajas (mundo) de cada pieza de mueble/decoración que ocupa piso a la
+   *  altura del cuerpo — por pieza y no por mueble entero: así la silla y la
+   *  banqueta bloquean lo suyo sin tapar el espacio vacío alrededor. */
+  function collectNavBoxes() {
+    scene.updateMatrixWorld(true);
+    const boxes = [];
+    const b = new THREE.Box3();
+    const consider = (m) => {
+      b.setFromObject(m);
+      if (!b.isEmpty() && b.max.y > NAV.minY && b.min.y < NAV.maxY) boxes.push(b.clone());
+    };
+    objects.forEach(({ parts }) => parts.forEach(consider));
+    decorParts.forEach(consider);
+    return boxes;
+  }
+
+  /** JOTAI_SPOTS (locales) → mundo, ya corridos a una celda libre. */
+  function buildJotaiSpots(nav) {
+    const out = { home: { id: 'home', x: JOTAI_HOME.x, z: JOTAI_HOME.z, heading: JOTAI_HOME.rotY, look: null } };
+    Object.entries(JOTAI_SPOTS).forEach(([id, s]) => {
+      const o = objects.get(id);
+      if (!o) return;
+      const at = o.root.localToWorld(new THREE.Vector3(s.at[0], 0, s.at[1]));
+      const look = o.root.localToWorld(new THREE.Vector3(...s.look));
+      const free = nav.nearestFree(at.x, at.z);
+      if (!free) return;
+      out[id] = { id, x: free.x, z: free.z, look, heading: Math.atan2(look.x - free.x, look.z - free.z) };
+    });
+    return out;
+  }
+
+  let jotaiNav = null;
+  let jotaiSpots = {};
+  try {
+    jotaiNav = createNavGrid(collectNavBoxes(), { half: HALF, cell: NAV.cell, radius: NAV.radius });
+    jotaiSpots = buildJotaiSpots(jotaiNav);
+  } catch (err) {
+    console.error('[gam] JotAI sin navegación (se queda en su rincón):', err);
+  }
+  const jotaiBrain = createJotaiBrain({
+    jotai, bubble: jotaiBubble, nav: jotaiNav, spots: jotaiSpots,
+    viewHeading: Math.atan2(ISO_DIR.x, ISO_DIR.z),   // de frente a la cámara
+  });
   const jotaiLook = new THREE.Vector3();
   const jotaiAnchor = new THREE.Vector3();
   let jotaiHovered = false;
   let jotaiFailed = false;    // un error en su update no debe congelar el loop del cuarto
-  if (import.meta.env.DEV) window.__gamJotai = { jotai, brain: jotaiBrain };   // QA desde consola
+  // QA desde consola: __gamJotai.brain.goTo('pukis') · console.log(__gamJotai.nav.debugString())
+  if (import.meta.env.DEV) window.__gamJotai = { jotai, brain: jotaiBrain, nav: jotaiNav, spots: jotaiSpots };
 
   /* ── Momento del día: 0 = día · 0.5 = atardecer (el aspecto por defecto) ·
      1 = noche. Lo anima la estación de la cama (`env.animateTo`): mueve el
@@ -1866,24 +1930,24 @@ export function mount(container, hotspots) {
     stationSys.updateGlyphs(dt);
     if (active) hud.updatePins(camera, container.clientWidth, container.clientHeight);
 
-    // JotAI: mira el objeto enfocado, o el cursor mientras se mueva (el punto
-    // del rayo a la altura de su cabeza, adelantado hacia la cámara → mira
-    // "hacia afuera" de la pantalla); si no, su mirada errante.
+    // JotAI: el brain decide qué mira (objeto enfocado > lo que mira en su
+    // spot > cursor > deriva). El punto del cursor = el rayo a la altura de su
+    // cabeza, adelantado hacia la cámara → mira "hacia afuera" de la pantalla.
     if (!jotaiFailed) {
       try {
-        if (zoomed && focusView) {
-          jotai.setLookTarget(focusView.look);
-        } else if (now - lastPointerMoveAt < JOTAI_LOOK_IDLE_MS) {
+        const focusLook = zoomed && focusView ? focusView.look : null;
+        let cursorLook = null;
+        if (!focusLook && now - lastPointerMoveAt < JOTAI_LOOK_IDLE_MS) {
           raycaster.setFromCamera(pointerNDC, camera);
           const { origin, direction } = raycaster.ray;
           jotai.headWorld(jotaiLook).sub(origin);
           jotaiLook.copy(origin).addScaledVector(direction, jotaiLook.dot(direction) - 1.5);
-          jotai.setLookTarget(jotaiLook);
-        } else {
-          jotai.setLookTarget(null);
+          cursorLook = jotaiLook;
         }
-        jotaiBrain.update(now, { zoomed: !!zoomed });
+        jotaiBrain.update(now, { zoomed, focusLook, cursorLook });
         jotai.update(now, dt);
+        // si se aleja rodando de debajo del cursor, deja de estar resaltado
+        if (jotaiHovered && jotai.moving && !zoomed && pickAny() !== 'jotai') setJotaiHover(false);
         jotaiBubble.update(now, camera, jotai.headTop(jotaiAnchor), container.clientWidth, container.clientHeight);
       } catch (err) {
         jotaiFailed = true;   // el cuarto sigue funcionando sin el personaje

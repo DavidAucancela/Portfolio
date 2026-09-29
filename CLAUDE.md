@@ -90,7 +90,8 @@ js/
                                # escritorio, estante, ventana, patineta, malabares, Pukis, ajedrez, Lumbre)
     gam-hud.js                 # HUD DOM de las estaciones: barra superior, tarjeta, pines, estado
     gam-jotai.js               # JotAI 3D en el cuarto: modelo en código, rig, poses/clips, caras, vida
-    gam-jotai-brain.js         # Comportamiento de JotAI (hoy: saludo + reacción al click; luego rutinas)
+    gam-jotai-brain.js         # Comportamiento de JotAI (saludo, click, paseo autónomo; luego noche/estaciones)
+    gam-jotai-nav.js           # Grilla del piso desde las piezas de los muebles + A* + suavizado
     gam-jotai-bubble.js        # Globo de diálogo DOM proyectado sobre su cabeza (typewriter + aria-live)
     gam-scene.js                # LEGADO — GamScene (Phaser), ya no se importa (queda para revertir)
     gam-audio.js                 # AudioContext compartido + envelope() (SFX de un disparo)
@@ -347,18 +348,27 @@ objeto se vuelve interactivo **dentro de la escena** — ya no se abre un panel 
   defecto · 1 noche) mueve sol, relleno, luz de ventana, lámpara, neón, cielo de la ventana
   y fondo; lo anima la estación de la ventana y **se queda como el jugador lo dejó**.
 - **JotAI vive en el cuarto** (plan completo y fases en **`docs/gam-jotai-plan.md`** — su
-  **§11 "Traspaso"** tiene el estado actual, convenciones del rig, el arranque de la Fase 2
+  **§11 "Traspaso"** tiene el estado actual, convenciones del rig, el arranque de la Fase 3
   y cómo verificar en headless: leerla antes de seguir). Hecho
   100% en código (`gam-jotai.js`), calcado del render `public/images/jotai/body.png`: ojos LED
   en aro, boca LED en canvas (oscura se perdía sobre la cara gris), cuello de resorte, placa
   "JotAI", piernas con **ruedas** (rueda, no camina). Rig = `Group`s con nombre; animación =
   poses `{ joint: [rx,ry,rz] }` amortiguadas + clips (`wave`/`nod`/`giggle`) + capas de vida
-  (parpadeo, respiración, antena, mirada) + las caras del widget + `sleeping`. Hoy (Fase 1)
-  está quieto en `JOTAI_HOME`: mira el cursor o el objeto enfocado, saluda 1×/sesión y
-  reacciona al click/tap o a la tecla `J` (4 toques seguidos = cosquillas). `pickAny()` en la
-  escena lo compara por distancia con los muebles. Su `update` va en `try/catch`
-  (`jotaiFailed`): un error lo desactiva sin congelar el loop. En dev,
-  `window.__gamJotai = { jotai, brain }` para QA desde consola.
+  (parpadeo, respiración, antena, mirada) + las caras del widget + `sleeping`. Mira el cursor
+  o el objeto enfocado, saluda 1×/sesión y reacciona al click/tap o a la tecla `J` (4 toques
+  seguidos = cosquillas). **Se mueve (Fase 2):** `gam-jotai-nav.js` arma una grilla 40×40
+  sobre el piso con las cajas de cada *pieza* de mueble/decoración que ocupa piso a la altura
+  del cuerpo (`NAV` en la escena; la alfombra y lo colgado no bloquean) + A\* con suavizado por
+  línea de vista; `jotai.followPath()` rueda (gira en el lugar, acelera, frena en los quiebres,
+  inclina el torso, ruedas por distancia). Cada 10–20 s sin que lo toquen pasea a un spot de
+  `JOTAI_SPOTS` (coordenadas **locales** del mueble) y hace un gesto mirando el objeto
+  (`SPOT_ACTS` en el brain; a veces comenta — claves `muse_<id>` de `gam-jotai.json`). Si
+  enfocan el objeto junto al que está, se aparta a su rincón (`makeRoom`). Rutinas con token
+  `seq` cancelable y esperas atadas al reloj del loop (la pausa del cuarto las pausa).
+  `pickAny()` en la escena lo compara por distancia con los muebles. Su `update` va en
+  `try/catch` (`jotaiFailed`): un error lo desactiva sin congelar el loop. En dev,
+  `window.__gamJotai = { jotai, brain, nav, spots }` para QA desde consola
+  (`brain.goTo('pukis')`, `console.log(nav.debugString())`).
 - **Trampa:** los glifos flotantes (♪ ❤ z) van en una escena `overlay` dibujada DESPUÉS del
   composer — dentro de la escena principal el pase GTAO los trata como geometría opaca.
 - **Desarrollo:** el repo vive en `~/Documents` (iCloud) y macOS puede dejar `node_modules`

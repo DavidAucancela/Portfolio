@@ -14,5 +14,34 @@
   "tickle": [
     { "es": "¡Oye! ¡Me haces cosquillas en los circuitos! 😵‍💫", "en": "Hey! That tickles my circuits! 😵‍💫" },
     { "es": "¡Jaja, basta! Tengo sensores muy sensibles 🤭", "en": "Haha, stop! My sensors are very sensitive 🤭" }
+  ],
+  "muse_window": [
+    { "es": "Qué lindo se ve el cielo hoy…", "en": "The sky looks nice today…" },
+    { "es": "Algún día salgo a rodar por ahí afuera.", "en": "Someday I'll roll around out there." }
+  ],
+  "muse_bookshelf": [
+    { "es": "Mmm… ¿cuál me leo hoy?", "en": "Hmm… which one should I read today?" }
+  ],
+  "muse_pukis": [
+    { "es": "Shh… Pukis está soñando 💤", "en": "Shh… Pukis is dreaming 💤" },
+    { "es": "La mejor perrita del cuarto 🐾", "en": "Best dog in the room 🐾" }
+  ],
+  "muse_desk": [
+    { "es": "Uy, cuánto código sin commitear…", "en": "Whoa, so much uncommitted code…" }
+  ],
+  "muse_piano": [
+    { "es": "Algún día aprendo a tocarlo 🎹", "en": "Someday I'll learn to play it 🎹" }
+  ],
+  "muse_chess": [
+    { "es": "Ya calculé 12 jugadas por adelantado ♟️", "en": "I've already planned 12 moves ahead ♟️" }
+  ],
+  "muse_juggling": [
+    { "es": "Seis pelotas… yo con dos pinzas no llego.", "en": "Six balls… with two grippers I can't keep up." }
+  ],
+  "muse_skateboard": [
+    { "es": "Esta vez sí me sale el kickflip. Creo.", "en": "This time I'll land the kickflip. I think." }
+  ],
+  "muse_lumbre": [
+    { "es": "¿Ya jugaste Lumbre? Está buenísimo 🕯️", "en": "Have you played Lumbre? It's great 🕯️" }
   ]
 }

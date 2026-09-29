@@ -18,10 +18,18 @@
  * Convención local: origen en el piso entre las dos ruedas, frente a +z.
  * La izquierda del personaje (sufijo L) está en +x.
  *
+ * Locomoción (Fase 2): `followPath(puntos, { facing })` recorre un camino
+ * de gam-jotai-nav.js rodando — gira en el lugar, acelera, frena antes de
+ * los quiebres, inclina el torso y hace girar las ruedas por la distancia
+ * recorrida — y al final se alinea con `facing`. Con reduced-motion corta
+ * directo al destino.
+ *
  * API: createJotai({ reducedMotion, lite, scale }) →
  *   { root, meshes, setFace(name, holdMs?), play(clip) → Promise,
  *     setLookTarget(vec3|null), setTalking(bool), headTop(out?),
- *     headWorld(out?), update(now, dt), dispose() }
+ *     headWorld(out?), followPath(pts, { facing }) → Promise<bool>,
+ *     faceTo(rad) → Promise<bool>, stop(), moving, busy, update(now, dt),
+ *     dispose() }
  */
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
@@ -40,6 +48,16 @@ const COLORS = {
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const smooth = (t) => t * t * (3 - 2 * t);
 const damp = (rate, dt) => 1 - Math.exp(-rate * dt);
+/** Diferencia angular más corta b→a, en (−π, π]. */
+const angDiff = (a, b) => Math.atan2(Math.sin(a - b), Math.cos(a - b));
+
+/* LOCOMOCIÓN — rueda, no camina. Velocidades en unidades del mundo por
+   segundo. Antes de rodar gira sobre sí mismo hacia el tramo; en tramos
+   seguidos casi rectos (< SHARP rad de quiebre) no frena, en quiebres
+   fuertes frena hasta casi 0 y vuelve a girar. */
+const MOVE = { vmax: 1.3, vmin: 0.12, accel: 2.4, decel: 2.2, turnRate: 5.5, sharp: 0.6 };
+const WHEEL_R = 0.07;      // radio de la rueda (unidades del modelo)
+const WHEEL_TRACK = 0.1;   // media trocha: distancia de cada rueda al centro
 
 /* ────────────────────────────────────────────────────
    POSES — [rx, ry, rz] por articulación; lo que no aparece vale 0.
@@ -405,8 +423,114 @@ export function createJotai({ reducedMotion = false, lite = false, scale = 0.92 
     return J.head.localToWorld(out.set(0, 0.42, 0));
   }
 
+  /* ── Locomoción ──
+     move = { pts, i, facing, phase: 'turn' | 'roll' | 'align', resolve }.
+     La promesa resuelve true al llegar y false si otro followPath/stop la
+     reemplaza — nunca rechaza, así el brain no deja rejections colgadas. */
+  let move = null;
+  let speed = 0, lastSpeed = 0, lean = 0, rollW = 0, rollDist = 0;
+
+  function finishMove(ok) {
+    const r = move?.resolve;
+    move = null;
+    r?.(ok);
+  }
+
+  function followPath(points = [], { facing = null } = {}) {
+    if (move) finishMove(false);
+    const pts = points.map((p) => ({ x: p.x, z: p.z }));
+    if (pts.length && Math.hypot(pts[0].x - root.position.x, pts[0].z - root.position.z) < 0.02) pts.shift();
+    if (reducedMotion) {
+      // sin rodar: corte directo al destino, ya orientado
+      const last = pts[pts.length - 1];
+      if (last) {
+        const prev = pts[pts.length - 2] || root.position;
+        if (facing == null) root.rotation.y = Math.atan2(last.x - prev.x, last.z - prev.z);
+        root.position.set(last.x, 0, last.z);
+      }
+      if (facing != null) root.rotation.y = facing;
+      speed = 0;
+      return Promise.resolve(true);
+    }
+    return new Promise((resolve) => {
+      move = { pts, i: 0, facing, phase: pts.length ? 'turn' : 'align', resolve };
+    });
+  }
+
+  const faceTo = (heading) => followPath([], { facing: heading });
+  function stop() { if (move) { speed = 0; finishMove(false); } }
+
+  /** Gira el cuerpo hacia `want` con la velocidad acotada; las ruedas giran
+   *  en sentidos opuestos (giro sobre el eje). Devuelve el error restante. */
+  function turnToward(want, dt) {
+    const diff = angDiff(want, root.rotation.y);
+    const mag = Math.min(Math.abs(diff), Math.max(0.6 * dt, Math.abs(diff) * damp(9, dt)), MOVE.turnRate * dt);
+    const step = Math.sign(diff) * mag;
+    root.rotation.y += step;
+    const spin = step * (WHEEL_TRACK / WHEEL_R);
+    J.wheelL.rotation.x -= spin;
+    J.wheelR.rotation.x += spin;
+    return Math.abs(diff) - mag;
+  }
+
+  function updateMove(dt) {
+    lastSpeed = speed;
+    if (!move) { speed = 0; return; }
+    const p = root.position;
+
+    if (move.phase === 'align') {
+      if (move.facing == null || turnToward(move.facing, dt) < 0.02) finishMove(true);
+      return;
+    }
+
+    const pts = move.pts;
+    const wp = pts[move.i];
+    const dx = wp.x - p.x, dz = wp.z - p.z;
+    const dist = Math.hypot(dx, dz);
+    const want = Math.atan2(dx, dz);
+
+    if (move.phase === 'turn') {
+      speed = 0;
+      if (dist < 0.01 || turnToward(want, dt) < 0.1) move.phase = 'roll';
+      return;
+    }
+
+    // Distancia hasta donde tiene que frenar: fin del camino o próximo quiebre fuerte
+    let rem = dist, dir = want;
+    for (let k = move.i; k < pts.length - 1; k++) {
+      const nx = pts[k + 1].x - pts[k].x, nz = pts[k + 1].z - pts[k].z;
+      const next = Math.atan2(nx, nz);
+      if (Math.abs(angDiff(next, dir)) > MOVE.sharp) break;
+      rem += Math.hypot(nx, nz);
+      dir = next;
+    }
+    const target = Math.max(MOVE.vmin, Math.min(MOVE.vmax, Math.sqrt(2 * MOVE.decel * rem)));
+    speed = speed < target ? Math.min(target, speed + MOVE.accel * dt) : target;
+
+    turnToward(want, dt);
+    const step = Math.min(dist, speed * dt);
+    if (dist > 1e-4) { p.x += (dx / dist) * step; p.z += (dz / dist) * step; }
+    const roll = step / (WHEEL_R * scale);
+    J.wheelL.rotation.x += roll;
+    J.wheelR.rotation.x += roll;
+    rollDist += step;
+
+    if (dist - step < 0.01) {
+      p.x = wp.x; p.z = wp.z;
+      move.i++;
+      if (move.i >= pts.length) {
+        speed = 0;
+        move.phase = 'align';
+      } else {
+        const n = pts[move.i];
+        if (Math.abs(angDiff(Math.atan2(n.x - p.x, n.z - p.z), root.rotation.y)) > MOVE.sharp) move.phase = 'turn';
+      }
+    }
+  }
+
   function update(now, dt) {
     const k = reducedMotion ? 1 : damp(14, dt);
+    if (!reducedMotion) updateMove(dt);
 
     /* 1. Pose base + clip, amortiguada */
     const c = evalClip(now);
@@ -430,6 +554,23 @@ export function createJotai({ reducedMotion = false, lite = false, scale = 0.92 
     const breath = reducedMotion ? 0 : Math.sin(now * 0.00175);   // ~3.6 s
     J.hips.position.y = 0.40 + curHipsY;
     J.torso.position.y = 0.04 + breath * 0.004;
+
+    /* 2b. Locomoción: se inclina hacia adelante al acelerar/rodar y hacia
+       atrás al frenar; brazos un poco atrás para equilibrarse, y un vaivén
+       mínimo de la cadera según la distancia (el piso no es perfecto). */
+    if (!reducedMotion) {
+      const accel = dt > 0 ? (speed - lastSpeed) / dt : 0;
+      const leanTarget = clamp(accel * 0.045, -0.14, 0.12) + speed * 0.05;
+      lean += (leanTarget - lean) * damp(7, dt);
+      rollW += (speed / MOVE.vmax - rollW) * damp(5, dt);
+      J.torso.rotation.x += lean;
+      J.head.rotation.x -= lean * 0.6;     // la cabeza compensa: sigue mirando al frente
+      J.shoulderL.rotation.x += 0.28 * rollW;
+      J.shoulderR.rotation.x += 0.28 * rollW;
+      J.shoulderL.rotation.z += 0.1 * rollW;
+      J.shoulderR.rotation.z -= 0.1 * rollW;
+      J.hips.position.y += Math.sin(rollDist * 26) * 0.004 * rollW;
+    }
     J.neck.scale.y = 1 + breath * (faceName === 'sleeping' ? 0.12 : 0.04);
     if (!reducedMotion) {
       J.hips.rotation.z += Math.sin(now * 0.0006) * 0.012;
@@ -446,6 +587,8 @@ export function createJotai({ reducedMotion = false, lite = false, scale = 0.92 
       tmp.y -= 0.075 + 0.15;               // desde la altura de los ojos
       wantYaw = Math.atan2(tmp.x, tmp.z);
       wantPitch = -Math.atan2(tmp.y, Math.hypot(tmp.x, tmp.z));
+    } else if (move) {
+      wantPitch = 0.12;                    // rodando: mira por dónde va
     } else if (alive) {
       if (now > wander.next) {
         const back = Math.random() < 0.4;
@@ -518,5 +661,10 @@ export function createJotai({ reducedMotion = false, lite = false, scale = 0.92 
 
   mouth.paint('smile');
 
-  return { root, meshes, setFace, play, setLookTarget, setTalking, headTop, headWorld, update, dispose };
+  return {
+    root, meshes, setFace, play, setLookTarget, setTalking, headTop, headWorld,
+    followPath, faceTo, stop, update, dispose,
+    get moving() { return !!move; },
+    get busy() { return !!move || !!clip; },   // rodando o en medio de un clip
+  };
 }

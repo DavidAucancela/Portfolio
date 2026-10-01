@@ -101,11 +101,64 @@ respecto a los otros objetos.
    click (debe verse nítido de cerca — si se ve pixelado, regenerar a mayor
    resolución)
 
+## `pukis` — la perrita (híbrido: sprite + cola 3D suelta)
+
+A diferencia de `desk`, acá el arte real **no reemplaza todo el objeto**: la
+escultura de esferas primitivas se veía "cruda" (costuras visibles entre
+esferas superpuestas) incluso con textura de pelaje pintada encima — el
+problema era la geometría, no el color. Pero Pukis necesita moverse (menea
+la cola, la cabeza reacciona al acariciarla), y un sprite plano no tiene
+partes animables.
+
+Solución: el `.webp` es **solo el cuerpo + cabeza, sin cola**. La cola sigue
+siendo una pieza 3D (`refs.pukis.tail`) que `loadArt()` saca del grupo
+compuesto con `scene.attach()` (conserva su posición en el mundo) antes de
+ocultar el resto — así sigue meneándose en `pukisStation` aunque el resto
+del perro compuesto ya no se vea. Queda taggeada como `pukis_cola` en el
+modo edición (F9) para reacomodarla a mano hasta que calce con el dibujo
+nuevo — la cola del 3D original probablemente no cae exactamente donde
+termina el cuerpo dibujado.
+
+**Contenido a incluir:** perrita cruce labrador/shar-pei, durmiendo de
+costado, pelaje crema, orejas canela (una relajada hacia arriba, la otra
+apoyada contra el piso), hocico gris oscuro con nariz rosada, ojos cerrados,
+algunas arrugas suaves tipo shar-pei alrededor de los ojos, patas
+delanteras estiradas hacia adelante, traseras recogidas. **Sin cola visible
+en el dibujo** — el cuerpo termina en el anca, la cola se agrega en 3D
+por separado.
+
+### Prompt sugerido
+
+> Flat stylized illustration, straight-on front view (no isometric or 3/4
+> perspective), of a small sleeping dog — a labrador/shar-pei mix — lying on
+> its side, isolated on a fully transparent background. Cream-colored short
+> fur all over the body, slightly darker cream on the muzzle area, tan/caramel
+> floppy ears (one relaxed upward, one resting against the ground). Dark
+> grayish muzzle with a small pink nose, eyes closed and peaceful, a few soft
+> shar-pei style wrinkles around the eyes. Front legs stretched forward, back
+> legs tucked in. The body ends cleanly at the haunch — do not draw a tail,
+> it will be added separately as a 3D piece. Chubby, huggable, rounded
+> proportions — cozy and soft, not realistic anatomy. Warm amber (#ffb020)
+> rim light from one side, soft magenta (#b14eff) glow from the other side,
+> soft cel-shaded flat-color illustration style with clean vector-like
+> shapes, subtle glow, no photorealism, no background, no shadow ground
+> plane, no ground surface.
+
+**Importante — exportar como PNG con transparencia real**, no JPEG: el
+formato JPEG no tiene canal alfa, así que un fondo "transparente" en JPEG en
+realidad son píxeles de cuadriculado horneados y opacos. La mayoría de
+las herramientas de generación tienen una opción de descarga en PNG
+separada de la vista previa — si no, sacar el fondo después con
+remove.bg o un editor de imágenes antes de convertir a WebP.
+
+`artHeight` en `gam-three-scene.js`: `0.5` (ya seteado en `FURNITURE`,
+ajustable si se ve muy grande/chica una vez puesto el archivo).
+
 ## Pendientes (mismo tratamiento, uno por uno)
 
 El resto de los objetos interactivos (`piano`, `juggling`, `skateboard`,
-`bed`, `reading`, `pukis`) todavía usan el cubo de color plano — se agregan
-specs acá a medida que se van definiendo, mismo patrón que arriba. Los
-objetos decorativos (`terminal`, `bookshelf`, `diplomas` — ver
+`bed`, `reading`) todavía usan el cubo de color plano — se agregan specs
+acá a medida que se van definiendo, mismo patrón que arriba. Los objetos
+decorativos (`terminal`, `bookshelf`, `diplomas` — ver
 `docs/gam-mode-plan.md`) también pueden recibir arte real más adelante con
 el mismo mecanismo, aunque no sean interactivos.

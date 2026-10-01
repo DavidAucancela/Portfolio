@@ -13,6 +13,7 @@
  *   juggling    → cascada de 6 pelotas + reto de atrapar en la zona
  *   pukis       → acariciarlo: corazones, cola, orejas
  *   chess       → tablero 3D: juegas con blancas contra una IA sencilla
+ *   lumbre      → póster de mi juego Lumbre: capturas + enlaces
  *
  * Contrato: `createStations(base, objects)` devuelve Map(id → estación). Una
  * estación es { focus(), enter(), exit(), update(now, dt), busy?(), pointerMove?,
@@ -155,6 +156,7 @@ function pianoStation(c) {
   function flash(i) {
     press[i] = 1;
     c.glyphs.emit(i % 2 ? '♫' : '♪', tones[i], keyWorld(i), { rise: 0.75, drift: 0.18, size: 0.26 });
+    c.cue?.('piano:key', { index: i });
   }
 
   function pickKey() {
@@ -304,8 +306,14 @@ function deskStation(c) {
 }
 
 /* ────────────────────────────────────────────────────
-   BOOKSHELF — libros de proyectos de IA: salen al pasar el mouse, click = abrir.
+   BOOKSHELF — libros reales (salen al pasar el mouse, click = detalle).
+   TODO: reemplazar PLACEHOLDER_BOOKS con los títulos/autores reales cuando
+   se definan — por ahora son genéricos para no bloquear el resto del cuarto.
 ──────────────────────────────────────────────────── */
+const PLACEHOLDER_BOOKS = [
+  { title: 'Título pendiente', author: '—' },
+];
+
 function spineTexture(title, colorHex) {
   const cv = document.createElement('canvas');
   cv.width = 64; cv.height = 256;
@@ -333,8 +341,7 @@ function bookshelfStation(c) {
   const { root, refs, hud } = c;
   const books = refs.books;               // [{ mesh, row }], fila 0 = la de abajo
   let assigned = false;
-  let projects = [];
-  let bookProject = new Map();            // mesh → proyecto
+  let bookInfo = new Map();               // mesh → { title, author }
   let hoveredBook = null;
   let selected = null;
   let card = null;
@@ -342,63 +349,52 @@ function bookshelfStation(c) {
   function assign() {
     if (assigned) return;
     assigned = true;
-    // los proyectos van en las filas de arriba primero
+    // los libros van en las filas de arriba primero
     const order = [...books].reverse();
-    projects.forEach((p, i) => {
-      const b = order[i];
-      if (!b) return;
+    order.forEach((b, i) => {
+      const info = PLACEHOLDER_BOOKS[i % PLACEHOLDER_BOOKS.length];
       const m = b.mesh.material;
       const hex = m.color.getHexString();
-      m.map = spineTexture(L(p.title) || '', hex);
+      m.map = spineTexture(info.title, hex);
       m.color.setHex(0xffffff);
       m.needsUpdate = true;
-      bookProject.set(b.mesh, p);
+      bookInfo.set(b.mesh, info);
     });
   }
 
-  function showDefaultCard(skills) {
+  function showDefaultCard() {
     card = el('div', 'gam-card');
-    const chips = (skills || []).filter(s => s.category === 'ai').map(s => `<span class="gam-card__chip">${esc(s.name)}</span>`).join('');
     card.innerHTML = `
       <h3 class="gam-card__title">📚 ${esc(L(c.content.title) || 'Estante')}</h3>
       <p class="gam-card__text">${esc(L(c.content.message))}</p>
-      <p class="gam-card__hint">Pasa el cursor sobre un libro y haz clic para abrirlo.</p>
-      ${chips ? `<p class="gam-card__label">Herramientas de IA</p><div class="gam-card__chips">${chips}</div>` : ''}
+      <p class="gam-card__hint">Pasa el cursor sobre un libro y haz clic para verlo.</p>
     `;
     hud.setCard(card);
   }
 
-  function showProject(p) {
+  function showBook(info) {
     const n = el('div', 'gam-card');
     n.innerHTML = `
-      <h3 class="gam-card__title">📖 ${esc(L(p.title))}</h3>
-      <p class="gam-card__text">${esc(L(p.description))}</p>
-      <div class="gam-card__chips">${(p.tags || []).map(t => `<span class="gam-card__chip">${esc(t)}</span>`).join('')}</div>
-      <button type="button" class="gam-card__cta">Abrir proyecto →</button>
+      <h3 class="gam-card__title">📖 ${esc(info.title)}</h3>
+      <p class="gam-card__text">${esc(info.author)}</p>
       <button type="button" class="gam-card__link">← Ver todos los libros</button>
     `;
-    n.querySelector('.gam-card__cta').addEventListener('click', () => ProjectGallery.open(p, 'ia'));
     n.querySelector('.gam-card__link').addEventListener('click', () => { selected = null; hud.setCard(card); });
     hud.setCard(n);
   }
 
   function pickBook() {
     const hit = c.pick(books.map(b => b.mesh));
-    return hit && bookProject.has(hit.object) ? hit.object : null;
+    return hit && bookInfo.has(hit.object) ? hit.object : null;
   }
 
   return {
     focus: () => ({ look: root.localToWorld(V(0, 1.15, 0.15)), zoom: 2.6, shift: 0.3 }),
 
     enter() {
-      hud.show({ icon: '📚', title: 'Estante', hint: 'Pasa el cursor sobre un libro · clic para abrirlo', onBack: c.leave });
-      showDefaultCard([]);
-      Promise.all([loadJSON('data/ia-projects.json'), loadJSON('data/skills.json')]).then(([p, skills]) => {
-        projects = p;
-        assign();
-        if (hud.el.hidden) return;
-        if (!selected) showDefaultCard(skills);
-      });
+      hud.show({ icon: '📚', title: 'Estante', hint: 'Pasa el cursor sobre un libro · clic para verlo', onBack: c.leave });
+      assign();
+      showDefaultCard();
     },
 
     exit() {
@@ -427,7 +423,7 @@ function bookshelfStation(c) {
       c.setCursor(hoveredBook ? 'pointer' : 'default');
       if (hoveredBook) {
         c.setOutline([hoveredBook]);
-        c.setLabel(L(bookProject.get(hoveredBook).title), root.localToWorld(hoveredBook.position.clone().add(V(0, 0.28, 0.2))));
+        c.setLabel(bookInfo.get(hoveredBook).title, root.localToWorld(hoveredBook.position.clone().add(V(0, 0.28, 0.2))));
       } else {
         c.setOutline([]);
         c.setLabel(null);
@@ -438,7 +434,7 @@ function bookshelfStation(c) {
       const b = pickBook();
       if (!b) return;
       selected = b;
-      showProject(bookProject.get(b));
+      showBook(bookInfo.get(b));
       envelope(getAudioContext(), { freq: 392, type: 'triangle', duration: 0.12, gain: 0.07 });
     },
   };
@@ -450,6 +446,7 @@ function bookshelfStation(c) {
 function windowStation(c) {
   const { root, hud, env } = c;
   let target = 1; // 1 = noche, 0 = día
+  let leaveAt = 0;
 
   function goTo(t) {
     target = t;
@@ -459,6 +456,9 @@ function windowStation(c) {
       hud.setStatus(t === 1 ? 'Ya es de noche 🌙' : '¡Buenos días! ☀️');
       hud.setAction('toggle', { disabled: false, label: t === 1 ? '☀️ Amanecer' : '🌙 Anochecer' });
     });
+    // Si JotAI va a hacer su rutina (dormirse / despertarse), la cámara vuelve
+    // sola a la vista general para verla: el cielo y las luces siguen cambiando.
+    if (c.onEnvScene?.(t)) leaveAt = performance.now() + 800;
   }
 
   return {
@@ -476,9 +476,11 @@ function windowStation(c) {
       goTo(env.t > 0.75 ? 0 : 1);
     },
 
-    exit() { /* el momento del día se queda como el jugador lo dejó */ },
+    exit() { leaveAt = 0; /* el momento del día se queda como el jugador lo dejó */ },
 
-    update() {},
+    update(now) {
+      if (leaveAt && now >= leaveAt) { leaveAt = 0; c.leave(); }
+    },
   };
 }
 
@@ -777,15 +779,21 @@ function pukisStation(c) {
   ];
   const statusFor = (n) => STATUS.filter(([min]) => n >= min).pop()[1];
 
-  function pet() {
-    pets++;
+  /** La reacción de Pukis (corazones, cola, orejas, cabeza) sin el HUD: la
+   *  usa también JotAI cuando la acaricia en su rutina nocturna, con la
+   *  estación cerrada (`busy()` mantiene vivo su update mientras anima). */
+  function react({ sound = true } = {}) {
     wag = 1;
-    hud.setStatus(`${statusFor(pets)} <span class="gam-hud__count">×${pets}</span>`);
     const p = root.localToWorld(head.position.clone().add(V(0, 0.2, 0)));
     for (let i = 0; i < 2; i++) c.glyphs.emit('❤', '#ff6b8a', p.clone().add(V((Math.random() - 0.5) * 0.25, 0, (Math.random() - 0.5) * 0.15)), { size: 0.24 + Math.random() * 0.1, rise: 0.7, drift: 0.2, life: 1.8 });
-    envelope(getAudioContext(), { freq: 520 + Math.random() * 120, type: 'sine', duration: 0.09, gain: 0.05 });
-    const s0 = head.scale.x;
-    tw.add(320, (t) => { head.scale.setScalar(s0 * (1 + 0.14 * Math.sin(Math.PI * t))); });
+    if (sound) envelope(getAudioContext(), { freq: 520 + Math.random() * 120, type: 'sine', duration: 0.09, gain: 0.05 });
+    tw.add(320, (t) => { head.scale.setScalar(1 + 0.14 * Math.sin(Math.PI * t)); });
+  }
+
+  function pet() {
+    pets++;
+    hud.setStatus(`${statusFor(pets)} <span class="gam-hud__count">×${pets}</span>`);
+    react();
   }
 
   return {
@@ -820,6 +828,7 @@ function pukisStation(c) {
     },
 
     busy: () => tw.busy || wag > 0.01,
+    react,
 
     update(now, dt) {
       tw.update(now);
@@ -1113,6 +1122,79 @@ function chessStation(c) {
   };
 }
 
+/* ────────────────────────────────────────────────────
+   LUMBRE — póster de mi juego: capturas, descripción y enlaces.
+──────────────────────────────────────────────────── */
+export const LUMBRE_SHOTS = [
+  { src: 'public/images/projects/lumbre/lumbre-01.webp', aspect: 2.446 },
+  { src: 'public/images/projects/lumbre/lumbre-02.webp', aspect: 1.804 },
+  { src: 'public/images/projects/lumbre/lumbre-03.webp', aspect: 1.804 },
+  { src: 'public/images/projects/lumbre/lumbre-04.webp', aspect: 1.804 },
+];
+
+function lumbreStation(c) {
+  const { root, refs, hud } = c;
+  const { img } = refs.poster;
+  const PW = 1.1;
+  const textures = [refs.poster.shot];
+  let current = 0;
+
+  function show(i) {
+    current = i;
+    const { src, aspect } = LUMBRE_SHOTS[i];
+    if (!textures[i]) {
+      const t = new THREE.TextureLoader().load(src);
+      t.colorSpace = THREE.SRGBColorSpace;
+      textures[i] = t;
+    }
+    img.material.map = textures[i];
+    img.material.emissiveMap = textures[i];
+    img.material.needsUpdate = true;
+    img.scale.y = (PW / aspect) / (PW / LUMBRE_SHOTS[0].aspect);
+  }
+
+  return {
+    focus: () => ({ look: root.localToWorld(V(0, 2.3, 0)), zoom: 6.5, shift: 0.15 }),
+
+    enter() {
+      const ct = c.content;
+      hud.show({
+        icon: '🕯️',
+        title: 'Lumbre',
+        tabs: LUMBRE_SHOTS.map((_, i) => ({ id: String(i), label: `${i + 1}` })),
+        active: '0',
+        onTab: (id) => show(Number(id)),
+        actions: [
+          { id: 'play', label: '▶ Jugar en itch.io', onClick: () => window.open(ct.liveUrl, '_blank', 'noopener') },
+          { id: 'code', label: '</> Código', onClick: () => window.open(ct.repoUrl, '_blank', 'noopener') },
+        ],
+        hint: 'Cambia de captura con los números',
+        onBack: c.leave,
+      });
+      const card = el('div', 'gam-card');
+      card.innerHTML = `
+        <h3 class="gam-card__title">🕯️ ${esc(L(ct.title) || 'Lumbre')}</h3>
+        <p class="gam-card__text">${esc(L(ct.message))}</p>
+        <div class="gam-card__chips">${(ct.tags || []).map(t => `<span class="gam-card__chip">${esc(t)}</span>`).join('')}</div>`;
+      hud.setCard(card);
+      show(0);
+    },
+
+    exit() { show(0); },
+
+    update() {},
+
+    key(e) {
+      const n = Number(e.key);
+      if (n >= 1 && n <= LUMBRE_SHOTS.length && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        show(n - 1);
+        return true;
+      }
+      return false;
+    },
+  };
+}
+
 const FACTORIES = {
   piano: pianoStation,
   desk: deskStation,
@@ -1122,11 +1204,13 @@ const FACTORIES = {
   juggling: jugglingStation,
   pukis: pukisStation,
   chess: chessStation,
+  lumbre: lumbreStation,
 };
 
 /**
  * base: { scene, overlay, camera, container, hud, env, reducedMotion, pick, setOutline,
- *         setCursor, setLabel, leave, hotspotFor(id) }
+ *         setCursor, setLabel, leave, hotspotFor(id), onEnvScene?(t) → bool,
+ *         cue?(evento, datos) → avisa al brain de JotAI (§11 del plan: 'piano:key', …) }
  * objects: Map(id → { root, refs, parts, f })
  */
 export function createStations(base, objects) {
@@ -1140,6 +1224,7 @@ export function createStations(base, objects) {
   return {
     stations,
     updateGlyphs: (dt) => glyphs.update(dt),
+    emit: (...args) => glyphs.emit(...args),   // JotAI: "z" al dormir, "!" al despertarse
     dispose: () => glyphs.dispose(),
   };
 }

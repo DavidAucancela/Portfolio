@@ -1776,46 +1776,6 @@
     }
   },
   {
-    "id": "project-017",
-    "slug": "lumbre",
-    "title": "Lumbre",
-    "description": {
-      "es": "Juego de terror 2D en Unity 6. Un niño explora la casa de su abuela de noche con una caja de fósforos limitada: cada fósforo da luz para explorar pero acerca a algo.",
-      "en": "2D horror game in Unity 6. A boy explores his grandmother's house at night with a limited box of matches: each match gives light to explore but draws something closer."
-    },
-    "longDescription": {
-      "es": "Juego de terror atmosférico donde cada fósforo limitado ilumina el camino pero también acerca al peligro. Publicado en itch.io.",
-      "en": "Atmospheric horror game where each limited match lights the way but also brings danger closer. Published on itch.io."
-    },
-    "tags": [
-      "Unity",
-      "C#",
-      "Game Dev",
-      "Horror",
-      "WebGL"
-    ],
-    "image": "public/images/projects/lumbre/lumbre-01.webp",
-    "images": [
-      "public/images/projects/lumbre/lumbre-01.webp",
-      "public/images/projects/lumbre/lumbre-02.webp",
-      "public/images/projects/lumbre/lumbre-03.webp",
-      "public/images/projects/lumbre/lumbre-04.webp"
-    ],
-    "liveUrl": "https://lager.itch.io/lumbre",
-    "repoUrl": "https://github.com/Lager-GJ/main",
-    "featured": true,
-    "status": "En producción",
-    "date": "2026-01",
-    "techStack": {
-      "engine": [
-        "Unity 6 (6000.3.14f1)"
-      ],
-      "language": [
-        "C#"
-      ]
-    }
-  },
-  {
     "id": "project-020",
     "slug": "phone-directory",
     "title": "NexoCorp",

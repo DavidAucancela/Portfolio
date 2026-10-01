@@ -83,11 +83,20 @@ const TYPE_ARMS = {
   shoulderL: [-1.22, 0, 0.12], shoulderR: [-1.22, 0, -0.12],
   elbowL: [-0.4, 0, 0], elbowR: [-0.4, 0, 0],
 };
+/* Frente al piano: brazos adelante y un poco más abajo que `type` (el
+   teclado del piano queda más bajo que el escritorio) — de pie, sin banqueta
+   todavía (ver Fase 4 §11 del plan). */
+const PIANO_ARMS = {
+  torso: [0.22, 0, 0],
+  shoulderL: [-1.05, 0, 0.15], shoulderR: [-1.05, 0, -0.15],
+  elbowL: [-0.5, 0, 0], elbowR: [-0.5, 0, 0],
+};
 /* `neckS` (número) estira el cuello de resorte: la escala extra en Y. */
 const POSES = {
   stand: { ...STAND_ARMS },
   sit: { ...STAND_ARMS, ...SIT_LEGS },
   type: { ...SIT_LEGS, ...TYPE_ARMS },
+  piano: { ...PIANO_ARMS },
   // dormido sobre el escritorio: brazos cruzados (antebrazos hacia adentro) y la cabeza encima
   sleepDesk: {
     ...SIT_LEGS,
@@ -162,6 +171,15 @@ const CLIPS = {
     [0, { ...TYPE_KEYS, elbowL: [-0.62, 0, 0], elbowR: [-0.3, 0, 0], wristL: [0.35, 0, 0] }],
     [170, { ...TYPE_KEYS, elbowL: [-0.3, 0, 0], elbowR: [-0.62, 0, 0], wristR: [0.35, 0, 0] }],
     [340, { ...TYPE_KEYS, elbowL: [-0.62, 0, 0], elbowR: [-0.3, 0, 0], wristL: [0.35, 0, 0] }],
+  ],
+  // toca una tecla — sin IK: solo la mano del lado que sonó baja un poco (sobre la pose `piano`)
+  pianoKeyL: [
+    [0, { elbowL: [-0.68, 0, 0], wristL: [0.3, 0, 0] }],
+    [140, {}],
+  ],
+  pianoKeyR: [
+    [0, { elbowR: [-0.68, 0, 0], wristR: [0.3, 0, 0] }],
+    [140, {}],
   ],
   // acaricia con la mano derecha, de adelante hacia atrás (sobre la pose `crouch`)
   pet: [

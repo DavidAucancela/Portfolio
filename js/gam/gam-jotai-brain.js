@@ -57,6 +57,12 @@ const MUSE_CHANCE = 0.3;               // probabilidad de comentar algo al llega
 const RECENT = 3;                      // no repite los últimos N spots
 const CLEARANCE = 1.4;                 // a menos de esto del objeto enfocado, se aparta
 
+/* Fase 4 (estaciones): objetos donde, al enfocarlos, JotAI va hacia su spot
+   y toma un pose propio en vez del apartarse genérico (ver `onZoom`).
+   Exportado: gam-three-scene.js lo usa para saber cuándo meterlo en
+   FOCUS_LAYER (no desenfocarlo mientras está "de servicio" en la estación). */
+export const STATION_POSE = { piano: 'piano' };
+
 const NIGHT_T = 0.75;                  // env.t ≥ esto → noche (histéresis con DAY_T)
 const DAY_T = 0.25;
 const BACK_TO_SLEEP = 10000;           // de noche, despierto y solo → vuelve a dormirse
@@ -465,12 +471,24 @@ export function createJotaiBrain({
     speak('poke', 'greeting', pokes.length === 1 ? 'wave' : 'nod');
   }
 
+  /** Estación con papel propio (§11 del plan): va a su spot y toma el pose
+   *  de `STATION_POSE`; `interrupt()` (poke, otra estación, noche…) revuelve
+   *  la pose a `stand`/`sit` sola, así que no hace falta un "salir" explícito. */
+  function enterStation(f) {
+    interrupt(AFTER_POKE);
+    run('station', async (ok) => {
+      if (!(await travel(f.id, ok)) || !ok()) return;
+      jotai.setPose(STATION_POSE[f.id]);
+      jotai.setFace('greeting', 1600);
+    });
+  }
+
   /** Al enfocar un objeto. Sentado: solo el escritorio le importa (lo
-   *  despierta de un salto y se queda en la silla). De pie: si está (o va)
+   *  despierta de un salto y se queda en la silla). De pie: si el objeto
+   *  tiene un rol propio (`STATION_POSE`) va hacia él; si no, y está (o va)
    *  al lado del objeto, se aparta a su rincón para no quedar entre la
    *  cámara y el objeto — el ajedrez se ve con zoom 7.5 desde el frente,
-   *  justo donde está su spot. En la Fase 4 las estaciones lo van a usar en
-   *  vez de apartarlo. */
+   *  justo donde está su spot. */
   function onZoom(f) {
     if (seated) {
       if (f.id === 'desk') {
@@ -480,6 +498,7 @@ export function createJotaiBrain({
       }
       return;
     }
+    if (STATION_POSE[f.id]) { enterStation(f); return; }
     const pos = jotai.root.position;
     const near = (p) => p && Math.hypot(p.x - f.x, p.z - f.z) < CLEARANCE;
     // su spot de ese objeto (el del piano queda a 1.6 u, justo frente a la cámara)
@@ -489,6 +508,14 @@ export function createJotaiBrain({
     interrupt(STROLL_EVERY[0]);
     if (spots.home && !near(spots.home)) run('goTo', (ok) => travel('home', ok));
     if (wasNight) nextAt = clock + BACK_TO_SLEEP;
+  }
+
+  /** Eventos de una estación activa (§11: `cue`) — hoy solo el piano: mueve
+   *  la mano del lado que sonó, sin IK, mientras JotAI esté ahí parado. */
+  function cue(evt, data) {
+    if (evt === 'piano:key' && current === 'piano' && !jotai.moving && !sleeping) {
+      jotai.play(data.index % 2 === 0 ? 'pianoKeyL' : 'pianoKeyR');
+    }
   }
 
   /** ¿Cambiar a este momento del día dispara una rutina que conviene ver
@@ -531,6 +558,9 @@ export function createJotaiBrain({
       const was = zoomedNow;
       zoomedNow = zoomed;
       if (zoomed) onZoom(zoomed);
+      // se sale de una estación con rol propio (ej. piano): interrupt() vuelve
+      // la pose a stand/sit sola, no hace falta un "salir" a mano por estación
+      else if (was && STATION_POSE[was.id] && !seated && !sleeping) interrupt(AFTER_POKE);
       else if (was && phase === 'night' && !sleeping) nextAt = Math.max(nextAt, clock + BACK_TO_SLEEP * 0.8);
       showCaption(captionKey);   // se oculta con zoom, vuelve al salir
     }
@@ -563,7 +593,7 @@ export function createJotaiBrain({
   }
 
   return {
-    poke, update, skip, wantsStage,
+    poke, update, skip, wantsStage, cue,
     goTo(id) {   // QA desde consola: __gamJotai.brain.goTo('pukis')
       interrupt();
       return run('goTo', async (ok) => (await travel(id, ok)) && gesture(id, ok));

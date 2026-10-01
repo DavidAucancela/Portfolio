@@ -39,10 +39,10 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { createHud } from './gam-hud.js';
-import { createStations } from './gam-stations.js';
+import { createStations, LUMBRE_SHOTS } from './gam-stations.js';
 import { createJotai } from './gam-jotai.js';
 import { createJotaiBubble, createJotaiCaption } from './gam-jotai-bubble.js';
-import { createJotaiBrain } from './gam-jotai-brain.js';
+import { createJotaiBrain, STATION_POSE } from './gam-jotai-brain.js';
 import { createNavGrid } from './gam-jotai-nav.js';
 
 /* ────────────────────────────────────────────────────
@@ -78,16 +78,16 @@ const FURN_SCALE = 1.15; // muebles más grandes que su diseño base ("se ven ch
 ──────────────────────────────────────────────────── */
 const WALL_FACING = Math.PI / 2;
 const FURNITURE = [
-  { id: 'piano',      x: -HALF + 0.34, z: 0.85,  rotY: WALL_FACING, color: 0xffb020, label: '🎹 Piano',            kind: 'minigame', zoom: 2.5, viewTilt: 0.45 },
-  { id: 'desk',       x: -0.3,         z: -HALF + 0.47, rotY: 0,    color: 0x3b82f6, label: '🖥️ Escritorio',       kind: 'list', zoom: 2.0, artHeight: 1.9 },
-  { id: 'juggling',   x: -1.45,        z: 2.35,  rotY: 0,           color: 0xff8a3d, label: '🤹 Malabares',        kind: 'video', zoom: 3, scale: 1.35 },
-  { id: 'door',       x: -HALF,        z: 2.55,  rotY: WALL_FACING, color: 0x94a3b8, label: '🚪 Salir',            kind: 'exit', zoom: 2.2, scale: 1 },
+  { id: 'piano',      x: -3.06,        z: 0.31,  rotY: WALL_FACING, color: 0xffb020, label: '🎹 Piano',            kind: 'minigame', zoom: 2.5, viewTilt: 0.45, scale: 1.354 },
+  { id: 'desk',       x: -0.3,         z: -2.93, rotY: 0,    color: 0x3b82f6, label: '🖥️ Escritorio',       kind: 'list', zoom: 2.0, artHeight: 1.9 },
+  { id: 'juggling',   x: 2.97,         z: 0.25,  rotY: 0,           color: 0xff8a3d, label: '🤹 Malabares',        kind: 'video', zoom: 3, scale: 1.35 },
+  { id: 'door',       x: -3.42,        z: 2.45,  rotY: WALL_FACING, color: 0x94a3b8, label: '🚪 Salir',            kind: 'exit', zoom: 2.2, scale: 1.085 },
   { id: 'skateboard', x: 3.0,          z: -HALF + 0.32, rotY: 0,    color: 0x06ffa5, label: '🛹 Patineta',         kind: '3d', zoom: 2.6 },
-  { id: 'window',     x: 2.2,          z: -HALF, y: 0,   rotY: 0,           color: 0x7aa2ff, label: '🪟 Ventana',          kind: 'info', zoom: 3.2, scale: 1, noLift: true },
-  { id: 'lumbre',     x: -HALF,        z: -1.25, y: 0,   rotY: WALL_FACING, color: 0xffb020, label: '🕯️ Lumbre',           kind: 'info', zoom: 6.5, scale: 1, noLift: true, viewTilt: 0.5 },
-  { id: 'chess',      x: 0.25,         z: 0.8,    rotY: 0,           color: 0xe8d9b5, label: '♟️ Ajedrez',          kind: 'minigame', zoom: 7.5, elev: 1.15 },
-  { id: 'pukis',      x: 1.95,         z: -2.55, rotY: -Math.PI / 2, color: 0xe9dcc0, label: '🐾 Pukis',            kind: 'info', zoom: 4.2, scale: 1.4, view: Math.PI / 2 },
-  { id: 'bookshelf',  x: -HALF + 0.24, z: -2.55, rotY: WALL_FACING, color: 0xb14eff, label: '📚 Estante',          kind: 'list', zoom: 2.6, viewTilt: 0.5 },
+  { id: 'window',     x: 2.36,         z: -3.42, y: 0,   rotY: 0,           color: 0x7aa2ff, label: '🪟 Ventana',          kind: 'info', zoom: 3.2, scale: 1, noLift: true },
+  { id: 'lumbre',     x: -3.38,        z: -0.04, y: 0,   rotY: WALL_FACING, color: 0xffb020, label: '🕯️ Lumbre',           kind: 'info', zoom: 6.5, scale: 1.085, noLift: true, viewTilt: 0.5 },
+  { id: 'chess',      x: 1.97,         z: 2.48,   rotY: 0,           color: 0xe8d9b5, label: '♟️ Ajedrez',          kind: 'minigame', zoom: 7.5, elev: 1.15, scale: 1.469 },
+  { id: 'pukis',      x: 0.61,         z: -2.45, rotY: -Math.PI / 2, color: 0xe9dcc0, label: '🐾 Pukis',            kind: 'info', zoom: 4.2, scale: 1.096, view: Math.PI / 2, artHeight: 0.5 },
+  { id: 'bookshelf',  x: -3.14,        z: -2.53, rotY: WALL_FACING, color: 0xb14eff, label: '📚 Estante',          kind: 'list', zoom: 2.6, viewTilt: 0.5, scale: 1.3 },
 ];
 
 /* JotAI (docs/gam-jotai-plan.md) — vive en el cuarto. Arranca en su rincón
@@ -109,7 +109,7 @@ const JOTAI_SPOTS = {
   chess:      { at: [0, 0.75],    look: [0, 0.62, 0] },
   juggling:   { at: [0, -0.65],   look: [0, 0.9, 0] },
   skateboard: { at: [0, 0.5],     look: [0, 0.6, 0] },
-  lumbre:     { at: [0, 0.8],     look: [0, 2.55, 0] },
+  lumbre:     { at: [0, 0.8],     look: [0, 2.3, 0] },
 };
 /* Grilla de navegación: solo bloquea lo que ocupa piso a la altura del
    cuerpo (la alfombra no, lo colgado en la pared tampoco). */
@@ -135,6 +135,8 @@ const Y_AXIS = new THREE.Vector3(0, 1, 0);
 const PARALLAX_YAW = 0.03;    // rad (~1.7°) — el diorama "gira" levemente siguiendo el puntero
 const PARALLAX_PITCH = 0.02;
 const DRIFT_YAW = 0.02;       // deriva autónoma, no depende de mover el mouse
+const FREE_LOOK_YAW = 0.35;   // rad (~20°) — mismo parallax, rango mucho mayor al enfocar un objeto:
+const FREE_LOOK_PITCH = 0.2;  // mover el cursor por la pantalla deja ver otros ángulos sin arrastrar
 const TRANSITION_MS = 750;
 const FOCUS_LERP = 0.07;      // suavizado del dimming al enfocar/desenfocar un objeto
 const HOVER_GLOW = 0.22;      // bajo a propósito: no debe pasar el umbral del bloom
@@ -300,34 +302,44 @@ function makeSky() {
     ctx.lineTo(w, h);
     ctx.closePath();
     ctx.fill();
-    const colors = ['#ffd27a', '#fff2c4', '#ffb060', '#9fd0ff'];
-    for (let i = 0; i < 260; i++) { // luces de la ciudad
-      ctx.fillStyle = colors[Math.floor(rnd() * colors.length)];
-      ctx.globalAlpha = (0.55 + rnd() * 0.45) * (1 - day);
-      const y = h * 0.68 + rnd() * h * 0.32;
-      ctx.fillRect(rnd() * w, y, 1.5 + rnd(), 1.5 + rnd());
+
+    // Skyline: edificios reales (no puntitos sueltos) con ventanas iluminadas
+    // de noche y vidrios apenas reflejando el cielo de día.
+    const baseY = h * 0.74;
+    ctx.fillStyle = col('#0d1428', '#26344a', day);
+    let bx = -10;
+    while (bx < w + 10) {
+      const bw = 26 + rnd() * 30;
+      const bh = 40 + rnd() * (h - baseY - 6);
+      const by = baseY - bh + rnd() * 8;
+      ctx.fillRect(bx, by, bw, h - by);
+      // torre puntiaguda ocasional
+      if (rnd() < 0.3) {
+        ctx.beginPath();
+        ctx.moveTo(bx + bw * 0.3, by);
+        ctx.lineTo(bx + bw * 0.5, by - 14 - rnd() * 14);
+        ctx.lineTo(bx + bw * 0.7, by);
+        ctx.closePath();
+        ctx.fill();
+      }
+      // ventanas en grilla, algunas encendidas
+      const litColors = ['#ffd27a', '#fff2c4', '#ffb060'];
+      for (let wy = by + 8; wy < h - 6; wy += 11) {
+        for (let wx = bx + 4; wx < bx + bw - 4; wx += 9) {
+          const lit = rnd() < 0.42;
+          ctx.fillStyle = lit ? litColors[Math.floor(rnd() * litColors.length)] : 'rgba(140,170,210,0.18)';
+          ctx.globalAlpha = lit ? (0.5 + rnd() * 0.4) * (1 - day) + day * 0.06 : 0.35;
+          ctx.fillRect(wx, wy, 3.5, 5);
+        }
+      }
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = col('#0d1428', '#26344a', day);
+      bx += bw + 3 + rnd() * 6;
     }
-    ctx.globalAlpha = 1;
     texture.needsUpdate = true;
   }
   paint(0.5);
   return { texture, paint };
-}
-
-/** Letrero de neón `.gam` con halo ámbar (fondo transparente). */
-function makeNeonTexture() {
-  return canvasTexture(512, 192, (ctx, w, h) => {
-    ctx.font = 'bold 132px "Courier New", monospace';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.shadowColor = '#ffb020';
-    ctx.shadowBlur = 28;
-    ctx.fillStyle = '#ffd98a';
-    ctx.fillText('.gam', w / 2, h / 2 + 6);
-    ctx.shadowBlur = 8;
-    ctx.fillStyle = '#fff3d0';
-    ctx.fillText('.gam', w / 2, h / 2 + 6);
-  });
 }
 
 /** Pantallas del escritorio: editor de código (barras de sintaxis) o galería
@@ -401,37 +413,57 @@ function screenExtra(tex, intensity = 1.1) {
   return { map: tex, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: intensity };
 }
 
-function makePosterSunset() {
+/** Póster Star Wars: cielo estrellado + planeta + siluetas de casco/nave + título en perspectiva. */
+function makePosterStarWars() {
   return canvasTexture(256, 352, (ctx, w, h) => {
-    const bg = ctx.createLinearGradient(0, 0, 0, h);
-    bg.addColorStop(0, '#1a0f30');
-    bg.addColorStop(0.6, '#5a1f4a');
-    bg.addColorStop(1, '#ff8a3d');
-    ctx.fillStyle = bg;
+    ctx.fillStyle = '#03040a';
     ctx.fillRect(0, 0, w, h);
-    const sun = ctx.createLinearGradient(0, 70, 0, 230);
-    sun.addColorStop(0, '#ffd070');
-    sun.addColorStop(1, '#ff4f6a');
-    ctx.fillStyle = sun;
+    const rnd = seeded(7);
+    for (let i = 0; i < 160; i++) { // estrellas
+      const r = rnd() < 0.85 ? 0.6 : 1.3;
+      ctx.fillStyle = `rgba(255,255,255,${0.35 + rnd() * 0.55})`;
+      ctx.fillRect(rnd() * w, rnd() * h * 0.62, r, r);
+    }
+    // planeta al fondo
+    const planet = ctx.createRadialGradient(w * 0.76, 62, 4, w * 0.76, 62, 46);
+    planet.addColorStop(0, '#8f6a4a');
+    planet.addColorStop(0.6, '#5c3d2a');
+    planet.addColorStop(1, 'rgba(92,61,42,0)');
+    ctx.fillStyle = planet;
+    ctx.beginPath(); ctx.arc(w * 0.76, 62, 46, 0, Math.PI * 2); ctx.fill();
+    // silueta de casco (tipo Vader) centrada en la parte alta
+    ctx.fillStyle = '#0a0a0d';
     ctx.beginPath();
-    ctx.arc(w / 2, 150, 72, 0, Math.PI * 2);
+    ctx.moveTo(w / 2 - 30, 118);
+    ctx.quadraticCurveTo(w / 2 - 34, 72, w / 2, 58);
+    ctx.quadraticCurveTo(w / 2 + 34, 72, w / 2 + 30, 118);
+    ctx.quadraticCurveTo(w / 2 + 26, 138, w / 2, 142);
+    ctx.quadraticCurveTo(w / 2 - 26, 138, w / 2 - 30, 118);
+    ctx.closePath();
     ctx.fill();
-    ctx.fillStyle = '#4a1a44'; // cortes de la puesta de sol
-    for (let i = 0; i < 6; i++) ctx.fillRect(w / 2 - 80, 150 + i * 13, 160, 2 + i * 1.6);
-    ctx.strokeStyle = 'rgba(255,79,138,0.7)'; // grilla en perspectiva
-    ctx.lineWidth = 1.5;
-    for (let i = -6; i <= 6; i++) {
-      ctx.beginPath();
-      ctx.moveTo(w / 2, 232);
-      ctx.lineTo(w / 2 + i * 55, h);
-      ctx.stroke();
-    }
-    for (let y = 250; y < h; y += 22) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(w, y);
-      ctx.stroke();
-    }
+    ctx.fillStyle = 'rgba(120,10,10,0.55)'; // visor
+    ctx.fillRect(w / 2 - 16, 96, 32, 8);
+    // dos naves cruzando el cielo (trazos simples)
+    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+    ctx.lineWidth = 1.4;
+    [[30, 40, 70, 34], [190, 90, 230, 84]].forEach(([x1, y1, x2, y2]) => {
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+    });
+    // título en perspectiva (grilla amarilla clásica, simplificada a texto escalado)
+    ctx.save();
+    ctx.translate(w / 2, 210);
+    ctx.transform(1, 0, -0.16, 0.62, 0, 0);
+    ctx.fillStyle = '#ffe081';
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 40px "Courier New", monospace';
+    ctx.fillText('JOTAI', 0, 0);
+    ctx.font = 'bold 26px "Courier New", monospace';
+    ctx.fillText('WARS', 0, 34);
+    ctx.restore();
+    ctx.fillStyle = 'rgba(255,224,129,0.85)';
+    ctx.font = '12px "Courier New", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('QUE LA FUERZA TE ACOMPAÑE', w / 2, h - 20);
   });
 }
 
@@ -602,6 +634,13 @@ export function mount(container, hotspots) {
   const trimMat  = new THREE.MeshStandardMaterial({ color: 0xe8e4dc, roughness: 0.9 });
   const room = new THREE.Group();
   scene.add(room);
+
+  // Registro de piezas movibles/escalables/ocultables con el modo edición
+  // dev (ver __gamEditMode() más abajo) — cada mueble de FURNITURE se
+  // auto-registra al construirse; acá van los grupos de decoración sueltos
+  // que también conviene poder reposicionar a mano (pósters, medallas…).
+  const editables = [];
+  function tagEdit(obj, id) { obj.userData.editId = id; editables.push({ id, obj }); return obj; }
   const roomBox = (w, h, d, material, x, y, z) => {
     const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), material);
     m.position.set(x, y, z);
@@ -630,6 +669,7 @@ export function mount(container, hotspots) {
   );
   plaque.position.set(0, pedY + 0.02, pedSize / 2 + 0.005);
   room.add(plaque);
+  tagEdit(plaque, 'plaquita_museo');
 
   const contactShadow = makeContactShadow(pedSize * 2.1);
   contactShadow.position.y = -FLOOR_T - PED_H - 0.02;
@@ -669,11 +709,10 @@ export function mount(container, hotspots) {
   }
 
   /* ── Decoración fija del cuarto (sin hover ni raycast): ventana nocturna,
-     neón `.gam`, pósters, reloj, repisas, plantas, alfombra, parlante y
-     mochila — el cuarto se siente habitado por acumulación de objetos. ── */
+     pósters, reloj, repisas, alfombra y guitarra — el cuarto se siente
+     habitado por acumulación de objetos. ── */
   const decorParts = [];
   let sky = null;      // cielo de la ventana (repintable)
-  let neonMat = null;  // material del neón .gam
   const decor = new THREE.Group();
   scene.add(decor);
   const dMesh = (geometry, material, x, y, z, ry = 0) => {
@@ -691,60 +730,84 @@ export function mount(container, hotspots) {
       new THREE.BoxGeometry(2.6, 0.03, 1.9),
       [rugEdge, rugEdge, new THREE.MeshStandardMaterial({ map: makeRugTexture(), roughness: 0.95 }), rugEdge, rugEdge, rugEdge]
     );
-    rug.position.set(0.2, 0.015, 0.9);
+    rug.position.set(0.04, -0.005, -1.76);
+    rug.scale.setScalar(1.444);
     rug.receiveShadow = true;
     decor.add(rug);
+    tagEdit(rug, 'alfombra');
   }
 
-  // Repisa de trofeos sobre el escritorio + tira LED cian.
+  // Repisa de medallas sobre el escritorio + tira LED cian: 3 cajas
+  // display cerradas, con tapa de vidrio al frente que deja ver la medalla
+  // dorada entera apoyada adentro (en vez de las copas de antes).
   {
     const shelfX = -0.3, shelfY = 2.55, shelfZ = -HALF + 0.15;
-    addPart(decor, decorParts, box(2.4, 0.05, 0.3), 0xe8e4dc, shelfX, shelfY, shelfZ);
-    addPart(decor, decorParts, box(2.3, 0.02, 0.02), 0x00e5ff, shelfX, shelfY - 0.04, shelfZ + 0.13, glow(0x00e5ff));
-    const trophy = { metalness: 0.8, roughness: 0.3 };
-    [[-0.8, 1], [-0.25, 1.3], [0.3, 0.85], [0.85, 1.1]].forEach(([dx, s]) => {
+    const shelfGroup = new THREE.Group();
+    decor.add(shelfGroup);
+    addPart(shelfGroup, decorParts, box(2.4, 0.05, 0.3), 0xe8e4dc, shelfX, shelfY, shelfZ);
+    addPart(shelfGroup, decorParts, box(2.3, 0.02, 0.02), 0x00e5ff, shelfX, shelfY - 0.04, shelfZ + 0.13, glow(0x00e5ff));
+    tagEdit(shelfGroup, 'repisa_medallas');
+    const gold = { metalness: 0.85, roughness: 0.25 };
+    const glass = { metalness: 0.1, roughness: 0.05, transparent: true, opacity: 0.22 };
+    [[-0.65, 1], [0, 1.15], [0.65, 1]].forEach(([dx, s], i) => {
+      const boxGroup = new THREE.Group();
+      decor.add(boxGroup);
+      tagEdit(boxGroup, `medalla_${i + 1}`);
       const baseY = shelfY + 0.025;
-      addPart(decor, decorParts, box(0.14 * s, 0.05 * s, 0.14 * s), 0x2a2a2a, shelfX + dx, baseY + 0.025 * s, shelfZ);
-      addPart(decor, decorParts, cyl(0.02 * s, 0.1 * s), 0xffc94a, shelfX + dx, baseY + 0.1 * s, shelfZ, trophy);
-      addPart(decor, decorParts, cyl(0.08 * s, 0.14 * s, 0.035 * s), 0xffc94a, shelfX + dx, baseY + 0.22 * s, shelfZ, trophy);
+      const bw = 0.32 * s, bh = 0.34 * s, bd = 0.22 * s;
+      // caja: fondo + 4 lados oscuros, dejando el frente (+z) abierto para el vidrio
+      addPart(boxGroup, decorParts, box(bw, bh, bd), 0x1c1f26, shelfX + dx, baseY + bh / 2, shelfZ, { roughness: 0.6 });
+      // vidrio frontal
+      addPart(boxGroup, decorParts, box(bw * 0.92, bh * 0.85, 0.01), 0xbfe6ff, shelfX + dx, baseY + bh / 2, shelfZ + bd / 2 + 0.006, glass);
+      // cinta corta colgando desde el marco superior
+      addPart(boxGroup, decorParts, box(0.03 * s, 0.06 * s, 0.01), 0xc0392b, shelfX + dx, baseY + bh - 0.05 * s, shelfZ + bd / 2 - 0.02, { roughness: 0.7 });
+      // medalla: disco dorado + relieve central, encarada al vidrio
+      const medal = addPart(boxGroup, decorParts, cyl(0.1 * s, 0.014 * s), 0xffc94a, shelfX + dx, baseY + bh / 2 - 0.02 * s, shelfZ + bd / 2 - 0.05, gold);
+      medal.rotation.x = Math.PI / 2;
+      const relief = addPart(boxGroup, decorParts, cyl(0.06 * s, 0.006 * s), 0xffe27a, shelfX + dx, baseY + bh / 2 - 0.02 * s, shelfZ + bd / 2 - 0.043, gold);
+      relief.rotation.x = Math.PI / 2;
     });
   }
 
   // Ventana nocturna (pared trasera, sobre la terminal) + luz fría.
   {
-    const wx = 2.2, wy = 3.0, ww = 1.2, wh = 1.3, wz = -HALF;
+    const wx = 2.36, wy = 3.0, ww = 1.2, wh = 1.3, wz = -HALF;
     sky = makeSky();
     const nightTex = sky.texture;
-    dMesh(
+    tagEdit(dMesh(
       new THREE.PlaneGeometry(ww, wh),
       new THREE.MeshStandardMaterial({ color: 0x111111, map: nightTex, emissive: 0xffffff, emissiveMap: nightTex, emissiveIntensity: 1 }),
       wx, wy, wz + 0.012
-    );
+    ), 'ventana_vista');
     windowLight.position.set(wx, wy - 0.1, wz + 1.1);
-  }
-
-  // Neón `.gam` (pared izquierda, entre los diplomas y la puerta): color HDR
-  // (>1) sobre un MeshBasicMaterial → supera el umbral del bloom y brilla.
-  {
-    neonMat = new THREE.MeshBasicMaterial({ map: makeNeonTexture(), transparent: true, depthWrite: false });
-    neonMat.color.setScalar(1.35);
-    dMesh(new THREE.PlaneGeometry(1.35, 0.5), neonMat, -HALF + 0.012, 3.2, 1.15, Math.PI / 2);
   }
 
   // Pósters + marcos.
   {
-    const p1 = new THREE.MeshStandardMaterial({ map: makePosterSunset(), roughness: 0.8 });
-    dMesh(new THREE.PlaneGeometry(0.62, 0.86), p1, -2.35, 2.9, -HALF + 0.034);
-    addPart(decor, decorParts, box(0.68, 0.92, 0.03), 0x1a1a1a, -2.35, 2.9, -HALF + 0.012);
+    const posterGroup = new THREE.Group();
+    posterGroup.position.set(0.44, 0, 0.44);
+    posterGroup.scale.setScalar(1.13);
+    decor.add(posterGroup);
+    tagEdit(posterGroup, 'poster_starwars');
+    const p1 = new THREE.MeshStandardMaterial({ map: makePosterStarWars(), roughness: 0.8 });
+    const img = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.86), p1);
+    img.position.set(-2.35, 2.9, -HALF + 0.034);
+    posterGroup.add(img);
+    addPart(posterGroup, decorParts, box(0.68, 0.92, 0.03), 0x1a1a1a, -2.35, 2.9, -HALF + 0.012);
   }
 
   // Reloj de pared (la manecilla de segundos anima en el loop).
   let clockSecond = new THREE.Group();
   {
+    const clockGroup = new THREE.Group();
+    clockGroup.position.set(-1.5, -0.74, 0.94);
+    clockGroup.scale.setScalar(1.278);
+    decor.add(clockGroup);
+    tagEdit(clockGroup, 'reloj');
     const cx = 1.25, cy = 3.55, cz = -HALF + 0.04;
-    const ring = addPart(decor, decorParts, cyl(0.29, 0.05), 0x2a2a2a, cx, cy, cz);
+    const ring = addPart(clockGroup, decorParts, cyl(0.29, 0.05), 0x2a2a2a, cx, cy, cz);
     ring.rotation.x = Math.PI / 2;
-    const face = addPart(decor, decorParts, cyl(0.26, 0.052), 0xf5efe0, cx, cy, cz + 0.002);
+    const face = addPart(clockGroup, decorParts, cyl(0.26, 0.052), 0xf5efe0, cx, cy, cz + 0.002);
     face.rotation.x = Math.PI / 2;
     const now = new Date();
     const hand = (len, w, angle, z) => {
@@ -754,7 +817,7 @@ export function mount(container, hotspots) {
       const m = new THREE.Mesh(new THREE.BoxGeometry(w, len, 0.008), new THREE.MeshStandardMaterial({ color: 0x1a1a1a }));
       m.position.y = len / 2 - 0.02;
       g.add(m);
-      decor.add(g);
+      clockGroup.add(g);
       return g;
     };
     hand(0.14, 0.02, ((now.getHours() % 12) + now.getMinutes() / 60) * (Math.PI / 6), 0.032);
@@ -763,25 +826,13 @@ export function mount(container, hotspots) {
     clockSecond.children[0].material.color.setHex(0xc0392b);
   }
 
-  // Parlante de piso (junto al escritorio) y guitarra.
+  // Guitarra acústica apoyada contra la pared izquierda (frente hacia +x).
   {
-    const spk = new THREE.Group();
-    spk.position.set(-2.55, 0, -HALF + 0.3);
-    spk.rotation.y = 0.35;
-    decor.add(spk);
-    addPart(spk, decorParts, box(0.34, 0.64, 0.3), 0x16181d, 0, 0.32, 0);
-    [[0.2, 0.12], [0.46, 0.07]].forEach(([y, r]) => {
-      const cone = addPart(spk, decorParts, cyl(r, 0.03), 0x2a2d35, 0, y + 0.02, 0.15);
-      cone.rotation.x = Math.PI / 2;
-      const ring = addPart(spk, decorParts, cyl(r * 0.42, 0.034), 0x6b7280, 0, y + 0.02, 0.152);
-      ring.rotation.x = Math.PI / 2;
-    });
-
-    // Guitarra acústica apoyada contra la pared izquierda (frente hacia +x).
     const guitar = new THREE.Group();
-    guitar.position.set(-HALF + 0.3, 0, -1.4);
+    guitar.position.set(-HALF + 0.3, 0, -1.34);
     guitar.rotation.z = 0.1;
     decor.add(guitar);
+    tagEdit(guitar, 'guitarra');
     const wood = 0xc98a4b;
     const lower = addPart(guitar, decorParts, cyl(0.17, 0.09), wood, 0, 0.3, 0, { roughness: 0.55 });
     lower.rotation.z = Math.PI / 2;
@@ -1008,20 +1059,24 @@ export function mount(container, hotspots) {
       }
 
       case 'lumbre': {
-        // Póster enmarcado de mi juego Lumbre en la pared izquierda (las capturas se cambian en la estación).
-        const wy = 2.55, pw = 1.1;
-        add(box(pw + 0.12, 0.84, 0.04), 0x1a1410, 0.0, wy - 0.04, 0.02);                         // marco
+        // Pantalla enmarcada de mi juego Lumbre en la pared izquierda — más grande
+        // que las demás piezas colgadas para leerse como una "TV" propia; las
+        // capturas rotan solas (ver cyclers en el loop principal) y también se
+        // pueden cambiar a mano desde la estación (tabs 1-4).
+        const wy = 2.3, pw = 2.0;
+        add(box(pw + 0.12, 1.63, 0.04), 0x1a1410, 0.0, wy - 0.072, 0.02);                        // marco
         const shot = new THREE.TextureLoader().load('public/images/projects/lumbre/lumbre-01.webp');
         shot.colorSpace = THREE.SRGBColorSpace;
         shot.anisotropy = maxAniso;
-        const img = add(new THREE.PlaneGeometry(pw, pw / 2.446), 0xffffff, 0, wy + 0.05, 0.043, { map: shot, roughness: 0.6, emissive: 0xffffff, emissiveMap: shot, emissiveIntensity: 0.35 });
+        const img = add(new THREE.PlaneGeometry(pw, pw / 2.446), 0xffffff, 0, wy + 0.091, 0.043, { map: shot, roughness: 0.6, emissive: 0xffffff, emissiveMap: shot, emissiveIntensity: 0.5 });
         const plate = canvasTexture(512, 64, (ctx, w, h) => {
           ctx.fillStyle = '#120d08'; ctx.fillRect(0, 0, w, h);
           ctx.fillStyle = '#ffb020'; ctx.font = 'bold 30px "Courier New", monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
           ctx.fillText('L U M B R E  ·  Game Jam 2026', w / 2, h / 2 + 2);
         });
-        add(new THREE.PlaneGeometry(pw, pw * 0.125), 0xffffff, 0, wy - 0.33, 0.043, { map: plate, roughness: 0.6 });
+        add(new THREE.PlaneGeometry(pw, pw * 0.125), 0xffffff, 0, wy - 0.60, 0.043, { map: plate, roughness: 0.6 });
         out.refs.poster = { img, shot };
+        cyclers.push({ img, shots: [], baseAspect: LUMBRE_SHOTS[0].aspect, pw, last: performance.now(), i: 0 });
         out.baseY = wy;
         break;
       }
@@ -1178,7 +1233,7 @@ export function mount(container, hotspots) {
    *  y esconde ese objeto (sigue existiendo para el raycast/hitbox —
    *  Raycaster ignora `.visible`). Si no existe (404 → onError), no hace
    *  nada. Ojo: un billboard plano puede desentonar con el diorama. */
-  function loadArt(root, f) {
+  function loadArt(root, f, refs) {
     textureLoader.load(
       `${ART_BASE}${f.id}.webp`,
       (texture) => {
@@ -1193,6 +1248,18 @@ export function mount(container, hotspots) {
         sprite.position.set(f.x, (f.y || 0) + h / 2 + 0.02, f.z);
         sprite.renderOrder = 5;
         scene.add(sprite);
+        // Pukis: el arte real es solo cuerpo/cabeza (sin cola) — la cola sigue
+        // siendo una pieza 3D suelta para que pukisStation la pueda seguir
+        // meneando. `scene.attach` la saca de `root` preservando su posición
+        // en el mundo, así queda visible aunque `root` (el resto del perro
+        // compuesto) se oculte. Se puede reacomodar a mano con el modo
+        // edición (F9 → 'pukis_cola') para que calce con el nuevo dibujo.
+        if (f.id === 'pukis' && refs?.pukis?.tail) {
+          const tail = refs.pukis.tail;
+          scene.attach(tail);
+          tail.renderOrder = 6;
+          tagEdit(tail, 'pukis_cola');
+        }
         root.visible = false;
         root.userData.artSprite = sprite;
       },
@@ -1206,6 +1273,7 @@ export function mount(container, hotspots) {
   const breathers = [];
   const floaters = [];
   const flickers = [];
+  const cyclers = [];    // pantallas que rotan de imagen solas en reposo (ver 'lumbre')
   const rgbStrips = [];
   const steamers = [];
   const lampBulbs = [];
@@ -1228,6 +1296,7 @@ export function mount(container, hotspots) {
     scene.add(group);
     allMeshes.push(group);
     objects.set(f.id, { root: group, refs: built.refs, parts, f });
+    tagEdit(group, f.id);
     if (built.lampAnchor) lamp.position.copy(group.localToWorld(built.lampAnchor));
     if (built.breathe) breathers.push(built.breathe);
     built.floaters.forEach(fl => floaters.push(fl));
@@ -1236,7 +1305,7 @@ export function mount(container, hotspots) {
     built.steam?.forEach(m => steamers.push(m));
     if (built.bulb) lampBulbs.push(built.bulb);
     if (f.interactive !== false) interactiveMeshes.push(group);
-    loadArt(group, f);
+    loadArt(group, f, built.refs);
   });
 
   /* ── JotAI: personaje del cuarto (modelo + globo + comportamiento) ── */
@@ -1333,6 +1402,7 @@ export function mount(container, hotspots) {
   const jotaiAnchor = new THREE.Vector3();
   let jotaiHovered = false;
   let jotaiFailed = false;    // un error en su update no debe congelar el loop del cuarto
+  let jotaiFocused = false;   // ver `jotaiWantsFocus` en frame(): capa de foco mientras está "de servicio"
   // QA desde consola: __gamJotai.brain.goTo('pukis') · console.log(__gamJotai.nav.debugString())
   if (import.meta.env.DEV) window.__gamJotai = { jotai, brain: jotaiBrain, bubble: jotaiBubble, nav: jotaiNav, spots: jotaiSpots };
 
@@ -1341,9 +1411,9 @@ export function mount(container, hotspots) {
      sol, el relleno, la luz de la ventana, la lámpara, el neón, el cielo de
      la ventana y el fondo. ── */
   const ENV = {
-    day:   { sun: 2.9, sunColor: 0xfff4dc, hemi: 0.95, hemiSky: 0xcfe6ff, lamp: 1.0, win: 0,   neon: 0.6,  exposure: 1.2, sunPos: [5, 11, 3],  bg: ['#8a5c22', '#3a2610', '#0b0704'] },
-    dusk:  { sun: 2.2, sunColor: 0xffe2c0, hemi: 0.6,  hemiSky: 0xdfe8ff, lamp: 3.0, win: 2.2, neon: 1.35, exposure: 1.1, sunPos: [6, 10, 4],  bg: ['#3a2408', '#140d05', '#050505'] },
-    night: { sun: 1.2, sunColor: 0x7d98ff, hemi: 0.55, hemiSky: 0x5a6cb0, lamp: 4.6, win: 3.2, neon: 1.9,  exposure: 1.0, sunPos: [-4, 9, 5],  bg: ['#111c40', '#0a1024', '#050505'] },
+    day:   { sun: 2.9, sunColor: 0xfff4dc, hemi: 0.95, hemiSky: 0xcfe6ff, lamp: 1.0, win: 0,   exposure: 1.2, sunPos: [5, 11, 3],  bg: ['#8a5c22', '#3a2610', '#0b0704'] },
+    dusk:  { sun: 2.2, sunColor: 0xffe2c0, hemi: 0.6,  hemiSky: 0xdfe8ff, lamp: 3.0, win: 2.2, exposure: 1.1, sunPos: [6, 10, 4],  bg: ['#3a2408', '#140d05', '#050505'] },
+    night: { sun: 1.2, sunColor: 0x7d98ff, hemi: 0.55, hemiSky: 0x5a6cb0, lamp: 4.6, win: 3.2, exposure: 1.0, sunPos: [-4, 9, 5],  bg: ['#111c40', '#0a1024', '#050505'] },
   };
   const envA = new THREE.Color();
   const envB = new THREE.Color();
@@ -1357,7 +1427,6 @@ export function mount(container, hotspots) {
     sun.color.copy(envA.setHex(a.sunColor).lerp(envB.setHex(b.sunColor), w));
     sun.position.set(lerp(a.sunPos[0], b.sunPos[0], w), lerp(a.sunPos[1], b.sunPos[1], w), lerp(a.sunPos[2], b.sunPos[2], w));
     hemiLight.color.copy(envA.setHex(a.hemiSky).lerp(envB.setHex(b.hemiSky), w));
-    neonMat.color.setScalar(mix('neon'));
     renderer.toneMappingExposure = mix('exposure');
     sky.paint(t);
     background.paint(a.bg.map((c, i) => new THREE.Color(c).lerp(new THREE.Color(b.bg[i]), w).getStyle()));
@@ -1492,6 +1561,16 @@ export function mount(container, hotspots) {
   let lastPointerMoveAt = -Infinity;
   let dragging = false;
 
+  /* ── Modo edición (solo dev) — F9 lo prende/apaga. Mientras está activo:
+     click selecciona cualquier pieza de `editables` (muebles de FURNITURE +
+     los grupos de decoración marcados con tagEdit), las flechas la mueven,
+     +/- la escalan, Supr la oculta/muestra y "C" copia sus valores al
+     portapapeles para pegarlos acá en el chat — así no hay que ir y volver
+     con capturas de pantalla para ajustar posición/tamaño. ── */
+  const editMode = { on: false, selected: null };
+  const editableSet = new Set(editables.map(e => e.obj));
+  let editHud = null;
+
   /* ── Estaciones: al hacer click la cámara hace zoom y el objeto se vuelve
      dinámico dentro de la escena (gam-stations.js). HUD = barra superior +
      tarjeta + pines (gam-hud.js). ── */
@@ -1509,6 +1588,8 @@ export function mount(container, hotspots) {
     hotspotFor: (id) => hotspotsById.get(id),
     // la ventana vuelve sola a la vista general si JotAI va a dormirse / despertarse
     onEnvScene: (t) => !jotaiFailed && jotaiBrain.wantsStage(t),
+    // estaciones con rol propio (§11 del plan) avisan al brain: hoy solo el piano
+    cue: (evt, data) => { if (!jotaiFailed) jotaiBrain.cue(evt, data); },
   }, objects);
   const stations = stationSys.stations;
 
@@ -1814,7 +1895,92 @@ export function mount(container, hotspots) {
   // Sin estación activa el click hace el raycast propio (no depende del hover:
   // en táctil no hay pointermove previo al tap). Con estación, las acciones
   // van por pointerdown/up (ver onPointerDown).
+  /* ── Modo edición: DOM + acciones ── */
+  function findEditRoot(obj) {
+    let o = obj;
+    while (o) { if (editableSet.has(o)) return o; o = o.parent; }
+    return null;
+  }
+  function editMeshesOf(obj) {
+    const arr = [];
+    obj.traverse((n) => { if (n.isMesh) arr.push(n); });
+    return arr;
+  }
+  function ensureEditHud() {
+    if (editHud) return editHud;
+    const el = document.createElement('div');
+    el.style.cssText = 'position:absolute;left:10px;bottom:10px;z-index:20;background:rgba(10,12,18,0.85);color:#9fe6ff;font:12px/1.5 "Courier New",monospace;padding:10px 12px;border-radius:8px;border:1px solid rgba(159,230,255,0.35);white-space:pre;pointer-events:none;max-width:min(90%,420px);';
+    container.appendChild(el);
+    editHud = el;
+    return el;
+  }
+  function renderEditHud() {
+    const el = ensureEditHud();
+    if (!editMode.on) { el.style.display = 'none'; return; }
+    el.style.display = 'block';
+    const sel = editMode.selected;
+    const lines = ['MODO EDICIÓN (F9 para salir)', 'Click = seleccionar · Tab = siguiente · Esc = deseleccionar'];
+    if (sel) {
+      const p = sel.obj.position, s = sel.obj.scale.x;
+      lines.push('');
+      lines.push(`» ${sel.id}${sel.obj.visible ? '' : '  (oculto)'}`);
+      lines.push(`x:${p.x.toFixed(3)}  y:${p.y.toFixed(3)}  z:${p.z.toFixed(3)}  scale:${s.toFixed(3)}`);
+      lines.push('flechas mover · Alt+↑↓ / PgUp PgDn / [ ] = alto · Shift = paso grande');
+      lines.push('- = escala · Supr ocultar/mostrar · C copiar');
+    } else {
+      lines.push('');
+      lines.push('Nada seleccionado — hacé click en una pieza del cuarto.');
+    }
+    el.textContent = lines.join('\n');
+  }
+  function setEditMode(on) {
+    editMode.on = on;
+    if (!on) { editMode.selected = null; if (outlinePass) outlinePass.selectedObjects = []; }
+    else if (zoomed) { returnToDefault(); }
+    renderer.domElement.style.cursor = on ? 'crosshair' : 'default';
+    renderEditHud();
+  }
+  function selectEdit(id) {
+    const entry = typeof id === 'string' ? editables.find(e => e.id === id) : id;
+    editMode.selected = entry || null;
+    if (outlinePass) outlinePass.selectedObjects = entry ? editMeshesOf(entry.obj) : [];
+    renderEditHud();
+    return entry;
+  }
+  function copyEditSelection() {
+    const sel = editMode.selected;
+    if (!sel) return;
+    const p = sel.obj.position, s = sel.obj.scale.x;
+    const txt = `${sel.id} → x:${p.x.toFixed(3)} y:${p.y.toFixed(3)} z:${p.z.toFixed(3)} scale:${s.toFixed(3)}${sel.obj.visible ? '' : ' (oculto)'}`;
+    navigator.clipboard?.writeText(txt).catch(() => {});
+    console.log('[gam-edit]', txt);
+  }
+  // QA/uso directo desde consola si el click no alcanza (ej. mobile): __gamEdit.on(), .select('lumbre'), .nudge(dx,dy,dz), .scale(f), .hide(), .copy(), .list()
+  if (import.meta.env.DEV) {
+    window.__gamEdit = {
+      on: () => setEditMode(true),
+      off: () => setEditMode(false),
+      list: () => editables.map(e => e.id),
+      select: (id) => selectEdit(id),
+      nudge: (dx = 0, dy = 0, dz = 0) => { const s = editMode.selected; if (s) { s.obj.position.x += dx; s.obj.position.y += dy; s.obj.position.z += dz; renderEditHud(); } },
+      moveTo: (x, y, z) => { const s = editMode.selected; if (s) { s.obj.position.set(x, y, z); renderEditHud(); } },
+      scale: (f) => { const s = editMode.selected; if (s) { s.obj.scale.multiplyScalar(f); renderEditHud(); } },
+      setScale: (v) => { const s = editMode.selected; if (s) { s.obj.scale.setScalar(v); renderEditHud(); } },
+      hide: () => { const s = editMode.selected; if (s) { s.obj.visible = false; renderEditHud(); } },
+      show: () => { const s = editMode.selected; if (s) { s.obj.visible = true; renderEditHud(); } },
+      copy: () => copyEditSelection(),
+    };
+  }
+
   function onClick(e) {
+    if (editMode.on) {
+      updatePointer(e);
+      raycaster.setFromCamera(pointerNDC, camera);
+      const hit = raycaster.intersectObjects(editables.map(x => x.obj), true)[0];
+      const root = hit ? findEditRoot(hit.object) : null;
+      selectEdit(root ? editables.find(x => x.obj === root) : null);
+      return;
+    }
     if (paused || zoomed) return;
     updatePointer(e);
     const hit = pickAny();
@@ -1828,6 +1994,41 @@ export function mount(container, hotspots) {
   function onKeyDown(e) {
     if (paused) return;
     if (e.target?.closest?.('input, textarea, [contenteditable="true"]')) return;
+    if (import.meta.env.DEV && e.key === 'F9') { setEditMode(!editMode.on); e.preventDefault(); return; }
+    if (editMode.on) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (editMode.selected) selectEdit(null); else setEditMode(false);
+        return;
+      }
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const ids = editables.map(x => x.id);
+        const cur = editMode.selected ? ids.indexOf(editMode.selected.id) : -1;
+        const next = (cur + (e.shiftKey ? -1 : 1) + ids.length) % ids.length;
+        selectEdit(editables[next]);
+        return;
+      }
+      const sel = editMode.selected;
+      if (!sel) return;
+      const step = e.shiftKey ? 0.2 : 0.02;
+      let handled = true;
+      if (e.key === 'ArrowLeft') sel.obj.position.x -= step;
+      else if (e.key === 'ArrowRight') sel.obj.position.x += step;
+      else if (e.key === 'ArrowUp' && e.altKey) sel.obj.position.y += step;   // Alt+↑ = subir
+      else if (e.key === 'ArrowDown' && e.altKey) sel.obj.position.y -= step; // Alt+↓ = bajar
+      else if (e.key === 'ArrowUp') sel.obj.position.z -= step;
+      else if (e.key === 'ArrowDown') sel.obj.position.z += step;
+      else if (e.key === '[' || e.key === 'PageDown') sel.obj.position.y -= step;
+      else if (e.key === ']' || e.key === 'PageUp') sel.obj.position.y += step;
+      else if (e.key === '-' || e.key === '_') sel.obj.scale.multiplyScalar(0.96);
+      else if (e.key === '=' || e.key === '+') sel.obj.scale.multiplyScalar(1.0 / 0.96);
+      else if (e.key === 'Delete' || e.key === 'Backspace') sel.obj.visible = !sel.obj.visible;
+      else if (e.key === 'c' || e.key === 'C') copyEditSelection();
+      else handled = false;
+      if (handled) { e.preventDefault(); renderEditHud(); }
+      return;
+    }
     if (zoomed && !e.ctrlKey && !e.metaKey && !e.altKey) {
       if (e.key === '+' || e.key === '=') { setUserZoom(userZoom * 1.35, null, true); e.preventDefault(); return; }
       if (e.key === '-' || e.key === '_') { setUserZoom(userZoom / 1.35, null, true); e.preventDefault(); return; }
@@ -1927,13 +2128,22 @@ export function mount(container, hotspots) {
       }
     }
 
-    // Parallax + deriva: giro sutil del diorama, que vuelve a 0 al enfocar.
+    // Parallax + deriva: giro sutil del diorama en reposo; al enfocar un objeto el
+    // mismo parallax pasa a un rango mucho mayor — mover el cursor por la pantalla
+    // orbita la cámara alrededor del objeto para verlo desde otros ángulos, sin
+    // consumir el click. Congelado mientras `dragging` (una estación como la
+    // patineta o el ajedrez está usando el arrastre para lo suyo) para no sumar
+    // el giro de cámara al gesto del usuario.
     if (!reducedMotion) {
       const idle = !zoomed;
-      const yawTarget = idle ? pointerParallax.x * PARALLAX_YAW + Math.sin(now * 0.00018) * DRIFT_YAW : 0;
-      const pitchTarget = idle ? -pointerParallax.y * PARALLAX_PITCH : 0;
-      yaw += (yawTarget - yaw) * 0.05;
-      pitch += (pitchTarget - pitch) * 0.05;
+      if (idle || !dragging) {
+        const yawRange = idle ? PARALLAX_YAW : FREE_LOOK_YAW;
+        const pitchRange = idle ? PARALLAX_PITCH : FREE_LOOK_PITCH;
+        const yawTarget = pointerParallax.x * yawRange + (idle ? Math.sin(now * 0.00018) * DRIFT_YAW : 0);
+        const pitchTarget = -pointerParallax.y * pitchRange;
+        yaw += (yawTarget - yaw) * 0.05;
+        pitch += (pitchTarget - pitch) * 0.05;
+      }
 
       // Animaciones en reposo — todas apagadas con prefers-reduced-motion.
       breathers.forEach((m) => { m.scale.y = (m.userData.baseScaleY ?? 0.7) + Math.sin(now * 0.0025) * 0.025; });
@@ -1941,6 +2151,24 @@ export function mount(container, hotspots) {
       flickers.forEach((m) => {
         const drop = Math.random() < 0.004 ? 0.3 : 0;
         m.material.emissiveIntensity = m.userData.baseEmissiveIntensity * (1 + 0.05 * Math.sin(now * 0.0031 + m.userData.phase) - drop);
+      });
+      // Pantalla de Lumbre: rota sola entre capturas cuando nadie la está
+      // enfocando — al entrar a la estación, las pestañas mandan (ver lumbreStation).
+      cyclers.forEach((cy) => {
+        if (zoomed && zoomed.id === 'lumbre') { cy.last = now; return; } // la estación manda mientras está enfocada
+        if (now - cy.last < 3400) return;
+        cy.last = now;
+        cy.i = (cy.i + 1) % LUMBRE_SHOTS.length;
+        const { src, aspect } = LUMBRE_SHOTS[cy.i];
+        if (!cy.shots[cy.i]) {
+          const t = new THREE.TextureLoader().load(src);
+          t.colorSpace = THREE.SRGBColorSpace;
+          cy.shots[cy.i] = t;
+        }
+        cy.img.material.map = cy.shots[cy.i];
+        cy.img.material.emissiveMap = cy.shots[cy.i];
+        cy.img.material.needsUpdate = true;
+        cy.img.scale.y = (cy.pw / aspect) / (cy.pw / cy.baseAspect);
       });
       steamers.forEach((m) => {
         const st = m.userData.steam;
@@ -1989,6 +2217,10 @@ export function mount(container, hotspots) {
           cursorLook = jotaiLook;
         }
         jotaiBrain.update(now, { zoomed, focusLook, cursorLook, envT });
+        // estación con rol propio (§11): mientras esté ahí parado, que no salga
+        // desenfocado junto al objeto enfocado (ver `setFocusLayer`)
+        const jotaiWantsFocus = !!(zoomed && STATION_POSE[zoomed.id] && jotaiBrain.current === zoomed.id);
+        if (jotaiWantsFocus !== jotaiFocused) { setFocusLayer(jotai.root, jotaiWantsFocus); jotaiFocused = jotaiWantsFocus; }
         // sentado, sube y baja con el escritorio cuando este se levanta por el hover
         jotai.root.position.y = jotaiBrain.seated && deskRoot ? deskRoot.userData.lift : 0;
         jotai.update(now, dt);

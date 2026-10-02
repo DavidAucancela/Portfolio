@@ -139,41 +139,9 @@
       "en": "Star Wars"
     },
     "message": {
-      "es": "Fan de Star Wars desde niño. (Texto pendiente)",
-      "en": "Star Wars fan since I was a kid. (Text pending)"
-    },
-    "favorites": [
-      {
-        "label": {
-          "es": "Película favorita",
-          "en": "Favorite movie"
-        },
-        "value": {
-          "es": "Pendiente",
-          "en": "Pending"
-        }
-      },
-      {
-        "label": {
-          "es": "Personaje",
-          "en": "Character"
-        },
-        "value": {
-          "es": "Pendiente",
-          "en": "Pending"
-        }
-      },
-      {
-        "label": {
-          "es": "Dato curioso",
-          "en": "Fun fact"
-        },
-        "value": {
-          "es": "Pendiente",
-          "en": "Pending"
-        }
-      }
-    ]
+      "es": "Hazlo, o no lo hagas. Pero no lo intentes. — Maestro Yoda",
+      "en": "Do or do not. There is no try. — Master Yoda"
+    }
   },
   {
     "id": "guitar",

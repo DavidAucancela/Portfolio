@@ -93,7 +93,7 @@ const FURNITURE = [
   // 1–9 siguen apuntando a los de arriba.
   { id: 'medals',     x: -0.3,         z: -HALF + 0.15, y: 2.55, rotY: 0, color: 0xffc94a, label: '🏅 Logros',      kind: 'info', zoom: 4.4, scale: 1, noLift: true },
   { id: 'starwars',   x: 0.44 - 1.13 * 2.35, z: 0.44 - 1.13 * HALF, y: 0, rotY: 0, color: 0xffe81f, label: '⭐ Star Wars', kind: 'info', zoom: 6, scale: 1.13, noLift: true },
-  { id: 'guitar',     x: -HALF + 0.3,  z: -1.34, rotY: 0, view: Math.PI / 2, color: 0xc98a4b, label: '🎸 Guitarra',  kind: 'minigame', zoom: 3.6, scale: 1 },
+  { id: 'guitar',     x: -HALF + 0.3,  z: -1.34, rotY: 0, view: Math.PI / 2, color: 0xc98a4b, label: '🎸 Guitarra',  kind: 'minigame', zoom: 5.2, scale: 1 },
   { id: 'soundbar',   x: -2.26,        z: -HALF + 0.26, rotY: 0, color: 0x7aa2ff, label: '🔊 Música',          kind: 'list', zoom: 4.2, scale: 1 },
 ];
 
@@ -158,6 +158,7 @@ const HOVER_LIFT = 0.07;      // cuánto sube el objeto bajo el cursor
 // docs/gam-three-art-spec.md). Si no existe, sigue el objeto compuesto.
 const ART_BASE = 'public/images/gam/';
 const DEFAULT_ART_HEIGHT = 1.6;
+const STARWARS_POSTER = 'public/images/posters/yoda-do-or-do-not.webp';
 
 const lerp = (a, b, t) => a + (b - a) * t;
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
@@ -422,60 +423,6 @@ function makeYarnTexture(colors, seed) {
 /** Extras de material para una pantalla con textura emisiva. */
 function screenExtra(tex, intensity = 1.1) {
   return { map: tex, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: intensity };
-}
-
-/** Póster Star Wars: cielo estrellado + planeta + siluetas de casco/nave + título en perspectiva. */
-function makePosterStarWars() {
-  return canvasTexture(256, 352, (ctx, w, h) => {
-    ctx.fillStyle = '#03040a';
-    ctx.fillRect(0, 0, w, h);
-    const rnd = seeded(7);
-    for (let i = 0; i < 160; i++) { // estrellas
-      const r = rnd() < 0.85 ? 0.6 : 1.3;
-      ctx.fillStyle = `rgba(255,255,255,${0.35 + rnd() * 0.55})`;
-      ctx.fillRect(rnd() * w, rnd() * h * 0.62, r, r);
-    }
-    // planeta al fondo
-    const planet = ctx.createRadialGradient(w * 0.76, 62, 4, w * 0.76, 62, 46);
-    planet.addColorStop(0, '#8f6a4a');
-    planet.addColorStop(0.6, '#5c3d2a');
-    planet.addColorStop(1, 'rgba(92,61,42,0)');
-    ctx.fillStyle = planet;
-    ctx.beginPath(); ctx.arc(w * 0.76, 62, 46, 0, Math.PI * 2); ctx.fill();
-    // silueta de casco (tipo Vader) centrada en la parte alta
-    ctx.fillStyle = '#0a0a0d';
-    ctx.beginPath();
-    ctx.moveTo(w / 2 - 30, 118);
-    ctx.quadraticCurveTo(w / 2 - 34, 72, w / 2, 58);
-    ctx.quadraticCurveTo(w / 2 + 34, 72, w / 2 + 30, 118);
-    ctx.quadraticCurveTo(w / 2 + 26, 138, w / 2, 142);
-    ctx.quadraticCurveTo(w / 2 - 26, 138, w / 2 - 30, 118);
-    ctx.closePath();
-    ctx.fill();
-    ctx.fillStyle = 'rgba(120,10,10,0.55)'; // visor
-    ctx.fillRect(w / 2 - 16, 96, 32, 8);
-    // dos naves cruzando el cielo (trazos simples)
-    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-    ctx.lineWidth = 1.4;
-    [[30, 40, 70, 34], [190, 90, 230, 84]].forEach(([x1, y1, x2, y2]) => {
-      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
-    });
-    // título en perspectiva (grilla amarilla clásica, simplificada a texto escalado)
-    ctx.save();
-    ctx.translate(w / 2, 210);
-    ctx.transform(1, 0, -0.16, 0.62, 0, 0);
-    ctx.fillStyle = '#ffe081';
-    ctx.textAlign = 'center';
-    ctx.font = 'bold 40px "Courier New", monospace';
-    ctx.fillText('JOTAI', 0, 0);
-    ctx.font = 'bold 26px "Courier New", monospace';
-    ctx.fillText('WARS', 0, 34);
-    ctx.restore();
-    ctx.fillStyle = 'rgba(255,224,129,0.85)';
-    ctx.font = '12px "Courier New", monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('QUE LA FUERZA TE ACOMPAÑE', w / 2, h - 20);
-  });
 }
 
 /** Grip de la patineta: negro rugoso + logo rasta (3 barras) + ícono de cuadritos dorados. */
@@ -1204,48 +1151,139 @@ export function mount(container, hotspots) {
       }
 
       case 'starwars': {
-        // Póster enmarcado en la pared trasera (origen = pie de la pared).
-        add(box(0.68, 0.92, 0.03), 0x1a1a1a, 0, 2.9, 0.012);
-        const img = add(new THREE.PlaneGeometry(0.62, 0.86), 0xffffff, 0, 2.9, 0.034, { map: makePosterStarWars(), roughness: 0.8 });
-        out.refs.poster = { img };
+        // Póster de Yoda ("Do or do not. There is no try.") enmarcado en la
+        // pared trasera (origen = pie de la pared). `holder` = marco + lámina:
+        // la estación lo despega de la pared y lo trae al frente.
+        const holder = new THREE.Group();
+        holder.position.set(0, 2.9, 0);
+        group.add(holder);
+        const p = (...args) => addPart(holder, parts, ...args);
+        p(box(0.68, 0.92, 0.03), 0x1a1a1a, 0, 0, 0.012);
+        const art = new THREE.TextureLoader().load(STARWARS_POSTER);
+        art.colorSpace = THREE.SRGBColorSpace;
+        art.anisotropy = maxAniso;
+        p(new THREE.PlaneGeometry(0.62, 0.854), 0xffffff, 0, 0, 0.0285, { map: art, roughness: 0.85 });
+        out.refs.poster = { holder };
         out.baseY = 2.9;
         break;
       }
 
       case 'guitar': {
-        // Guitarra acústica apoyada contra la pared izquierda (frente hacia +x).
+        // Guitarra clásica con cutaway (la de la foto de David): tapa amarilla
+        // con veta, roseta roja, diapasón oscuro con trastes, puente oscuro con
+        // tie-block, clavijero calado y 6 cuerdas de nylon. Se arma de frente
+        // a +z dentro de `body` y se gira para mirar a +x (pared izquierda).
         // `holder` = la guitarra entera: la estación la despega de la pared.
         const holder = new THREE.Group();
-        holder.rotation.z = 0.1;   // apoyada
+        holder.rotation.z = 0.1;   // apoyada contra la pared
         group.add(holder);
-        const g = (...args) => addPart(holder, parts, ...args);
-        const wood = 0xc98a4b;
-        const lower = g(cyl(0.17, 0.09), wood, 0, 0.3, 0, { roughness: 0.55 });
-        lower.rotation.z = Math.PI / 2;
-        const upper = g(cyl(0.13, 0.09), wood, 0, 0.55, 0, { roughness: 0.55 });
-        upper.rotation.z = Math.PI / 2;
-        g(box(0.09, 0.14, 0.2), wood, 0, 0.43, 0, { roughness: 0.55 });          // cintura
-        const hole = g(cyl(0.045, 0.006), 0x1a0f08, 0.047, 0.5, 0);
-        hole.rotation.z = Math.PI / 2;
-        g(box(0.012, 0.03, 0.14), 0x2b1a10, 0.05, 0.22, 0);                       // puente
-        g(box(0.035, 0.6, 0.05), 0x2b1a10, 0.02, 0.98, 0);                        // mástil
-        g(box(0.04, 0.16, 0.07), 0x2b1a10, 0.02, 1.34, 0);                        // clavijero
-        // 6 cuerdas (de la grave a la aguda) — vibran al tocarse
-        out.refs.strings = [0, 1, 2, 3, 4, 5].map((i) => g(new THREE.BoxGeometry(0.004, 1.06, 0.003), 0xd8d8d0, 0.052, 0.79, -0.022 + i * 0.0088, { metalness: 0.6, roughness: 0.3 }));
+        const body = new THREE.Group();
+        body.rotation.y = Math.PI / 2;
+        holder.add(body);
+        const g = (...args) => addPart(body, parts, ...args);
+        const DEPTH = 0.1, TOP = DEPTH + 0.008;   // z de la tapa (con el bisel)
+
+        // contorno del cuerpo: figura de ocho con el cutaway del lado agudo (+x)
+        const outline = new THREE.Shape();
+        outline.moveTo(0, 0);
+        outline.bezierCurveTo(0.12, 0, 0.21, 0.06, 0.21, 0.17);          // bout inferior
+        outline.bezierCurveTo(0.21, 0.27, 0.14, 0.29, 0.14, 0.36);       // cintura
+        outline.bezierCurveTo(0.14, 0.42, 0.17, 0.47, 0.165, 0.54);      // cuerno del cutaway
+        outline.bezierCurveTo(0.14, 0.58, 0.075, 0.55, 0.045, 0.625);    // el corte, hacia el mástil
+        outline.lineTo(-0.045, 0.655);
+        outline.bezierCurveTo(-0.11, 0.665, -0.17, 0.62, -0.17, 0.53);   // bout superior
+        outline.bezierCurveTo(-0.17, 0.45, -0.14, 0.42, -0.14, 0.36);    // cintura
+        outline.bezierCurveTo(-0.14, 0.29, -0.21, 0.27, -0.21, 0.17);
+        outline.bezierCurveTo(-0.21, 0.06, -0.12, 0, 0, 0);
+        const shell = new THREE.ExtrudeGeometry(outline, {
+          depth: DEPTH, curveSegments: 28, bevelEnabled: true,
+          bevelThickness: 0.008, bevelSize: 0.008, bevelSegments: 3,
+        });
+        const spruce = canvasTexture(128, 512, (ctx, w, h) => {
+          ctx.fillStyle = '#e8a91c'; ctx.fillRect(0, 0, w, h);
+          for (let x = 0; x < w; x += 2) {            // veta vertical fina
+            ctx.fillStyle = `rgba(${Math.random() < 0.5 ? '150,90,10' : '255,215,120'},${0.05 + Math.random() * 0.12})`;
+            ctx.fillRect(x, 0, 1 + (Math.random() < 0.2 ? 1 : 0), h);
+          }
+        });
+        spruce.wrapS = spruce.wrapT = THREE.RepeatWrapping;
+        spruce.repeat.set(3, 1.6);
+        g(shell, 0xffffff, 0, 0, 0, { map: spruce, roughness: 0.32, metalness: 0.02 });
+
+        // boca + roseta (rojo con motivo blanco entre filetes negros)
+        const HOLE_Y = 0.45;
+        g(new THREE.CircleGeometry(0.05, 32), 0x140b05, 0, HOLE_Y, TOP + 0.001, { roughness: 1 });
+        const rosette = canvasTexture(256, 256, (ctx, w) => {
+          const c = w / 2;
+          const ring = (r, color, lw) => { ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.beginPath(); ctx.arc(c, c, r, 0, Math.PI * 2); ctx.stroke(); };
+          ring(108, '#b8324a', 34);
+          ring(126, '#1a1a1a', 4); ring(90, '#1a1a1a', 4);
+          ring(121, '#e9e1d2', 2); ring(95, '#e9e1d2', 2);
+          ctx.fillStyle = '#f3ece0';
+          for (let i = 0; i < 28; i++) {                // motivo: cruces pequeñas alrededor
+            const a = (i / 28) * Math.PI * 2;
+            ctx.save(); ctx.translate(c + Math.cos(a) * 108, c + Math.sin(a) * 108); ctx.rotate(a + Math.PI / 4);
+            ctx.fillRect(-6, -1.5, 12, 3); ctx.fillRect(-1.5, -6, 3, 12);
+            ctx.restore();
+          }
+        });
+        g(new THREE.RingGeometry(0.05, 0.078, 48), 0xffffff, 0, HOLE_Y, TOP + 0.0012, { map: rosette, transparent: true, roughness: 0.5 });
+
+        // puente oscuro + tie-block + cejuela del puente (hueso)
+        g(box(0.17, 0.036, 0.016), 0x2a1a10, 0, 0.15, TOP + 0.006, { roughness: 0.6 });
+        g(box(0.07, 0.022, 0.012), 0x4a3424, 0, 0.143, TOP + 0.016, { roughness: 0.5 });
+        g(new THREE.BoxGeometry(0.075, 0.005, 0.01), 0xf2eadb, 0, 0.168, TOP + 0.016);
+
+        // mástil + diapasón (llega hasta la boca gracias al cutaway) + trastes
+        const NUT_Y = 1.18;
+        g(box(0.052, NUT_Y - 0.6, 0.032), 0x3a2414, 0, (NUT_Y + 0.6) / 2, DEPTH - 0.004, { roughness: 0.5 });
+        const fbLow = HOLE_Y + 0.06;
+        g(new THREE.BoxGeometry(0.056, NUT_Y - fbLow, 0.008), 0x17110d, 0, (NUT_Y + fbLow) / 2, TOP + 0.004, { roughness: 0.55 });
+        const SCALE = NUT_Y - 0.168;                     // largo de cuerda: cejuela → puente
+        for (let i = 1; i <= 18; i++) {
+          const y = NUT_Y - SCALE * (1 - Math.pow(2, -i / 12));
+          if (y < fbLow + 0.005) break;
+          g(new THREE.BoxGeometry(0.056, 0.0025, 0.003), 0xc9c9c9, 0, y, TOP + 0.0095, { metalness: 0.8, roughness: 0.3 });
+        }
+        g(new THREE.BoxGeometry(0.058, 0.006, 0.012), 0xf2eadb, 0, NUT_Y, TOP + 0.009);   // cejuela
+
+        // clavijero calado (dos ranuras) + clavijas a los costados
+        const HEAD_Y = NUT_Y + 0.1;
+        g(box(0.078, 0.19, 0.024), 0x2a1a10, 0, HEAD_Y, DEPTH + 0.002, { roughness: 0.5 });
+        [-0.016, 0.016].forEach((x) => g(new THREE.BoxGeometry(0.012, 0.13, 0.026), 0x0a0604, x, HEAD_Y, DEPTH + 0.003, { roughness: 1 }));
+        [-1, 1].forEach((side) => [-0.045, 0, 0.045].forEach((dy) => {
+          const peg = g(cyl(0.007, 0.024, 0.007, 10), 0xa89d86, side * 0.052, HEAD_Y + dy, DEPTH + 0.002, { roughness: 0.6 });
+          peg.rotation.z = Math.PI / 2;
+          g(cyl(0.004, 0.022, 0.004, 8), 0xd4af37, side * 0.034, HEAD_Y + dy, DEPTH + 0.002, { metalness: 0.8, roughness: 0.3 }).rotation.z = Math.PI / 2;
+        }));
+
+        // 6 cuerdas de nylon (las 3 graves entorchadas, plateadas) — vibran al tocarse
+        const strLen = NUT_Y - 0.168;
+        out.refs.strings = [0, 1, 2, 3, 4, 5].map((i) => g(
+          new THREE.BoxGeometry(i < 3 ? 0.0028 : 0.0022, strLen, 0.0025),
+          i < 3 ? 0xc8c8c8 : 0xf3efe4,
+          -0.0225 + i * 0.009, (NUT_Y + 0.168) / 2, TOP + 0.014,
+          i < 3 ? { metalness: 0.7, roughness: 0.35 } : { roughness: 0.4 }));
         out.refs.guitar = { holder };
         out.baseY = 0.6;
         break;
       }
 
       case 'soundbar': {
-        // Mueble bajo con barra de sonido, entre el estante y el escritorio,
-        // bajo el póster Star Wars. Los LEDs laten con la estación abierta.
+        // Mueble bajo con barra de sonido (estilo Mi Soundbar: cuerpo blanco
+        // redondeado, frente de tela gris claro, sin luces), entre el estante y
+        // el escritorio, bajo el póster de Yoda.
         add(box(0.8, 0.34, 0.36), 0x2a2018, 0, 0.17, 0, { roughness: 0.75 });               // mueble
         add(box(0.74, 0.012, 0.3), 0x3a2c20, 0, 0.346, 0, { roughness: 0.6 });               // tapa
-        add(box(0.72, 0.1, 0.13), 0x15171c, 0, 0.405, 0.04, { roughness: 0.5 });            // barra
-        add(box(0.66, 0.06, 0.006), 0x2b2f38, 0, 0.412, 0.106, { roughness: 0.95 });         // rejilla
-        out.refs.leds = Array.from({ length: 10 }, (_, i) =>
-          add(box(0.04, 0.01, 0.006), 0x7aa2ff, -0.27 + i * 0.06, 0.37, 0.107, glow(0x7aa2ff, 0.35)));
+        add(new RoundedBoxGeometry(0.76, 0.08, 0.075, 6, 0.032), 0xf4f4f1, 0, 0.393, 0.04, { roughness: 0.35 });  // cuerpo
+        const fabric = canvasTexture(512, 64, (ctx, w, h) => {
+          ctx.fillStyle = '#d6d6d2'; ctx.fillRect(0, 0, w, h);
+          for (let y = 0; y < h; y += 2) for (let x = (y / 2) % 2; x < w; x += 2) {   // trama fina
+            ctx.fillStyle = `rgba(${Math.random() < 0.5 ? '255,255,255' : '120,120,118'},${0.12 + Math.random() * 0.18})`;
+            ctx.fillRect(x, y, 1, 1);
+          }
+        });
+        add(new RoundedBoxGeometry(0.7, 0.064, 0.006, 4, 0.0028), 0xffffff, 0, 0.393, 0.0785, { map: fabric, roughness: 0.95 });  // tela frontal
         // dos vinilos (fundas) apoyados detrás de la barra, de cara a la cámara
         [[-0.2, -0.1, 0xc0392b], [-0.06, -0.135, 0x06ffa5]].forEach(([x, z, c]) => {
           const sleeve = add(box(0.22, 0.22, 0.012), c, x, 0.463, z, { roughness: 0.8 });

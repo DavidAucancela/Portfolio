@@ -15,9 +15,9 @@
  *   chess       → tablero 3D: juegas con blancas contra una IA sencilla
  *   lumbre      → póster de mi juego Lumbre: capturas + enlaces
  *   medals      → Logros: medallas = certificados (PDFModal) + trayectoria
- *   starwars    → póster Star Wars: tarjeta de fan + sable
+ *   starwars    → póster de Yoda: se despega de la pared y viene al frente
  *   guitar      → se despega de la pared y toca canciones (gam-guitar.js)
- *   soundbar    → barra de sonido: la playlist + LEDs de ecualizador
+ *   soundbar    → barra de sonido: la playlist
  *
  * Contrato: `createStations(base, objects)` devuelve Map(id → estación). Una
  * estación es { focus(), enter(), exit(), update(now, dt), busy?(), pointerMove?,
@@ -1329,75 +1329,43 @@ function medalsStation(c) {
 }
 
 /* ────────────────────────────────────────────────────
-   STAR WARS — el póster: tarjeta de fan + sable (zumbido sintetizado).
+   STAR WARS — el póster de Yoda: al enfocarlo se despega de la pared y
+   viene al frente para verlo en grande. Nada más.
 ──────────────────────────────────────────────────── */
 function starwarsStation(c) {
   const { root, refs, hud } = c;
-  const { img } = refs.poster;
+  const { holder } = refs.poster;
   const tw = createTweens(c.reducedMotion);
+  const REST = { pos: V(0, 2.9, 0), s: 1 };
+  const SHOW = { pos: V(0, 2.55, 0.9), s: 1.3 };   // frente a la pared, más grande
 
-  /** Zumbido de sable: dos sierras casi afinadas por un pasabajos. */
-  function hum() {
-    const ctx = getAudioContext();
-    if (!ctx) return;
-    if (ctx.state === 'suspended') ctx.resume();
-    const t0 = ctx.currentTime;
-    const out = ctx.createGain();
-    const lp = ctx.createBiquadFilter();
-    lp.type = 'lowpass';
-    lp.frequency.setValueAtTime(300, t0);
-    lp.frequency.exponentialRampToValueAtTime(900, t0 + 0.25);
-    out.gain.setValueAtTime(0.0001, t0);
-    out.gain.exponentialRampToValueAtTime(0.07, t0 + 0.12);
-    out.gain.setValueAtTime(0.07, t0 + 0.9);
-    out.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.6);
-    lp.connect(out).connect(ctx.destination);
-    [90, 93.5].forEach((f) => {
-      const o = ctx.createOscillator();
-      o.type = 'sawtooth';
-      o.frequency.setValueAtTime(f * 0.6, t0);
-      o.frequency.exponentialRampToValueAtTime(f, t0 + 0.2);
-      o.connect(lp);
-      o.start(t0);
-      o.stop(t0 + 1.65);
+  function moveTo(to, ms) {
+    const p0 = holder.position.clone();
+    const s0 = holder.scale.x;
+    tw.add(ms, (p) => {
+      const e = ease(p);
+      holder.position.lerpVectors(p0, to.pos, e);
+      holder.scale.setScalar(lerp(s0, to.s, e));
+      holder.rotation.y = 0.18 * Math.sin(Math.PI * p);   // se balancea al despegarse
     });
   }
 
-  function ignite() {
-    hum();
-    c.glyphs.emit('✦', '#7ad7ff', root.localToWorld(V(0.2, 3.35, 0.1)), { size: 0.28, rise: 0.4 });
-    const m = img.material;
-    if (!m.emissiveMap) { m.emissiveMap = m.map; m.needsUpdate = true; }
-    m.emissive.setHex(0xffffff);
-    tw.add(1400, (p) => { m.emissiveIntensity = 0.55 * Math.sin(Math.PI * p); }, () => { m.emissiveIntensity = 0; });
-  }
-
   return {
-    focus: () => ({ look: root.localToWorld(V(0, 2.9, 0)), zoom: 6 }),
+    focus: () => ({ look: root.localToWorld(SHOW.pos.clone()), zoom: 6.2 }),
 
     enter() {
-      const ct = c.content;
       hud.show({
         icon: '⭐',
-        title: 'Star Wars',
-        actions: [{ id: 'saber', label: '⚔️ Sable', onClick: ignite }],
-        hint: 'Que la Fuerza te acompañe',
+        title: L(c.content.title) || 'Star Wars',
+        hint: 'Hazlo, o no lo hagas. Pero no lo intentes. — Maestro Yoda',
         onBack: c.leave,
       });
-      const favs = (ct.favorites || []).map((f) => `
-        <p class="gam-card__label">${esc(L(f.label))}</p>
-        <p class="gam-card__text">${esc(L(f.value))}</p>`).join('');
-      const card = el('div', 'gam-card');
-      card.innerHTML = `
-        <h3 class="gam-card__title">⭐ ${esc(L(ct.title) || 'Star Wars')}</h3>
-        <p class="gam-card__text">${esc(L(ct.message))}</p>${favs}`;
-      hud.setCard(card);
-      ignite();
+      moveTo(SHOW, 900);
     },
 
     exit() {
       tw.clear();
-      img.material.emissiveIntensity = 0;
+      moveTo(REST, 700);
     },
 
     busy: () => tw.busy,
@@ -1461,7 +1429,7 @@ function guitarStation(c) {
   }
 
   return {
-    focus: () => ({ look: root.localToWorld(V(0.5, 0.75, 0)), zoom: 3.6 }),
+    focus: () => ({ look: root.localToWorld(V(0.5, 0.85, 0)), zoom: 5.2 }),
 
     enter() {
       engine = createGuitar({
@@ -1534,20 +1502,17 @@ function guitarStation(c) {
 }
 
 /* ────────────────────────────────────────────────────
-   MÚSICA — barra de sonido: la playlist (gam-hotspots.json) + LEDs que laten.
+   MÚSICA — barra de sonido: la playlist (gam-hotspots.json).
 ──────────────────────────────────────────────────── */
 const SPOTIFY_EMBED = 'https://open.spotify.com/embed/';
 
 function soundbarStation(c) {
-  const { refs, hud, root } = c;
-  const leds = refs.leds;
-  let active = false;
+  const { hud, root } = c;
 
   return {
     focus: () => ({ look: root.localToWorld(V(0, 0.4, 0)), zoom: 4.2 }),
 
     enter() {
-      active = true;
       const ct = c.content;
       hud.show({
         icon: '🔊',
@@ -1576,19 +1541,9 @@ function soundbarStation(c) {
       hud.setCard(card);
     },
 
-    exit() {
-      active = false;
-      leds.forEach((m) => { m.material.emissiveIntensity = m.userData.baseEmissiveIntensity; });
-    },
+    exit() {},
 
-    update(now) {
-      if (!active) return;
-      // ecualizador: cada LED a su propio ritmo
-      leds.forEach((m, i) => {
-        const level = c.reducedMotion ? 0.5 : (Math.sin(now * 0.004 * (1 + (i % 3) * 0.45) + i * 0.9) + 1) / 2;
-        m.material.emissiveIntensity = 0.3 + level * 2.6;
-      });
-    },
+    update() {},
   };
 }
 

@@ -342,10 +342,12 @@ objeto se vuelve interactivo **dentro de la escena** — ya no se abre un panel 
   era una card de `dev-projects.json`, ahora vive solo acá). Desde 2026-10-01 (ex
   decoración, al final de `FURNITURE` para no correr las teclas 1–9): Logros (`medals`) =
   repisa de medallas, cada caja = un logro de `sec-projects.json` (`MEDAL_IDS`), click →
-  `PDFModal` + botón a la trayectoria; Star Wars (`starwars`) = tarjeta de fan + sable;
-  guitarra (`guitar`) = se despega de la pared y toca canciones (`gam-guitar.js`); barra
-  de sonido (`soundbar`, nueva) = la playlist (`tracks`/`playlistUrl`/`spotifyEmbed` en
-  `gam-hotspots.json`). Copy de Star Wars, canciones y playlist: placeholders. `interactive:false` en
+  `PDFModal` + botón a la trayectoria; Star Wars (`starwars`) = póster de Yoda
+  (`public/images/posters/`) que se despega de la pared y viene al frente, sin tarjeta;
+  guitarra (`guitar`) = clásica con cutaway (calcada de la de David), se despega de la
+  pared y toca canciones (`gam-guitar.js`); barra de sonido (`soundbar`, nueva, estilo Mi
+  Soundbar blanca sin luces) = la playlist (`tracks`/`playlistUrl`/`spotifyEmbed` en
+  `gam-hotspots.json`). Canciones y playlist: placeholders. `interactive:false` en
   `FURNITURE` sigue disponible para dejar un mueble como pura decoración.
 - **`gam-hud.js`** — barra superior (título, pestañas, acciones, "← Volver Esc"), línea de
   estado, tarjeta lateral (hoja inferior en portrait) y pines. Estilos `.gam-hud*`/`.gam-card*`.

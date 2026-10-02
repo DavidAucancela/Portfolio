@@ -1,8 +1,8 @@
 # Modo `.gam` — JotAI como personaje del cuarto (plan)
 
-> Estado: **aprobado** (2026-09-24) — **fases 1 a 4 hechas** (la 1 revisada por
+> Estado: **aprobado** (2026-09-24) — **fases 1 a 5 hechas — plan completo, mergeado en `main` (PR #60)** (la 1 revisada por
 > David en navegador el 2026-09-25; la 2 y la 3 verificadas en headless el
-> 2026-09-29; la 4 y la 5 el 2026-10-02, ver §12). Plan completo. Se apoya en el diorama
+> 2026-09-29; la 4 y la 5 el 2026-10-02, ver §12). Se apoya en el diorama
 > Three.js actual (`gam-three-scene.js` + `gam-stations.js`); ver
 > `docs/gam-mode-plan.md` para el contexto del modo.
 >
@@ -477,21 +477,16 @@ queda atrasado, lo que adelanta el paseo autónomo. `nav.debugString()` + los sp
 marcados con letras da el mapa de la grilla; chequear `findPath` para todos los pares
 y `nav.clear()` en cada tramo.
 
-### Pendientes y deudas conocidas
+### Pendientes y deudas conocidas (a la fecha de la Fase 3)
 
-- JotAI no entra en `FOCUS_LAYER`: al enfocar un objeto sale desenfocado (Fase 4, ver arriba).
-- Las estaciones no saben de JotAI (salvo la ventana y Pukis vía `react`) — Fase 4.
-- Paseando puede cruzar por delante de un objeto mientras la cámara vuela hacia él
-  (`makeRoom` solo mira dónde está y a dónde va, no el rayo de la cámara).
-- La pantalla del escritorio no pasa a "protector" mientras duerme (el plan lo sugería).
-- Nada de analítica todavía (`gam_jotai` en `js/analytics.js`, Fase 5).
-- No se probó en un dispositivo táctil real ni en un navegador con GPU (solo headless).
+> Histórico — todo lo de esta lista se resolvió en las Fases 4–5. Lo que sigue abierto está
+> en §12 "Pendiente".
 
 ---
 
-## 12. Fase 4 — cómo quedó (2026-10-01 / 02)
+## 12. Fases 4 y 5 — cómo quedó (2026-10-01 / 02, mergeado en `main` con el PR #60)
 
-Rama `feat/gam-jotai-fase4` (desde `main`, **sin push**). Commits, en orden:
+Rama `feat/gam-jotai-fase4`, **mergeada en `main` con el PR #60**. Commits, en orden:
 
 | Commit | Qué |
 |---|---|
@@ -594,11 +589,9 @@ ni en táctil.
 **Contenido de David:** ✔ cargado el 2026-10-02 — 41 libros reales (`bookshelf.books`), "Tres
 notas" de AU-D en la guitarra (B – F# – E – Esus4) y la playlist «3vol Fest» de Spotify (embed).
 
-**Por confirmar en navegador:**
-- Orientación del Aegis escaneado (cúpula arriba): no se pudo confirmar en las capturas.
+**Revisado por David en navegador (2026-10-02):** OK. Mejoras opcionales si hicieran falta:
 - Aegis TI 2020: todo el metal quedó dorado (el real tiene remolinos plateados) — el escaneo
-  no separa las piezas; se puede separar por UV si hace falta.
-- Brillo de los trofeos violeta/dorado en la repisa (se ven oscuros).
+  no separa las piezas; se puede separar por UV.
 
 **Deudas técnicas** (resueltas el 2026-10-02, salvo la última):
 - ✔ Piano: estira el brazo hacia la tecla que suena (hombro según qué tan al costado está, torso
@@ -607,7 +600,6 @@ notas" de AU-D en la guitarra (B – F# – E – Esus4) y la playlist «3vol Fe
 - ✔ Escritorio: protector de pantalla ("JotAI · zzz" rebotando) mientras duerme (`saver`).
 - Paseando puede cruzar por delante de un objeto mientras la cámara vuela hacia él.
 
-**Fase 5 (pulido):** analítica `gam_jotai` en `js/analytics.js`, reduced-motion fino, prueba
-en táctil real y en GPU real, ajuste fino de encuadres, revisar el copy de las frases.
+**Fase 5 (pulido):** ✔ hecha (ver §8). Queda solo probar en un celular real.
 
-**Repo:** rama sin push ni PR.
+**Repo:** rama `feat/gam-jotai-fase4` mergeada en `main` (PR #60, 2026-10-02).

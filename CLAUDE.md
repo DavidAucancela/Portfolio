@@ -354,7 +354,8 @@ pellizco / +− hacen zoom también en la vista general del cuarto (hacia el cur
   guitarra (`guitar`) = clásica con cutaway (calcada de la de David), se despega de la
   pared y toca canciones (`gam-guitar.js`); barra de sonido (`soundbar`, nueva, estilo Mi
   Soundbar blanca sin luces, encima del estante) = la playlist (`tracks`/`playlistUrl`/`spotifyEmbed` en
-  `gam-hotspots.json`). Canciones y playlist: placeholders. `interactive:false` en
+  `gam-hotspots.json`). Guitarra: "Tres notas" de AU-D + 3 ritmos propios; playlist «3vol Fest» (embed de
+  Spotify); estante con los 41 libros reales de David (`bookshelf.books`). `interactive:false` en
   `FURNITURE` sigue disponible para dejar un mueble como pura decoración.
 - **`gam-hud.js`** — barra superior (título, pestañas, acciones, "← Volver Esc"), línea de
   estado, tarjeta lateral (hoja inferior en portrait) y pines. Estilos `.gam-hud*`/`.gam-card*`.

@@ -346,8 +346,8 @@
       "en": "Guitar"
     },
     "message": {
-      "es": "Mi guitarra acústica. Elige una canción y escúchala. (Canciones pendientes)",
-      "en": "My acoustic guitar. Pick a song and listen. (Songs pending)"
+      "es": "Mi guitarra acústica. Elige una canción — «Tres notas» de AU-D es la que más toco.",
+      "en": "My acoustic guitar. Pick a song — «Tres notas» by AU-D is the one I play the most."
     }
   },
   {
@@ -358,20 +358,11 @@
       "en": "Music"
     },
     "message": {
-      "es": "Lo que suena mientras programo. (Playlist pendiente)",
-      "en": "What plays while I code. (Playlist pending)"
+      "es": "Mi playlist «3vol Fest» — dale play aquí mismo.",
+      "en": "My «3vol Fest» playlist — hit play right here."
     },
-    "playlistUrl": null,
-    "spotifyEmbed": null,
-    "tracks": [
-      {
-        "title": {
-          "es": "Canción pendiente",
-          "en": "Song pending"
-        },
-        "artist": "—",
-        "url": null
-      }
-    ]
+    "playlistUrl": "https://open.spotify.com/playlist/00DsyBAkZClglNW2gWk3Xn",
+    "spotifyEmbed": "https://open.spotify.com/embed/playlist/00DsyBAkZClglNW2gWk3Xn",
+    "tracks": []
   }
 ]

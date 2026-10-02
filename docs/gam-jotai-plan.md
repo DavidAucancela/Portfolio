@@ -587,10 +587,8 @@ ni en táctil.
 
 ### Pendiente
 
-**Contenido de David:**
-- Canciones de la guitarra (hoy `SONGS` placeholder: rasgueo, arpegio, Oda a la alegría).
-- Playlist de la barra de sonido (`tracks` / `playlistUrl` / `spotifyEmbed` vacíos).
-- Libros del estante (`PLACEHOLDER_BOOKS`, de antes).
+**Contenido de David:** ✔ cargado el 2026-10-02 — 41 libros reales (`bookshelf.books`), "Tres
+notas" de AU-D en la guitarra (B – F# – E – Esus4) y la playlist «3vol Fest» de Spotify (embed).
 
 **Por confirmar en navegador:**
 - Orientación del Aegis escaneado (cúpula arriba): no se pudo confirmar en las capturas.

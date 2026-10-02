@@ -10,8 +10,8 @@
  * en un bucle del largo del período). Cada nota se calcula una vez a un
  * AudioBuffer y queda cacheada.
  *
- * SONGS es un placeholder (ritmos propios + "Oda a la alegría", de dominio
- * público) hasta definir las canciones reales.
+ * SONGS: "Tres notas" de AU-D (la de David, acordes del intro/estrofa) + ritmos
+ * propios y "Oda a la alegría" (dominio público).
  */
 import { getAudioContext } from './gam-audio.js';
 
@@ -22,6 +22,10 @@ const CHORDS = {                                 // una nota por cuerda, null = 
   Am: [null, 45, 52, 57, 60, 64],
   F:  [41, 48, 53, 57, 60, 65],
   Em: [40, 47, 52, 55, 59, 64],
+  B:  [null, 47, 54, 59, 63, 66],   // x24442
+  'F#': [42, 49, 54, 58, 61, 66],   // 244322
+  E:  [40, 47, 52, 56, 59, 64],     // 022100
+  Esus4: [40, 47, 52, 57, 59, 64],  // 022200 — la "E con variación" de Tres notas
 };
 const NOTE_SEC = 1.6;                            // largo de cada buffer
 const STRUM_GAP = 0.016;                         // s entre cuerda y cuerda al rasguear
@@ -41,6 +45,9 @@ function arpeggio(chords) {
 const ODE = [64, 64, 65, 67, 67, 65, 64, 62, 60, 60, 62, 64, 64, 62, 62];
 
 export const SONGS = [
+  // "Tres notas" de AU-D (la que toca David): B – F# – E – E(variación), rasgueada
+  { id: 'tresnotas', label: { es: 'Tres notas · AU-D', en: 'Tres notas · AU-D' }, bpm: 92,
+    events: strumPattern(['B', 'F#', 'E', 'Esus4', 'B', 'F#', 'E', 'Esus4', 'B', 'F#', 'E', 'E']) },
   { id: 'strum', label: { es: 'Rasgueo', en: 'Strum' }, bpm: 100, events: strumPattern(['C', 'G', 'Am', 'F', 'C', 'G', 'F', 'C']) },
   { id: 'arpeggio', label: { es: 'Arpegio', en: 'Arpeggio' }, bpm: 84, events: arpeggio(['Am', 'C', 'G', 'Em', 'Am', 'F', 'G', 'Am']) },
   { id: 'ode', label: { es: 'Oda a la alegría', en: 'Ode to Joy' }, bpm: 120,

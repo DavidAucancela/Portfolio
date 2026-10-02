@@ -1510,7 +1510,7 @@ function soundbarStation(c) {
   const { hud, root } = c;
 
   return {
-    focus: () => ({ look: root.localToWorld(V(0, 0.4, 0)), zoom: 4.2 }),
+    focus: () => ({ look: root.localToWorld(V(0, 0.04, 0)), zoom: 4.6 }),
 
     enter() {
       const ct = c.content;

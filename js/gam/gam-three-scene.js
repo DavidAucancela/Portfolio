@@ -94,7 +94,7 @@ const FURNITURE = [
   { id: 'medals',     x: -0.3,         z: -HALF + 0.15, y: 2.55, rotY: 0, color: 0xffc94a, label: '🏅 Logros',      kind: 'info', zoom: 4.4, scale: 1, noLift: true },
   { id: 'starwars',   x: 0.44 - 1.13 * 2.35, z: 0.44 - 1.13 * HALF, y: 0, rotY: 0, color: 0xffe81f, label: '⭐ Star Wars', kind: 'info', zoom: 6, scale: 1.13, noLift: true },
   { id: 'guitar',     x: -HALF + 0.3,  z: -1.34, rotY: 0, view: Math.PI / 2, color: 0xc98a4b, label: '🎸 Guitarra',  kind: 'minigame', zoom: 5.2, scale: 1 },
-  { id: 'soundbar',   x: -2.26,        z: -HALF + 0.26, rotY: 0, color: 0x7aa2ff, label: '🔊 Música',          kind: 'list', zoom: 4.2, scale: 1 },
+  { id: 'soundbar',   x: -3.14,        z: -2.53, y: 2.0 * 1.3, rotY: WALL_FACING, color: 0x7aa2ff, label: '🔊 Música', kind: 'list', zoom: 4.6, scale: 1.3, noLift: true },   // encima del estante
 ];
 
 /* JotAI (docs/gam-jotai-plan.md) — vive en el cuarto. Arranca en su rincón
@@ -120,7 +120,7 @@ const JOTAI_SPOTS = {
   medals:     { at: [0.9, 1.25],  look: [0, 0.2, 0] },       // repisa sobre el escritorio: se para al costado del escritorio
   starwars:   { at: [0, 1.0],     look: [0, 2.9, 0] },
   guitar:     { at: [0.75, 0],    look: [0, 0.6, 0] },       // frente = +x (pared izquierda)
-  soundbar:   { at: [0, 0.8],     look: [0, 0.4, 0] },
+  soundbar:   { at: [0, 0.75],    look: [0, 0.04, 0] },      // frente al estante, mirando arriba
 };
 /* Grilla de navegación: solo bloquea lo que ocupa piso a la altura del
    cuerpo (la alfombra no, lo colgado en la pared tampoco). */
@@ -1270,12 +1270,10 @@ export function mount(container, hotspots) {
       }
 
       case 'soundbar': {
-        // Mueble bajo con barra de sonido (estilo Mi Soundbar: cuerpo blanco
-        // redondeado, frente de tela gris claro, sin luces), entre el estante y
-        // el escritorio, bajo el póster de Yoda.
-        add(box(0.8, 0.34, 0.36), 0x2a2018, 0, 0.17, 0, { roughness: 0.75 });               // mueble
-        add(box(0.74, 0.012, 0.3), 0x3a2c20, 0, 0.346, 0, { roughness: 0.6 });               // tapa
-        add(new RoundedBoxGeometry(0.76, 0.08, 0.075, 6, 0.032), 0xf4f4f1, 0, 0.393, 0.04, { roughness: 0.35 });  // cuerpo
+        // Barra de sonido sola (estilo Mi Soundbar: cuerpo blanco redondeado,
+        // frente de tela gris claro, sin luces) apoyada encima del estante.
+        // Origen = la base de la barra, sobre la tapa del estante.
+        add(new RoundedBoxGeometry(0.76, 0.08, 0.075, 6, 0.032), 0xf4f4f1, 0, 0.04, 0, { roughness: 0.35 });  // cuerpo
         const fabric = canvasTexture(512, 64, (ctx, w, h) => {
           ctx.fillStyle = '#d6d6d2'; ctx.fillRect(0, 0, w, h);
           for (let y = 0; y < h; y += 2) for (let x = (y / 2) % 2; x < w; x += 2) {   // trama fina
@@ -1283,13 +1281,8 @@ export function mount(container, hotspots) {
             ctx.fillRect(x, y, 1, 1);
           }
         });
-        add(new RoundedBoxGeometry(0.7, 0.064, 0.006, 4, 0.0028), 0xffffff, 0, 0.393, 0.0785, { map: fabric, roughness: 0.95 });  // tela frontal
-        // dos vinilos (fundas) apoyados detrás de la barra, de cara a la cámara
-        [[-0.2, -0.1, 0xc0392b], [-0.06, -0.135, 0x06ffa5]].forEach(([x, z, c]) => {
-          const sleeve = add(box(0.22, 0.22, 0.012), c, x, 0.463, z, { roughness: 0.8 });
-          sleeve.rotation.x = -0.12;
-        });
-        out.baseY = 0.4;
+        add(new RoundedBoxGeometry(0.7, 0.064, 0.006, 4, 0.0028), 0xffffff, 0, 0.04, 0.0385, { map: fabric, roughness: 0.95 });  // tela frontal
+        out.baseY = 0.04;
         break;
       }
 

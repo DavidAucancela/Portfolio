@@ -15,7 +15,7 @@
  *   chess       → tablero 3D: juegas con blancas contra una IA sencilla
  *   lumbre      → póster de mi juego Lumbre: capturas + enlaces
  *   medals      → 3 trofeos de Dota 2: al frente, giran con el mouse, se abren
- *   starwars    → póster de Yoda: se despega de la pared y viene al frente
+ *   starwars    → póster de Yoda: viene al frente y gira con el mouse
  *   guitar      → se despega de la pared y toca canciones (gam-guitar.js)
  *   soundbar    → barra de sonido: la playlist
  *
@@ -1537,39 +1537,59 @@ function starwarsStation(c) {
   const tw = createTweens(c.reducedMotion);
   const REST = { pos: V(0, 2.9, 0), s: 1 };
   const SHOW = { pos: V(0, 2.55, 0.9), s: 1.3 };   // frente a la pared, más grande
+  let shown = false;                               // ya está al frente: gira con el mouse
+  let rot = { yaw: 0, pitch: 0 }, want = { yaw: 0, pitch: 0 };
 
-  function moveTo(to, ms) {
+  function moveTo(to, ms, done) {
     const p0 = holder.position.clone();
     const s0 = holder.scale.x;
+    const r0 = { x: holder.rotation.x, y: holder.rotation.y };
     tw.add(ms, (p) => {
       const e = ease(p);
       holder.position.lerpVectors(p0, to.pos, e);
       holder.scale.setScalar(lerp(s0, to.s, e));
-      holder.rotation.y = 0.18 * Math.sin(Math.PI * p);   // se balancea al despegarse
-    });
+      // se balancea al despegarse y vuelve derecho
+      holder.rotation.set(lerp(r0.x, 0, e), lerp(r0.y, 0, e) + 0.18 * Math.sin(Math.PI * p), 0);
+    }, done);
   }
 
   return {
     focus: () => ({ look: root.localToWorld(SHOW.pos.clone()), zoom: 6.2 }),
 
     enter() {
+      shown = false;
+      rot = { yaw: 0, pitch: 0 };
+      want = { yaw: 0, pitch: 0 };
       hud.show({
         icon: '⭐',
         title: L(c.content.title) || 'Star Wars',
-        hint: 'Hazlo, o no lo hagas. Pero no lo intentes. — Maestro Yoda',
+        hint: 'Mueve el mouse para girarlo · Hazlo, o no lo hagas. Pero no lo intentes. — Maestro Yoda',
         onBack: c.leave,
       });
-      moveTo(SHOW, 900);
+      moveTo(SHOW, 900, () => { shown = true; });
     },
 
     exit() {
+      shown = false;
       tw.clear();
       moveTo(REST, 700);
     },
 
     busy: () => tw.busy,
 
-    update(now) { tw.update(now); },
+    update(now, dt) {
+      tw.update(now);
+      if (!shown) return;
+      // gira siguiendo al mouse (suave), como los trofeos
+      const k = c.reducedMotion ? 1 : Math.min(1, dt * 6);
+      rot.yaw += (want.yaw - rot.yaw) * k;
+      rot.pitch += (want.pitch - rot.pitch) * k;
+      holder.rotation.set(rot.pitch, rot.yaw, 0);
+    },
+
+    pointerMove(ndc) {
+      want = { yaw: clamp(ndc.x, -1, 1) * 0.6, pitch: clamp(-ndc.y, -1, 1) * 0.3 };
+    },
   };
 }
 

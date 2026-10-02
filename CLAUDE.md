@@ -345,7 +345,7 @@ objeto se vuelve interactivo **dentro de la escena** — ya no se abre un panel 
   verde/plata TI 2018, dorado/cuero TI 2020 — `AEGIS_STYLES`) en cajas negras: click →
   la caja viene al frente y gira con el mouse, otro click → se abre la tapa y sale la
   tarjeta con la edición y el año (`trophies` en `gam-hotspots.json`); Star Wars (`starwars`) = póster de Yoda
-  (`public/images/posters/`) que se despega de la pared y viene al frente, sin tarjeta;
+  (`public/images/posters/`) que se despega de la pared, viene al frente (sin tarjeta) y gira con el mouse;
   guitarra (`guitar`) = clásica con cutaway (calcada de la de David), se despega de la
   pared y toca canciones (`gam-guitar.js`); barra de sonido (`soundbar`, nueva, estilo Mi
   Soundbar blanca sin luces, encima del estante) = la playlist (`tracks`/`playlistUrl`/`spotifyEmbed` en

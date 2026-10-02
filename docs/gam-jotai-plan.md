@@ -525,8 +525,10 @@ Los 10 de antes + 4 nuevos (decididos con David el 2026-10-01, todos al final de
   (`gam-guitar.js`, Karplus–Strong); con JotAI, la toca él en brazos.
 - **Patineta** (de antes) — ahora con el **escaneo real** de David
   (`public/models/skate/skate.glb`, 2.6 MB): limpio de restos del piso y orientado en el
-  pipeline. La cara de la lija no salió en el escaneo (estaba contra el piso): la tapa una lija
-  hecha en código con el mismo contorno (`loadSkateModel`). `refs.skate.dims` = cuánto bajan las
+  pipeline, y sin la "falda" que el escáner estiraba desde los cantos hasta el piso. La cara
+  de la lija no salió en el escaneo (estaba contra el piso): la tapa una lija hecha en código
+  que **sigue el perfil real de la tabla** (nose y tail levantados), `SKATE_THICK` (12 mm) por
+  debajo de la cara de stickers (`loadSkateModel`) — antes era plana y dejaba un hueco. `refs.skate.dims` = cuánto bajan las
   ruedas / alto de la lija, que usa la pestaña Montar.
 - **Barra de sonido** (`soundbar`) — estilo Mi Soundbar, sola encima del estante. Tarjeta
   con la playlist (`tracks` / `playlistUrl` / `spotifyEmbed`).

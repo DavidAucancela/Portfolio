@@ -197,11 +197,12 @@ const AEGIS_STYLES = [
 const AEGIS_MODEL = 'public/models/aegis/aegis.glb';
 /* Patineta real de David (escaneo, 2026-10-02): limpio de restos del piso y
    orientado en el pipeline (largo → +Y centrado, ancho → +X, ruedas y stickers
-   → +Z, la lija en z = 0). La cara de la lija no salió en el escaneo (estaba
+   → +Z) y sin la "falda" que el escáner estiraba desde los cantos hasta el piso. La cara de la lija no salió en el escaneo (estaba
    contra el piso): la tapa una lija hecha en código (makeGripTexture). */
 const SKATE_MODEL = 'public/models/skate/skate.glb';
 const SKATE_SCAN = { length: 0.81, halfWidth: 0.108 };   // medidas del escaneo (m)
 const SKATE_LENGTH = 1.2;                                  // largo de la tabla en el pivot (unidades locales)
+const SKATE_THICK = 0.012;                                 // grosor real de la tabla (m): lija = cara de stickers − esto
 const AEGIS_WIDTH = 0.25;   // ancho del Aegis dentro de la caja (unidades locales)
 function aegisShape(k = 1) {
   // cúpula redonda arriba; abajo dos lóbulos a los costados y el centro hundido
@@ -1547,35 +1548,66 @@ export function mount(container, hotspots) {
       mat.side = THREE.DoubleSide;          // por los bordes del escaneo que quedan abiertos
       const mesh = new THREE.Mesh(geo, mat);
       mesh.scale.setScalar(k);
-      const GRIP_Z = -0.025;                // la lija queda donde estaba la de la tabla en código
-      mesh.position.set(0, 0.6, GRIP_Z);
+      /* Perfil de la tabla a lo largo (nose y tail levantados): por cada franja,
+         la altura de la cara de stickers en el centro. La lija va SKATE_THICK por
+         debajo, siguiendo ese perfil — plana dejaba un hueco en las puntas. El
+         escaneo ya viene sin la "falda" que el escáner estiraba hasta el piso. */
+      const pos = geo.attributes.position;
+      const BIN = 0.01, Y0 = -SKATE_SCAN.length / 2, NB = Math.round(SKATE_SCAN.length / BIN);
+      const cols = Array.from({ length: NB }, () => []);
+      for (let i = 0; i < pos.count; i++) {
+        if (Math.abs(pos.getX(i)) > 0.05) continue;
+        const bi = Math.floor((pos.getY(i) - Y0) / BIN);
+        if (bi >= 0 && bi < NB) cols[bi].push(pos.getZ(i));
+      }
+      const prof = cols.map((c) => (c.length > 8 ? c.sort((p1, p2) => p1 - p2)[Math.floor(c.length * 0.05)] : null));
+      for (let i = 0; i < NB; i++) prof[i] ??= prof[i - 1] ?? prof.find((v) => v != null);
+      const gripAt = (y) => {
+        const f = clamp01((y - Y0) / SKATE_SCAN.length) * (NB - 1);
+        const i = Math.floor(f), t = f - i;
+        return (prof[i] + ((prof[Math.min(NB - 1, i + 1)] - prof[i]) * t)) - SKATE_THICK;
+      };
+      const gripC = gripAt(0);
+      const GRIP_Z = -0.025;                // la lija (al centro) queda donde estaba la de la tabla en código
+      mesh.position.set(0, 0.6, GRIP_Z - gripC * k);
       mesh.castShadow = mesh.receiveShadow = true;
       mesh.userData.baseEmissive = 0;
       mesh.userData.baseEmissiveIntensity = mat.emissiveIntensity ?? 1;
-      // lija: el mismo contorno de la tabla (cápsula), mirando a −z
-      const L = SKATE_SCAN.length / 2, W = SKATE_SCAN.halfWidth * 0.985;
-      const sh = new THREE.Shape();
-      sh.moveTo(-W, -(L - W));
-      sh.lineTo(-W, L - W);
-      sh.absarc(0, L - W, W, Math.PI, 0, true);
-      sh.lineTo(W, -(L - W));
-      sh.absarc(0, -(L - W), W, 0, Math.PI, true);
-      const gripGeo = new THREE.ShapeGeometry(sh, 24);
-      const uv = gripGeo.attributes.uv;
-      for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) / (2 * W) + 0.5, uv.getY(i) / (2 * L) + 0.5);
-      const grip = new THREE.Mesh(gripGeo, new THREE.MeshStandardMaterial({ map: makeGripTexture(), roughness: 0.95 }));
-      grip.rotation.y = Math.PI;            // de cara a −z
-      grip.scale.setScalar(k);
-      grip.position.set(0, 0.6, GRIP_Z - 0.001);
+      // lija: grilla con el contorno de la tabla (cápsula) que sigue el perfil, mirando a −z
+      const L = SKATE_SCAN.length / 2, W = SKATE_SCAN.halfWidth * 0.98;
+      const NX = 8, NY = 90;
+      const verts = [], uvs = [], ids = [];
+      for (let j = 0; j <= NY; j++) {
+        const y = -L + (2 * L * j) / NY;
+        const k2 = Math.abs(y) - (L - W);
+        const hw = k2 <= 0 ? W : Math.sqrt(Math.max(0, W * W - k2 * k2));
+        for (let i2 = 0; i2 <= NX; i2++) {
+          const x = (-1 + (2 * i2) / NX) * hw;
+          verts.push(x, y, gripAt(y));
+          uvs.push(x / (2 * W) + 0.5, y / (2 * L) + 0.5);
+        }
+      }
+      for (let j = 0; j < NY; j++) for (let i2 = 0; i2 < NX; i2++) {
+        const a0 = j * (NX + 1) + i2, b0 = a0 + NX + 1;
+        ids.push(a0, a0 + 1, b0, a0 + 1, b0 + 1, b0);   // normal hacia −z
+      }
+      const gripGeo = new THREE.BufferGeometry();
+      gripGeo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+      gripGeo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+      gripGeo.setIndex(ids);
+      gripGeo.computeVertexNormals();
+      const grip = new THREE.Mesh(gripGeo, new THREE.MeshStandardMaterial({ map: makeGripTexture(), roughness: 0.95, side: THREE.DoubleSide }));
+      grip.castShadow = grip.receiveShadow = true;
       grip.userData.baseEmissive = 0;
       grip.userData.baseEmissiveIntensity = 1;
+      mesh.add(grip);                       // mismas coordenadas que el escaneo
       sk.placeholder.forEach((m) => { m.visible = false; });
-      sk.pivot.add(mesh, grip);
+      sk.pivot.add(mesh);
       const root = objects.get('skateboard');
       root.parts.push(mesh, grip);
       [mesh, grip].forEach((m) => { m.userData.furniture = root.f; m.userData.rootGroup = root.root; });
       // ruedas: lo más bajo del escaneo (z máx) · lija: GRIP_Z, con la tabla acostada queda arriba
-      sk.dims.wheel = GRIP_Z + geo.boundingBox.max.z * k;
+      sk.dims.wheel = mesh.position.z + geo.boundingBox.max.z * k;
       sk.dims.deck = sk.dims.wheel - GRIP_Z;
     }, undefined, () => { /* sin modelo: queda la tabla hecha en código */ });
   })();

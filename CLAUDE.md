@@ -336,7 +336,8 @@ objeto se vuelve interactivo **dentro de la escena** — ya no se abre un panel 
   busy?(), pointerMove/Down/Up?(ndc), key?(e) }`. Piano = teclas 3D tocables + pestañas
   Libre/Reto; escritorio = pantallas vivas + pines + tarjeta de proyectos; estante = libros
   de proyectos IA que se sacan al pasar el mouse; ventana = anochece/amanece; patineta =
-  se despega de la pared y se gira arrastrando (+ kickflip/shove-it); malabares = cascada +
+  escaneo real (`public/models/skate/skate.glb` + lija en código), se despega de la pared y
+  se gira arrastrando (+ kickflip/shove-it); malabares = cascada +
   reto; Pukis = acariciarlo; ajedrez = tablero 3D contra una IA (`gam-chess.js`); Lumbre =
   póster del juego en la pared izquierda (capturas 1–4 + enlaces a itch.io y al repo — antes
   era una card de `dev-projects.json`, ahora vive solo acá). Desde 2026-10-01 (ex

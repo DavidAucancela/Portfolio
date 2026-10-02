@@ -504,7 +504,8 @@ function skateStation(c) {
      centrada en el holder (pivot girado π/2 y corrido medio largo), dando
      vueltas lentas en un círculo frente a la pared, sobre la alfombra. */
   const PIVOT_STAND = V(0, -0.6, 0);
-  const PIVOT_FLAT = V(0, -0.465, -0.6);
+  // acostada: el pivot sube lo que bajan las ruedas (depende del modelo: refs.skate.dims)
+  const pivotFlat = () => V(0, -0.6 + refs.skate.dims.wheel, -0.6);
   const RIDE = { cx: -0.6, cz: 1.8, r: 0.35, w: 0.6 };    // círculo (local) y velocidad angular (rad/s): entre Pukis y el pedestal de malabares
   const TRICK_FAILS = ['stuck', 'shoot', 'wobble'];
   let dragging = false;
@@ -545,7 +546,7 @@ function skateStation(c) {
 
   /** Para JotAI: centro de la tabla (mundo), rumbo y alto de la lija. */
   function boardWorld() {
-    root.localToWorld(_w.copy(holder.position).setY(holder.position.y - 0.4385));
+    root.localToWorld(_w.copy(holder.position).setY(holder.position.y - 0.6 + refs.skate.dims.deck));
     return { x: _w.x, z: _w.z, deckY: _w.y, heading: (root.rotation.y || 0) + holder.rotation.y };
   }
 
@@ -604,7 +605,7 @@ function skateStation(c) {
       ride = { state: 'laying', a, mountAt: 0 };
       hud.setStatus('JotAI baja la tabla al piso… 🛹');
       hud.setHint('Pulsa Kickflip o Shove-it para que JotAI lo intente');
-      poseBoard({ pos: ridePos(a), pivot: PIVOT_FLAT, rotX: Math.PI / 2, yaw: rideYaw(a) }, 800, () => { if (ride) ride.state = 'mounting'; });
+      poseBoard({ pos: ridePos(a), pivot: pivotFlat(), rotX: Math.PI / 2, yaw: rideYaw(a) }, 800, () => { if (ride) ride.state = 'mounting'; });
     } else {
       if (ride) c.cue?.('skate:dismount');
       ride = null;

@@ -523,6 +523,11 @@ Los 10 de antes + 4 nuevos (decididos con David el 2026-10-01, todos al final de
 - **Guitarra** (`guitar`) — clásica con cutaway calcada de la de David (cuerpo extruido,
   roseta, trastes, 6 cuerdas que vibran). Se despega de la pared y toca canciones
   (`gam-guitar.js`, Karplus–Strong); con JotAI, la toca él en brazos.
+- **Patineta** (de antes) — ahora con el **escaneo real** de David
+  (`public/models/skate/skate.glb`, 2.6 MB): limpio de restos del piso y orientado en el
+  pipeline. La cara de la lija no salió en el escaneo (estaba contra el piso): la tapa una lija
+  hecha en código con el mismo contorno (`loadSkateModel`). `refs.skate.dims` = cuánto bajan las
+  ruedas / alto de la lija, que usa la pestaña Montar.
 - **Barra de sonido** (`soundbar`) — estilo Mi Soundbar, sola encima del estante. Tarjeta
   con la playlist (`tracks` / `playlistUrl` / `spotifyEmbed`).
 

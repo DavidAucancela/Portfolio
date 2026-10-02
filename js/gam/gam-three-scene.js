@@ -195,6 +195,13 @@ const AEGIS_STYLES = [
    texturas de 2019/2020 son el mismo color base recoloreado (esmalte → color
    del año, plata → cobre / dorado). Mientras carga se ve el Aegis en código. */
 const AEGIS_MODEL = 'public/models/aegis/aegis.glb';
+/* Patineta real de David (escaneo, 2026-10-02): limpio de restos del piso y
+   orientado en el pipeline (largo → +Y centrado, ancho → +X, ruedas y stickers
+   → +Z, la lija en z = 0). La cara de la lija no salió en el escaneo (estaba
+   contra el piso): la tapa una lija hecha en código (makeGripTexture). */
+const SKATE_MODEL = 'public/models/skate/skate.glb';
+const SKATE_SCAN = { length: 0.81, halfWidth: 0.108 };   // medidas del escaneo (m)
+const SKATE_LENGTH = 1.2;                                  // largo de la tabla en el pivot (unidades locales)
 const AEGIS_WIDTH = 0.25;   // ancho del Aegis dentro de la caja (unidades locales)
 function aegisShape(k = 1) {
   // cúpula redonda arriba; abajo dos lóbulos a los costados y el centro hundido
@@ -1106,7 +1113,8 @@ export function mount(container, hotspots) {
         pivot.position.set(0, -0.6, 0);
         pivot.rotation.x = -0.18;
         holder.add(pivot);
-        const addP = (...args) => addPart(pivot, parts, ...args);
+        const placeholder = [];   // la tabla en código: se oculta cuando llega el modelo real
+        const addP = (...args) => { const m = addPart(pivot, parts, ...args); placeholder.push(m); return m; };
         addP(box(0.3, 1.15, 0.05), 0xc9a26a, 0, 0.6, 0);                    // madera (canto)
         // cara inferior: foto real de los stickers (public/images/gam/skate-bottom.webp)
         const gfx = new THREE.TextureLoader().load('public/images/gam/skate-bottom.webp');
@@ -1127,7 +1135,10 @@ export function mount(container, hotspots) {
             addP(cyl(0.045, 0.04), 0x5f646b, x, y, 0.09).rotation.z = Math.PI / 2;
           });
         });
-        out.refs.skate = { holder, pivot };
+        // dims: ruedas = cuánto bajan las ruedas desde el plano del pivot (+z);
+        // deck = alto de la lija sobre el piso con la tabla acostada (Montar).
+        // Los del modelo real los pone loadSkateModel.
+        out.refs.skate = { holder, pivot, placeholder, dims: { wheel: 0.135, deck: 0.1615 } };
         out.baseY = 0.6;
         break;
       }
@@ -1518,6 +1529,55 @@ export function mount(container, hotspots) {
         b.meshes.push(mesh);
       });
     }, undefined, () => { /* sin modelo: queda el Aegis hecho en código */ });
+  })();
+
+  /* ── Patineta: cambia la tabla hecha en código por el escaneo real ── */
+  (function loadSkateModel() {
+    const sk = objects.get('skateboard')?.refs.skate;
+    if (!sk) return;
+    new GLTFLoader().load(SKATE_MODEL, (gltf) => {
+      if (destroyed) return;
+      const src = gltf.scene.getObjectByProperty('isMesh', true);
+      if (!src) return;
+      const geo = src.geometry;
+      if (!geo.attributes.normal) geo.computeVertexNormals();
+      geo.computeBoundingBox();
+      const k = SKATE_LENGTH / SKATE_SCAN.length;
+      const mat = src.material;
+      mat.side = THREE.DoubleSide;          // por los bordes del escaneo que quedan abiertos
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.scale.setScalar(k);
+      const GRIP_Z = -0.025;                // la lija queda donde estaba la de la tabla en código
+      mesh.position.set(0, 0.6, GRIP_Z);
+      mesh.castShadow = mesh.receiveShadow = true;
+      mesh.userData.baseEmissive = 0;
+      mesh.userData.baseEmissiveIntensity = mat.emissiveIntensity ?? 1;
+      // lija: el mismo contorno de la tabla (cápsula), mirando a −z
+      const L = SKATE_SCAN.length / 2, W = SKATE_SCAN.halfWidth * 0.985;
+      const sh = new THREE.Shape();
+      sh.moveTo(-W, -(L - W));
+      sh.lineTo(-W, L - W);
+      sh.absarc(0, L - W, W, Math.PI, 0, true);
+      sh.lineTo(W, -(L - W));
+      sh.absarc(0, -(L - W), W, 0, Math.PI, true);
+      const gripGeo = new THREE.ShapeGeometry(sh, 24);
+      const uv = gripGeo.attributes.uv;
+      for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) / (2 * W) + 0.5, uv.getY(i) / (2 * L) + 0.5);
+      const grip = new THREE.Mesh(gripGeo, new THREE.MeshStandardMaterial({ map: makeGripTexture(), roughness: 0.95 }));
+      grip.rotation.y = Math.PI;            // de cara a −z
+      grip.scale.setScalar(k);
+      grip.position.set(0, 0.6, GRIP_Z - 0.001);
+      grip.userData.baseEmissive = 0;
+      grip.userData.baseEmissiveIntensity = 1;
+      sk.placeholder.forEach((m) => { m.visible = false; });
+      sk.pivot.add(mesh, grip);
+      const root = objects.get('skateboard');
+      root.parts.push(mesh, grip);
+      [mesh, grip].forEach((m) => { m.userData.furniture = root.f; m.userData.rootGroup = root.root; });
+      // ruedas: lo más bajo del escaneo (z máx) · lija: GRIP_Z, con la tabla acostada queda arriba
+      sk.dims.wheel = GRIP_Z + geo.boundingBox.max.z * k;
+      sk.dims.deck = sk.dims.wheel - GRIP_Z;
+    }, undefined, () => { /* sin modelo: queda la tabla hecha en código */ });
   })();
 
   /* ── JotAI: personaje del cuarto (modelo + globo + comportamiento) ── */

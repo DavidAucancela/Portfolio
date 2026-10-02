@@ -2,7 +2,7 @@
 
 > Estado: **aprobado** (2026-09-24) — **fases 1 a 4 hechas** (la 1 revisada por
 > David en navegador el 2026-09-25; la 2 y la 3 verificadas en headless el
-> 2026-09-29; la 4 el 2026-10-02, ver §12). Siguiente: Fase 5 (pulido). Se apoya en el diorama
+> 2026-09-29; la 4 y la 5 el 2026-10-02, ver §12). Plan completo. Se apoya en el diorama
 > Three.js actual (`gam-three-scene.js` + `gam-stations.js`); ver
 > `docs/gam-mode-plan.md` para el contexto del modo.
 >
@@ -292,8 +292,12 @@ sonido, Star Wars, Pukis, estante, Lumbre y puerta.
 ✅ *Ninguna estación agrega espera y todas funcionan igual con JotAI
 desactivado.*
 
-**Fase 5: pulido.** — ⏭ **SIGUIENTE**. Analítica (`gam_jotai`), reduced-motion,
-prueba en táctil real y en GPU, ajuste fino de encuadres, revisar el copy de las frases.
+**Fase 5: pulido.** — ✔ **HECHA** (2026-10-02). Analítica `gam_jotai` (evento `gam:jotai` del
+brain → `js/analytics.js`: `poke`, `tickle`, `wake`, `routine_night`/`routine_dawn`, `skip_scene`,
+`station` (+station), `farewell`, `skate_bail` (+variant), `chess_end` (+winner)). Verificado con
+`prefers-reduced-motion` (rutinas por cortes) y en un iPhone 13 emulado (táctil, hoja inferior del
+HUD). Spot de Pukis detrás del perro. Hint táctil sin "toca dos veces". Frases revisadas. Falta
+solo una prueba en un celular real.
 
 ---
 

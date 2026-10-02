@@ -1361,8 +1361,6 @@ function lumbreStation(c) {
 function medalsStation(c) {
   const { root, refs, hud } = c;
   const boxes = refs.boxes;                // [{ holder, door, aegis, meshes, rest, top }]
-  const owner = new Map();
-  boxes.forEach((b, i) => b.meshes.forEach((m) => owner.set(m, i)));
   const tw = createTweens(c.reducedMotion);
   const FRONT = { pos: V(0, 0.12, 0.62), s: 2.1 };   // al frente, grande, frente a la cámara
   const DOOR_OPEN = -1.95;                            // la tapa gira sobre su bisagra (borde izquierdo)
@@ -1377,9 +1375,10 @@ function medalsStation(c) {
 
   const trophy = (i) => (c.content.trophies || [])[i] || {};
 
+  // `meshes` crece cuando llega el modelo real del Aegis (carga asíncrona): se busca al momento
   function pickBox(list = boxes.map((_, i) => i)) {
     const hit = c.pick(list.flatMap((i) => boxes[i].meshes));
-    return hit ? (owner.get(hit.object) ?? -1) : -1;
+    return hit ? boxes.findIndex((b) => b.meshes.includes(hit.object)) : -1;
   }
 
   function showCard(i) {

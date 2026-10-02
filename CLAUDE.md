@@ -342,7 +342,10 @@ objeto se vuelve interactivo **dentro de la escena** — ya no se abre un panel 
   era una card de `dev-projects.json`, ahora vive solo acá). Desde 2026-10-01 (ex
   decoración, al final de `FURNITURE` para no correr las teclas 1–9): Trofeos (`medals`) =
   repisa con los 3 Aegis de Dota 2 de David (The International: violeta/cobre TI 2019,
-  verde/plata TI 2018, dorado/cuero TI 2020 — `AEGIS_STYLES`) en cajas negras: click →
+  verde/plata TI 2018, dorado/cuero TI 2020 — `AEGIS_STYLES`) en cajas negras. El Aegis es
+  un modelo real (`public/models/aegis/aegis.glb`, escaneo del TI 2018 optimizado; 2019/2020 =
+  su textura recoloreada, `aegis-2019/2020.webp`), cargado con `GLTFLoader` sobre un Aegis en
+  código que queda de respaldo. Click →
   la caja viene al frente y gira con el mouse, otro click → se abre la tapa y sale la
   tarjeta con la edición y el año (`trophies` en `gam-hotspots.json`); Star Wars (`starwars`) = póster de Yoda
   (`public/images/posters/`) que se despega de la pared, viene al frente (sin tarjeta) y gira con el mouse;

@@ -31,6 +31,7 @@
  */
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
@@ -185,10 +186,16 @@ function easeInOutCubic(t) {
    verde con plata · TI 2020 = fondo marrón oscuro (cuero) con aro dorado y
    remolinos de plata. */
 const AEGIS_STYLES = [
-  { year: 2019, enamel: 0x5a3ab8, rim: 0xb87358, swirl: '#c98a6a', boss: 0xb87358 },
-  { year: 2018, enamel: 0x0f8a55, rim: 0xd4d7dc, swirl: '#e2e4e8', boss: 0xd4d7dc },
-  { year: 2020, enamel: 0x4a3a2c, rim: 0xc9a24a, swirl: '#e2e4e8', boss: 0xd8b25a },
+  { year: 2019, enamel: 0x5a3ab8, rim: 0xb87358, swirl: '#c98a6a', boss: 0xb87358, map: 'public/models/aegis/aegis-2019.webp' },
+  { year: 2018, enamel: 0x0f8a55, rim: 0xd4d7dc, swirl: '#e2e4e8', boss: 0xd4d7dc, map: null },   // el escaneo es este: textura original
+  { year: 2020, enamel: 0x4a3a2c, rim: 0xc9a24a, swirl: '#e2e4e8', boss: 0xd8b25a, map: 'public/models/aegis/aegis-2020.webp' },
 ];
+/* Modelo real del Aegis (escaneo del TI 2018 de David, optimizado: 50k
+   triángulos, texturas 2048 WebP). Viene acostado (frente a +Y, ~7 cm); las
+   texturas de 2019/2020 son el mismo color base recoloreado (esmalte → color
+   del año, plata → cobre / dorado). Mientras carga se ve el Aegis en código. */
+const AEGIS_MODEL = 'public/models/aegis/aegis.glb';
+const AEGIS_WIDTH = 0.25;   // ancho del Aegis dentro de la caja (unidades locales)
 function aegisShape(k = 1) {
   // cúpula redonda arriba; abajo dos lóbulos a los costados y el centro hundido
   const sh = new THREE.Shape();
@@ -1239,7 +1246,7 @@ export function mount(container, hotspots) {
           meshes.push(rim, plate, boss);
           // placa negra al pie con "The International" en dorado
           meshes.push(h(new THREE.PlaneGeometry(0.11, 0.028), 0xffffff, 0, -bh / 2 + wt + 0.03, -bd / 2 + wt + 0.04, { map: aegisPlaque(st.year), roughness: 0.4 }));
-          return { holder, door, aegis, meshes, rest: holder.position.clone(), top: new THREE.Vector3(holder.position.x, 0.025 + bh + 0.06, bd / 2) };
+          return { holder, door, aegis, meshes, style: st, placeholder: [rim, plate, boss], rest: holder.position.clone(), top: new THREE.Vector3(holder.position.x, 0.025 + bh + 0.06, bd / 2) };
         });
         out.baseY = 0.2;
         break;
@@ -1470,6 +1477,48 @@ export function mount(container, hotspots) {
     if (f.interactive !== false) interactiveMeshes.push(group);
     loadArt(group, f, built.refs);
   });
+
+  /* ── Trofeos: cambia el Aegis hecho en código por el modelo real ── */
+  (function loadAegisModels() {
+    const box3 = objects.get('medals')?.refs.boxes;
+    if (!box3) return;
+    new GLTFLoader().load(AEGIS_MODEL, (gltf) => {
+      if (destroyed) return;
+      const src = gltf.scene.getObjectByProperty('isMesh', true);
+      if (!src) return;
+      const geo = src.geometry;
+      if (!geo.attributes.normal) geo.computeVertexNormals();   // el escaneo no trae normales
+      geo.computeBoundingBox();
+      const bb = geo.boundingBox;
+      const size = new THREE.Vector3(); bb.getSize(size);
+      const center = new THREE.Vector3(); bb.getCenter(center);
+      const k = AEGIS_WIDTH / Math.max(size.x, size.z);
+      const texLoader = new THREE.TextureLoader();
+      box3.forEach((b) => {
+        const mat = src.material.clone();
+        mat.metalness = 0.35;
+        mat.roughness = 0.42;
+        if (b.style.map) {
+          const t = texLoader.load(b.style.map);
+          t.flipY = false;                      // texturas de glTF
+          t.colorSpace = THREE.SRGBColorSpace;
+          t.anisotropy = maxAniso;
+          mat.map = t;
+        }
+        const mesh = new THREE.Mesh(geo, mat);
+        // acostado (frente a +Y) → parado de frente a +z, centrado, con la base en z=0
+        mesh.rotation.x = Math.PI / 2;
+        mesh.scale.setScalar(k);
+        mesh.position.set(-center.x * k, center.z * k, -bb.min.y * k);
+        mesh.castShadow = true;
+        mesh.userData.baseEmissive = 0;
+        mesh.userData.baseEmissiveIntensity = mat.emissiveIntensity;
+        b.placeholder.forEach((m) => { m.visible = false; });
+        b.aegis.add(mesh);
+        b.meshes.push(mesh);
+      });
+    }, undefined, () => { /* sin modelo: queda el Aegis hecho en código */ });
+  })();
 
   /* ── JotAI: personaje del cuarto (modelo + globo + comportamiento) ── */
   const jotai = createJotai({ reducedMotion, lite, scale: JOTAI_SCALE });

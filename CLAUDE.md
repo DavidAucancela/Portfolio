@@ -341,7 +341,8 @@ objeto se vuelve interactivo **dentro de la escena** — ya no se abre un panel 
   póster del juego en la pared izquierda (capturas 1–4 + enlaces a itch.io y al repo — antes
   era una card de `dev-projects.json`, ahora vive solo acá). Desde 2026-10-01 (ex
   decoración, al final de `FURNITURE` para no correr las teclas 1–9): Trofeos (`medals`) =
-  repisa con los 3 Aegis de Dota 2 de David (The International) en cajas negras: click →
+  repisa con los 3 Aegis de Dota 2 de David (The International: violeta/cobre TI 2019,
+  verde/plata TI 2018, dorado/cuero TI 2020 — `AEGIS_STYLES`) en cajas negras: click →
   la caja viene al frente y gira con el mouse, otro click → se abre la tapa y sale la
   tarjeta con la edición y el año (`trophies` en `gam-hotspots.json`); Star Wars (`starwars`) = póster de Yoda
   (`public/images/posters/`) que se despega de la pared y viene al frente, sin tarjeta;

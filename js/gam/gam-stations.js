@@ -1366,6 +1366,10 @@ function medalsStation(c) {
   const tw = createTweens(c.reducedMotion);
   const FRONT = { pos: V(0, 0.12, 0.62), s: 2.1 };   // al frente, grande, frente a la cámara
   const DOOR_OPEN = -1.95;                            // la tapa gira sobre su bisagra (borde izquierdo)
+  /* La cámara del enfoque mira desde arriba (elevación ~30°): al frente, la
+     caja se inclina hacia atrás para quedar de cara al visitante, en vez de
+     verse de frente "recto" como si estuviera a la altura de los ojos. */
+  const FACE_UP = -0.5;
   let hovered = -1;
   let focused = -1;      // caja al frente (o -1)
   let opened = false;
@@ -1380,11 +1384,11 @@ function medalsStation(c) {
 
   function showCard(i) {
     const t = trophy(i);
-    const year = t.year ? String(t.year) : 'Año pendiente';
+    const year = t.year ? String(t.year) : '';
     const card = el('div', 'gam-card');
     card.innerHTML = `
       <h3 class="gam-card__title">🏆 ${esc(L(t.title) || 'Trofeo Dota 2')}</h3>
-      <p class="gam-card__text">${esc(L(t.edition) || 'The International')} · <strong>${esc(year)}</strong></p>`;
+      <p class="gam-card__text">${esc(L(t.edition) || 'The International')}${year ? ` · <strong>${esc(year)}</strong>` : ''}</p>`;
     hud.setCard(card);
   }
 
@@ -1399,7 +1403,7 @@ function medalsStation(c) {
       const e = ease(p);
       h.position.lerpVectors(p0, p1, e);
       h.scale.setScalar(lerp(s0, s1, e));
-      if (!front) h.rotation.set(lerp(r0.x, 0, e), lerp(r0.y, 0, e), 0);
+      h.rotation.set(lerp(r0.x, front ? FACE_UP : 0, e), lerp(r0.y, 0, e), 0);
     }, done);
   }
 
@@ -1488,7 +1492,7 @@ function medalsStation(c) {
       rot.yaw += (want.yaw - rot.yaw) * k;
       rot.pitch += (want.pitch - rot.pitch) * k;
       const h = boxes[focused].holder;
-      h.rotation.set(rot.pitch, rot.yaw, 0);
+      if (!tw.busy) h.rotation.set(FACE_UP + rot.pitch, rot.yaw, 0);
     },
 
     pointerMove(ndc) {

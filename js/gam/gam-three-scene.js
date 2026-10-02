@@ -180,17 +180,27 @@ function easeInOutCubic(t) {
    borde superior apenas curvo y el de abajo redondeado en tres lóbulos);
    AEGIS escala a ~0.24 u de ancho. El esmalte es la misma forma un poco más
    chica con UVs reasignadas a [0, 1] para la textura de los remolinos. */
-const AEGIS_COLORS = [0x6a3fc4, 0x14894e, 0xc9a24a];   // violeta · verde · dorado (como los de David)
+/* Los 3 de David, de izquierda a derecha en la repisa (fotos del 2026-10-02):
+   TI 2019 = esmalte violeta con aro y remolinos de cobre · TI 2018 = esmalte
+   verde con plata · TI 2020 = fondo marrón oscuro (cuero) con aro dorado y
+   remolinos de plata. */
+const AEGIS_STYLES = [
+  { year: 2019, enamel: 0x5a3ab8, rim: 0xb87358, swirl: '#c98a6a', boss: 0xb87358 },
+  { year: 2018, enamel: 0x0f8a55, rim: 0xd4d7dc, swirl: '#e2e4e8', boss: 0xd4d7dc },
+  { year: 2020, enamel: 0x4a3a2c, rim: 0xc9a24a, swirl: '#e2e4e8', boss: 0xd8b25a },
+];
 function aegisShape(k = 1) {
+  // cúpula redonda arriba; abajo dos lóbulos a los costados y el centro hundido
   const sh = new THREE.Shape();
   const P = (x, y) => [x * k, y * k];
-  sh.moveTo(...P(-0.92, 0.5));
-  sh.quadraticCurveTo(...P(0, 0.78), ...P(0.92, 0.5));
-  sh.quadraticCurveTo(...P(1.08, 0.05), ...P(0.86, -0.42));
-  sh.quadraticCurveTo(...P(0.62, -0.82), ...P(0.3, -0.8));
-  sh.quadraticCurveTo(...P(0, -0.98), ...P(-0.3, -0.8));
-  sh.quadraticCurveTo(...P(-0.62, -0.82), ...P(-0.86, -0.42));
-  sh.quadraticCurveTo(...P(-1.08, 0.05), ...P(-0.92, 0.5));
+  sh.moveTo(...P(-0.96, 0.02));
+  sh.bezierCurveTo(...P(-0.96, 0.62), ...P(-0.52, 0.98), ...P(0, 0.98));
+  sh.bezierCurveTo(...P(0.52, 0.98), ...P(0.96, 0.62), ...P(0.96, 0.02));
+  sh.quadraticCurveTo(...P(0.98, -0.42), ...P(0.74, -0.58));
+  sh.quadraticCurveTo(...P(0.5, -0.62), ...P(0.36, -0.86));
+  sh.quadraticCurveTo(...P(0, -0.74), ...P(-0.36, -0.86));
+  sh.quadraticCurveTo(...P(-0.5, -0.62), ...P(-0.74, -0.58));
+  sh.quadraticCurveTo(...P(-0.98, -0.42), ...P(-0.96, 0.02));
   return sh;
 }
 const AEGIS = (() => {
@@ -204,16 +214,16 @@ const AEGIS = (() => {
   return { rim, plate, depth: depth + 0.06 * U };
 })();
 /** Esmalte del Aegis: fondo del color + los dos remolinos de plata (yin-yang). */
-function aegisTexture(color) {
-  const c = new THREE.Color(color);
+function aegisTexture({ enamel, swirl }) {
+  const c = new THREE.Color(enamel);
   return canvasTexture(256, 256, (ctx, w, h) => {
     const g = ctx.createRadialGradient(w / 2, h / 2, 10, w / 2, h / 2, w * 0.6);
     g.addColorStop(0, `#${c.clone().offsetHSL(0, 0, 0.12).getHexString()}`);
     g.addColorStop(1, `#${c.clone().offsetHSL(0, 0, -0.12).getHexString()}`);
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, w, h);
-    ctx.strokeStyle = '#e2e4e8';
-    ctx.fillStyle = '#e2e4e8';
+    ctx.strokeStyle = swirl;
+    ctx.fillStyle = swirl;
     ctx.lineCap = 'round';
     ctx.lineWidth = 30;
     const cx = w / 2, cy = h / 2;
@@ -231,16 +241,14 @@ function aegisTexture(color) {
     }
   });
 }
-let _aegisPlaque = null;
-function aegisPlaque() {
-  _aegisPlaque ??= canvasTexture(256, 64, (ctx, w, h) => {
+function aegisPlaque(year) {
+  return canvasTexture(256, 64, (ctx, w, h) => {
     ctx.fillStyle = '#0d0d0f'; ctx.fillRect(0, 0, w, h);
     ctx.strokeStyle = '#8a6a2a'; ctx.lineWidth = 3; ctx.strokeRect(4, 4, w - 8, h - 8);
     ctx.fillStyle = '#d9b45a'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.font = 'italic 26px Georgia, serif'; ctx.fillText('The International', w / 2, h / 2 - 4);
-    ctx.font = '11px Georgia, serif'; ctx.fillText('DOTA 2 CHAMPIONSHIPS', w / 2, h / 2 + 18);
+    ctx.font = '11px Georgia, serif'; ctx.fillText(`DOTA 2 CHAMPIONSHIPS ${year}`, w / 2, h / 2 + 18);
   });
-  return _aegisPlaque;
 }
 
 function canvasTexture(w, h, draw) {
@@ -1190,7 +1198,8 @@ export function mount(container, hotspots) {
       case 'medals': {
         // Repisa sobre el escritorio + tira LED cian con los 3 trofeos de Dota 2
         // de David: réplicas del Aegis de The International en cajas negras con
-        // tapa de vidrio (izq. violeta, centro verde, der. dorado). Cada caja es
+        // tapa de vidrio (izq. TI 2019 violeta, centro TI 2018 verde, der. TI 2020
+        // dorado — ver AEGIS_STYLES). Cada caja es
         // un `holder` con origen en su centro: la estación la trae al frente,
         // la gira con el mouse y abre la tapa (ver medalsStation).
         add(box(2.4, 0.05, 0.3), 0xe8e4dc, 0, 0, 0);
@@ -1199,7 +1208,7 @@ export function mount(container, hotspots) {
         const glass = { metalness: 0.1, roughness: 0.05, transparent: true, opacity: 0.18 };
         const silver = { metalness: 0.55, roughness: 0.3 };
         const bw = 0.34, bh = 0.36, bd = 0.2, wt = 0.02;
-        out.refs.boxes = AEGIS_COLORS.map((enamel, i) => {
+        out.refs.boxes = AEGIS_STYLES.map((st, i) => {
           const holder = new THREE.Group();
           holder.position.set((i - 1) * 0.65, 0.025 + bh / 2, 0);
           group.add(holder);
@@ -1222,14 +1231,14 @@ export function mount(container, hotspots) {
           const aegis = new THREE.Group();
           aegis.position.set(0, 0.025, -bd / 2 + wt + 0.025);
           holder.add(aegis);
-          const rim = addPart(aegis, parts, AEGIS.rim, 0xd4d7dc, 0, 0, 0, silver);
+          const rim = addPart(aegis, parts, AEGIS.rim, st.rim, 0, 0, 0, silver);
           const plate = addPart(aegis, parts, AEGIS.plate, 0xffffff, 0, 0, AEGIS.depth + 0.002,
-            { map: aegisTexture(enamel), roughness: 0.25, metalness: 0.2, emissive: enamel, emissiveIntensity: 0.12 });
-          const boss = addPart(aegis, parts, cyl(0.026, 0.012, 0.03, 24), 0xd4d7dc, 0, 0.004, AEGIS.depth + 0.008, silver);
+            { map: aegisTexture(st), roughness: 0.25, metalness: 0.2, emissive: st.enamel, emissiveIntensity: 0.12 });
+          const boss = addPart(aegis, parts, cyl(0.026, 0.012, 0.03, 24), st.boss, 0, 0.004, AEGIS.depth + 0.008, silver);
           boss.rotation.x = Math.PI / 2;
           meshes.push(rim, plate, boss);
           // placa negra al pie con "The International" en dorado
-          meshes.push(h(new THREE.PlaneGeometry(0.11, 0.028), 0xffffff, 0, -bh / 2 + wt + 0.03, -bd / 2 + wt + 0.04, { map: aegisPlaque(), roughness: 0.4 }));
+          meshes.push(h(new THREE.PlaneGeometry(0.11, 0.028), 0xffffff, 0, -bh / 2 + wt + 0.03, -bd / 2 + wt + 0.04, { map: aegisPlaque(st.year), roughness: 0.4 }));
           return { holder, door, aegis, meshes, rest: holder.position.clone(), top: new THREE.Vector3(holder.position.x, 0.025 + bh + 0.06, bd / 2) };
         });
         out.baseY = 0.2;

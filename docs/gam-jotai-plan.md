@@ -537,7 +537,11 @@ Los 10 de antes + 4 nuevos (decididos con David el 2026-10-01, todos al final de
 Otros cambios del cuarto: muebles reubicados/escalados (guitarra, alfombra, Pukis,
 patineta, malabares, ajedrez, barra), mesa de ajedrez y pedestal girados 90°, banqueta del
 piano más cerca del teclado, el ajedrez con **un solo banquito** (el del visitante). Al
-enfocar un objeto la cámara **ya no orbita** con el cursor (se sacó el free-look).
+enfocar un objeto la cámara **ya no orbita** con el cursor (se sacó el free-look). Cámara (2026-10-02):
+sin zoom con doble clic; **zoom en la vista general del cuarto** (rueda / pellizco / +−, hasta
+4.5×, hacia el cursor — `zoomBase()` / `MAX_ROOM_ZOOM`); el objeto enfocado queda **centrado** (se
+sacó el `shift`/`shiftLook` que lo corría al lado de la tarjeta). `c.refocus()` re-centra si la
+estación cambia de encuadre (patineta Ver ⇄ Montar).
 
 ### JotAI en las estaciones
 

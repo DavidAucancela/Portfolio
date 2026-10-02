@@ -257,7 +257,7 @@ function deskStation(c) {
   ];
 
   return {
-    focus: () => ({ look: root.localToWorld(V(0.05, 1.0, -0.1)), zoom: 2.7, shift: 0.3 }),
+    focus: () => ({ look: root.localToWorld(V(0.05, 1.0, -0.1)), zoom: 2.7 }),
 
     enter() {
       hud.show({
@@ -395,7 +395,7 @@ function bookshelfStation(c) {
   }
 
   return {
-    focus: () => ({ look: root.localToWorld(V(0, 1.15, 0.15)), zoom: 2.6, shift: 0.3 }),
+    focus: () => ({ look: root.localToWorld(V(0, 1.15, 0.15)), zoom: 2.6 }),
 
     enter() {
       hud.show({ icon: '📚', title: 'Estante', hint: 'Pasa el cursor sobre un libro · clic para verlo', onBack: c.leave });
@@ -597,6 +597,7 @@ function skateStation(c) {
   function setMode(m) {
     if (m === mode) return;
     mode = m;
+    c.refocus?.();
     trick = false;
     tw.clear();
     ['flip', 'reset'].forEach((id) => hud.setAction(id, { hidden: m === 'ride' }));
@@ -636,7 +637,10 @@ function skateStation(c) {
   }
 
   return {
-    focus: () => ({ look: root.localToWorld(V(-0.55, 0.75, 1.65)), zoom: 2.7 }),
+    // centrada: en Ver, la tabla flotando frente a la cámara; en Montar, el círculo por donde rueda JotAI
+    focus: () => (mode === 'ride'
+      ? { look: root.localToWorld(V(RIDE.cx, 0.55, RIDE.cz)), zoom: 2.7 }
+      : { look: root.localToWorld(SHOW.pos.clone()), zoom: 3.2 }),
 
     enter() {
       active = true;
@@ -1311,7 +1315,7 @@ function lumbreStation(c) {
   }
 
   return {
-    focus: () => ({ look: root.localToWorld(V(0, 2.3, 0)), zoom: 6.5, shift: 0.15 }),
+    focus: () => ({ look: root.localToWorld(V(0, 2.12, 0)), zoom: 4.2 }),
 
     enter() {
       const ct = c.content;

@@ -1958,6 +1958,7 @@ export function mount(container, hotspots) {
     setLabel: (text, pos) => { labelOverride = text ? { text, pos } : null; },
     leave: () => leaveFocus(),
     hotspotFor: (id) => hotspotsById.get(id),
+    refocus: () => refocus(),   // re-centrar la cámara si la estación cambió de encuadre
     // la ventana vuelve sola a la vista general si JotAI va a dormirse / despertarse
     onEnvScene: (t) => !jotaiFailed && jotaiBrain.wantsStage(t),
     // estaciones con rol propio (§11 del plan) avisan al brain: hoy solo el piano
@@ -2092,7 +2093,7 @@ export function mount(container, hotspots) {
   function onPointerDown(e) {
     if (e.pointerType === 'touch') {
       touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
-      if (touches.size === 2 && zoomed && !paused) {
+      if (touches.size === 2 && !paused) {
         if (dragging) { dragging = false; active?.pointerUp?.(pointerNDC, e); }
         pinch = { d0: pinchState().d, z0: userZoom };
         return;
@@ -2129,37 +2130,25 @@ export function mount(container, hotspots) {
     };
   }
 
-  /** Corre la mirada para que el objeto quede a un lado y la tarjeta del HUD
-   *  no lo tape: a la izquierda en desktop, arriba en portrait (la tarjeta
-   *  va abajo). `shift` es fracción del semi-ancho/alto visible. */
-  function shiftLook(look, zoom, shift, dir) {
-    const aspect = container.clientWidth / Math.max(1, container.clientHeight);
-    const out = look.clone();
-    // ejes de la cámara de DESTINO (la vista frontal aún no está aplicada)
-    const right = new THREE.Vector3().crossVectors(Y_AXIS, dir).normalize();
-    const up = new THREE.Vector3().crossVectors(dir, right).normalize();
-    if (aspect >= 0.9) {
-      out.addScaledVector(right, shift * ((camera.right - camera.left) / 2 / zoom));
-    } else {
-      out.addScaledVector(up, -shift * ((camera.top - camera.bottom) / 2 / zoom));
-    }
-    return out;
-  }
-
   let zoomedRoot = null;
   let focusView = null;   // { look, zoom, dir } de la vista base del objeto enfocado
-  let userZoom = 1;       // zoom extra del usuario (rueda / doble click / +−) sobre focusView.zoom
-  const MAX_USER_ZOOM = 3.5;
+  let userZoom = 1;       // zoom extra del usuario (rueda / pellizco / +−) sobre la vista base
+  const MAX_USER_ZOOM = 3.5;   // sobre un objeto enfocado
+  const MAX_ROOM_ZOOM = 4.5;   // en la vista general: acercarse a una zona del cuarto
 
-  /** Zoom manual sobre el objeto enfocado, anclado al punto bajo el cursor (ndc). */
+  /** Vista base sobre la que se hace zoom: el objeto enfocado o la vista general. */
+  const zoomBase = () => (zoomed ? focusView : { look: DEFAULT_LOOK, zoom: DEFAULT_ZOOM, dir: ISO_DIR });
+
+  /** Zoom manual (objeto enfocado o cuarto), anclado al punto bajo el cursor (ndc). */
   function setUserZoom(next, ndc, animate) {
-    if (!zoomed || !focusView) return;
-    next = Math.min(MAX_USER_ZOOM, Math.max(1, next));
+    const base = zoomBase();
+    if (!base) return;
+    next = Math.min(zoomed ? MAX_USER_ZOOM : MAX_ROOM_ZOOM, Math.max(1, next));
     const oldZoom = camera.zoom;
-    const newZoom = focusView.zoom * next;
+    const newZoom = base.zoom * next;
     let look = camLook.clone();
     if (next <= 1.001) {
-      look = focusView.look.clone();
+      look = base.look.clone();
     } else if (ndc) {
       camera.updateMatrixWorld();
       const right = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0);
@@ -2173,7 +2162,7 @@ export function mount(container, hotspots) {
     // Si la cámara aún vuela hacia el objeto, su onComplete (enter() de la estación) no debe perderse.
     const pending = camAnim?.onComplete || null;
     if ((animate && !reducedMotion) || pending) {
-      startTransition(look, newZoom, pending, focusView.dir);
+      startTransition(look, newZoom, pending, base.dir);
     } else {
       camAnim = null;
       camLook.copy(look);
@@ -2183,18 +2172,13 @@ export function mount(container, hotspots) {
   }
 
   function onWheel(e) {
-    if (!zoomed || paused) return;
+    if (paused) return;
     e.preventDefault();
     updatePointer(e);
     const step = Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0015));
     setUserZoom(userZoom * step, pointerNDC, false);
   }
 
-  function onDblClick(e) {
-    if (!zoomed || paused || zoomed.id === 'piano') return;
-    updatePointer(e);
-    setUserZoom(userZoom > 1.05 ? 1 : 2.4, pointerNDC, true);
-  }
   function setFocusLayer(root, on) {
     if (!root) return;
     root.traverse((o) => { if (on) o.layers.enable(FOCUS_LAYER); else o.layers.disable(FOCUS_LAYER); });
@@ -2217,7 +2201,7 @@ export function mount(container, hotspots) {
     if (fx) {
       look = fx.look;
       zoom = fx.zoom != null ? fx.zoom * FOCUS_ZOOM_BOOST : zoom;
-      if (fx.shift) look = shiftLook(look, zoom, fx.shift, frontDir);
+      // centrado en pantalla (antes `shift` lo corría a un lado para dejarle sitio a la tarjeta)
     }
     startTransition(look, zoom, onArrived, frontDir);
     focusView = { look: look.clone(), zoom, dir: frontDir.clone() };
@@ -2229,6 +2213,18 @@ export function mount(container, hotspots) {
     focusLight.position.copy(look).addScaledVector(frontDir, 1.2).add(new THREE.Vector3(0, 0.6, 0));
     setHover(null);
     setJotaiHover(false);
+  }
+
+  /** Una estación cambió de encuadre (ej. patineta Ver ⇄ Montar): vuelve a
+   *  centrar la cámara en lo que devuelve su focus() ahora. */
+  function refocus() {
+    if (!zoomed || !focusView) return;
+    const fx = stations.get(zoomed.id)?.focus?.();
+    if (!fx) return;
+    const zoom = fx.zoom != null ? fx.zoom * FOCUS_ZOOM_BOOST : focusView.zoom;
+    focusView = { look: fx.look.clone(), zoom, dir: focusView.dir };
+    userZoom = 1;
+    startTransition(focusView.look, zoom, camAnim?.onComplete || null, focusView.dir);
   }
 
   function returnToDefault() {
@@ -2409,7 +2405,7 @@ export function mount(container, hotspots) {
       if (handled) { e.preventDefault(); renderEditHud(); }
       return;
     }
-    if (zoomed && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    if (!e.ctrlKey && !e.metaKey && !e.altKey) {
       if (e.key === '+' || e.key === '=') { setUserZoom(userZoom * 1.35, null, true); e.preventDefault(); return; }
       if (e.key === '-' || e.key === '_') { setUserZoom(userZoom / 1.35, null, true); e.preventDefault(); return; }
     }
@@ -2446,7 +2442,6 @@ export function mount(container, hotspots) {
 
   renderer.domElement.addEventListener('pointermove', onPointerMove);
   renderer.domElement.addEventListener('click', onClick);
-  renderer.domElement.addEventListener('dblclick', onDblClick);
   renderer.domElement.addEventListener('wheel', onWheel, { passive: false });
   renderer.domElement.addEventListener('pointerdown', onPointerDown);
   renderer.domElement.addEventListener('pointerup', onPointerUp);
@@ -2696,7 +2691,6 @@ export function mount(container, hotspots) {
     modalObserver?.disconnect();
     renderer.domElement.removeEventListener('pointermove', onPointerMove);
     renderer.domElement.removeEventListener('click', onClick);
-    renderer.domElement.removeEventListener('dblclick', onDblClick);
     renderer.domElement.removeEventListener('wheel', onWheel);
     renderer.domElement.removeEventListener('pointerdown', onPointerDown);
     renderer.domElement.removeEventListener('pointerup', onPointerUp);

@@ -330,8 +330,9 @@ ya no usa Phaser: es un **diorama isométrico en Three.js** (`gam-three-scene.js
 ortográfica, sol con sombras, GTAO + contorno + bloom, muebles hechos en código). El jugador
 no controla ningún personaje: se navega por objeto (hover/click/tap, flechas + Enter, teclas
 1–9). JotAI vive en el cuarto como personaje propio (ver más abajo), no como avatar.
-Al hacer click la cámara **hace zoom** (`camera.zoom` + punto de mirada, nunca avanza) y el
-objeto se vuelve interactivo **dentro de la escena** — ya no se abre un panel modal:
+Al hacer click la cámara **hace zoom** (`camera.zoom` + punto de mirada, nunca avanza), con el
+objeto **centrado**, y se vuelve interactivo **dentro de la escena**. Sin doble clic; la rueda /
+pellizco / +− hacen zoom también en la vista general del cuarto (hacia el cursor) — ya no se abre un panel modal:
 - **`gam-stations.js`** — una fábrica por objeto: `{ focus(), enter(), exit(), update(now,dt),
   busy?(), pointerMove/Down/Up?(ndc), key?(e) }`. Piano = teclas 3D tocables + pestañas
   Libre/Reto; escritorio = pantallas vivas + pines + tarjeta de proyectos; estante = libros

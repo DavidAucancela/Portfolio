@@ -20,11 +20,177 @@
       "en": "Bookshelf"
     },
     "message": {
-      "es": "Cada libro es un proyecto de IA de David — sácalo del estante y ábrelo. Abajo, las herramientas de IA que más usa.",
-      "en": "Each book is one of David's AI projects — pull it off the shelf and open it. Below, the AI tools he uses the most."
+      "es": "Los libros de David — pasa el cursor y saca uno del estante.",
+      "en": "David's books — hover and pull one off the shelf."
     },
     "projectMode": "ia",
-    "showAiSkills": true
+    "showAiSkills": true,
+    "books": [
+      {
+        "title": "El puente de la soledad",
+        "author": "María Fernanda Heredia"
+      },
+      {
+        "title": "Pactos solitarios",
+        "author": "Lucrecia Maldonado"
+      },
+      {
+        "title": "Ciertos cuentos & cuentos ciertos",
+        "author": "Max Aub"
+      },
+      {
+        "title": "Reír o no reír",
+        "author": "Antología de cuentos de humor"
+      },
+      {
+        "title": "Reír o no reír",
+        "author": "Antología de cuentos de humor"
+      },
+      {
+        "title": "Crow",
+        "author": "Luis Alberto Bravo"
+      },
+      {
+        "title": "Casi humanos",
+        "author": "Varios autores"
+      },
+      {
+        "title": "Antología del cuento ecuatoriano",
+        "author": "Varios autores"
+      },
+      {
+        "title": "Cien años de soledad",
+        "author": "Gabriel García Márquez"
+      },
+      {
+        "title": "Don Quijote de la Mancha",
+        "author": "Miguel de Cervantes · Ed. del IV Centenario"
+      },
+      {
+        "title": "Abierta sigue la noche",
+        "author": "Carla Badillo Coronado"
+      },
+      {
+        "title": "Kazbek",
+        "author": "Leonardo Valencia"
+      },
+      {
+        "title": "La Odisea",
+        "author": "Homero"
+      },
+      {
+        "title": "La vida es sueño",
+        "author": "Pedro Calderón de la Barca"
+      },
+      {
+        "title": "El cuento de la isla desconocida",
+        "author": "José Saramago"
+      },
+      {
+        "title": "El camino de Steve Jobs",
+        "author": "Jay Elliot"
+      },
+      {
+        "title": "Ojitos de ángel",
+        "author": "Ramón Fonseca Mora"
+      },
+      {
+        "title": "El desterrado",
+        "author": "Leonardo Valencia"
+      },
+      {
+        "title": "La historia me absolverá",
+        "author": "Fidel Castro"
+      },
+      {
+        "title": "Morga",
+        "author": "Alfonso Reece D."
+      },
+      {
+        "title": "Moderato contable",
+        "author": "Varios autores"
+      },
+      {
+        "title": "Sobreviviendo a la adolescencia",
+        "author": "Jim Burns"
+      },
+      {
+        "title": "Dioses y héroes de la mitología griega",
+        "author": "Ana María Shua"
+      },
+      {
+        "title": "El niño que vivía en las estrellas",
+        "author": "Jordi Sierra i Fabra"
+      },
+      {
+        "title": "Malditas matemáticas",
+        "author": "Carlo Frabetti"
+      },
+      {
+        "title": "Historias espectrales",
+        "author": "Edgar Allan García"
+      },
+      {
+        "title": "Música de fondo",
+        "author": "Antología temática"
+      },
+      {
+        "title": "Charlie y el gran ascensor de cristal",
+        "author": "Roald Dahl"
+      },
+      {
+        "title": "Terrores nocturnos",
+        "author": "María Brandán Aráoz"
+      },
+      {
+        "title": "Carta al padre / En la colonia penitenciaria",
+        "author": "Franz Kafka"
+      },
+      {
+        "title": "Maleficio",
+        "author": "Stephen King"
+      },
+      {
+        "title": "Cincuenta sombras de Grey",
+        "author": "E. L. James"
+      },
+      {
+        "title": "Cincuenta sombras más oscuras",
+        "author": "E. L. James"
+      },
+      {
+        "title": "It",
+        "author": "Stephen King"
+      },
+      {
+        "title": "Un mundo más luminoso: la vida de Mary Baker Eddy",
+        "author": "Frederick Ferguson"
+      },
+      {
+        "title": "El teorema Katherine",
+        "author": "John Green"
+      },
+      {
+        "title": "El campamento",
+        "author": "Blue Jeans"
+      },
+      {
+        "title": "Momo",
+        "author": "Michael Ende"
+      },
+      {
+        "title": "Cuando el amor duele",
+        "author": "Carlos Cuauhtémoc Sánchez"
+      },
+      {
+        "title": "Los ojos de mi princesa",
+        "author": "Carlos Cuauhtémoc Sánchez"
+      },
+      {
+        "title": "Historia sobre un corazón roto",
+        "author": "M. B. Brozon"
+      }
+    ]
   },
   {
     "id": "piano",

@@ -1198,15 +1198,19 @@ export function mount(container, hotspots) {
         [0.025, 0.52, 1.0, 1.48, 1.975].forEach(y => add(box(1.3, 0.05, 0.38), wood, 0, y, 0));
         add(box(1.3, 2.0, 0.02), 0x2e2014, 0, 1.0, -0.18);
         const bookColors = [0xb14eff, 0x06ffa5, 0xffb020, 0xff6b4a, 0x2d6a9f, 0xf2e6d2, 0xc0392b, 0x3fa66b];
-        [0.05, 0.545, 1.025, 1.505].forEach((shelfY, row) => {
-          let x = -0.56;
-          for (let i = 0; i < 8 && x < 0.5; i++) {
+        // tantos libros como haya en gam-hotspots.json (`books`), repartidos en las 4 repisas
+        const nBooks = hotspotsById.get('bookshelf')?.books?.length || 32;
+        const shelves = [0.05, 0.545, 1.025, 1.505];
+        shelves.forEach((shelfY, row) => {
+          const count = Math.floor(nBooks / 4) + (3 - row < nBooks % 4 ? 1 : 0);   // las de arriba se llenan primero
+          const step = 1.16 / Math.max(count, 1), bw = Math.min(0.085, step * 0.9);
+          for (let i = 0; i < count; i++) {
             const h = 0.26 + ((i * 7 + row * 3) % 5) * 0.03;
-            const bk = add(box(0.08, h, 0.26), bookColors[(i + row * 3) % bookColors.length], x + 0.04, shelfY + h / 2, 0.02);
+            const x = -0.58 + step * (i + 0.5);
+            const bk = add(box(bw, h, 0.26), bookColors[(i + row * 3) % bookColors.length], x, shelfY + h / 2, 0.02);
             bk.userData.baseZ = 0.02;
             bk.userData.baseY = shelfY + h / 2;
             out.refs.books.push({ mesh: bk, row });
-            x += 0.1 + ((i + row) % 3 === 0 ? 0.04 : 0);
           }
         });
         out.baseY = 1.0;

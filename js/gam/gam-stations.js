@@ -312,13 +312,10 @@ function deskStation(c) {
 }
 
 /* ────────────────────────────────────────────────────
-   BOOKSHELF — libros reales (salen al pasar el mouse, click = detalle).
-   TODO: reemplazar PLACEHOLDER_BOOKS con los títulos/autores reales cuando
-   se definan — por ahora son genéricos para no bloquear el resto del cuarto.
+   BOOKSHELF — los libros de David (gam-hotspots.json `books`): salen al pasar
+   el mouse, click = título y autor.
 ──────────────────────────────────────────────────── */
-const PLACEHOLDER_BOOKS = [
-  { title: 'Título pendiente', author: '—' },
-];
+
 
 function spineTexture(title, colorHex) {
   const cv = document.createElement('canvas');
@@ -332,12 +329,20 @@ function spineTexture(title, colorHex) {
   g.fillRect(0, 246, 64, 10);
   const lum = parseInt(colorHex.slice(0, 2), 16) * 0.3 + parseInt(colorHex.slice(2, 4), 16) * 0.59 + parseInt(colorHex.slice(4, 6), 16) * 0.11;
   g.fillStyle = lum > 140 ? '#1a1206' : '#f8f0dc';
-  g.font = 'bold 26px "Courier New", monospace';
+  g.font = 'bold 17px "Courier New", monospace';
   g.textAlign = 'center';
   g.textBaseline = 'middle';
   g.translate(32, 128);
   g.rotate(Math.PI / 2);
-  g.fillText(title.length > 16 ? `${title.slice(0, 15)}…` : title, 0, 2);
+  // hasta 2 renglones a lo largo del lomo
+  const lines = [''];
+  title.split(' ').forEach((w) => {
+    const cur = lines[lines.length - 1];
+    if (g.measureText(`${cur} ${w}`.trim()).width <= 226) lines[lines.length - 1] = `${cur} ${w}`.trim();
+    else lines.push(w);
+  });
+  if (lines.length > 2) { lines.length = 2; lines[1] = `${lines[1].slice(0, 20)}…`; }
+  lines.forEach((ln, k) => g.fillText(ln, 0, (k - (lines.length - 1) / 2) * 19 + 1));
   const t = new THREE.CanvasTexture(cv);
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
@@ -358,7 +363,8 @@ function bookshelfStation(c) {
     // los libros van en las filas de arriba primero
     const order = [...books].reverse();
     order.forEach((b, i) => {
-      const info = PLACEHOLDER_BOOKS[i % PLACEHOLDER_BOOKS.length];
+      const list = c.content.books || [];
+      const info = list[i] || { title: '—', author: '' };
       const m = b.mesh.material;
       const hex = m.color.getHexString();
       m.map = spineTexture(info.title, hex);

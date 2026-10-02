@@ -733,6 +733,22 @@ Antes de dar el spike por bueno, probarlo en navegador de punta a punta
   y fases en **`docs/gam-jotai-plan.md`**. Fase 1 (modelo, caras, vida, mirada,
   saludo y reacción al click) enviada; siguiente: Fase 2 (locomoción).
 
+## v6 — objetos nuevos + JotAI en las estaciones (2026-10-01/02)
+
+Rama `feat/gam-jotai-fase4`. Detalle completo en **`docs/gam-jotai-plan.md` §12**.
+
+- **13 objetos descubribles** (+ la puerta): se suman **Trofeos** (3 Aegis de Dota 2 de
+  David, TI 2019/2018/2020, modelo real `.glb` escaneado; al frente, giran con el mouse, se
+  abren y muestran el año), **Star Wars** (póster de Yoda real, al frente y gira con el
+  mouse), **guitarra** (clásica con cutaway, toca canciones) y **barra de sonido** (sobre
+  el estante, la playlist).
+- Muebles reubicados/escalados con los valores de David; mesa de ajedrez y pedestal de
+  malabares girados 90°; el ajedrez con un solo banquito.
+- Al enfocar un objeto la cámara queda fija de frente (se sacó el free-look con el cursor).
+- **JotAI participa en todas las estaciones** (Fase 4 de su plan): piano, guitarra, ajedrez
+  (rival de pie), malabares, patineta (Montar, trucos que fallan), trofeos, estante, Lumbre,
+  barra de sonido, Yoda, Pukis y la puerta.
+
 ## Abierto / por confirmar con David
 
 - **¿El spike de Three.js se siente bien?** — pregunta central de la Fase 1

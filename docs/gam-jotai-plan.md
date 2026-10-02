@@ -485,64 +485,114 @@ y `nav.clear()` en cada tramo.
 
 ---
 
-## 12. Fase 4 — cómo quedó (2026-10-02)
+## 12. Fase 4 — cómo quedó (2026-10-01 / 02)
 
-Rama `feat/gam-jotai-fase4` (desde `main`, sin push). Commits: objetos nuevos (`cbc1a18`,
-`6a99767`, `34ac886`, `b43d931`) y JotAI en las estaciones (el siguiente).
+Rama `feat/gam-jotai-fase4` (desde `main`, **sin push**). Commits, en orden:
 
-**Objetos del cuarto (decididos con David el 2026-10-01):** los 10 de antes + **Trofeos**
-(`medals`, los 3 Aegis de Dota 2 en cajas: al frente, giran con el mouse, se abren y
-muestran edición + año — cambiado el 2026-10-02, antes eran certificados), **Star Wars** (`starwars`, póster de Yoda real, solo se acerca),
-**guitarra** (`guitar`, clásica con cutaway calcada de la de David, `gam-guitar.js`) y
-**barra de sonido** (`soundbar`, estilo Mi Soundbar sobre el estante, la playlist).
-Pendiente de David: canciones de la guitarra y la playlist (placeholders en
-`gam-hotspots.json` / `SONGS`).
+| Commit | Qué |
+|---|---|
+| `cbc1a18` | 4 objetos nuevos: Logros (luego Trofeos), Star Wars, guitarra, barra de sonido |
+| `6a99767` | Póster de Yoda real, guitarra clásica calcada de la foto, barra de sonido blanca |
+| `34ac886` | Barra de sonido sola encima del estante |
+| `b43d931` | Muebles reubicados/escalados con los valores de David |
+| `4589071` | **JotAI en todas las estaciones** (Fase 4 propiamente dicha) |
+| `713905f` | Mesa de ajedrez y pedestal de malabares girados 90° |
+| `269c995` | Ajedrez con un solo banquito (JotAI juega de pie) + cámara fija al enfocar |
+| `99b55a0` | La repisa pasa a ser los 3 trofeos de Dota 2 |
+| `3505c3b` | Aegis por año (TI 2019 / 2018 / 2020) + caja inclinada hacia la cámara |
+| `3c08055` | El póster de Yoda gira con el mouse al frente |
+| `e43bb42` | Trofeos con el modelo real del Aegis (escaneo `.glb`) |
+
+### Objetos del cuarto (13 descubribles + la puerta)
+
+Los 10 de antes + 4 nuevos (decididos con David el 2026-10-01, todos al final de
+`FURNITURE` para no correr las teclas 1–9):
+
+- **Trofeos** (`medals`) — repisa sobre el escritorio con los 3 Aegis de The International
+  de David en cajas negras: **TI 2019** (violeta/cobre), **TI 2018** (verde/plata), **TI 2020**
+  (marrón/dorado) — `AEGIS_STYLES`. El Aegis es un **modelo real**
+  (`public/models/aegis/aegis.glb`: escaneo del TI 2018, optimizado con gltf-transform a 1.3 MB,
+  texturas 2048 WebP; 2019/2020 = la textura recoloreada, `aegis-2019/2020.webp`), cargado con
+  `GLTFLoader` (`loadAegisModels`, calcula normales, lo para de frente) sobre un Aegis en
+  código que queda de respaldo. Estación: click → la caja viene al frente inclinada hacia la
+  cámara (`FACE_UP`) y gira con el mouse; otro click → se abre la tapa y aparece la tarjeta
+  "Trofeo Dota 2 · The International · año" (`trophies` en `gam-hotspots.json`); click afuera
+  → vuelve. Sin tarjeta de "Logros" ni botón a la trayectoria (pedido de David).
+- **Star Wars** (`starwars`) — póster real de Yoda (`public/images/posters/`). Click → se
+  despega, viene al frente y gira con el mouse. Sin tarjeta.
+- **Guitarra** (`guitar`) — clásica con cutaway calcada de la de David (cuerpo extruido,
+  roseta, trastes, 6 cuerdas que vibran). Se despega de la pared y toca canciones
+  (`gam-guitar.js`, Karplus–Strong); con JotAI, la toca él en brazos.
+- **Barra de sonido** (`soundbar`) — estilo Mi Soundbar, sola encima del estante. Tarjeta
+  con la playlist (`tracks` / `playlistUrl` / `spotifyEmbed`).
+
+Otros cambios del cuarto: muebles reubicados/escalados (guitarra, alfombra, Pukis,
+patineta, malabares, ajedrez, barra), mesa de ajedrez y pedestal girados 90°, banqueta del
+piano más cerca del teclado, el ajedrez con **un solo banquito** (el del visitante). Al
+enfocar un objeto la cámara **ya no orbita** con el cursor (se sacó el free-look).
+
+### JotAI en las estaciones
 
 **Brain (`gam-jotai-brain.js`):**
-- `ROLES` (tabla por estación: `seat`, `pose`, `face`, `clip`/`loop`, `near`, `point`,
-  `faceCam`, `line`) reemplaza a `STATION_POSE`; `STATION_IDS` se exporta para la capa de
-  foco. `enterStation(f)` → `travel` → (sentarse / arrimarse / girarse a cámara) → `duty = id`.
-  `leaveStation()` al salir del zoom: se levanta con calma (`standFrom`) o vuelve al spot si
-  estaba arrimado (Pukis).
-- Asientos de estación: `props.seats = { bench }` (`makeSeatProp` en la escena:
-  `PIANO_SEAT`, coords locales). `sitOn(name)` / `standFrom()`; estado
-  `perch` + `perchHips`. `interrupt({ keepPerch })`: sin `keepPerch` baja de golpe al costado
-  (noche, otra estación). La silla del escritorio sigue aparte (`seated`, rutina nocturna).
+- `ROLES` (por estación: `seat`, `pose`, `face`, `clip`/`loop`, `near`, `point`, `faceCam`,
+  `line`); `STATION_IDS` exportado para la capa de foco. `enterStation(f)` → `travel` →
+  (sentarse / arrimarse / girarse a cámara) → `duty = id`. `leaveStation()` al salir del
+  zoom: se levanta con calma (`standFrom`) o vuelve al spot si estaba arrimado.
+- Asiento de estación: solo la banqueta del piano (`props.seats.bench`, `PIANO_SEAT`,
+  `makeSeatProp`). `sitOn` / `standFrom`, estado `perch` + `perchHips`;
+  `interrupt({ keepPerch })`. La silla del escritorio sigue aparte (`seated`).
   `hipsForSeat(topY)` / `hipsForStand(y)` pasan alturas del mundo a `hipsY` con `scale`.
-- `cue(evento, datos)` despacha por prefijo (`CUE_STATION`) y solo si está de servicio ahí:
+- `cue(evento, datos)` por prefijo (`CUE_STATION`), solo estando de servicio:
   `piano:key|phase`, `guitar:strum|end`, `chess:think|move|end`, `juggle:mode|catch|fail`,
   `skate:mount|pos|trick|dismount`, `medals:pick`, `book:pick`, `lumbre:shot`, `pukis:pet`.
-- De servicio puede hablar con zoom (el globo no se oculta) y su `gaze` le gana al objeto
-  enfocado (mirar la tecla que suena, la pieza que mueve). `farewell()` en la puerta.
-- Getters nuevos: `duty`, `riding`, `moving`.
+- De servicio puede hablar con zoom y su `gaze` le gana al objeto enfocado. `farewell()` en
+  la puerta. Getters nuevos: `duty`, `riding`, `moving`.
 
-**Personaje (`gam-jotai.js`):** poses `pianoSit`, `chessStand`, `chin`, `guitarHold`,
-`juggle`, `ride`, `fallSit`; clips `reachL/R`, `scratch`, `strum`, `juggleHands`,
-`pointL/R`, `salute`, `bob`, `hop`, `wobble`, `dust`; `setPose(name, { hipsY })`,
-`handsWorld()`.
+**Personaje (`gam-jotai.js`):** poses `pianoSit`, `chessStand` / `chin` (con el cuello de
+resorte estirado para asomarse sobre la mesa), `guitarHold`, `juggle`, `ride`, `fallSit`;
+clips `reachL/R`, `scratch`, `strum`, `juggleHands`, `pointL/R`, `salute`, `bob`, `hop`,
+`wobble`, `dust`; `setPose(name, { hipsY })`, `handsWorld()`.
 
-**Escena:** banqueta del piano más cerca del teclado; el ajedrez quedó con **un solo
-banquito** (el del visitante, blancas): JotAI juega **de pie** del lado de las negras, solo
-rueda hasta la mesa cuando hay partida (pedido de David, 2026-10-02) — de paso se arregló
-que el spot del ajedrez quedaba fuera del cuarto. Mesa y pedestal de malabares girados 90°.
-Al enfocar un objeto la cámara ya **no orbita** con el cursor (se sacó el free-look). Spot de malabares al costado del
-pedestal. Ganchos en el `base` de las estaciones: `jotaiHere()`, `jotaiRiding()`,
-`jotaiHands()`, `jotaiGuitar()` (todos null/false sin JotAI).
+**Qué hace en cada una:** piano (sentado, toca cada nota y la demo del Reto, mira en tu
+turno, reacciona al final) · guitarra (se gira a cámara y la toca en brazos) · ajedrez (rival
+de pie del lado de las negras: mentón mientras piensa, estira el brazo, celebra o se rasca) ·
+malabares (cascada en sus manos; en Reto asiente/se confunde) · patineta (pestaña **Montar**:
+da vueltas y los trucos siempre le fallan — `stuck` / `shoot` / `wobble`) · trofeos, estante y
+Lumbre (señala) · barra de sonido (menea la cabeza) · Yoda (saludo jedi) · Pukis (lo acaricia
+contigo) · puerta (se despide).
 
-**Estaciones:** el piano avisa las fases del Reto (`onPhase` en `gam-piano.js`); la
-guitarra pasa de flotar a sus brazos (`hold()`, escala 0.62, en diagonal); el ajedrez
-avisa think/move/end y espera 260 ms para que estire el brazo; los malabares hacen la
-cascada entre sus palmas (`jotaiCascade`); la patineta tiene **Ver / Montar** (tabla
-acostada, círculo `RIDE` entre Pukis y el pedestal, trucos que siempre fallan: `stuck`,
-`shoot`, `wobble`).
+**Ganchos para las estaciones** (`base` en la escena, todos null/false sin JotAI):
+`jotaiHere()`, `jotaiRiding()`, `jotaiHands()`, `jotaiGuitar()`.
 
-**Verificado (headless, SwiftShader):** brain con reloj virtual en las 11 estaciones (llega,
-queda de servicio, cues, sale, la noche desde la banqueta); capturas de piano, guitarra,
-ajedrez, malabares, patineta (montar + caída), Logros y Pukis; JotAI desactivado (la
-patineta no ofrece Montar, el ajedrez juega igual). **No** probado en GPU real ni táctil.
+### Verificación
 
-**Pendientes:**
-- Las manos del piano son por lado (sin IK); el piano se ve de espaldas a JotAI.
-- Al salir de la patineta montado, queda donde estaba la tabla (en la grilla, pero no en su spot).
-- Analítica `gam_jotai` y reduced-motion fino (Fase 5).
+Headless (Playwright + SwiftShader): brain con reloj virtual en las 11 estaciones (llega,
+cues, sale, la noche desde la banqueta); capturas de todas las estaciones nuevas y de piano,
+guitarra, ajedrez, malabares, patineta (montar + caída), trofeos (al frente, giro, apertura)
+y Pukis; JotAI desactivado (todo funciona igual, la patineta no ofrece Montar); grilla con
+camino entre todos los spots; `npm run build` en cada commit. **No** probado en GPU real
+ni en táctil.
 
+### Pendiente
+
+**Contenido de David:**
+- Canciones de la guitarra (hoy `SONGS` placeholder: rasgueo, arpegio, Oda a la alegría).
+- Playlist de la barra de sonido (`tracks` / `playlistUrl` / `spotifyEmbed` vacíos).
+- Libros del estante (`PLACEHOLDER_BOOKS`, de antes).
+
+**Por confirmar en navegador:**
+- Orientación del Aegis escaneado (cúpula arriba): no se pudo confirmar en las capturas.
+- Aegis TI 2020: todo el metal quedó dorado (el real tiene remolinos plateados) — el escaneo
+  no separa las piezas; se puede separar por UV si hace falta.
+- Brillo de los trofeos violeta/dorado en la repisa (se ven oscuros).
+
+**Deudas técnicas:**
+- Piano: manos por lado, sin IK; la cámara lo ve de espaldas.
+- Patineta: si se sale montado, JotAI queda donde estaba la tabla (en la grilla, no en su spot).
+- La pantalla del escritorio no pasa a "protector" mientras duerme (de la Fase 3).
+- Paseando puede cruzar por delante de un objeto mientras la cámara vuela hacia él.
+
+**Fase 5 (pulido):** analítica `gam_jotai` en `js/analytics.js`, reduced-motion fino, prueba
+en táctil real y en GPU real, ajuste fino de encuadres, revisar el copy de las frases.
+
+**Repo:** rama sin push ni PR.

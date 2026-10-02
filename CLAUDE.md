@@ -87,7 +87,9 @@ js/
     gam-three-scene.js         # Cuarto diorama (Three.js): cámara ortográfica, luces, postprocesado,
                                # muebles, ciclo día/noche, ruteo de pointer/teclado hacia las estaciones
     gam-stations.js            # Estaciones: cada objeto se vuelve interactivo al hacer zoom (piano,
-                               # escritorio, estante, ventana, patineta, malabares, Pukis, ajedrez, Lumbre)
+                               # escritorio, estante, ventana, patineta, malabares, Pukis, ajedrez, Lumbre,
+                               # Logros, póster Star Wars, guitarra, barra de sonido)
+    gam-guitar.js              # Motor de la guitarra (Karplus–Strong + canciones; las cuerdas son 3D)
     gam-hud.js                 # HUD DOM de las estaciones: barra superior, tarjeta, pines, estado
     gam-jotai.js               # JotAI 3D en el cuarto: modelo en código, rig, poses/clips, caras, vida
     gam-jotai-brain.js         # Comportamiento de JotAI (saludo, click, paseo, rutina de noche; luego estaciones)
@@ -105,7 +107,7 @@ data/
   dev-projects.json           # 13 proyectos del modo .dev (cargados con fetch en runtime)
   ia-projects.json            # 7 proyectos del modo .ia (cargados con fetch en runtime)
   sec-projects.json           # 7 proyectos del modo .sec (labs HTB + prácticas + certs)
-  gam-hotspots.json           # Contenido bilingüe de los 9 objetos interactuables del modo .gam
+  gam-hotspots.json           # Contenido bilingüe de los 13 objetos interactuables del modo .gam
   gam-jotai.json              # Frases bilingües de JotAI dentro del cuarto (hello / poke / tickle)
   gam-projects.json           # Vacío — fallback para projects.js en modo .gam (no se usa hoy)
   personal.json               # Bio, email, redes, timeline
@@ -328,16 +330,32 @@ ya no usa Phaser: es un **diorama isométrico en Three.js** (`gam-three-scene.js
 ortográfica, sol con sombras, GTAO + contorno + bloom, muebles hechos en código). El jugador
 no controla ningún personaje: se navega por objeto (hover/click/tap, flechas + Enter, teclas
 1–9). JotAI vive en el cuarto como personaje propio (ver más abajo), no como avatar.
-Al hacer click la cámara **hace zoom** (`camera.zoom` + punto de mirada, nunca avanza) y el
-objeto se vuelve interactivo **dentro de la escena** — ya no se abre un panel modal:
+Al hacer click la cámara **hace zoom** (`camera.zoom` + punto de mirada, nunca avanza), con el
+objeto **centrado**, y se vuelve interactivo **dentro de la escena**. Sin doble clic; la rueda /
+pellizco / +− hacen zoom también en la vista general del cuarto (hacia el cursor) — ya no se abre un panel modal:
 - **`gam-stations.js`** — una fábrica por objeto: `{ focus(), enter(), exit(), update(now,dt),
   busy?(), pointerMove/Down/Up?(ndc), key?(e) }`. Piano = teclas 3D tocables + pestañas
   Libre/Reto; escritorio = pantallas vivas + pines + tarjeta de proyectos; estante = libros
   de proyectos IA que se sacan al pasar el mouse; ventana = anochece/amanece; patineta =
-  se despega de la pared y se gira arrastrando (+ kickflip/shove-it); malabares = cascada +
+  escaneo real (`public/models/skate/skate.glb` + lija en código), se despega de la pared y
+  se gira arrastrando (+ kickflip/shove-it); malabares = cascada +
   reto; Pukis = acariciarlo; ajedrez = tablero 3D contra una IA (`gam-chess.js`); Lumbre =
   póster del juego en la pared izquierda (capturas 1–4 + enlaces a itch.io y al repo — antes
-  era una card de `dev-projects.json`, ahora vive solo acá). `interactive:false` en
+  era una card de `dev-projects.json`, ahora vive solo acá). Desde 2026-10-01 (ex
+  decoración, al final de `FURNITURE` para no correr las teclas 1–9): Trofeos (`medals`) =
+  repisa con los 3 Aegis de Dota 2 de David (The International: violeta/cobre TI 2019,
+  verde/plata TI 2018, dorado/cuero TI 2020 — `AEGIS_STYLES`) en cajas negras. El Aegis es
+  un modelo real (`public/models/aegis/aegis.glb`, escaneo del TI 2018 optimizado; 2019/2020 =
+  su textura recoloreada, `aegis-2019/2020.webp`), cargado con `GLTFLoader` sobre un Aegis en
+  código que queda de respaldo. Click →
+  la caja viene al frente y gira con el mouse, otro click → se abre la tapa y sale la
+  tarjeta con la edición y el año (`trophies` en `gam-hotspots.json`); Star Wars (`starwars`) = póster de Yoda
+  (`public/images/posters/`) que se despega de la pared, viene al frente (sin tarjeta) y gira con el mouse;
+  guitarra (`guitar`) = clásica con cutaway (calcada de la de David), se despega de la
+  pared y toca canciones (`gam-guitar.js`); barra de sonido (`soundbar`, nueva, estilo Mi
+  Soundbar blanca sin luces, encima del estante) = la playlist (`tracks`/`playlistUrl`/`spotifyEmbed` en
+  `gam-hotspots.json`). Guitarra: "Tres notas" de AU-D + 3 ritmos propios; playlist «3vol Fest» (embed de
+  Spotify); estante con los 41 libros reales de David (`bookshelf.books`). `interactive:false` en
   `FURNITURE` sigue disponible para dejar un mueble como pura decoración.
 - **`gam-hud.js`** — barra superior (título, pestañas, acciones, "← Volver Esc"), línea de
   estado, tarjeta lateral (hoja inferior en portrait) y pines. Estilos `.gam-hud*`/`.gam-card*`.
@@ -374,6 +392,15 @@ objeto se vuelve interactivo **dentro de la escena** — ya no se abre un panel 
   (`onEnvScene`) y un subtítulo con "Saltar" (`createJotaiCaption`) acompaña la rutina.
   Rutinas con `run()` + token `seq` cancelable, esperas/animaciones atadas al reloj del
   loop (la pausa del cuarto las pausa).
+  **Las estaciones (Fase 4, `docs/gam-jotai-plan.md` §12):** al enfocar un objeto con rol
+  (`ROLES` en el brain) va a su spot, se sienta si hace falta (banqueta del piano:
+  `props.seats`) y queda "de servicio" (`brain.duty`): toca el
+  piano y la demo del Reto, toca la guitarra en brazos, es el rival del ajedrez (de pie, del lado de las negras), hace la
+  cascada de malabares en sus manos, monta la patineta (pestaña Montar; los trucos siempre
+  le fallan), señala los trofeos/libros/Lumbre, menea la cabeza con la música, saluda al
+  póster de Yoda, acaricia a Pukis y se despide en la puerta. Las estaciones le avisan con
+  `c.cue(evento, datos)` y leen `c.jotaiHands/jotaiGuitar/jotaiRiding/jotaiHere` — todo
+  opcional: sin JotAI funcionan igual.
   `pickAny()` en la escena lo compara por distancia con los muebles. Su `update` va en
   `try/catch` (`jotaiFailed`): un error lo desactiva sin congelar el loop. En dev,
   `window.__gamJotai = { jotai, brain, nav, spots }` para QA desde consola
@@ -462,7 +489,7 @@ están abiertas (`scene.pause`/`resume`, así el jugador no se mueve detrás del
 
 **Progreso** (`gam-loader.js`): cada interacción no-`exit` marca su `id` como
 descubierto en `localStorage('gam-discovered')`; `#gam-progress` (esquina sup. izq.
-de la TV) muestra `X/9` (`DISCOVERABLE_IDS`) y persiste entre visitas. Al completar los 9 objetos, un
+de la TV) muestra `X/13` (`DISCOVERABLE_IDS`) y persiste entre visitas. Al completar los 13 objetos, un
 toast breve una vez por sesión (no un panel — no compite con el que ya se abre para
 el objeto que completó la ronda).
 
@@ -513,7 +540,9 @@ tres módulos chicos, cada uno con un rol distinto:
 'gam:start'     // Phaser terminó de montarse (boot exitoso)
 'gam:score'     // fin de una ronda de piano/malabares → detail: { game, score }
 ```
-`js/analytics.js` los traduce a `gam_interact`/`gam_start`/`gam_minigame_score` en
+`js/analytics.js` los traduce a `gam_interact`/`gam_start`/`gam_minigame_score` (y
+`gam:jotai` → `gam_jotai` con `action`: poke, tickle, wake, routine_night/dawn, station,
+skate_bail, chess_end, farewell — ver `report()` en `gam-jotai-brain.js`) en
 Vercel Analytics, mismo criterio que el resto de los eventos custom del sitio.
 
 ## Secciones en index.html

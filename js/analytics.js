@@ -42,6 +42,15 @@ function init() {
     if (!detail?.game) return;
     track('gam_minigame_score', { game: detail.game, score: detail.score ?? 0 });
   });
+
+  // JotAI en el cuarto (gam-jotai-brain.js `report`): poke/tickle/wake,
+  // rutinas de noche/amanecer, estación atendida, caídas en patineta, etc.
+  window.addEventListener('gam:jotai', ({ detail }) => {
+    if (!detail?.action) return;
+    const props = { action: detail.action };
+    ['station', 'variant', 'winner', 'routine'].forEach((k) => { if (detail[k] != null) props[k] = String(detail[k]); });
+    track('gam_jotai', props);
+  });
 }
 
 export const Analytics = { init };

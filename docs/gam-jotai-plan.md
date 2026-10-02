@@ -1,8 +1,8 @@
 # Modo `.gam` — JotAI como personaje del cuarto (plan)
 
-> Estado: **aprobado** (2026-09-24) — **fases 1 a 3 hechas** (la 1 revisada por
+> Estado: **aprobado** (2026-09-24) — **fases 1 a 4 hechas** (la 1 revisada por
 > David en navegador el 2026-09-25; la 2 y la 3 verificadas en headless el
-> 2026-09-29). Siguiente: Fase 4 (estaciones). Se apoya en el diorama
+> 2026-09-29; la 4 y la 5 el 2026-10-02, ver §12). Plan completo. Se apoya en el diorama
 > Three.js actual (`gam-three-scene.js` + `gam-stations.js`); ver
 > `docs/gam-mode-plan.md` para el contexto del modo.
 >
@@ -284,14 +284,20 @@ escritorio para despertarlo.
 ✅ *La secuencia se lee como una pequeña historia sin que el visitante
 toque nada más.*
 
-**Fase 4: estaciones.** — ⏭ **SIGUIENTE** (ver §11). Piano (manos por IK + demo del Reto) → ajedrez (rival)
-→ malabares (cascada en sus manos) → patineta (pestaña Montar + caída) →
-Pukis, estante, Lumbre, puerta. Una estación por commit.
+**Fase 4: estaciones.** — ✔ **HECHA** (ver §12). Antes se redefinieron los objetos del
+cuarto (+ Logros, póster de Yoda, guitarra, barra de sonido). Piano (banqueta + demo del
+Reto, sin IK), guitarra (la toca en brazos), ajedrez (rival, del lado de las negras),
+malabares (cascada en sus manos), patineta (pestaña Montar + caídas), Logros, barra de
+sonido, Star Wars, Pukis, estante, Lumbre y puerta.
 ✅ *Ninguna estación agrega espera y todas funcionan igual con JotAI
 desactivado.*
 
-**Fase 5: pulido.** Frases bilingües, analítica, reduced-motion, prueba en
-táctil real, ajuste de encuadres y la documentación.
+**Fase 5: pulido.** — ✔ **HECHA** (2026-10-02). Analítica `gam_jotai` (evento `gam:jotai` del
+brain → `js/analytics.js`: `poke`, `tickle`, `wake`, `routine_night`/`routine_dawn`, `skip_scene`,
+`station` (+station), `farewell`, `skate_bail` (+variant), `chess_end` (+winner)). Verificado con
+`prefers-reduced-motion` (rutinas por cortes) y en un iPhone 13 emulado (táctil, hoja inferior del
+HUD). Spot de Pukis detrás del perro. Hint táctil sin "toca dos veces". Frases revisadas. Falta
+solo una prueba en un celular real.
 
 ---
 
@@ -480,3 +486,128 @@ y `nav.clear()` en cada tramo.
 - La pantalla del escritorio no pasa a "protector" mientras duerme (el plan lo sugería).
 - Nada de analítica todavía (`gam_jotai` en `js/analytics.js`, Fase 5).
 - No se probó en un dispositivo táctil real ni en un navegador con GPU (solo headless).
+
+---
+
+## 12. Fase 4 — cómo quedó (2026-10-01 / 02)
+
+Rama `feat/gam-jotai-fase4` (desde `main`, **sin push**). Commits, en orden:
+
+| Commit | Qué |
+|---|---|
+| `cbc1a18` | 4 objetos nuevos: Logros (luego Trofeos), Star Wars, guitarra, barra de sonido |
+| `6a99767` | Póster de Yoda real, guitarra clásica calcada de la foto, barra de sonido blanca |
+| `34ac886` | Barra de sonido sola encima del estante |
+| `b43d931` | Muebles reubicados/escalados con los valores de David |
+| `4589071` | **JotAI en todas las estaciones** (Fase 4 propiamente dicha) |
+| `713905f` | Mesa de ajedrez y pedestal de malabares girados 90° |
+| `269c995` | Ajedrez con un solo banquito (JotAI juega de pie) + cámara fija al enfocar |
+| `99b55a0` | La repisa pasa a ser los 3 trofeos de Dota 2 |
+| `3505c3b` | Aegis por año (TI 2019 / 2018 / 2020) + caja inclinada hacia la cámara |
+| `3c08055` | El póster de Yoda gira con el mouse al frente |
+| `e43bb42` | Trofeos con el modelo real del Aegis (escaneo `.glb`) |
+
+### Objetos del cuarto (13 descubribles + la puerta)
+
+Los 10 de antes + 4 nuevos (decididos con David el 2026-10-01, todos al final de
+`FURNITURE` para no correr las teclas 1–9):
+
+- **Trofeos** (`medals`) — repisa sobre el escritorio con los 3 Aegis de The International
+  de David en cajas negras: **TI 2019** (violeta/cobre), **TI 2018** (verde/plata), **TI 2020**
+  (marrón/dorado) — `AEGIS_STYLES`. El Aegis es un **modelo real**
+  (`public/models/aegis/aegis.glb`: escaneo del TI 2018, optimizado con gltf-transform a 1.3 MB,
+  texturas 2048 WebP; 2019/2020 = la textura recoloreada, `aegis-2019/2020.webp`), cargado con
+  `GLTFLoader` (`loadAegisModels`, calcula normales, lo para de frente) sobre un Aegis en
+  código que queda de respaldo. Estación: click → la caja viene al frente inclinada hacia la
+  cámara (`FACE_UP`) y gira con el mouse; otro click → se abre la tapa y aparece la tarjeta
+  "Trofeo Dota 2 · The International · año" (`trophies` en `gam-hotspots.json`); click afuera
+  → vuelve. Sin tarjeta de "Logros" ni botón a la trayectoria (pedido de David).
+- **Star Wars** (`starwars`) — póster real de Yoda (`public/images/posters/`). Click → se
+  despega, viene al frente y gira con el mouse. Sin tarjeta.
+- **Guitarra** (`guitar`) — clásica con cutaway calcada de la de David (cuerpo extruido,
+  roseta, trastes, 6 cuerdas que vibran). Se despega de la pared y toca canciones
+  (`gam-guitar.js`, Karplus–Strong); con JotAI, la toca él en brazos.
+- **Patineta** (de antes) — ahora con el **escaneo real** de David
+  (`public/models/skate/skate.glb`). Pipeline en `scripts/gam-models/`: limpio de restos del
+  piso, orientado, y recortado con un **contorno limpio y simétrico** ajustado al escaneo
+  (ancho constante + puntas redondas) y 3 mm bajo la cara de stickers (el canto escaneado era
+  un fleco). El contorno y los perfiles (`surf` centro, `edge` canto — la tabla está curvada a
+  lo ancho y tiene nose/tail) van en los extras del mesh. `loadSkateModel` arma con eso: la
+  lija (sigue contorno y curva, 12 mm bajo la cara), un canto de madera y un labio de 8 mm
+  sobre la cara que tapa el corte — sin huecos ni flecos. `refs.skate.dims` lo usa Montar.
+- **Barra de sonido** (`soundbar`) — estilo Mi Soundbar, sola encima del estante. Tarjeta
+  con la playlist (`tracks` / `playlistUrl` / `spotifyEmbed`).
+
+Otros cambios del cuarto: muebles reubicados/escalados (guitarra, alfombra, Pukis,
+patineta, malabares, ajedrez, barra), mesa de ajedrez y pedestal girados 90°, banqueta del
+piano más cerca del teclado, el ajedrez con **un solo banquito** (el del visitante). Al
+enfocar un objeto la cámara **ya no orbita** con el cursor (se sacó el free-look). Cámara (2026-10-02):
+sin zoom con doble clic; **zoom en la vista general del cuarto** (rueda / pellizco / +−, hasta
+4.5×, hacia el cursor — `zoomBase()` / `MAX_ROOM_ZOOM`); el objeto enfocado queda **centrado** (se
+sacó el `shift`/`shiftLook` que lo corría al lado de la tarjeta). `c.refocus()` re-centra si la
+estación cambia de encuadre (patineta Ver ⇄ Montar).
+
+### JotAI en las estaciones
+
+**Brain (`gam-jotai-brain.js`):**
+- `ROLES` (por estación: `seat`, `pose`, `face`, `clip`/`loop`, `near`, `point`, `faceCam`,
+  `line`); `STATION_IDS` exportado para la capa de foco. `enterStation(f)` → `travel` →
+  (sentarse / arrimarse / girarse a cámara) → `duty = id`. `leaveStation()` al salir del
+  zoom: se levanta con calma (`standFrom`) o vuelve al spot si estaba arrimado.
+- Asiento de estación: solo la banqueta del piano (`props.seats.bench`, `PIANO_SEAT`,
+  `makeSeatProp`). `sitOn` / `standFrom`, estado `perch` + `perchHips`;
+  `interrupt({ keepPerch })`. La silla del escritorio sigue aparte (`seated`).
+  `hipsForSeat(topY)` / `hipsForStand(y)` pasan alturas del mundo a `hipsY` con `scale`.
+- `cue(evento, datos)` por prefijo (`CUE_STATION`), solo estando de servicio:
+  `piano:key|phase`, `guitar:strum|end`, `chess:think|move|end`, `juggle:mode|catch|fail`,
+  `skate:mount|pos|trick|dismount`, `medals:pick`, `book:pick`, `lumbre:shot`, `pukis:pet`.
+- De servicio puede hablar con zoom y su `gaze` le gana al objeto enfocado. `farewell()` en
+  la puerta. Getters nuevos: `duty`, `riding`, `moving`.
+
+**Personaje (`gam-jotai.js`):** poses `pianoSit`, `chessStand` / `chin` (con el cuello de
+resorte estirado para asomarse sobre la mesa), `guitarHold`, `juggle`, `ride`, `fallSit`;
+clips `reachL/R`, `scratch`, `strum`, `juggleHands`, `pointL/R`, `salute`, `bob`, `hop`,
+`wobble`, `dust`; `setPose(name, { hipsY })`, `handsWorld()`.
+
+**Qué hace en cada una:** piano (sentado, toca cada nota y la demo del Reto, mira en tu
+turno, reacciona al final) · guitarra (se gira a cámara y la toca en brazos) · ajedrez (rival
+de pie del lado de las negras: mentón mientras piensa, estira el brazo, celebra o se rasca) ·
+malabares (cascada en sus manos; en Reto asiente/se confunde) · patineta (pestaña **Montar**:
+da vueltas y los trucos siempre le fallan — `stuck` / `shoot` / `wobble`) · trofeos, estante y
+Lumbre (señala) · barra de sonido (menea la cabeza) · Yoda (saludo jedi) · Pukis (lo acaricia
+contigo) · puerta (se despide).
+
+**Ganchos para las estaciones** (`base` en la escena, todos null/false sin JotAI):
+`jotaiHere()`, `jotaiRiding()`, `jotaiHands()`, `jotaiGuitar()`.
+
+### Verificación
+
+Headless (Playwright + SwiftShader): brain con reloj virtual en las 11 estaciones (llega,
+cues, sale, la noche desde la banqueta); capturas de todas las estaciones nuevas y de piano,
+guitarra, ajedrez, malabares, patineta (montar + caída), trofeos (al frente, giro, apertura)
+y Pukis; JotAI desactivado (todo funciona igual, la patineta no ofrece Montar); grilla con
+camino entre todos los spots; `npm run build` en cada commit. **No** probado en GPU real
+ni en táctil.
+
+### Pendiente
+
+**Contenido de David:** ✔ cargado el 2026-10-02 — 41 libros reales (`bookshelf.books`), "Tres
+notas" de AU-D en la guitarra (B – F# – E – Esus4) y la playlist «3vol Fest» de Spotify (embed).
+
+**Por confirmar en navegador:**
+- Orientación del Aegis escaneado (cúpula arriba): no se pudo confirmar en las capturas.
+- Aegis TI 2020: todo el metal quedó dorado (el real tiene remolinos plateados) — el escaneo
+  no separa las piezas; se puede separar por UV si hace falta.
+- Brillo de los trofeos violeta/dorado en la repisa (se ven oscuros).
+
+**Deudas técnicas** (resueltas el 2026-10-02, salvo la última):
+- ✔ Piano: estira el brazo hacia la tecla que suena (hombro según qué tan al costado está, torso
+  girado; sin IK) y la cámara lo ve de 3/4 (`view: 0.62`), no de espaldas.
+- ✔ Patineta: si se sale montado, se baja y vuelve rodando a su spot (`leaveStation`).
+- ✔ Escritorio: protector de pantalla ("JotAI · zzz" rebotando) mientras duerme (`saver`).
+- Paseando puede cruzar por delante de un objeto mientras la cámara vuela hacia él.
+
+**Fase 5 (pulido):** analítica `gam_jotai` en `js/analytics.js`, reduced-motion fino, prueba
+en táctil real y en GPU real, ajuste fino de encuadres, revisar el copy de las frases.
+
+**Repo:** rama sin push ni PR.

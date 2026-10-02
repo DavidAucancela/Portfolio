@@ -66,7 +66,7 @@ function _reveal() {
     setTimeout(() => root.classList.remove('is-crt-on'), 1000);
   }
   if (hintEl) {
-    if (_coarse()) hintEl.textContent = 'Toca un objeto · pellizca o toca dos veces para acercar · ← Volver para salir';
+    if (_coarse()) hintEl.textContent = 'Toca un objeto · pellizca para acercar · ← Volver para salir';
     hintEl.hidden = false;
   }
 }

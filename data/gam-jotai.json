@@ -9,7 +9,7 @@
     { "es": "Estoy aprendiendo a andar en patineta… más o menos.", "en": "I'm learning to skate… sort of." },
     { "es": "¿Una partida de ajedrez? Te advierto que pienso rápido.", "en": "Up for chess? Fair warning: I think fast." },
     { "es": "Desde la ventana se ve Quito de noche 🌙", "en": "You can see Quito at night from the window 🌙" },
-    { "es": "En el estante están los proyectos de IA. Algunos los ayudé a pensar 🤖", "en": "The AI projects live on the shelf. I helped think up a few 🤖" }
+    { "es": "En el estante hay 41 libros de David. Yo voy por el tercero 📚", "en": "There are 41 of David's books on the shelf. I'm on my third 📚" }
   ],
   "tickle": [
     { "es": "¡Oye! ¡Me haces cosquillas en los circuitos! 😵‍💫", "en": "Hey! That tickles my circuits! 😵‍💫" },
@@ -37,7 +37,7 @@
   ],
   "muse_pukis": [
     { "es": "Shh… Pukis está soñando 💤", "en": "Shh… Pukis is dreaming 💤" },
-    { "es": "La mejor perrita del cuarto 🐾", "en": "Best dog in the room 🐾" }
+    { "es": "El mejor perro del cuarto 🐾", "en": "Best dog in the room 🐾" }
   ],
   "muse_desk": [
     { "es": "Uy, cuánto código sin commitear…", "en": "Whoa, so much uncommitted code…" }
@@ -56,5 +56,65 @@
   ],
   "muse_lumbre": [
     { "es": "¿Ya jugaste Lumbre? Está buenísimo 🕯️", "en": "Have you played Lumbre? It's great 🕯️" }
+  ],
+  "guitar_intro": [
+    { "es": "¡Déjame a mí! Me sé tres canciones… más o menos 🎸", "en": "Let me! I know three songs… sort of 🎸" }
+  ],
+  "chess_hello": [
+    { "es": "Yo llevo las negras. Piensa bien cada jugada ♟️", "en": "I'll take black. Think every move through ♟️" }
+  ],
+  "chess_win": [
+    { "es": "¡Jaque mate! ¿La revancha? 😎", "en": "Checkmate! Rematch? 😎" },
+    { "es": "Gané… pero jugaste muy bien 🤖", "en": "I won… but you played really well 🤖" }
+  ],
+  "chess_lose": [
+    { "es": "Me ganaste… voy a recalcular 🤯", "en": "You beat me… recalculating 🤯" },
+    { "es": "¿Cómo no vi esa jugada? 😵", "en": "How did I miss that move? 😵" }
+  ],
+  "piano_win": [
+    { "es": "¡Tienes buen oído! 🎹", "en": "You've got a good ear! 🎹" }
+  ],
+  "piano_fail": [
+    { "es": "Casi… ¡otra vuelta! 🎹", "en": "So close… one more go! 🎹" },
+    { "es": "Esa nota se escapó 😅", "en": "That note got away 😅" }
+  ],
+  "juggle_drop": [
+    { "es": "¡Uy! Se escapó 🙈", "en": "Oops! It got away 🙈" }
+  ],
+  "skate_intro": [
+    { "es": "Ponme en «Montar». Te advierto que soy novato 🛹", "en": "Pick «Ride». Fair warning: I'm a beginner 🛹" }
+  ],
+  "skate_bail": [
+    { "es": "¡Casi me sale! 😅", "en": "I almost had it! 😅" },
+    { "es": "La próxima seguro sale… creo 🛹", "en": "Next one for sure… I think 🛹" },
+    { "es": "Eso fue a propósito 😳", "en": "That was on purpose 😳" }
+  ],
+  "medals_proud": [
+    { "es": "¡Los Aegis de The International! Abre una caja para verlos de cerca 🏆", "en": "The International Aegis! Open a case to see them up close 🏆" }
+  ],
+  "music_vibe": [
+    { "es": "Esto suena mientras David programa 🎧", "en": "This plays while David codes 🎧" }
+  ],
+  "sw_force": [
+    { "es": "Hazlo, o no lo hagas. Pero no lo intentes ✨", "en": "Do or do not. There is no try ✨" }
+  ],
+  "lumbre_brag": [
+    { "es": "Ese juego lo hizo David en una game jam 🕯️", "en": "David made that game at a game jam 🕯️" }
+  ],
+  "bye": [
+    { "es": "¡Chao! Vuelve pronto 👋", "en": "Bye! Come back soon 👋" }
+  ],
+  "muse_guitar": [
+    { "es": "Algún día voy a afinar esa guitarra 🎸", "en": "Someday I'll tune that guitar 🎸" },
+    { "es": "Ya casi me sale «Tres notas» 🎶", "en": "I almost have «Tres notas» down 🎶" }
+  ],
+  "muse_medals": [
+    { "es": "Algún día levanto un Aegis yo también 🏆", "en": "Someday I'll lift an Aegis too 🏆" }
+  ],
+  "muse_starwars": [
+    { "es": "Que la Fuerza te acompañe ✨", "en": "May the Force be with you ✨" }
+  ],
+  "muse_soundbar": [
+    { "es": "¿Ponemos música? 🎧", "en": "Some music? 🎧" }
   ]
 }

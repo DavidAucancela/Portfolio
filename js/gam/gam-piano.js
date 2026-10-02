@@ -51,8 +51,11 @@ function _bestScore() {
  *            onStatus(text) — mensaje para el HUD
  *            onEnd(score, best) — se rompió la racha en modo Reto
  *            onHot() — 5 aciertos seguidos
+ *            onPhase(phase, score?) — momento del Reto: 'demo' (el piano toca la
+ *              secuencia), 'turn' (te toca), 'round' (la acertaste), 'end'
+ *              (se rompió; con el puntaje) o 'free' (modo Libre). Lo usa JotAI.
  */
-export function createPiano({ onFlash, onStatus, onEnd, onHot }) {
+export function createPiano({ onFlash, onStatus, onEnd, onHot, onPhase }) {
   let mode = 'free';
   let sequence = [];
   let playerStep = 0;
@@ -76,6 +79,7 @@ export function createPiano({ onFlash, onStatus, onEnd, onHot }) {
           accepting = false;
           envelope(getAudioContext(), { freq: 660, type: 'sine', duration: 0.15, gain: 0.1 });
           onStatus?.(`¡Bien! Secuencia de ${sequence.length}. Preparando la siguiente…`);
+          onPhase?.('round');
           setTimer(_nextRound, 700);
         }
       } else {
@@ -90,6 +94,7 @@ export function createPiano({ onFlash, onStatus, onEnd, onHot }) {
     clearTimers();
     accepting = false;
     sequence = [];
+    if (m !== 'challenge') onPhase?.('free');
     onStatus?.(m === 'challenge'
       ? `Récord: <strong>${_bestScore()}</strong> — pulsa Empezar, escucha la secuencia y repítela.`
       : FREE_HINT);
@@ -97,6 +102,7 @@ export function createPiano({ onFlash, onStatus, onEnd, onHot }) {
 
   function _playSequence() {
     onStatus?.(`Secuencia de ${sequence.length} — mira bien…`);
+    onPhase?.('demo');
     sequence.forEach((note, i) => {
       setTimer(() => { _playNote(note); onFlash?.(note); }, i * 550);
     });
@@ -104,6 +110,7 @@ export function createPiano({ onFlash, onStatus, onEnd, onHot }) {
       playerStep = 0;
       accepting = true;
       onStatus?.('Tu turno.');
+      onPhase?.('turn');
     }, sequence.length * 550 + 250);
   }
 
@@ -122,6 +129,7 @@ export function createPiano({ onFlash, onStatus, onEnd, onHot }) {
       ? `Se rompió en ${score} 🎹 — récord <strong>${best}</strong>`
       : `Se rompió en la primera — récord <strong>${best}</strong>`);
     sequence = [];
+    onPhase?.('end', score);
     onEnd?.(score, best);
   }
 

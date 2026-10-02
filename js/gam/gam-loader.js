@@ -38,6 +38,7 @@ const DISCOVER_KEY = 'gam-discovered';
 // estante volvió: ahora es una estación (libros de proyectos de IA).
 const DISCOVERABLE_IDS = [
   'piano', 'desk', 'juggling', 'window', 'skateboard', 'pukis', 'bookshelf', 'chess', 'lumbre',
+  'medals', 'starwars', 'guitar', 'soundbar',
 ];
 
 function _loadDiscovered() {

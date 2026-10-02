@@ -31,6 +31,7 @@
  */
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
@@ -42,7 +43,7 @@ import { createHud } from './gam-hud.js';
 import { createStations, LUMBRE_SHOTS } from './gam-stations.js';
 import { createJotai } from './gam-jotai.js';
 import { createJotaiBubble, createJotaiCaption } from './gam-jotai-bubble.js';
-import { createJotaiBrain, STATION_POSE } from './gam-jotai-brain.js';
+import { createJotaiBrain, STATION_IDS } from './gam-jotai-brain.js';
 import { createNavGrid } from './gam-jotai-nav.js';
 
 /* ────────────────────────────────────────────────────
@@ -78,16 +79,23 @@ const FURN_SCALE = 1.15; // muebles más grandes que su diseño base ("se ven ch
 ──────────────────────────────────────────────────── */
 const WALL_FACING = Math.PI / 2;
 const FURNITURE = [
-  { id: 'piano',      x: -3.06,        z: 0.31,  rotY: WALL_FACING, color: 0xffb020, label: '🎹 Piano',            kind: 'minigame', zoom: 2.5, viewTilt: 0.45, scale: 1.354 },
+  { id: 'piano',      x: -3.06,        z: 0.31,  rotY: WALL_FACING, view: 0.62, color: 0xffb020, label: '🎹 Piano',  kind: 'minigame', zoom: 2.5, scale: 1.354 },   // view: de 3/4, se ve a JotAI de perfil en la banqueta (de frente quedaba de espaldas)
   { id: 'desk',       x: -0.3,         z: -2.93, rotY: 0,    color: 0x3b82f6, label: '🖥️ Escritorio',       kind: 'list', zoom: 2.0, artHeight: 1.9 },
-  { id: 'juggling',   x: 2.97,         z: 0.25,  rotY: 0,           color: 0xff8a3d, label: '🤹 Malabares',        kind: 'video', zoom: 3, scale: 1.35 },
+  { id: 'juggling',   x: 3.05,         z: 0.81,  y: 0.006, rotY: Math.PI / 2, color: 0xff8a3d, label: '🤹 Malabares',        kind: 'video', zoom: 3, scale: 1.35 },
   { id: 'door',       x: -3.42,        z: 2.45,  rotY: WALL_FACING, color: 0x94a3b8, label: '🚪 Salir',            kind: 'exit', zoom: 2.2, scale: 1.085 },
-  { id: 'skateboard', x: 3.0,          z: -HALF + 0.32, rotY: 0,    color: 0x06ffa5, label: '🛹 Patineta',         kind: '3d', zoom: 2.6 },
+  { id: 'skateboard', x: 2.8,          z: -3.08, y: 0.018, rotY: 0, color: 0x06ffa5, label: '🛹 Patineta',         kind: '3d', zoom: 2.6, scale: 1.15 },
   { id: 'window',     x: 2.36,         z: -3.42, y: 0,   rotY: 0,           color: 0x7aa2ff, label: '🪟 Ventana',          kind: 'info', zoom: 3.2, scale: 1, noLift: true },
   { id: 'lumbre',     x: -3.38,        z: -0.04, y: 0,   rotY: WALL_FACING, color: 0xffb020, label: '🕯️ Lumbre',           kind: 'info', zoom: 6.5, scale: 1.085, noLift: true, viewTilt: 0.5 },
-  { id: 'chess',      x: 1.97,         z: 2.48,   rotY: 0,           color: 0xe8d9b5, label: '♟️ Ajedrez',          kind: 'minigame', zoom: 7.5, elev: 1.15, scale: 1.469 },
-  { id: 'pukis',      x: 0.61,         z: -2.45, rotY: -Math.PI / 2, color: 0xe9dcc0, label: '🐾 Pukis',            kind: 'info', zoom: 4.2, scale: 1.096, view: Math.PI / 2, artHeight: 0.5 },
+  { id: 'chess',      x: 1.89,         z: 2.44,  y: 0.068, rotY: Math.PI / 2, color: 0xe8d9b5, label: '♟️ Ajedrez',          kind: 'minigame', zoom: 7.5, elev: 1.15, scale: 1.469 },
+  { id: 'pukis',      x: 1.91,         z: -2.45, y: 0.044, rotY: -Math.PI / 2, color: 0xe9dcc0, label: '🐾 Pukis',            kind: 'info', zoom: 4.2, scale: 1.096, view: Math.PI / 2, artHeight: 0.5 },
   { id: 'bookshelf',  x: -3.14,        z: -2.53, rotY: WALL_FACING, color: 0xb14eff, label: '📚 Estante',          kind: 'list', zoom: 2.6, viewTilt: 0.5, scale: 1.3 },
+  // Ex decoración (2026-10-01): mismas posiciones en el mundo que tenían como
+  // decoración suelta, ahora con estación propia. Van al final: las teclas
+  // 1–9 siguen apuntando a los de arriba.
+  { id: 'medals',     x: -0.3,         z: -HALF + 0.15, y: 2.55, rotY: 0, color: 0xffc94a, label: '🏆 Trofeos',     kind: 'info', zoom: 4.4, scale: 1, noLift: true },
+  { id: 'starwars',   x: 0.44 - 1.13 * 2.35, z: 0.44 - 1.13 * HALF, y: 0, rotY: 0, color: 0xffe81f, label: '⭐ Star Wars', kind: 'info', zoom: 6, scale: 1.13, noLift: true },
+  { id: 'guitar',     x: -3.14,        z: -1.28, y: 0.022, rotY: 0, view: Math.PI / 2, color: 0xc98a4b, label: '🎸 Guitarra',  kind: 'minigame', zoom: 5.2, scale: 1.13 },
+  { id: 'soundbar',   x: -3.16,        z: -2.53, y: 2.6, rotY: WALL_FACING, color: 0x7aa2ff, label: '🔊 Música', kind: 'list', zoom: 4.6, scale: 2.21, noLift: true },   // encima del estante
 ];
 
 /* JotAI (docs/gam-jotai-plan.md) — vive en el cuarto. Arranca en su rincón
@@ -104,13 +112,23 @@ const JOTAI_SPOTS = {
   piano:      { at: [0, 1.4],     look: [0, 0.8, 0.1] },
   desk:       { at: [0.75, 1.2],  look: [-0.35, 1.3, -0.25] },
   window:     { at: [0.6, 2.1],   look: [0, 3.0, 0] },
-  pukis:      { at: [0.54, -0.39], look: [0.45, 0.12, 0.05] },   // del lado de la cámara: se le ve la cara
+  pukis:      { at: [0.45, 0.6], look: [0.45, 0.12, 0.05] },     // detrás de Pukis (la cámara lo ve desde +x): no lo tapa y se le ve la cara
   bookshelf:  { at: [0, 0.75],    look: [0, 1.1, 0] },
-  chess:      { at: [0, 0.75],    look: [0, 0.62, 0] },
-  juggling:   { at: [0, -0.65],   look: [0, 0.9, 0] },
+  chess:      { at: [0, -0.75],   look: [0, 0.62, 0] },       // del lado de las negras (el frente quedaba fuera del cuarto); al jugar se arrima
+  juggling:   { at: [-0.7, -0.35], look: [-0.7, 0.8, 3] },    // al costado del pedestal, de frente (y detrás del ajedrez en la vista)
   skateboard: { at: [0, 0.5],     look: [0, 0.6, 0] },
   lumbre:     { at: [0, 0.8],     look: [0, 2.3, 0] },
+  medals:     { at: [0.9, 1.25],  look: [0, 0.2, 0] },       // repisa sobre el escritorio: se para al costado del escritorio
+  starwars:   { at: [0, 1.0],     look: [0, 2.9, 0] },
+  guitar:     { at: [0.75, 0],    look: [0, 0.6, 0] },       // frente = +x (pared izquierda)
+  soundbar:   { at: [0, 0.75],    look: [0, 0.04, 0] },      // frente al estante, mirando arriba
 };
+/* Asientos de estación (Fase 4), en coordenadas locales del mueble:
+   at = dónde se sienta, side = por dónde se sube/baja, topY = alto del
+   asiento, face = rumbo relativo al mueble (π = mirando hacia −z local). */
+const PIANO_SEAT = { at: [0, 0.5], side: [0.7, 0.5], topY: 0.5, face: Math.PI };       // banqueta, mirando el teclado
+const JOTAI_SCALE = 0.92;
+
 /* Grilla de navegación: solo bloquea lo que ocupa piso a la altura del
    cuerpo (la alfombra no, lo colgado en la pared tampoco). */
 const NAV = { cell: 0.17, radius: 0.25, minY: 0.06, maxY: 1.1 };
@@ -135,8 +153,6 @@ const Y_AXIS = new THREE.Vector3(0, 1, 0);
 const PARALLAX_YAW = 0.03;    // rad (~1.7°) — el diorama "gira" levemente siguiendo el puntero
 const PARALLAX_PITCH = 0.02;
 const DRIFT_YAW = 0.02;       // deriva autónoma, no depende de mover el mouse
-const FREE_LOOK_YAW = 0.35;   // rad (~20°) — mismo parallax, rango mucho mayor al enfocar un objeto:
-const FREE_LOOK_PITCH = 0.2;  // mover el cursor por la pantalla deja ver otros ángulos sin arrastrar
 const TRANSITION_MS = 750;
 const FOCUS_LERP = 0.07;      // suavizado del dimming al enfocar/desenfocar un objeto
 const HOVER_GLOW = 0.22;      // bajo a propósito: no debe pasar el umbral del bloom
@@ -147,6 +163,7 @@ const HOVER_LIFT = 0.07;      // cuánto sube el objeto bajo el cursor
 // docs/gam-three-art-spec.md). Si no existe, sigue el objeto compuesto.
 const ART_BASE = 'public/images/gam/';
 const DEFAULT_ART_HEIGHT = 1.6;
+const STARWARS_POSTER = 'public/images/posters/yoda-do-or-do-not.webp';
 
 const lerp = (a, b, t) => a + (b - a) * t;
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
@@ -159,6 +176,95 @@ function easeInOutCubic(t) {
    Texturas pintadas en <canvas> — todo el arte del cuarto (piso, ventana,
    neón, pósters, alfombra, plaquita) sale de código: cero archivos nuevos.
 ──────────────────────────────────────────────────── */
+/* ── Trofeos de Dota 2 (Aegis de The International) ──
+   Forma del escudo en coordenadas normalizadas [-1, 1] (más ancho que alto,
+   borde superior apenas curvo y el de abajo redondeado en tres lóbulos);
+   AEGIS escala a ~0.24 u de ancho. El esmalte es la misma forma un poco más
+   chica con UVs reasignadas a [0, 1] para la textura de los remolinos. */
+/* Los 3 de David, de izquierda a derecha en la repisa (fotos del 2026-10-02):
+   TI 2019 = esmalte violeta con aro y remolinos de cobre · TI 2018 = esmalte
+   verde con plata · TI 2020 = fondo marrón oscuro (cuero) con aro dorado y
+   remolinos de plata. */
+const AEGIS_STYLES = [
+  { year: 2019, enamel: 0x5a3ab8, rim: 0xb87358, swirl: '#c98a6a', boss: 0xb87358, map: 'public/models/aegis/aegis-2019.webp' },
+  { year: 2018, enamel: 0x0f8a55, rim: 0xd4d7dc, swirl: '#e2e4e8', boss: 0xd4d7dc, map: null },   // el escaneo es este: textura original
+  { year: 2020, enamel: 0x4a3a2c, rim: 0xc9a24a, swirl: '#e2e4e8', boss: 0xd8b25a, map: 'public/models/aegis/aegis-2020.webp' },
+];
+/* Modelo real del Aegis (escaneo del TI 2018 de David, optimizado: 50k
+   triángulos, texturas 2048 WebP). Viene acostado (frente a +Y, ~7 cm); las
+   texturas de 2019/2020 son el mismo color base recoloreado (esmalte → color
+   del año, plata → cobre / dorado). Mientras carga se ve el Aegis en código. */
+const AEGIS_MODEL = 'public/models/aegis/aegis.glb';
+/* Patineta real de David (escaneo, 2026-10-02): limpio de restos del piso y
+   orientado en el pipeline (largo → +Y centrado, ancho → +X, ruedas y stickers
+   → +Z) y sin la "falda" que el escáner estiraba desde los cantos hasta el piso. La cara de la lija no salió en el escaneo (estaba
+   contra el piso): la tapa una lija hecha en código (makeGripTexture). */
+const SKATE_MODEL = 'public/models/skate/skate.glb';
+const SKATE_SCAN = { length: 0.81, halfWidth: 0.108 };   // medidas del escaneo (m)
+const SKATE_LENGTH = 1.2;                                  // largo de la tabla en el pivot (unidades locales)
+const AEGIS_WIDTH = 0.25;   // ancho del Aegis dentro de la caja (unidades locales)
+function aegisShape(k = 1) {
+  // cúpula redonda arriba; abajo dos lóbulos a los costados y el centro hundido
+  const sh = new THREE.Shape();
+  const P = (x, y) => [x * k, y * k];
+  sh.moveTo(...P(-0.96, 0.02));
+  sh.bezierCurveTo(...P(-0.96, 0.62), ...P(-0.52, 0.98), ...P(0, 0.98));
+  sh.bezierCurveTo(...P(0.52, 0.98), ...P(0.96, 0.62), ...P(0.96, 0.02));
+  sh.quadraticCurveTo(...P(0.98, -0.42), ...P(0.74, -0.58));
+  sh.quadraticCurveTo(...P(0.5, -0.62), ...P(0.36, -0.86));
+  sh.quadraticCurveTo(...P(0, -0.74), ...P(-0.36, -0.86));
+  sh.quadraticCurveTo(...P(-0.5, -0.62), ...P(-0.74, -0.58));
+  sh.quadraticCurveTo(...P(-0.98, -0.42), ...P(-0.96, 0.02));
+  return sh;
+}
+const AEGIS = (() => {
+  const U = 0.12, depth = 0.014;
+  const rim = new THREE.ExtrudeGeometry(aegisShape(1), { depth: depth / U, curveSegments: 24, bevelEnabled: true, bevelThickness: 0.06, bevelSize: 0.05, bevelSegments: 2 });
+  rim.scale(U, U, U);
+  const plate = new THREE.ShapeGeometry(aegisShape(0.82), 24);
+  const uv = plate.attributes.uv;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, (uv.getX(i) / 0.82 + 1) / 2, (uv.getY(i) / 0.82 + 1) / 2);
+  plate.scale(U, U, U);
+  return { rim, plate, depth: depth + 0.06 * U };
+})();
+/** Esmalte del Aegis: fondo del color + los dos remolinos de plata (yin-yang). */
+function aegisTexture({ enamel, swirl }) {
+  const c = new THREE.Color(enamel);
+  return canvasTexture(256, 256, (ctx, w, h) => {
+    const g = ctx.createRadialGradient(w / 2, h / 2, 10, w / 2, h / 2, w * 0.6);
+    g.addColorStop(0, `#${c.clone().offsetHSL(0, 0, 0.12).getHexString()}`);
+    g.addColorStop(1, `#${c.clone().offsetHSL(0, 0, -0.12).getHexString()}`);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = swirl;
+    ctx.fillStyle = swirl;
+    ctx.lineCap = 'round';
+    ctx.lineWidth = 30;
+    const cx = w / 2, cy = h / 2;
+    // dos "comas" enfrentadas alrededor del botón central
+    ctx.beginPath(); ctx.arc(cx - 26, cy - 8, 52, Math.PI * 1.05, Math.PI * 1.95); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx + 26, cy + 8, 52, Math.PI * 0.05, Math.PI * 0.95); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx - 70, cy + 6, 16, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + 70, cy - 6, 16, 0, Math.PI * 2); ctx.fill();
+    // relieve: líneas finas oscuras sobre la plata
+    ctx.strokeStyle = 'rgba(40,40,48,0.35)';
+    ctx.lineWidth = 2;
+    for (let r = 40; r < 64; r += 7) {
+      ctx.beginPath(); ctx.arc(cx - 26, cy - 8, r, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx + 26, cy + 8, r, Math.PI * 0.1, Math.PI * 0.9); ctx.stroke();
+    }
+  });
+}
+function aegisPlaque(year) {
+  return canvasTexture(256, 64, (ctx, w, h) => {
+    ctx.fillStyle = '#0d0d0f'; ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = '#8a6a2a'; ctx.lineWidth = 3; ctx.strokeRect(4, 4, w - 8, h - 8);
+    ctx.fillStyle = '#d9b45a'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = 'italic 26px Georgia, serif'; ctx.fillText('The International', w / 2, h / 2 - 4);
+    ctx.font = '11px Georgia, serif'; ctx.fillText(`DOTA 2 CHAMPIONSHIPS ${year}`, w / 2, h / 2 + 18);
+  });
+}
+
 function canvasTexture(w, h, draw) {
   const c = document.createElement('canvas');
   c.width = w; c.height = h;
@@ -411,60 +517,6 @@ function makeYarnTexture(colors, seed) {
 /** Extras de material para una pantalla con textura emisiva. */
 function screenExtra(tex, intensity = 1.1) {
   return { map: tex, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: intensity };
-}
-
-/** Póster Star Wars: cielo estrellado + planeta + siluetas de casco/nave + título en perspectiva. */
-function makePosterStarWars() {
-  return canvasTexture(256, 352, (ctx, w, h) => {
-    ctx.fillStyle = '#03040a';
-    ctx.fillRect(0, 0, w, h);
-    const rnd = seeded(7);
-    for (let i = 0; i < 160; i++) { // estrellas
-      const r = rnd() < 0.85 ? 0.6 : 1.3;
-      ctx.fillStyle = `rgba(255,255,255,${0.35 + rnd() * 0.55})`;
-      ctx.fillRect(rnd() * w, rnd() * h * 0.62, r, r);
-    }
-    // planeta al fondo
-    const planet = ctx.createRadialGradient(w * 0.76, 62, 4, w * 0.76, 62, 46);
-    planet.addColorStop(0, '#8f6a4a');
-    planet.addColorStop(0.6, '#5c3d2a');
-    planet.addColorStop(1, 'rgba(92,61,42,0)');
-    ctx.fillStyle = planet;
-    ctx.beginPath(); ctx.arc(w * 0.76, 62, 46, 0, Math.PI * 2); ctx.fill();
-    // silueta de casco (tipo Vader) centrada en la parte alta
-    ctx.fillStyle = '#0a0a0d';
-    ctx.beginPath();
-    ctx.moveTo(w / 2 - 30, 118);
-    ctx.quadraticCurveTo(w / 2 - 34, 72, w / 2, 58);
-    ctx.quadraticCurveTo(w / 2 + 34, 72, w / 2 + 30, 118);
-    ctx.quadraticCurveTo(w / 2 + 26, 138, w / 2, 142);
-    ctx.quadraticCurveTo(w / 2 - 26, 138, w / 2 - 30, 118);
-    ctx.closePath();
-    ctx.fill();
-    ctx.fillStyle = 'rgba(120,10,10,0.55)'; // visor
-    ctx.fillRect(w / 2 - 16, 96, 32, 8);
-    // dos naves cruzando el cielo (trazos simples)
-    ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-    ctx.lineWidth = 1.4;
-    [[30, 40, 70, 34], [190, 90, 230, 84]].forEach(([x1, y1, x2, y2]) => {
-      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
-    });
-    // título en perspectiva (grilla amarilla clásica, simplificada a texto escalado)
-    ctx.save();
-    ctx.translate(w / 2, 210);
-    ctx.transform(1, 0, -0.16, 0.62, 0, 0);
-    ctx.fillStyle = '#ffe081';
-    ctx.textAlign = 'center';
-    ctx.font = 'bold 40px "Courier New", monospace';
-    ctx.fillText('JOTAI', 0, 0);
-    ctx.font = 'bold 26px "Courier New", monospace';
-    ctx.fillText('WARS', 0, 34);
-    ctx.restore();
-    ctx.fillStyle = 'rgba(255,224,129,0.85)';
-    ctx.font = '12px "Courier New", monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('QUE LA FUERZA TE ACOMPAÑE', w / 2, h - 20);
-  });
 }
 
 /** Grip de la patineta: negro rugoso + logo rasta (3 barras) + ícono de cuadritos dorados. */
@@ -730,44 +782,16 @@ export function mount(container, hotspots) {
       new THREE.BoxGeometry(2.6, 0.03, 1.9),
       [rugEdge, rugEdge, new THREE.MeshStandardMaterial({ map: makeRugTexture(), roughness: 0.95 }), rugEdge, rugEdge, rugEdge]
     );
-    rug.position.set(0.04, -0.005, -1.76);
-    rug.scale.setScalar(1.444);
+    rug.position.set(0.14, -0.005, -1.64);
+    rug.scale.setScalar(1.632);
     rug.receiveShadow = true;
     decor.add(rug);
     tagEdit(rug, 'alfombra');
   }
 
-  // Repisa de medallas sobre el escritorio + tira LED cian: 3 cajas
-  // display cerradas, con tapa de vidrio al frente que deja ver la medalla
-  // dorada entera apoyada adentro (en vez de las copas de antes).
-  {
-    const shelfX = -0.3, shelfY = 2.55, shelfZ = -HALF + 0.15;
-    const shelfGroup = new THREE.Group();
-    decor.add(shelfGroup);
-    addPart(shelfGroup, decorParts, box(2.4, 0.05, 0.3), 0xe8e4dc, shelfX, shelfY, shelfZ);
-    addPart(shelfGroup, decorParts, box(2.3, 0.02, 0.02), 0x00e5ff, shelfX, shelfY - 0.04, shelfZ + 0.13, glow(0x00e5ff));
-    tagEdit(shelfGroup, 'repisa_medallas');
-    const gold = { metalness: 0.85, roughness: 0.25 };
-    const glass = { metalness: 0.1, roughness: 0.05, transparent: true, opacity: 0.22 };
-    [[-0.65, 1], [0, 1.15], [0.65, 1]].forEach(([dx, s], i) => {
-      const boxGroup = new THREE.Group();
-      decor.add(boxGroup);
-      tagEdit(boxGroup, `medalla_${i + 1}`);
-      const baseY = shelfY + 0.025;
-      const bw = 0.32 * s, bh = 0.34 * s, bd = 0.22 * s;
-      // caja: fondo + 4 lados oscuros, dejando el frente (+z) abierto para el vidrio
-      addPart(boxGroup, decorParts, box(bw, bh, bd), 0x1c1f26, shelfX + dx, baseY + bh / 2, shelfZ, { roughness: 0.6 });
-      // vidrio frontal
-      addPart(boxGroup, decorParts, box(bw * 0.92, bh * 0.85, 0.01), 0xbfe6ff, shelfX + dx, baseY + bh / 2, shelfZ + bd / 2 + 0.006, glass);
-      // cinta corta colgando desde el marco superior
-      addPart(boxGroup, decorParts, box(0.03 * s, 0.06 * s, 0.01), 0xc0392b, shelfX + dx, baseY + bh - 0.05 * s, shelfZ + bd / 2 - 0.02, { roughness: 0.7 });
-      // medalla: disco dorado + relieve central, encarada al vidrio
-      const medal = addPart(boxGroup, decorParts, cyl(0.1 * s, 0.014 * s), 0xffc94a, shelfX + dx, baseY + bh / 2 - 0.02 * s, shelfZ + bd / 2 - 0.05, gold);
-      medal.rotation.x = Math.PI / 2;
-      const relief = addPart(boxGroup, decorParts, cyl(0.06 * s, 0.006 * s), 0xffe27a, shelfX + dx, baseY + bh / 2 - 0.02 * s, shelfZ + bd / 2 - 0.043, gold);
-      relief.rotation.x = Math.PI / 2;
-    });
-  }
+  // (la repisa de medallas, el póster Star Wars y la guitarra eran decoración
+  // suelta acá; desde 2026-10-01 son objetos de FURNITURE: 'medals',
+  // 'starwars', 'guitar' en buildFurnitureGroup)
 
   // Ventana nocturna (pared trasera, sobre la terminal) + luz fría.
   {
@@ -780,20 +804,6 @@ export function mount(container, hotspots) {
       wx, wy, wz + 0.012
     ), 'ventana_vista');
     windowLight.position.set(wx, wy - 0.1, wz + 1.1);
-  }
-
-  // Pósters + marcos.
-  {
-    const posterGroup = new THREE.Group();
-    posterGroup.position.set(0.44, 0, 0.44);
-    posterGroup.scale.setScalar(1.13);
-    decor.add(posterGroup);
-    tagEdit(posterGroup, 'poster_starwars');
-    const p1 = new THREE.MeshStandardMaterial({ map: makePosterStarWars(), roughness: 0.8 });
-    const img = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.86), p1);
-    img.position.set(-2.35, 2.9, -HALF + 0.034);
-    posterGroup.add(img);
-    addPart(posterGroup, decorParts, box(0.68, 0.92, 0.03), 0x1a1a1a, -2.35, 2.9, -HALF + 0.012);
   }
 
   // Reloj de pared (la manecilla de segundos anima en el loop).
@@ -824,27 +834,6 @@ export function mount(container, hotspots) {
     hand(0.21, 0.014, now.getMinutes() * (Math.PI / 30), 0.038);
     clockSecond = hand(0.23, 0.007, 0, 0.044);
     clockSecond.children[0].material.color.setHex(0xc0392b);
-  }
-
-  // Guitarra acústica apoyada contra la pared izquierda (frente hacia +x).
-  {
-    const guitar = new THREE.Group();
-    guitar.position.set(-HALF + 0.3, 0, -1.34);
-    guitar.rotation.z = 0.1;
-    decor.add(guitar);
-    tagEdit(guitar, 'guitarra');
-    const wood = 0xc98a4b;
-    const lower = addPart(guitar, decorParts, cyl(0.17, 0.09), wood, 0, 0.3, 0, { roughness: 0.55 });
-    lower.rotation.z = Math.PI / 2;
-    const upper = addPart(guitar, decorParts, cyl(0.13, 0.09), wood, 0, 0.55, 0, { roughness: 0.55 });
-    upper.rotation.z = Math.PI / 2;
-    addPart(guitar, decorParts, box(0.09, 0.14, 0.2), wood, 0, 0.43, 0, { roughness: 0.55 });        // cintura
-    const hole = addPart(guitar, decorParts, cyl(0.045, 0.006), 0x1a0f08, 0.047, 0.5, 0);
-    hole.rotation.z = Math.PI / 2;
-    addPart(guitar, decorParts, box(0.012, 0.03, 0.14), 0x2b1a10, 0.05, 0.22, 0);                     // puente
-    addPart(guitar, decorParts, box(0.035, 0.6, 0.05), 0x2b1a10, 0.02, 0.98, 0);                      // mástil
-    addPart(guitar, decorParts, box(0.04, 0.16, 0.07), 0x2b1a10, 0.02, 1.34, 0);                      // clavijero
-    [-0.02, 0.02].forEach((dz) => addPart(guitar, decorParts, box(0.004, 1.0, 0.004), 0xd8d8d0, 0.05, 0.82, dz)); // cuerdas
   }
 
   /** Devuelve { group, baseY, parts, lampAnchor?, breathe?, floaters?,
@@ -895,8 +884,9 @@ export function mount(container, hotspots) {
           add(box(0.05, 0.03, 0.36), 0x101114, x, 0.015, 0.02);            // pata de piso
           add(box(0.06, 0.02, 0.06), 0x2a2d35, x, yTop, 0.02);             // soporte del teclado
         });
-        add(box(0.8, 0.08, 0.32), 0x3d2a18, 0, 0.46, 0.85);
-        [[-0.34, 0.74], [0.34, 0.74], [-0.34, 0.96], [0.34, 0.96]].forEach(([x, z]) => add(cyl(0.025, 0.42), 0x3d2a18, x, 0.21, z));
+        // banqueta: lo bastante cerca del teclado para que JotAI llegue sentado (ver PIANO_SEAT)
+        add(box(0.8, 0.08, 0.32), 0x3d2a18, 0, 0.46, PIANO_SEAT.at[1]);
+        [[-0.34, -0.11], [0.34, -0.11], [-0.34, 0.11], [0.34, 0.11]].forEach(([x, dz]) => add(cyl(0.025, 0.42), 0x3d2a18, x, 0.21, PIANO_SEAT.at[1] + dz));
         out.baseY = 0.8;
         break;
       }
@@ -919,7 +909,8 @@ export function mount(container, hotspots) {
         add(box(0.24, 0.014, 0.19), 0xc9ccd2, -0.35, topY + 0.007, -0.24);            // base
         add(box(0.07, 0.3, 0.03), 0xc9ccd2, -0.35, topY + 0.17, -0.3);                // cuello
         add(box(0.96, 0.6, 0.035), 0xd9dce1, -0.35, topY + 0.52, -0.27);              // cuerpo
-        out.flickers.push(add(box(0.9, 0.5, 0.01), 0x222222, -0.35, topY + 0.565, -0.25, screenExtra(codeTex)));
+        const screen1 = add(box(0.9, 0.5, 0.01), 0x222222, -0.35, topY + 0.565, -0.25, screenExtra(codeTex));
+        out.flickers.push(screen1);
         add(box(0.03, 0.03, 0.005), 0x9a9da3, -0.35, topY + 0.26, -0.25);             // logo del mentón
 
         // monitor secundario, girado hacia el usuario
@@ -931,7 +922,9 @@ export function mount(container, hotspots) {
         add2(box(0.22, 0.02, 0.16), 0x1a1a1a, 0, topY + 0.01, 0);
         add2(box(0.05, 0.28, 0.05), 0x1a1a1a, 0, topY + 0.15, -0.03);
         add2(box(0.72, 0.44, 0.04), 0x151515, 0, topY + 0.44, -0.02);
-        out.flickers.push(add2(box(0.66, 0.38, 0.01), 0x222222, 0, topY + 0.44, 0.005, screenExtra(makeScreenTexture('gallery', 9))));
+        const screen2 = add2(box(0.66, 0.38, 0.01), 0x222222, 0, topY + 0.44, 0.005, screenExtra(makeScreenTexture('gallery', 9)));
+        out.flickers.push(screen2);
+        out.refs.screens = [screen1, screen2];   // protector de pantalla mientras JotAI duerme
 
         // trackpad + mouse (sin teclado)
         add(box(0.16, 0.01, 0.12), 0xe6e8ec, -0.2, topY + 0.02, 0.26);
@@ -1020,10 +1013,11 @@ export function mount(container, hotspots) {
             out.refs.squares.push(sq);
           }
         }
-        // dos banquitos a los lados de la mesa
-        [-0.66, 0.66].forEach((x) => {
-          add(cyl(0.15, 0.05), 0x3d2a18, x, 0.36, 0.02);
-          [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sz]) => add(cyl(0.02, 0.34), 0x2a1a10, x + sx * 0.09, 0.17, 0.02 + sz * 0.09));
+        // un solo banquito, del lado de las blancas (el visitante): JotAI juega
+        // de pie del otro lado, solo rueda hasta la mesa cuando hay partida
+        [0.62].forEach((z) => {
+          add(cyl(0.15, 0.05), 0x3d2a18, 0, 0.36, z);
+          [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sz]) => add(cyl(0.02, 0.34), 0x2a1a10, sx * 0.09, 0.17, z + sz * 0.09));
         });
         out.baseY = topY + 0.05;
         break;
@@ -1122,7 +1116,8 @@ export function mount(container, hotspots) {
         pivot.position.set(0, -0.6, 0);
         pivot.rotation.x = -0.18;
         holder.add(pivot);
-        const addP = (...args) => addPart(pivot, parts, ...args);
+        const placeholder = [];   // la tabla en código: se oculta cuando llega el modelo real
+        const addP = (...args) => { const m = addPart(pivot, parts, ...args); placeholder.push(m); return m; };
         addP(box(0.3, 1.15, 0.05), 0xc9a26a, 0, 0.6, 0);                    // madera (canto)
         // cara inferior: foto real de los stickers (public/images/gam/skate-bottom.webp)
         const gfx = new THREE.TextureLoader().load('public/images/gam/skate-bottom.webp');
@@ -1143,7 +1138,10 @@ export function mount(container, hotspots) {
             addP(cyl(0.045, 0.04), 0x5f646b, x, y, 0.09).rotation.z = Math.PI / 2;
           });
         });
-        out.refs.skate = { holder, pivot };
+        // dims: ruedas = cuánto bajan las ruedas desde el plano del pivot (+z);
+        // deck = alto de la lija sobre el piso con la tabla acostada (Montar).
+        // Los del modelo real los pone loadSkateModel.
+        out.refs.skate = { holder, pivot, placeholder, dims: { wheel: 0.135, deck: 0.1615 } };
         out.baseY = 0.6;
         break;
       }
@@ -1203,18 +1201,208 @@ export function mount(container, hotspots) {
         [0.025, 0.52, 1.0, 1.48, 1.975].forEach(y => add(box(1.3, 0.05, 0.38), wood, 0, y, 0));
         add(box(1.3, 2.0, 0.02), 0x2e2014, 0, 1.0, -0.18);
         const bookColors = [0xb14eff, 0x06ffa5, 0xffb020, 0xff6b4a, 0x2d6a9f, 0xf2e6d2, 0xc0392b, 0x3fa66b];
-        [0.05, 0.545, 1.025, 1.505].forEach((shelfY, row) => {
-          let x = -0.56;
-          for (let i = 0; i < 8 && x < 0.5; i++) {
+        // tantos libros como haya en gam-hotspots.json (`books`), repartidos en las 4 repisas
+        const nBooks = hotspotsById.get('bookshelf')?.books?.length || 32;
+        const shelves = [0.05, 0.545, 1.025, 1.505];
+        shelves.forEach((shelfY, row) => {
+          const count = Math.floor(nBooks / 4) + (3 - row < nBooks % 4 ? 1 : 0);   // las de arriba se llenan primero
+          const step = 1.16 / Math.max(count, 1), bw = Math.min(0.085, step * 0.9);
+          for (let i = 0; i < count; i++) {
             const h = 0.26 + ((i * 7 + row * 3) % 5) * 0.03;
-            const bk = add(box(0.08, h, 0.26), bookColors[(i + row * 3) % bookColors.length], x + 0.04, shelfY + h / 2, 0.02);
+            const x = -0.58 + step * (i + 0.5);
+            const bk = add(box(bw, h, 0.26), bookColors[(i + row * 3) % bookColors.length], x, shelfY + h / 2, 0.02);
             bk.userData.baseZ = 0.02;
             bk.userData.baseY = shelfY + h / 2;
             out.refs.books.push({ mesh: bk, row });
-            x += 0.1 + ((i + row) % 3 === 0 ? 0.04 : 0);
           }
         });
         out.baseY = 1.0;
+        break;
+      }
+
+      case 'medals': {
+        // Repisa sobre el escritorio + tira LED cian con los 3 trofeos de Dota 2
+        // de David: réplicas del Aegis de The International en cajas negras con
+        // tapa de vidrio (izq. TI 2019 violeta, centro TI 2018 verde, der. TI 2020
+        // dorado — ver AEGIS_STYLES). Cada caja es
+        // un `holder` con origen en su centro: la estación la trae al frente,
+        // la gira con el mouse y abre la tapa (ver medalsStation).
+        add(box(2.4, 0.05, 0.3), 0xe8e4dc, 0, 0, 0);
+        add(box(2.3, 0.02, 0.02), 0x00e5ff, 0, -0.04, 0.13, glow(0x00e5ff));
+        const frame = { roughness: 0.45, metalness: 0.1 };
+        const glass = { metalness: 0.1, roughness: 0.05, transparent: true, opacity: 0.18 };
+        const silver = { metalness: 0.55, roughness: 0.3 };
+        const bw = 0.34, bh = 0.36, bd = 0.2, wt = 0.02;
+        out.refs.boxes = AEGIS_STYLES.map((st, i) => {
+          const holder = new THREE.Group();
+          holder.position.set((i - 1) * 0.65, 0.025 + bh / 2, 0);
+          group.add(holder);
+          const h = (...args) => addPart(holder, parts, ...args);
+          // caja negra: fondo + 4 lados (el frente lo cierra la tapa de vidrio)
+          const meshes = [
+            h(box(bw, bh, wt), 0x0b0b0d, 0, 0, -bd / 2 + wt / 2, frame),
+            h(box(wt, bh, bd), 0x0b0b0d, -bw / 2 + wt / 2, 0, 0, frame),
+            h(box(wt, bh, bd), 0x0b0b0d, bw / 2 - wt / 2, 0, 0, frame),
+            h(box(bw, wt, bd), 0x0b0b0d, 0, bh / 2 - wt / 2, 0, frame),
+            h(box(bw, wt, bd), 0x0b0b0d, 0, -bh / 2 + wt / 2, 0, frame),
+          ];
+          // tapa de vidrio con bisagra en el borde izquierdo
+          const door = new THREE.Group();
+          door.position.set(-bw / 2 + wt, 0, bd / 2);
+          holder.add(door);
+          const pane = addPart(door, parts, box(bw - wt * 2, bh - wt * 2, 0.006), 0xcfe6ff, (bw - wt * 2) / 2, 0, 0, glass);
+          meshes.push(pane);
+          // el Aegis: aro de plata extruido + esmalte de color con los remolinos + botón central
+          const aegis = new THREE.Group();
+          aegis.position.set(0, 0.025, -bd / 2 + wt + 0.025);
+          holder.add(aegis);
+          const rim = addPart(aegis, parts, AEGIS.rim, st.rim, 0, 0, 0, silver);
+          const plate = addPart(aegis, parts, AEGIS.plate, 0xffffff, 0, 0, AEGIS.depth + 0.002,
+            { map: aegisTexture(st), roughness: 0.25, metalness: 0.2, emissive: st.enamel, emissiveIntensity: 0.12 });
+          const boss = addPart(aegis, parts, cyl(0.026, 0.012, 0.03, 24), st.boss, 0, 0.004, AEGIS.depth + 0.008, silver);
+          boss.rotation.x = Math.PI / 2;
+          meshes.push(rim, plate, boss);
+          // placa negra al pie con "The International" en dorado
+          meshes.push(h(new THREE.PlaneGeometry(0.11, 0.028), 0xffffff, 0, -bh / 2 + wt + 0.03, -bd / 2 + wt + 0.04, { map: aegisPlaque(st.year), roughness: 0.4 }));
+          return { holder, door, aegis, meshes, style: st, placeholder: [rim, plate, boss], rest: holder.position.clone(), top: new THREE.Vector3(holder.position.x, 0.025 + bh + 0.06, bd / 2) };
+        });
+        out.baseY = 0.2;
+        break;
+      }
+
+      case 'starwars': {
+        // Póster de Yoda ("Do or do not. There is no try.") enmarcado en la
+        // pared trasera (origen = pie de la pared). `holder` = marco + lámina:
+        // la estación lo despega de la pared y lo trae al frente.
+        const holder = new THREE.Group();
+        holder.position.set(0, 2.9, 0);
+        group.add(holder);
+        const p = (...args) => addPart(holder, parts, ...args);
+        p(box(0.68, 0.92, 0.03), 0x1a1a1a, 0, 0, 0.012);
+        const art = new THREE.TextureLoader().load(STARWARS_POSTER);
+        art.colorSpace = THREE.SRGBColorSpace;
+        art.anisotropy = maxAniso;
+        p(new THREE.PlaneGeometry(0.62, 0.854), 0xffffff, 0, 0, 0.0285, { map: art, roughness: 0.85 });
+        out.refs.poster = { holder };
+        out.baseY = 2.9;
+        break;
+      }
+
+      case 'guitar': {
+        // Guitarra clásica con cutaway (la de la foto de David): tapa amarilla
+        // con veta, roseta roja, diapasón oscuro con trastes, puente oscuro con
+        // tie-block, clavijero calado y 6 cuerdas de nylon. Se arma de frente
+        // a +z dentro de `body` y se gira para mirar a +x (pared izquierda).
+        // `holder` = la guitarra entera: la estación la despega de la pared.
+        const holder = new THREE.Group();
+        holder.rotation.z = 0.1;   // apoyada contra la pared
+        group.add(holder);
+        const body = new THREE.Group();
+        body.rotation.y = Math.PI / 2;
+        holder.add(body);
+        const g = (...args) => addPart(body, parts, ...args);
+        const DEPTH = 0.1, TOP = DEPTH + 0.008;   // z de la tapa (con el bisel)
+
+        // contorno del cuerpo: figura de ocho con el cutaway del lado agudo (+x)
+        const outline = new THREE.Shape();
+        outline.moveTo(0, 0);
+        outline.bezierCurveTo(0.12, 0, 0.21, 0.06, 0.21, 0.17);          // bout inferior
+        outline.bezierCurveTo(0.21, 0.27, 0.14, 0.29, 0.14, 0.36);       // cintura
+        outline.bezierCurveTo(0.14, 0.42, 0.17, 0.47, 0.165, 0.54);      // cuerno del cutaway
+        outline.bezierCurveTo(0.14, 0.58, 0.075, 0.55, 0.045, 0.625);    // el corte, hacia el mástil
+        outline.lineTo(-0.045, 0.655);
+        outline.bezierCurveTo(-0.11, 0.665, -0.17, 0.62, -0.17, 0.53);   // bout superior
+        outline.bezierCurveTo(-0.17, 0.45, -0.14, 0.42, -0.14, 0.36);    // cintura
+        outline.bezierCurveTo(-0.14, 0.29, -0.21, 0.27, -0.21, 0.17);
+        outline.bezierCurveTo(-0.21, 0.06, -0.12, 0, 0, 0);
+        const shell = new THREE.ExtrudeGeometry(outline, {
+          depth: DEPTH, curveSegments: 28, bevelEnabled: true,
+          bevelThickness: 0.008, bevelSize: 0.008, bevelSegments: 3,
+        });
+        const spruce = canvasTexture(128, 512, (ctx, w, h) => {
+          ctx.fillStyle = '#e8a91c'; ctx.fillRect(0, 0, w, h);
+          for (let x = 0; x < w; x += 2) {            // veta vertical fina
+            ctx.fillStyle = `rgba(${Math.random() < 0.5 ? '150,90,10' : '255,215,120'},${0.05 + Math.random() * 0.12})`;
+            ctx.fillRect(x, 0, 1 + (Math.random() < 0.2 ? 1 : 0), h);
+          }
+        });
+        spruce.wrapS = spruce.wrapT = THREE.RepeatWrapping;
+        spruce.repeat.set(3, 1.6);
+        g(shell, 0xffffff, 0, 0, 0, { map: spruce, roughness: 0.32, metalness: 0.02 });
+
+        // boca + roseta (rojo con motivo blanco entre filetes negros)
+        const HOLE_Y = 0.45;
+        g(new THREE.CircleGeometry(0.05, 32), 0x140b05, 0, HOLE_Y, TOP + 0.001, { roughness: 1 });
+        const rosette = canvasTexture(256, 256, (ctx, w) => {
+          const c = w / 2;
+          const ring = (r, color, lw) => { ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.beginPath(); ctx.arc(c, c, r, 0, Math.PI * 2); ctx.stroke(); };
+          ring(108, '#b8324a', 34);
+          ring(126, '#1a1a1a', 4); ring(90, '#1a1a1a', 4);
+          ring(121, '#e9e1d2', 2); ring(95, '#e9e1d2', 2);
+          ctx.fillStyle = '#f3ece0';
+          for (let i = 0; i < 28; i++) {                // motivo: cruces pequeñas alrededor
+            const a = (i / 28) * Math.PI * 2;
+            ctx.save(); ctx.translate(c + Math.cos(a) * 108, c + Math.sin(a) * 108); ctx.rotate(a + Math.PI / 4);
+            ctx.fillRect(-6, -1.5, 12, 3); ctx.fillRect(-1.5, -6, 3, 12);
+            ctx.restore();
+          }
+        });
+        g(new THREE.RingGeometry(0.05, 0.078, 48), 0xffffff, 0, HOLE_Y, TOP + 0.0012, { map: rosette, transparent: true, roughness: 0.5 });
+
+        // puente oscuro + tie-block + cejuela del puente (hueso)
+        g(box(0.17, 0.036, 0.016), 0x2a1a10, 0, 0.15, TOP + 0.006, { roughness: 0.6 });
+        g(box(0.07, 0.022, 0.012), 0x4a3424, 0, 0.143, TOP + 0.016, { roughness: 0.5 });
+        g(new THREE.BoxGeometry(0.075, 0.005, 0.01), 0xf2eadb, 0, 0.168, TOP + 0.016);
+
+        // mástil + diapasón (llega hasta la boca gracias al cutaway) + trastes
+        const NUT_Y = 1.18;
+        g(box(0.052, NUT_Y - 0.6, 0.032), 0x3a2414, 0, (NUT_Y + 0.6) / 2, DEPTH - 0.004, { roughness: 0.5 });
+        const fbLow = HOLE_Y + 0.06;
+        g(new THREE.BoxGeometry(0.056, NUT_Y - fbLow, 0.008), 0x17110d, 0, (NUT_Y + fbLow) / 2, TOP + 0.004, { roughness: 0.55 });
+        const SCALE = NUT_Y - 0.168;                     // largo de cuerda: cejuela → puente
+        for (let i = 1; i <= 18; i++) {
+          const y = NUT_Y - SCALE * (1 - Math.pow(2, -i / 12));
+          if (y < fbLow + 0.005) break;
+          g(new THREE.BoxGeometry(0.056, 0.0025, 0.003), 0xc9c9c9, 0, y, TOP + 0.0095, { metalness: 0.8, roughness: 0.3 });
+        }
+        g(new THREE.BoxGeometry(0.058, 0.006, 0.012), 0xf2eadb, 0, NUT_Y, TOP + 0.009);   // cejuela
+
+        // clavijero calado (dos ranuras) + clavijas a los costados
+        const HEAD_Y = NUT_Y + 0.1;
+        g(box(0.078, 0.19, 0.024), 0x2a1a10, 0, HEAD_Y, DEPTH + 0.002, { roughness: 0.5 });
+        [-0.016, 0.016].forEach((x) => g(new THREE.BoxGeometry(0.012, 0.13, 0.026), 0x0a0604, x, HEAD_Y, DEPTH + 0.003, { roughness: 1 }));
+        [-1, 1].forEach((side) => [-0.045, 0, 0.045].forEach((dy) => {
+          const peg = g(cyl(0.007, 0.024, 0.007, 10), 0xa89d86, side * 0.052, HEAD_Y + dy, DEPTH + 0.002, { roughness: 0.6 });
+          peg.rotation.z = Math.PI / 2;
+          g(cyl(0.004, 0.022, 0.004, 8), 0xd4af37, side * 0.034, HEAD_Y + dy, DEPTH + 0.002, { metalness: 0.8, roughness: 0.3 }).rotation.z = Math.PI / 2;
+        }));
+
+        // 6 cuerdas de nylon (las 3 graves entorchadas, plateadas) — vibran al tocarse
+        const strLen = NUT_Y - 0.168;
+        out.refs.strings = [0, 1, 2, 3, 4, 5].map((i) => g(
+          new THREE.BoxGeometry(i < 3 ? 0.0028 : 0.0022, strLen, 0.0025),
+          i < 3 ? 0xc8c8c8 : 0xf3efe4,
+          -0.0225 + i * 0.009, (NUT_Y + 0.168) / 2, TOP + 0.014,
+          i < 3 ? { metalness: 0.7, roughness: 0.35 } : { roughness: 0.4 }));
+        out.refs.guitar = { holder };
+        out.baseY = 0.6;
+        break;
+      }
+
+      case 'soundbar': {
+        // Barra de sonido sola (estilo Mi Soundbar: cuerpo blanco redondeado,
+        // frente de tela gris claro, sin luces) apoyada encima del estante.
+        // Origen = la base de la barra, sobre la tapa del estante.
+        add(new RoundedBoxGeometry(0.76, 0.08, 0.075, 6, 0.032), 0xf4f4f1, 0, 0.04, 0, { roughness: 0.35 });  // cuerpo
+        const fabric = canvasTexture(512, 64, (ctx, w, h) => {
+          ctx.fillStyle = '#d6d6d2'; ctx.fillRect(0, 0, w, h);
+          for (let y = 0; y < h; y += 2) for (let x = (y / 2) % 2; x < w; x += 2) {   // trama fina
+            ctx.fillStyle = `rgba(${Math.random() < 0.5 ? '255,255,255' : '120,120,118'},${0.12 + Math.random() * 0.18})`;
+            ctx.fillRect(x, y, 1, 1);
+          }
+        });
+        add(new RoundedBoxGeometry(0.7, 0.064, 0.006, 4, 0.0028), 0xffffff, 0, 0.04, 0.0385, { map: fabric, roughness: 0.95 });  // tela frontal
+        out.baseY = 0.04;
         break;
       }
 
@@ -1308,8 +1496,222 @@ export function mount(container, hotspots) {
     loadArt(group, f, built.refs);
   });
 
+  /* ── Protector de pantalla del escritorio (mientras JotAI duerme) ──
+     Un canvas chico: "JotAI · zzz" rebotando sobre negro, estilo DVD. Al
+     despertarse, cada pantalla recupera su textura. */
+  const saver = (() => {
+    const cv = document.createElement('canvas');
+    cv.width = 256; cv.height = 160;
+    const g = cv.getContext('2d');
+    const tex = new THREE.CanvasTexture(cv);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    const box2 = { x: 40, y: 30, vx: 38, vy: 26, hue: 190 };
+    let on = false, last = 0;
+    const screens = objects.get('desk')?.refs.screens || [];
+    const saved = screens.map((m) => ({ map: m.material.map, emissiveMap: m.material.emissiveMap }));
+    function draw(dt) {
+      g.fillStyle = '#05070a'; g.fillRect(0, 0, 256, 160);
+      box2.x += box2.vx * dt; box2.y += box2.vy * dt;
+      if (box2.x < 4 || box2.x > 256 - 108) { box2.vx *= -1; box2.hue = (box2.hue + 70) % 360; }
+      if (box2.y < 18 || box2.y > 160 - 8) { box2.vy *= -1; box2.hue = (box2.hue + 70) % 360; }
+      box2.x = Math.max(4, Math.min(256 - 108, box2.x)); box2.y = Math.max(18, Math.min(152, box2.y));
+      g.fillStyle = `hsl(${box2.hue}, 90%, 62%)`;
+      g.font = 'bold 22px "Courier New", monospace';
+      g.fillText('JotAI', box2.x, box2.y);
+      g.font = '14px "Courier New", monospace';
+      g.fillText('z z z', box2.x + 70, box2.y - 12);
+      tex.needsUpdate = true;
+    }
+    return {
+      update(sleeping, now) {
+        if (sleeping !== on) {
+          on = sleeping;
+          screens.forEach((m, i) => {
+            m.material.map = on ? tex : saved[i].map;
+            m.material.emissiveMap = on ? tex : saved[i].emissiveMap;
+            m.material.needsUpdate = true;
+          });
+          if (on) { last = now; draw(0); }
+        }
+        if (on && now - last > 66) { draw(Math.min(0.2, (now - last) / 1000)); last = now; }
+      },
+    };
+  })();
+
+  /* ── Trofeos: cambia el Aegis hecho en código por el modelo real ── */
+  (function loadAegisModels() {
+    const box3 = objects.get('medals')?.refs.boxes;
+    if (!box3) return;
+    new GLTFLoader().load(AEGIS_MODEL, (gltf) => {
+      if (destroyed) return;
+      const src = gltf.scene.getObjectByProperty('isMesh', true);
+      if (!src) return;
+      const geo = src.geometry;
+      if (!geo.attributes.normal) geo.computeVertexNormals();   // el escaneo no trae normales
+      geo.computeBoundingBox();
+      const bb = geo.boundingBox;
+      const size = new THREE.Vector3(); bb.getSize(size);
+      const center = new THREE.Vector3(); bb.getCenter(center);
+      const k = AEGIS_WIDTH / Math.max(size.x, size.z);
+      const texLoader = new THREE.TextureLoader();
+      box3.forEach((b) => {
+        const mat = src.material.clone();
+        mat.metalness = 0.35;
+        mat.roughness = 0.42;
+        if (b.style.map) {
+          const t = texLoader.load(b.style.map);
+          t.flipY = false;                      // texturas de glTF
+          t.colorSpace = THREE.SRGBColorSpace;
+          t.anisotropy = maxAniso;
+          mat.map = t;
+        }
+        const mesh = new THREE.Mesh(geo, mat);
+        // acostado (frente a +Y) → parado de frente a +z, centrado, con la base en z=0
+        mesh.rotation.x = Math.PI / 2;
+        mesh.scale.setScalar(k);
+        mesh.position.set(-center.x * k, center.z * k, -bb.min.y * k);
+        mesh.castShadow = true;
+        mesh.userData.baseEmissive = 0;
+        mesh.userData.baseEmissiveIntensity = mat.emissiveIntensity;
+        b.placeholder.forEach((m) => { m.visible = false; });
+        b.aegis.add(mesh);
+        b.meshes.push(mesh);
+      });
+    }, undefined, () => { /* sin modelo: queda el Aegis hecho en código */ });
+  })();
+
+  /* ── Patineta: cambia la tabla hecha en código por el escaneo real ── */
+  (function loadSkateModel() {
+    const sk = objects.get('skateboard')?.refs.skate;
+    if (!sk) return;
+    new GLTFLoader().load(SKATE_MODEL, (gltf) => {
+      if (destroyed) return;
+      const src = gltf.scene.getObjectByProperty('isMesh', true);
+      if (!src) return;
+      const geo = src.geometry;
+      if (!geo.attributes.normal) geo.computeVertexNormals();
+      geo.computeBoundingBox();
+      const k = SKATE_LENGTH / SKATE_SCAN.length;
+      const mat = src.material;
+      mat.side = THREE.DoubleSide;          // por los bordes del escaneo que quedan abiertos
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.scale.setScalar(k);
+      /* Contorno real de la tabla (medido en el pipeline, en los extras del
+         mesh): por franja a lo largo, la altura de la cara de stickers (`surf`,
+         sigue nose y tail) y los bordes izq./der. (`xl`/`xr`, una forma limpia y
+         simétrica ajustada al escaneo — el contorno medido era ruidoso en las
+         puntas). El escaneo viene recortado con esa forma y 3 mm por debajo de la
+         cara (el canto original era un fleco);
+         acá se arman la lija (grilla con ese contorno, `thick` por debajo) y un
+         canto limpio de madera que une lija y cara, sin huecos. */
+      const O = src.userData.skateOutline;
+      if (!O) return;
+      const n = O.y.length;
+      const gripZ = (i) => O.surf[i] - O.thick;
+      const gripC = gripZ(Math.floor(n / 2));
+      const GRIP_Z = -0.025;                // la lija (al centro) queda donde estaba la de la tabla en código
+      mesh.position.set(0, 0.6, GRIP_Z - gripC * k);
+      mesh.castShadow = mesh.receiveShadow = true;
+      mesh.userData.baseEmissive = 0;
+      mesh.userData.baseEmissiveIntensity = mat.emissiveIntensity ?? 1;
+      // forma limpia (medida en el pipeline): ancho constante + puntas redondeadas.
+      // La cara está curvada a lo ancho: `faceAt` interpola centro (surf) → canto (edge).
+      const yEnd = O.ends, W = O.halfW, CXo = O.cx;
+      const halfAt = (y) => { const d = Math.max(yEnd[0] + W - y, y - (yEnd[1] - W), 0); return Math.sqrt(Math.max(0, W * W - d * d)); };
+      const lerpArr = (arr, y) => {
+        const f = clamp01((y - O.y[0]) / (O.y[n - 1] - O.y[0])) * (n - 1);
+        const i = Math.floor(f), t = f - i;
+        return arr[i] + (arr[Math.min(n - 1, i + 1)] - arr[i]) * t;
+      };
+      const faceAt = (x, y) => {
+        const hw = Math.max(1e-4, halfAt(y)), u = Math.min(1, Math.abs(x - CXo) / hw);
+        // en las puntas (poco ancho) el perfil del canto es ruidoso: manda el del centro
+        const wEdge = u * u * Math.min(1, hw / 0.05);
+        return lerpArr(O.surf, y) + (lerpArr(O.edge, y) - lerpArr(O.surf, y)) * wEdge;
+      };
+      const EDGE = 0.0012;                  // la lija y el canto asoman apenas: tapan el borde del escaneo
+      const LIP = 0.008;                    // labio de madera sobre la cara: tapa el corte dentado del escaneo
+      const ROWS = 120, NX = 10;
+      // contorno exterior (lija y canto): la misma forma agrandada EDGE en todo el borde, puntas incluidas
+      const halfOut = (y) => { const d = Math.max(yEnd[0] + W - y, y - (yEnd[1] - W), 0); const R = W + EDGE; return Math.sqrt(Math.max(0, R * R - d * d)); };
+      // filas: las puntas redondas se muestrean por ángulo (si no, salen en pico); el tramo recto, parejo
+      const CAP = 16, R = W + EDGE, cA = yEnd[0] + W, cB = yEnd[1] - W;
+      const ys2 = [];
+      for (let q = 0; q < CAP; q++) ys2.push(cA - R * Math.cos((q / CAP) * (Math.PI / 2)));
+      for (let q = 0; q <= ROWS; q++) ys2.push(cA + ((cB - cA) * q) / ROWS);
+      for (let q = CAP - 1; q >= 0; q--) ys2.push(cB + R * Math.cos((q / CAP) * (Math.PI / 2)));
+      const NROWS = ys2.length - 1;
+      const yAt = (j) => ys2[j];
+      const mkMesh = (verts, uvs, ids, material) => {
+        const g2 = new THREE.BufferGeometry();
+        g2.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+        if (uvs) g2.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+        g2.setIndex(ids);
+        g2.computeVertexNormals();
+        const m2 = new THREE.Mesh(g2, material);
+        m2.castShadow = true;
+        m2.userData.baseEmissive = 0;
+        m2.userData.baseEmissiveIntensity = 1;
+        return m2;
+      };
+      // lija: grilla que sigue el contorno y la curva de la tabla, `thick` por debajo de la cara
+      const gv = [], gu = [], gi = [];
+      for (let j = 0; j <= NROWS; j++) {
+        const y = yAt(j), hw = halfOut(y);
+        for (let c = 0; c <= NX; c++) {
+          const x = CXo + (-1 + (2 * c) / NX) * hw;
+          gv.push(x, y, faceAt(x, y) - O.thick);
+          gu.push((x - CXo) / (2 * (W + EDGE)) + 0.5, (y - yEnd[0]) / (yEnd[1] - yEnd[0]));
+        }
+      }
+      for (let j = 0; j < NROWS; j++) for (let c = 0; c < NX; c++) {
+        const a0 = j * (NX + 1) + c, b0 = a0 + NX + 1;
+        gi.push(a0, a0 + 1, b0, a0 + 1, b0 + 1, b0);
+      }
+      const grip = mkMesh(gv, gu, gi, new THREE.MeshStandardMaterial({ map: makeGripTexture(), roughness: 0.95, side: THREE.DoubleSide }));
+      grip.receiveShadow = true;
+      // contorno (anillo): lado izquierdo de punta a punta y vuelta por el derecho
+      const ring = [];
+      for (let j = 0; j <= NROWS; j++) ring.push({ y: yAt(j), s: -1 });
+      for (let j = NROWS; j >= 0; j--) ring.push({ y: yAt(j), s: 1 });
+      const outer = (q) => [CXo + q.s * halfOut(q.y), q.y];
+      const inner = (q) => {
+        const y = Math.min(yEnd[1] - LIP, Math.max(yEnd[0] + LIP, q.y));
+        return [CXo + q.s * Math.max(0, halfAt(y) - LIP), y];
+      };
+      const wood = new THREE.MeshStandardMaterial({ color: 0xb8875a, roughness: 0.8, side: THREE.DoubleSide });
+      // canto: de la lija hasta 1 mm sobre la cara · labio: del canto hacia adentro, sobre la cara
+      const wv = [], wi = [], lv = [], li = [];
+      ring.forEach((q) => {
+        const [ox, oy] = outer(q), [ix, iy] = inner(q);
+        const top = faceAt(ox, oy) + 0.001;
+        wv.push(ox, oy, faceAt(ox, oy) - O.thick, ox, oy, top);
+        lv.push(ox, oy, top, ix, iy, faceAt(ix, iy) + 0.0008);
+      });
+      for (let q = 0; q < ring.length; q++) {
+        const a0 = q * 2, b0 = ((q + 1) % ring.length) * 2;
+        wi.push(a0, b0, a0 + 1, b0, b0 + 1, a0 + 1);
+        li.push(a0, b0, a0 + 1, b0, b0 + 1, a0 + 1);
+      }
+      const wall = mkMesh(wv, null, wi, wood);
+      const lip = mkMesh(lv, null, li, wood);
+      wall.add(lip);
+      grip.add(wall);
+      mesh.add(grip);                       // mismas coordenadas que el escaneo
+      sk.placeholder.forEach((m) => { m.visible = false; });
+      sk.pivot.add(mesh);
+      const root = objects.get('skateboard');
+      const lipMesh = wall.children[0];
+      root.parts.push(mesh, grip, wall, lipMesh);
+      [mesh, grip, wall, lipMesh].forEach((m) => { m.userData.furniture = root.f; m.userData.rootGroup = root.root; });
+      // ruedas: lo más bajo del escaneo (z máx) · lija: GRIP_Z, con la tabla acostada queda arriba
+      sk.dims.wheel = mesh.position.z + geo.boundingBox.max.z * k;
+      sk.dims.deck = sk.dims.wheel - GRIP_Z;
+    }, undefined, () => { /* sin modelo: queda la tabla hecha en código */ });
+  })();
+
   /* ── JotAI: personaje del cuarto (modelo + globo + comportamiento) ── */
-  const jotai = createJotai({ reducedMotion, lite });
+  const jotai = createJotai({ reducedMotion, lite, scale: JOTAI_SCALE });
   jotai.root.position.set(JOTAI_HOME.x, 0, JOTAI_HOME.z);
   jotai.root.rotation.y = JOTAI_HOME.rotY;
   scene.add(jotai.root);
@@ -1361,6 +1763,22 @@ export function mount(container, hotspots) {
    *  Arrimada queda GIRADA hacia el monitor secundario (que ya mira al
    *  usuario): recta, el respaldo quedaba entre la cámara isométrica y JotAI
    *  y lo tapaba casi entero. */
+  /** Asiento de estación (banqueta del piano) para el brain. */
+  function makeSeatProp(id, { at, side, topY, face }) {
+    const o = objects.get(id);
+    if (!o) return null;
+    const v = new THREE.Vector3();
+    return {
+      seat() {
+        const s = o.root.localToWorld(v.set(at[0], topY, at[1]));
+        const seat = { x: s.x, z: s.z, topY: s.y, heading: (o.f.rotY || 0) + face };
+        const sd = o.root.localToWorld(v.set(side[0], 0, side[1]));
+        seat.side = { x: sd.x, z: sd.z };
+        return seat;
+      },
+    };
+  }
+
   function makeChairProp() {
     const desk = objects.get('desk');
     const ch = desk?.refs.chair;
@@ -1389,9 +1807,11 @@ export function mount(container, hotspots) {
   const jotaiBrain = createJotaiBrain({
     jotai, bubble: jotaiBubble, caption: jotaiCaption, nav: jotaiNav, spots: jotaiSpots,
     reducedMotion,
+    scale: JOTAI_SCALE,
     viewHeading: Math.atan2(ISO_DIR.x, ISO_DIR.z),   // de frente a la cámara
     props: {
       chair: makeChairProp(),
+      seats: { bench: makeSeatProp('piano', PIANO_SEAT) },
       // `stations` / `stationSys` se crean más abajo: estas flechas recién corren desde el loop
       petPukis: () => stations.get('pukis')?.react?.({ sound: false }),
       emit: (...args) => stationSys.emit(...args),
@@ -1402,7 +1822,8 @@ export function mount(container, hotspots) {
   const jotaiAnchor = new THREE.Vector3();
   let jotaiHovered = false;
   let jotaiFailed = false;    // un error en su update no debe congelar el loop del cuarto
-  let jotaiFocused = false;   // ver `jotaiWantsFocus` en frame(): capa de foco mientras está "de servicio"
+  let jotaiFocused = false;
+  const _handL = new THREE.Vector3(), _handR = new THREE.Vector3(), _belly = new THREE.Vector3();   // ver `jotaiWantsFocus` en frame(): capa de foco mientras está "de servicio"
   // QA desde consola: __gamJotai.brain.goTo('pukis') · console.log(__gamJotai.nav.debugString())
   if (import.meta.env.DEV) window.__gamJotai = { jotai, brain: jotaiBrain, bubble: jotaiBubble, nav: jotaiNav, spots: jotaiSpots };
 
@@ -1586,10 +2007,19 @@ export function mount(container, hotspots) {
     setLabel: (text, pos) => { labelOverride = text ? { text, pos } : null; },
     leave: () => leaveFocus(),
     hotspotFor: (id) => hotspotsById.get(id),
+    refocus: () => refocus(),   // re-centrar la cámara si la estación cambió de encuadre
     // la ventana vuelve sola a la vista general si JotAI va a dormirse / despertarse
     onEnvScene: (t) => !jotaiFailed && jotaiBrain.wantsStage(t),
     // estaciones con rol propio (§11 del plan) avisan al brain: hoy solo el piano
     cue: (evt, data) => { if (!jotaiFailed) jotaiBrain.cue(evt, data); },
+    // JotAI en las estaciones (Fase 4) — todos devuelven null/false si no está
+    // (o si su update falló): la estación sigue funcionando igual que sin él
+    jotaiHere: () => !jotaiFailed,
+    jotaiRiding: () => !jotaiFailed && jotaiBrain.riding,
+    jotaiHands: () => (!jotaiFailed && jotaiBrain.duty === 'juggling' && !jotaiBrain.moving ? jotai.handsWorld(_handL, _handR) : null),
+    jotaiGuitar: () => (!jotaiFailed && jotaiBrain.duty === 'guitar' && !jotaiBrain.moving
+      ? { belly: jotai.root.localToWorld(_belly.set(0, 0.6, 0.27)), heading: jotai.root.rotation.y }
+      : null),
   }, objects);
   const stations = stationSys.stations;
 
@@ -1712,7 +2142,7 @@ export function mount(container, hotspots) {
   function onPointerDown(e) {
     if (e.pointerType === 'touch') {
       touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
-      if (touches.size === 2 && zoomed && !paused) {
+      if (touches.size === 2 && !paused) {
         if (dragging) { dragging = false; active?.pointerUp?.(pointerNDC, e); }
         pinch = { d0: pinchState().d, z0: userZoom };
         return;
@@ -1749,37 +2179,25 @@ export function mount(container, hotspots) {
     };
   }
 
-  /** Corre la mirada para que el objeto quede a un lado y la tarjeta del HUD
-   *  no lo tape: a la izquierda en desktop, arriba en portrait (la tarjeta
-   *  va abajo). `shift` es fracción del semi-ancho/alto visible. */
-  function shiftLook(look, zoom, shift, dir) {
-    const aspect = container.clientWidth / Math.max(1, container.clientHeight);
-    const out = look.clone();
-    // ejes de la cámara de DESTINO (la vista frontal aún no está aplicada)
-    const right = new THREE.Vector3().crossVectors(Y_AXIS, dir).normalize();
-    const up = new THREE.Vector3().crossVectors(dir, right).normalize();
-    if (aspect >= 0.9) {
-      out.addScaledVector(right, shift * ((camera.right - camera.left) / 2 / zoom));
-    } else {
-      out.addScaledVector(up, -shift * ((camera.top - camera.bottom) / 2 / zoom));
-    }
-    return out;
-  }
-
   let zoomedRoot = null;
   let focusView = null;   // { look, zoom, dir } de la vista base del objeto enfocado
-  let userZoom = 1;       // zoom extra del usuario (rueda / doble click / +−) sobre focusView.zoom
-  const MAX_USER_ZOOM = 3.5;
+  let userZoom = 1;       // zoom extra del usuario (rueda / pellizco / +−) sobre la vista base
+  const MAX_USER_ZOOM = 3.5;   // sobre un objeto enfocado
+  const MAX_ROOM_ZOOM = 4.5;   // en la vista general: acercarse a una zona del cuarto
 
-  /** Zoom manual sobre el objeto enfocado, anclado al punto bajo el cursor (ndc). */
+  /** Vista base sobre la que se hace zoom: el objeto enfocado o la vista general. */
+  const zoomBase = () => (zoomed ? focusView : { look: DEFAULT_LOOK, zoom: DEFAULT_ZOOM, dir: ISO_DIR });
+
+  /** Zoom manual (objeto enfocado o cuarto), anclado al punto bajo el cursor (ndc). */
   function setUserZoom(next, ndc, animate) {
-    if (!zoomed || !focusView) return;
-    next = Math.min(MAX_USER_ZOOM, Math.max(1, next));
+    const base = zoomBase();
+    if (!base) return;
+    next = Math.min(zoomed ? MAX_USER_ZOOM : MAX_ROOM_ZOOM, Math.max(1, next));
     const oldZoom = camera.zoom;
-    const newZoom = focusView.zoom * next;
+    const newZoom = base.zoom * next;
     let look = camLook.clone();
     if (next <= 1.001) {
-      look = focusView.look.clone();
+      look = base.look.clone();
     } else if (ndc) {
       camera.updateMatrixWorld();
       const right = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0);
@@ -1793,7 +2211,7 @@ export function mount(container, hotspots) {
     // Si la cámara aún vuela hacia el objeto, su onComplete (enter() de la estación) no debe perderse.
     const pending = camAnim?.onComplete || null;
     if ((animate && !reducedMotion) || pending) {
-      startTransition(look, newZoom, pending, focusView.dir);
+      startTransition(look, newZoom, pending, base.dir);
     } else {
       camAnim = null;
       camLook.copy(look);
@@ -1803,18 +2221,13 @@ export function mount(container, hotspots) {
   }
 
   function onWheel(e) {
-    if (!zoomed || paused) return;
+    if (paused) return;
     e.preventDefault();
     updatePointer(e);
     const step = Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0015));
     setUserZoom(userZoom * step, pointerNDC, false);
   }
 
-  function onDblClick(e) {
-    if (!zoomed || paused || zoomed.id === 'piano') return;
-    updatePointer(e);
-    setUserZoom(userZoom > 1.05 ? 1 : 2.4, pointerNDC, true);
-  }
   function setFocusLayer(root, on) {
     if (!root) return;
     root.traverse((o) => { if (on) o.layers.enable(FOCUS_LAYER); else o.layers.disable(FOCUS_LAYER); });
@@ -1837,7 +2250,7 @@ export function mount(container, hotspots) {
     if (fx) {
       look = fx.look;
       zoom = fx.zoom != null ? fx.zoom * FOCUS_ZOOM_BOOST : zoom;
-      if (fx.shift) look = shiftLook(look, zoom, fx.shift, frontDir);
+      // centrado en pantalla (antes `shift` lo corría a un lado para dejarle sitio a la tarjeta)
     }
     startTransition(look, zoom, onArrived, frontDir);
     focusView = { look: look.clone(), zoom, dir: frontDir.clone() };
@@ -1849,6 +2262,18 @@ export function mount(container, hotspots) {
     focusLight.position.copy(look).addScaledVector(frontDir, 1.2).add(new THREE.Vector3(0, 0.6, 0));
     setHover(null);
     setJotaiHover(false);
+  }
+
+  /** Una estación cambió de encuadre (ej. patineta Ver ⇄ Montar): vuelve a
+   *  centrar la cámara en lo que devuelve su focus() ahora. */
+  function refocus() {
+    if (!zoomed || !focusView) return;
+    const fx = stations.get(zoomed.id)?.focus?.();
+    if (!fx) return;
+    const zoom = fx.zoom != null ? fx.zoom * FOCUS_ZOOM_BOOST : focusView.zoom;
+    focusView = { look: fx.look.clone(), zoom, dir: focusView.dir };
+    userZoom = 1;
+    startTransition(focusView.look, zoom, camAnim?.onComplete || null, focusView.dir);
   }
 
   function returnToDefault() {
@@ -2029,7 +2454,7 @@ export function mount(container, hotspots) {
       if (handled) { e.preventDefault(); renderEditHud(); }
       return;
     }
-    if (zoomed && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    if (!e.ctrlKey && !e.metaKey && !e.altKey) {
       if (e.key === '+' || e.key === '=') { setUserZoom(userZoom * 1.35, null, true); e.preventDefault(); return; }
       if (e.key === '-' || e.key === '_') { setUserZoom(userZoom / 1.35, null, true); e.preventDefault(); return; }
     }
@@ -2066,7 +2491,6 @@ export function mount(container, hotspots) {
 
   renderer.domElement.addEventListener('pointermove', onPointerMove);
   renderer.domElement.addEventListener('click', onClick);
-  renderer.domElement.addEventListener('dblclick', onDblClick);
   renderer.domElement.addEventListener('wheel', onWheel, { passive: false });
   renderer.domElement.addEventListener('pointerdown', onPointerDown);
   renderer.domElement.addEventListener('pointerup', onPointerUp);
@@ -2128,22 +2552,15 @@ export function mount(container, hotspots) {
       }
     }
 
-    // Parallax + deriva: giro sutil del diorama en reposo; al enfocar un objeto el
-    // mismo parallax pasa a un rango mucho mayor — mover el cursor por la pantalla
-    // orbita la cámara alrededor del objeto para verlo desde otros ángulos, sin
-    // consumir el click. Congelado mientras `dragging` (una estación como la
-    // patineta o el ajedrez está usando el arrastre para lo suyo) para no sumar
-    // el giro de cámara al gesto del usuario.
+    // Parallax + deriva: giro sutil del diorama en reposo. Con un objeto
+    // enfocado la cámara se queda fija de frente (antes el cursor la orbitaba
+    // alrededor del objeto — se sacó a pedido de David: el objeto "giraba").
     if (!reducedMotion) {
       const idle = !zoomed;
-      if (idle || !dragging) {
-        const yawRange = idle ? PARALLAX_YAW : FREE_LOOK_YAW;
-        const pitchRange = idle ? PARALLAX_PITCH : FREE_LOOK_PITCH;
-        const yawTarget = pointerParallax.x * yawRange + (idle ? Math.sin(now * 0.00018) * DRIFT_YAW : 0);
-        const pitchTarget = -pointerParallax.y * pitchRange;
-        yaw += (yawTarget - yaw) * 0.05;
-        pitch += (pitchTarget - pitch) * 0.05;
-      }
+      const yawTarget = idle ? pointerParallax.x * PARALLAX_YAW + Math.sin(now * 0.00018) * DRIFT_YAW : 0;
+      const pitchTarget = idle ? -pointerParallax.y * PARALLAX_PITCH : 0;
+      yaw += (yawTarget - yaw) * 0.05;
+      pitch += (pitchTarget - pitch) * 0.05;
 
       // Animaciones en reposo — todas apagadas con prefers-reduced-motion.
       breathers.forEach((m) => { m.scale.y = (m.userData.baseScaleY ?? 0.7) + Math.sin(now * 0.0025) * 0.025; });
@@ -2217,9 +2634,10 @@ export function mount(container, hotspots) {
           cursorLook = jotaiLook;
         }
         jotaiBrain.update(now, { zoomed, focusLook, cursorLook, envT });
+        saver.update(jotaiBrain.sleeping, now);
         // estación con rol propio (§11): mientras esté ahí parado, que no salga
         // desenfocado junto al objeto enfocado (ver `setFocusLayer`)
-        const jotaiWantsFocus = !!(zoomed && STATION_POSE[zoomed.id] && jotaiBrain.current === zoomed.id);
+        const jotaiWantsFocus = !!(zoomed && STATION_IDS.has(zoomed.id) && jotaiBrain.duty === zoomed.id);
         if (jotaiWantsFocus !== jotaiFocused) { setFocusLayer(jotai.root, jotaiWantsFocus); jotaiFocused = jotaiWantsFocus; }
         // sentado, sube y baja con el escritorio cuando este se levanta por el hover
         jotai.root.position.y = jotaiBrain.seated && deskRoot ? deskRoot.userData.lift : 0;
@@ -2323,7 +2741,6 @@ export function mount(container, hotspots) {
     modalObserver?.disconnect();
     renderer.domElement.removeEventListener('pointermove', onPointerMove);
     renderer.domElement.removeEventListener('click', onClick);
-    renderer.domElement.removeEventListener('dblclick', onDblClick);
     renderer.domElement.removeEventListener('wheel', onWheel);
     renderer.domElement.removeEventListener('pointerdown', onPointerDown);
     renderer.domElement.removeEventListener('pointerup', onPointerUp);

@@ -14,6 +14,10 @@
  *   pukis       → acariciarlo: corazones, cola, orejas
  *   chess       → tablero 3D: juegas con blancas contra una IA sencilla
  *   lumbre      → póster de mi juego Lumbre: capturas + enlaces
+ *   medals      → 3 trofeos de Dota 2: al frente, giran con el mouse, se abren
+ *   starwars    → póster de Yoda: viene al frente y gira con el mouse
+ *   guitar      → se despega de la pared y toca canciones (gam-guitar.js)
+ *   soundbar    → barra de sonido: la playlist
  *
  * Contrato: `createStations(base, objects)` devuelve Map(id → estación). Una
  * estación es { focus(), enter(), exit(), update(now, dt), busy?(), pointerMove?,
@@ -25,6 +29,7 @@ import * as THREE from 'three';
 import { getAudioContext, envelope } from './gam-audio.js';
 import { createPiano, KEY_BINDINGS } from './gam-piano.js';
 import { createJuggling, ZONE_CENTER } from './gam-juggling.js';
+import { createGuitar, SONGS } from './gam-guitar.js';
 import { newGame, legalMoves, applyMove, chooseMove, status as chessStatus, isWhite } from './gam-chess.js';
 import { LangSwitcher } from '../lang.js';
 import { ProjectGallery } from '../project-gallery.js';
@@ -156,7 +161,7 @@ function pianoStation(c) {
   function flash(i) {
     press[i] = 1;
     c.glyphs.emit(i % 2 ? '♫' : '♪', tones[i], keyWorld(i), { rise: 0.75, drift: 0.18, size: 0.26 });
-    c.cue?.('piano:key', { index: i });
+    c.cue?.('piano:key', { index: i, world: keyWorld(i), left: i < (keys.length - 1) / 2 });
   }
 
   function pickKey() {
@@ -173,6 +178,7 @@ function pianoStation(c) {
         onStatus: (t) => hud.setStatus(t),
         onEnd: () => hud.setAction('start', { hidden: false, label: '↻ Otra vuelta' }),
         onHot: () => c.glyphs.emit('🔥', '#ffb020', keyWorld(4), { rise: 0.9, size: 0.34 }),
+        onPhase: (phase, score) => c.cue?.('piano:phase', { phase, score }),
       });
       hud.show({
         icon: '🎹',
@@ -251,7 +257,7 @@ function deskStation(c) {
   ];
 
   return {
-    focus: () => ({ look: root.localToWorld(V(0.05, 1.0, -0.1)), zoom: 2.7, shift: 0.3 }),
+    focus: () => ({ look: root.localToWorld(V(0.05, 1.0, -0.1)), zoom: 2.7 }),
 
     enter() {
       hud.show({
@@ -306,13 +312,10 @@ function deskStation(c) {
 }
 
 /* ────────────────────────────────────────────────────
-   BOOKSHELF — libros reales (salen al pasar el mouse, click = detalle).
-   TODO: reemplazar PLACEHOLDER_BOOKS con los títulos/autores reales cuando
-   se definan — por ahora son genéricos para no bloquear el resto del cuarto.
+   BOOKSHELF — los libros de David (gam-hotspots.json `books`): salen al pasar
+   el mouse, click = título y autor.
 ──────────────────────────────────────────────────── */
-const PLACEHOLDER_BOOKS = [
-  { title: 'Título pendiente', author: '—' },
-];
+
 
 function spineTexture(title, colorHex) {
   const cv = document.createElement('canvas');
@@ -326,12 +329,20 @@ function spineTexture(title, colorHex) {
   g.fillRect(0, 246, 64, 10);
   const lum = parseInt(colorHex.slice(0, 2), 16) * 0.3 + parseInt(colorHex.slice(2, 4), 16) * 0.59 + parseInt(colorHex.slice(4, 6), 16) * 0.11;
   g.fillStyle = lum > 140 ? '#1a1206' : '#f8f0dc';
-  g.font = 'bold 26px "Courier New", monospace';
+  g.font = 'bold 17px "Courier New", monospace';
   g.textAlign = 'center';
   g.textBaseline = 'middle';
   g.translate(32, 128);
   g.rotate(Math.PI / 2);
-  g.fillText(title.length > 16 ? `${title.slice(0, 15)}…` : title, 0, 2);
+  // hasta 2 renglones a lo largo del lomo
+  const lines = [''];
+  title.split(' ').forEach((w) => {
+    const cur = lines[lines.length - 1];
+    if (g.measureText(`${cur} ${w}`.trim()).width <= 226) lines[lines.length - 1] = `${cur} ${w}`.trim();
+    else lines.push(w);
+  });
+  if (lines.length > 2) { lines.length = 2; lines[1] = `${lines[1].slice(0, 20)}…`; }
+  lines.forEach((ln, k) => g.fillText(ln, 0, (k - (lines.length - 1) / 2) * 19 + 1));
   const t = new THREE.CanvasTexture(cv);
   t.colorSpace = THREE.SRGBColorSpace;
   return t;
@@ -352,7 +363,8 @@ function bookshelfStation(c) {
     // los libros van en las filas de arriba primero
     const order = [...books].reverse();
     order.forEach((b, i) => {
-      const info = PLACEHOLDER_BOOKS[i % PLACEHOLDER_BOOKS.length];
+      const list = c.content.books || [];
+      const info = list[i] || { title: '—', author: '' };
       const m = b.mesh.material;
       const hex = m.color.getHexString();
       m.map = spineTexture(info.title, hex);
@@ -389,7 +401,7 @@ function bookshelfStation(c) {
   }
 
   return {
-    focus: () => ({ look: root.localToWorld(V(0, 1.15, 0.15)), zoom: 2.6, shift: 0.3 }),
+    focus: () => ({ look: root.localToWorld(V(0, 1.15, 0.15)), zoom: 2.6 }),
 
     enter() {
       hud.show({ icon: '📚', title: 'Estante', hint: 'Pasa el cursor sobre un libro · clic para verlo', onBack: c.leave });
@@ -435,6 +447,7 @@ function bookshelfStation(c) {
       if (!b) return;
       selected = b;
       showBook(bookInfo.get(b));
+      c.cue?.('book:pick', { world: root.localToWorld(b.position.clone()) });
       envelope(getAudioContext(), { freq: 392, type: 'triangle', duration: 0.12, gain: 0.07 });
     },
   };
@@ -493,12 +506,23 @@ function skateStation(c) {
   const tw = createTweens(c.reducedMotion);
   const REST = { pos: V(0, 0.6, 0), rotX: -0.18 };
   const SHOW = { pos: V(-0.4, 1.3, 1.5), rotX: 0 }; // de pie, la cara de stickers hacia la cámara
+  /* Montar (con JotAI): la tabla acostada en el piso, ruedas abajo y
+     centrada en el holder (pivot girado π/2 y corrido medio largo), dando
+     vueltas lentas en un círculo frente a la pared, sobre la alfombra. */
+  const PIVOT_STAND = V(0, -0.6, 0);
+  // acostada: el pivot sube lo que bajan las ruedas (depende del modelo: refs.skate.dims)
+  const pivotFlat = () => V(0, -0.6 + refs.skate.dims.wheel, -0.6);
+  const RIDE = { cx: -0.6, cz: 1.8, r: 0.35, w: 0.6 };    // círculo (local) y velocidad angular (rad/s): entre Pukis y el pedestal de malabares
+  const TRICK_FAILS = ['stuck', 'shoot', 'wobble'];
   let dragging = false;
   let last = { x: 0, y: 0 };
   let vel = { x: 0, y: 0 };
   let trick = false;
   let idleAt = 0;
   let active = false;
+  let mode = 'view';
+  let ride = null;   // { state: 'laying' | 'mounting' | 'riding', a, mountAt, busyUntil }
+  const _w = V(0, 0, 0);
 
   function moveTo(pos, rotX, ms, done) {
     const p0 = holder.position.clone();
@@ -510,8 +534,31 @@ function skateStation(c) {
     }, done);
   }
 
+  /** Tabla de pie (Ver / pared) ⇄ acostada (Montar): mueve todo junto. */
+  function poseBoard(to, ms, done) {
+    const p0 = holder.position.clone(), pv0 = pivot.position.clone();
+    const r0 = holder.rotation.clone(), rx0 = pivot.rotation.x;
+    tw.add(ms, (p) => {
+      const e = ease(p);
+      holder.position.lerpVectors(p0, to.pos, e);
+      pivot.position.lerpVectors(pv0, to.pivot, e);
+      pivot.rotation.x = lerp(rx0, to.rotX, e);
+      holder.rotation.set(lerp(r0.x, 0, e), lerp(r0.y, to.yaw || 0, e), lerp(r0.z, 0, e));
+    }, done);
+  }
+
+  const ridePos = (a) => V(RIDE.cx + RIDE.r * Math.sin(a), 0.6, RIDE.cz - RIDE.r * Math.cos(a));
+  const rideYaw = (a) => Math.atan2(Math.cos(a), Math.sin(a));   // tangente del círculo
+
+  /** Para JotAI: centro de la tabla (mundo), rumbo y alto de la lija. */
+  function boardWorld() {
+    root.localToWorld(_w.copy(holder.position).setY(holder.position.y - 0.6 + refs.skate.dims.deck));
+    return { x: _w.x, z: _w.z, deckY: _w.y, heading: (root.rotation.y || 0) + holder.rotation.y };
+  }
+
   function doTrick(kind) {
     if (trick || !active) return;
+    if (mode === 'ride') { bail(); return; }
     trick = true;
     envelope(getAudioContext(), { freq: 180, type: 'square', duration: 0.07, gain: 0.08 });
     const y0 = holder.position.y;
@@ -530,14 +577,87 @@ function skateStation(c) {
     });
   }
 
+  /** Montar: JotAI es novato — el truco nunca le sale (variante al azar). */
+  function bail() {
+    if (!ride || ride.state !== 'riding' || !c.jotaiRiding?.()) return;
+    const variant = TRICK_FAILS[Math.floor(Math.random() * TRICK_FAILS.length)];
+    c.cue?.('skate:trick', { variant });
+    envelope(getAudioContext(), { freq: 150, type: 'square', duration: 0.08, gain: 0.07 });
+    hud.setStatus('Casi… 😅 <span class="gam-hud__count">es novato</span>');
+    trick = true;
+    const p0 = holder.position.clone();
+    if (variant === 'shoot') {
+      // la tabla sale disparada hacia adelante y vuelve rodando
+      const yaw = holder.rotation.y;
+      const far = p0.clone().add(V(Math.sin(yaw) * 0.7, 0, Math.cos(yaw) * 0.7));
+      tw.add(450, (p) => { holder.position.lerpVectors(p0, far, ease(p)); }, () => {
+        tw.add(1100, (p) => { holder.position.lerpVectors(far, p0, ease(p)); }, () => { trick = false; });
+      });
+    } else if (variant === 'wobble') {
+      tw.add(1000, (p) => { holder.rotation.z = 0.16 * Math.sin(p * Math.PI * 4) * (1 - p); }, () => { holder.rotation.z = 0; trick = false; });
+    } else {
+      tw.add(500, (p) => { holder.position.x = p0.x + 0.015 * Math.sin(p * Math.PI * 6); }, () => { holder.position.copy(p0); trick = false; });
+    }
+  }
+
+  function setMode(m) {
+    if (m === mode) return;
+    mode = m;
+    c.refocus?.();
+    trick = false;
+    tw.clear();
+    ['flip', 'reset'].forEach((id) => hud.setAction(id, { hidden: m === 'ride' }));
+    if (m === 'ride') {
+      const a = 0;
+      ride = { state: 'laying', a, mountAt: 0 };
+      hud.setStatus('JotAI baja la tabla al piso… 🛹');
+      hud.setHint('Pulsa Kickflip o Shove-it para que JotAI lo intente');
+      poseBoard({ pos: ridePos(a), pivot: pivotFlat(), rotX: Math.PI / 2, yaw: rideYaw(a) }, 800, () => { if (ride) ride.state = 'mounting'; });
+    } else {
+      if (ride) c.cue?.('skate:dismount');
+      ride = null;
+      hud.setStatus('Se despegó de la pared 🛹');
+      hud.setHint('Arrastra para girarla en 3D · mira los stickers · voltéala para ver el grip');
+      poseBoard({ pos: SHOW.pos, pivot: PIVOT_STAND, rotX: SHOW.rotX }, 800);
+    }
+  }
+
+  function updateRide(now, dt) {
+    if (!ride || tw.busy && ride.state !== 'riding') return;
+    if (ride.state === 'mounting') {
+      if (c.jotaiRiding?.()) {
+        ride.state = 'riding';
+        hud.setStatus('JotAI da una vuelta… (es novato) 🛹');
+      } else if (now > ride.mountAt) {
+        // le avisa hasta que llegue (puede estar rodando todavía hacia la patineta)
+        ride.mountAt = now + 1500;
+        c.cue?.('skate:mount', boardWorld());
+      }
+      return;
+    }
+    if (ride.state !== 'riding' || trick || !c.jotaiRiding?.()) return;
+    ride.a += RIDE.w * dt;
+    holder.position.copy(ridePos(ride.a));
+    holder.rotation.y = rideYaw(ride.a);
+    c.cue?.('skate:pos', boardWorld());
+  }
+
   return {
-    focus: () => ({ look: root.localToWorld(SHOW.pos.clone()), zoom: 3.8 }),
+    // centrada: en Ver, la tabla flotando frente a la cámara; en Montar, el círculo por donde rueda JotAI
+    focus: () => (mode === 'ride'
+      ? { look: root.localToWorld(V(RIDE.cx, 0.55, RIDE.cz)), zoom: 2.7 }
+      : { look: root.localToWorld(SHOW.pos.clone()), zoom: 3.2 }),
 
     enter() {
       active = true;
+      mode = 'view';
+      const canRide = !!c.jotaiHere?.();
       hud.show({
         icon: '🛹',
         title: 'Patineta',
+        tabs: canRide ? [{ id: 'view', label: 'Ver' }, { id: 'ride', label: 'Montar' }] : undefined,
+        active: 'view',
+        onTab: (id) => setMode(id),
         actions: [
           { id: 'kickflip', label: 'Kickflip', onClick: () => doTrick('kickflip') },
           { id: 'shove', label: 'Shove-it', onClick: () => doTrick('shove') },
@@ -552,19 +672,14 @@ function skateStation(c) {
     },
 
     exit() {
+      if (ride) c.cue?.('skate:dismount');
+      ride = null;
+      mode = 'view';
       active = false;
       dragging = false;
       trick = false;
       tw.clear();
-      const r0 = holder.rotation.clone();
-      const p0 = holder.position.clone();
-      const rx0 = pivot.rotation.x;
-      tw.add(700, (p) => {
-        const e = ease(p);
-        holder.position.lerpVectors(p0, REST.pos, e);
-        pivot.rotation.x = lerp(rx0, REST.rotX, e);
-        holder.rotation.set(lerp(r0.x, 0, e), lerp(r0.y, 0, e), lerp(r0.z, 0, e));
-      });
+      poseBoard({ pos: REST.pos, pivot: PIVOT_STAND, rotX: REST.rotX }, 700);
       c.setCursor('default');
     },
 
@@ -573,7 +688,8 @@ function skateStation(c) {
     update(now, dt) {
       tw.update(now);
       if (!active) return;
-      if (!dragging && !trick) {
+      if (mode === 'ride') { updateRide(now, dt); return; }
+      if (!dragging && !trick && !tw.busy) {
         // inercia del arrastre y giro lento de exhibición
         holder.rotation.y += vel.x * dt * 60;
         holder.rotation.x = clamp(holder.rotation.x + vel.y * dt * 60, -1.2, 1.2);
@@ -588,6 +704,7 @@ function skateStation(c) {
     },
 
     pointerDown(ndc) {
+      if (mode === 'ride') return;
       dragging = true;
       last = { x: ndc.x, y: ndc.y };
       vel = { x: 0, y: 0 };
@@ -595,6 +712,7 @@ function skateStation(c) {
     },
 
     pointerMove(ndc) {
+      if (mode === 'ride') { c.setCursor('default'); return; }
       if (!dragging) { c.setCursor('grab'); return; }
       const dx = (ndc.x - last.x) * 3.2;
       const dy = (ndc.y - last.y) * 2.2;
@@ -608,7 +726,7 @@ function skateStation(c) {
     pointerUp() {
       dragging = false;
       idleAt = performance.now() + 1800;
-      c.setCursor('grab');
+      c.setCursor(mode === 'ride' ? 'default' : 'grab');
     },
   };
 }
@@ -633,6 +751,33 @@ function jugglingStation(c) {
 
   function ballWorld(i) { return root.localToWorld(balls[i].mesh.position.clone()); }
 
+  /* Cascada en las manos de JotAI: el mismo arco que la de la estación,
+     pero entre sus palmas (mundo → local del pedestal). `handsK` funde de la
+     cascada del pedestal a la de sus manos cuando llega. */
+  let handsK = 0;
+  const _l = new THREE.Vector3(), _r = new THREE.Vector3(), _p = new THREE.Vector3(), _q = new THREE.Vector3();
+  function jotaiCascade(hands, t) {
+    root.worldToLocal(_l.copy(hands.left));
+    root.worldToLocal(_r.copy(hands.right));
+    if (_l.distanceTo(_r) < 1e-3) return false;
+    const P = 1.4;
+    const rise = 0.42 / root.scale.y;
+    balls.forEach(({ mesh }, i) => {
+      const phi = (t / P + i / balls.length) % 1;
+      const k = Math.floor(phi * 2);
+      const psi = phi * 2 - k;
+      const u = k % 2 === 0 ? psi : 1 - psi;              // de una mano a la otra y vuelta
+      _p.lerpVectors(_r, _l, u);
+      _p.y += rise * 4 * psi * (1 - psi);
+      // pedestal → manos, suave al llegar
+      const base = BASE_Y + 0.1 + 4 * 0.5 * psi * (1 - psi);
+      _q.set((k % 2 === 0 ? 1 : -1) * HAND * (2 * psi - 1), base, 0);
+      mesh.position.lerpVectors(_q, _p, ease(handsK));
+      mesh.rotation.z = t * 3 + i;
+    });
+    return true;
+  }
+
   function buildRing() {
     ringMat = new THREE.MeshStandardMaterial({ color: 0xffb020, emissive: 0xffb020, emissiveIntensity: 1.2, roughness: 0.4 });
     ring = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.012, 10, 40), ringMat);
@@ -656,6 +801,7 @@ function jugglingStation(c) {
     mode = m;
     running = false;
     engine?.stop();
+    c.cue?.('juggle:mode', { mode: m });
     hud.setAction('start', { hidden: m !== 'play', label: '▶ Empezar' });
     hud.setAction('catch', { hidden: true });
     if (m === 'play') {
@@ -673,7 +819,8 @@ function jugglingStation(c) {
   }
 
   return {
-    focus: () => ({ look: root.localToWorld(V(0, 1.15, 0)), zoom: 3.0 }),
+    // encuadra el pedestal y a JotAI al costado (spot de malabares)
+    focus: () => ({ look: root.localToWorld(V(-0.4, 0.8, -0.05)), zoom: 2.5 }),
 
     enter() {
       balls.forEach(({ mesh }) => { mesh.userData.locked = true; });
@@ -681,10 +828,12 @@ function jugglingStation(c) {
         reducedMotion: c.reducedMotion,
         onStatus: (t) => hud.setStatus(t),
         onCatch: (score, milestone) => {
+          c.cue?.('juggle:catch', { score });
           ringFlash = 1; ringColor = 0x4ade80;
           c.glyphs.emit(milestone ? '★' : '✦', '#4ade80', ballWorld(0), { size: milestone ? 0.4 : 0.26, rise: 0.5 });
         },
         onFail: () => {
+          c.cue?.('juggle:fail');
           running = false;
           ringFlash = 1; ringColor = 0xff4d4d;
           hud.setAction('start', { hidden: false, label: '↻ Reintentar' });
@@ -721,6 +870,10 @@ function jugglingStation(c) {
       if (!engine) return;
       const t = now / 1000;
       if (mode === 'watch') {
+        // con JotAI de servicio, la cascada pasa a sus manos (ver jotaiCascade)
+        const hands = c.jotaiHands?.();
+        handsK = Math.min(1, Math.max(0, handsK + (hands ? dt : -dt) * 1.5));
+        if (hands && jotaiCascade(hands, t)) return;
         // cascada: cada pelota va y viene entre las dos manos en arcos parabólicos
         const P = 1.6;
         balls.forEach(({ mesh }, i) => {
@@ -792,6 +945,7 @@ function pukisStation(c) {
 
   function pet() {
     pets++;
+    c.cue?.('pukis:pet');
     hud.setStatus(`${statusFor(pets)} <span class="gam-hud__count">×${pets}</span>`);
     react();
   }
@@ -924,6 +1078,7 @@ function chessStation(c) {
   let depth = 2;
   let aiTimer = null;
   let markers = [];
+  let endCued = false;   // ya le avisó a JotAI cómo terminó la partida
 
   function rebuild() {
     meshes.forEach((g) => { root.remove(g); });
@@ -1008,17 +1163,28 @@ function chessStation(c) {
     move3D(m.from, m.to, epSq, rookMove, !!m.promo, then);
     selected = -1; targets = []; clearMarkers();
     say(statusText());
+    if (over && !endCued) {
+      endCued = true;
+      const st = chessStatus(gs);
+      c.cue?.('chess:end', { winner: st === 'checkmate' ? (gs.turn === 'w' ? 'b' : 'w') : 'draw' });
+    }
   }
 
   function aiMove() {
     if (over || gs.turn !== 'b') return;
     thinking = true;
+    c.cue?.('chess:think');
     aiTimer = setTimeout(() => {
       aiTimer = null;
       const m = chooseMove(gs, depth);
-      thinking = false;
-      if (!m) return;
-      play(m, () => { say(statusText()); });
+      if (!m) { thinking = false; return; }
+      // JotAI (si está de rival) estira el brazo hacia la pieza justo antes de moverla
+      c.cue?.('chess:move', { left: (m.from & 7) > 3.5, world: root.localToWorld(sqPos(m.from)) });
+      aiTimer = setTimeout(() => {
+        aiTimer = null;
+        thinking = false;
+        play(m, () => { say(statusText()); });
+      }, c.reducedMotion || !c.jotaiHere?.() ? 0 : 260);
     }, c.reducedMotion ? 10 : 500);
   }
 
@@ -1034,7 +1200,7 @@ function chessStation(c) {
   function newMatch() {
     clearTimeout(aiTimer); aiTimer = null;
     tw.clear();
-    gs = newGame(); history = []; over = false; thinking = false; selected = -1; targets = []; clearMarkers();
+    gs = newGame(); history = []; over = false; thinking = false; endCued = false; selected = -1; targets = []; clearMarkers();
     rebuild();
     say(statusText());
   }
@@ -1045,7 +1211,7 @@ function chessStation(c) {
     const steps = gs.turn === 'w' ? 2 : 1;
     if (history.length < steps) return;
     for (let i = 0; i < steps; i++) gs = history.pop().gs;
-    over = false; selected = -1; targets = []; clearMarkers();
+    over = false; endCued = false; selected = -1; targets = []; clearMarkers();
     tw.clear();
     rebuild();
     say(statusText());
@@ -1057,7 +1223,8 @@ function chessStation(c) {
   }
 
   return {
-    focus: () => ({ look: root.localToWorld(V(0, boardY, 0)), zoom: 7.5 }),
+    // un poco más abierto que antes: JotAI juega del otro lado (negras)
+    focus: () => ({ look: root.localToWorld(V(0, boardY + 0.12, -0.18)), zoom: 4.8 }),
 
     enter() {
       hud.show({
@@ -1154,7 +1321,7 @@ function lumbreStation(c) {
   }
 
   return {
-    focus: () => ({ look: root.localToWorld(V(0, 2.3, 0)), zoom: 6.5, shift: 0.15 }),
+    focus: () => ({ look: root.localToWorld(V(0, 2.12, 0)), zoom: 4.2 }),
 
     enter() {
       const ct = c.content;
@@ -1163,7 +1330,7 @@ function lumbreStation(c) {
         title: 'Lumbre',
         tabs: LUMBRE_SHOTS.map((_, i) => ({ id: String(i), label: `${i + 1}` })),
         active: '0',
-        onTab: (id) => show(Number(id)),
+        onTab: (id) => { show(Number(id)); c.cue?.('lumbre:shot'); },
         actions: [
           { id: 'play', label: '▶ Jugar en itch.io', onClick: () => window.open(ct.liveUrl, '_blank', 'noopener') },
           { id: 'code', label: '</> Código', onClick: () => window.open(ct.repoUrl, '_blank', 'noopener') },
@@ -1188,10 +1355,471 @@ function lumbreStation(c) {
       const n = Number(e.key);
       if (n >= 1 && n <= LUMBRE_SHOTS.length && !e.metaKey && !e.ctrlKey && !e.altKey) {
         show(n - 1);
+        c.cue?.('lumbre:shot');
         return true;
       }
       return false;
     },
+  };
+}
+
+/* ────────────────────────────────────────────────────
+   TROFEOS — los 3 Aegis de Dota 2 (The International) en sus cajas.
+   Click en una caja → viene al frente y gira siguiendo al mouse; otro click
+   → se abre la tapa de vidrio, el Aegis sale un poco y aparece su tarjeta
+   (edición + año, de gam-hotspots.json `trophies`). Click afuera → vuelve.
+──────────────────────────────────────────────────── */
+function medalsStation(c) {
+  const { root, refs, hud } = c;
+  const boxes = refs.boxes;                // [{ holder, door, aegis, meshes, rest, top }]
+  const tw = createTweens(c.reducedMotion);
+  const FRONT = { pos: V(0, 0.12, 0.62), s: 2.1 };   // al frente, grande, frente a la cámara
+  const DOOR_OPEN = -1.95;                            // la tapa gira sobre su bisagra (borde izquierdo)
+  /* La cámara del enfoque mira desde arriba (elevación ~30°): al frente, la
+     caja se inclina hacia atrás para quedar de cara al visitante, en vez de
+     verse de frente "recto" como si estuviera a la altura de los ojos. */
+  const FACE_UP = -0.5;
+  let hovered = -1;
+  let focused = -1;      // caja al frente (o -1)
+  let opened = false;
+  let rot = { yaw: 0, pitch: 0 }, want = { yaw: 0, pitch: 0 };
+
+  const trophy = (i) => (c.content.trophies || [])[i] || {};
+
+  // `meshes` crece cuando llega el modelo real del Aegis (carga asíncrona): se busca al momento
+  function pickBox(list = boxes.map((_, i) => i)) {
+    const hit = c.pick(list.flatMap((i) => boxes[i].meshes));
+    return hit ? boxes.findIndex((b) => b.meshes.includes(hit.object)) : -1;
+  }
+
+  function showCard(i) {
+    const t = trophy(i);
+    const year = t.year ? String(t.year) : '';
+    const card = el('div', 'gam-card');
+    card.innerHTML = `
+      <h3 class="gam-card__title">🏆 ${esc(L(t.title) || 'Trofeo Dota 2')}</h3>
+      <p class="gam-card__text">${esc(L(t.edition) || 'The International')}${year ? ` · <strong>${esc(year)}</strong>` : ''}</p>`;
+    hud.setCard(card);
+  }
+
+  /** Mueve la caja i entre su lugar en la repisa y el frente. */
+  function place(i, front, ms, done) {
+    const h = boxes[i].holder;
+    const p0 = h.position.clone(), s0 = h.scale.x;
+    const p1 = front ? FRONT.pos : boxes[i].rest;
+    const s1 = front ? FRONT.s : 1;
+    const r0 = { x: h.rotation.x, y: h.rotation.y };
+    tw.add(ms, (p) => {
+      const e = ease(p);
+      h.position.lerpVectors(p0, p1, e);
+      h.scale.setScalar(lerp(s0, s1, e));
+      h.rotation.set(lerp(r0.x, front ? FACE_UP : 0, e), lerp(r0.y, 0, e), 0);
+    }, done);
+  }
+
+  function setDoor(i, open, ms) {
+    const { door, aegis } = boxes[i];
+    const d0 = door.rotation.y, z0 = aegis.position.z;
+    const z1 = aegis.userData.z0 + (open ? 0.06 : 0);
+    tw.add(ms, (p) => {
+      const e = ease(p);
+      door.rotation.y = lerp(d0, open ? DOOR_OPEN : 0, e);
+      aegis.position.z = lerp(z0, z1, e);
+    });
+  }
+
+  function bring(i) {
+    if (focused === i) return;
+    if (focused >= 0) putBack();
+    focused = i;
+    opened = false;
+    rot = { yaw: 0, pitch: 0 };
+    want = { yaw: 0, pitch: 0 };
+    c.setOutline([]);
+    c.setLabel(null);
+    place(i, true, 700);
+    hud.setHint('Mueve el mouse para girarlo · clic para abrir la caja · clic afuera para dejarlo');
+    envelope(getAudioContext(), { freq: 523, type: 'triangle', duration: 0.12, gain: 0.05 });
+    c.cue?.('medals:pick', { world: root.localToWorld(boxes[i].top.clone()) });
+  }
+
+  function open() {
+    if (focused < 0 || opened) return;
+    opened = true;
+    setDoor(focused, true, 650);
+    showCard(focused);
+    envelope(getAudioContext(), { freq: 784, type: 'triangle', duration: 0.18, gain: 0.06 });
+    c.glyphs.emit('✦', '#ffd76a', root.localToWorld(FRONT.pos.clone().add(V(0, 0.35, 0))), { size: 0.26, rise: 0.4 });
+  }
+
+  function putBack() {
+    if (focused < 0) return;
+    const i = focused;
+    if (opened) setDoor(i, false, 400);
+    place(i, false, 650);
+    focused = -1;
+    opened = false;
+    hud.setCard(null);
+    hud.setHint('Haz clic en un trofeo para verlo de cerca');
+  }
+
+  return {
+    focus: () => ({ look: root.localToWorld(V(0, 0.2, 0.3)), zoom: 4.4 }),
+
+    enter() {
+      boxes.forEach((b) => { b.aegis.userData.z0 ??= b.aegis.position.z; });
+      hud.show({
+        icon: '🏆',
+        title: L(c.content.title) || 'Trofeos',
+        hint: 'Haz clic en un trofeo para verlo de cerca',
+        onBack: c.leave,
+      });
+    },
+
+    exit() {
+      tw.clear();
+      boxes.forEach((b) => {
+        b.holder.position.copy(b.rest);
+        b.holder.scale.setScalar(1);
+        b.holder.rotation.set(0, 0, 0);
+        b.door.rotation.y = 0;
+        b.aegis.position.z = b.aegis.userData.z0 ?? b.aegis.position.z;
+      });
+      hovered = focused = -1;
+      opened = false;
+      c.setOutline([]);
+      c.setLabel(null);
+      c.setCursor('default');
+    },
+
+    busy: () => tw.busy,
+
+    update(now, dt) {
+      tw.update(now);
+      if (focused < 0) return;
+      // gira siguiendo al mouse (suave)
+      const k = c.reducedMotion ? 1 : Math.min(1, dt * 6);
+      rot.yaw += (want.yaw - rot.yaw) * k;
+      rot.pitch += (want.pitch - rot.pitch) * k;
+      const h = boxes[focused].holder;
+      if (!tw.busy) h.rotation.set(FACE_UP + rot.pitch, rot.yaw, 0);
+    },
+
+    pointerMove(ndc) {
+      if (focused >= 0) {
+        want = { yaw: clamp(ndc.x, -1, 1) * 0.75, pitch: clamp(-ndc.y, -1, 1) * 0.35 };
+        c.setCursor(pickBox([focused]) >= 0 && !opened ? 'pointer' : 'default');
+        return;
+      }
+      const i = pickBox();
+      if (i === hovered) return;
+      hovered = i;
+      c.setCursor(i >= 0 ? 'pointer' : 'default');
+      if (i >= 0) {
+        c.setOutline(boxes[i].meshes);
+        c.setLabel(L(trophy(i).title) || 'Trofeo Dota 2', root.localToWorld(boxes[i].top.clone()));
+      } else {
+        c.setOutline([]);
+        c.setLabel(null);
+      }
+    },
+
+    pointerDown() {
+      if (tw.busy) return;
+      if (focused >= 0) {
+        if (pickBox([focused]) >= 0) open();
+        else putBack();
+        return;
+      }
+      const i = pickBox();
+      if (i >= 0) bring(i);
+    },
+  };
+}
+
+/* ────────────────────────────────────────────────────
+   STAR WARS — el póster de Yoda: al enfocarlo se despega de la pared y
+   viene al frente para verlo en grande. Nada más.
+──────────────────────────────────────────────────── */
+function starwarsStation(c) {
+  const { root, refs, hud } = c;
+  const { holder } = refs.poster;
+  const tw = createTweens(c.reducedMotion);
+  const REST = { pos: V(0, 2.9, 0), s: 1 };
+  const SHOW = { pos: V(0, 2.55, 0.9), s: 1.3 };   // frente a la pared, más grande
+  let shown = false;                               // ya está al frente: gira con el mouse
+  let rot = { yaw: 0, pitch: 0 }, want = { yaw: 0, pitch: 0 };
+
+  function moveTo(to, ms, done) {
+    const p0 = holder.position.clone();
+    const s0 = holder.scale.x;
+    const r0 = { x: holder.rotation.x, y: holder.rotation.y };
+    tw.add(ms, (p) => {
+      const e = ease(p);
+      holder.position.lerpVectors(p0, to.pos, e);
+      holder.scale.setScalar(lerp(s0, to.s, e));
+      // se balancea al despegarse y vuelve derecho
+      holder.rotation.set(lerp(r0.x, 0, e), lerp(r0.y, 0, e) + 0.18 * Math.sin(Math.PI * p), 0);
+    }, done);
+  }
+
+  return {
+    focus: () => ({ look: root.localToWorld(SHOW.pos.clone()), zoom: 6.2 }),
+
+    enter() {
+      shown = false;
+      rot = { yaw: 0, pitch: 0 };
+      want = { yaw: 0, pitch: 0 };
+      hud.show({
+        icon: '⭐',
+        title: L(c.content.title) || 'Star Wars',
+        hint: 'Mueve el mouse para girarlo · Hazlo, o no lo hagas. Pero no lo intentes. — Maestro Yoda',
+        onBack: c.leave,
+      });
+      moveTo(SHOW, 900, () => { shown = true; });
+    },
+
+    exit() {
+      shown = false;
+      tw.clear();
+      moveTo(REST, 700);
+    },
+
+    busy: () => tw.busy,
+
+    update(now, dt) {
+      tw.update(now);
+      if (!shown) return;
+      // gira siguiendo al mouse (suave), como los trofeos
+      const k = c.reducedMotion ? 1 : Math.min(1, dt * 6);
+      rot.yaw += (want.yaw - rot.yaw) * k;
+      rot.pitch += (want.pitch - rot.pitch) * k;
+      holder.rotation.set(rot.pitch, rot.yaw, 0);
+    },
+
+    pointerMove(ndc) {
+      want = { yaw: clamp(ndc.x, -1, 1) * 0.6, pitch: clamp(-ndc.y, -1, 1) * 0.3 };
+    },
+  };
+}
+
+/* ────────────────────────────────────────────────────
+   GUITARRA — se despega de la pared y toca canciones (gam-guitar.js).
+   Click en la guitarra (o Espacio) = un rasgueo suelto.
+──────────────────────────────────────────────────── */
+function guitarStation(c) {
+  const { root, refs, hud } = c;
+  const { holder } = refs.guitar;
+  const strings = refs.strings;
+  const tw = createTweens(c.reducedMotion);
+  const REST = { pos: V(0, 0, 0), rotZ: 0.1 };
+  const SHOW = { pos: V(0.5, 0.25, 0), rotZ: -0.35 };   // despegada e inclinada, como en brazos
+  const vib = new Array(strings.length).fill(0);
+  const STRUM_CHORDS = ['Em', 'C', 'G', 'Am', 'F'];
+  let engine = null;
+  let song = SONGS[0].id;
+  let hover = false;
+  let active = false;
+
+  /* En brazos de JotAI: cuando llega (c.jotaiGuitar), la guitarra pasa de
+     flotar frente a la cámara a sus brazos — más chica (es más alta que él),
+     de frente a donde mira y cruzada en diagonal. `holdK` funde una posición
+     con la otra. Sin JotAI se queda en SHOW, tocándose sola. */
+  const HELD_SCALE = 0.62;
+  const HELD_TILT = -0.95;                // diagonal: el mástil hacia su izquierda y arriba
+  const BODY_CENTER = V(0, 0.3, 0);       // centro de la caja en el holder (la guitarra arranca en el piso)
+  let holdK = 0;
+  const _qShow = new THREE.Quaternion(), _qHeld = new THREE.Quaternion(), _e = new THREE.Euler(0, 0, 0, 'YXZ');
+  const _pos = V(0, 0, 0), _off = V(0, 0, 0);
+  function hold(dt) {
+    const g = c.jotaiGuitar?.();
+    holdK = clamp(holdK + (g ? dt : -dt) * 1.6, 0, 1);
+    if (holdK <= 0 || tw.busy) return;
+    if (!g) return;   // soltándola: la próxima entrada/salida la reubica con tween
+    // rumbo del mundo → yaw del holder (su +x es el frente de la guitarra)
+    _e.set(HELD_TILT, g.heading - Math.PI / 2 - (root.rotation.y || 0), 0, 'YXZ');
+    _qHeld.setFromEuler(_e);
+    _e.set(0, 0, SHOW.rotZ, 'YXZ');
+    _qShow.setFromEuler(_e);
+    const k = ease(holdK);
+    holder.quaternion.slerpQuaternions(_qShow, _qHeld, k);
+    const sc = lerp(1, HELD_SCALE, k);
+    holder.scale.setScalar(sc);
+    // que el centro de la caja quede frente a su panza
+    root.worldToLocal(_pos.copy(g.belly));
+    _off.copy(BODY_CENTER).multiplyScalar(sc).applyQuaternion(holder.quaternion);
+    _pos.sub(_off);
+    holder.position.lerpVectors(SHOW.pos, _pos, k);
+  }
+
+  function moveTo(to, ms) {
+    const p0 = holder.position.clone();
+    const z0 = holder.rotation.z;
+    tw.add(ms, (p) => {
+      const e = ease(p);
+      holder.position.lerpVectors(p0, to.pos, e);
+      holder.rotation.z = lerp(z0, to.rotZ, e);
+    });
+  }
+
+  function setPlaying(on) {
+    hud.setAction('play', { label: on ? '■ Parar' : '▶ Tocar' });
+  }
+
+  function onStrum({ strings: hit }) {
+    c.cue?.('guitar:strum');
+    hit.forEach((i) => { vib[i] = 1; });
+    const p = holder.localToWorld(V(0.1, 0.5, 0));
+    c.glyphs.emit(hit.length > 1 ? '♫' : '♪', '#ffd28a', p, { rise: 0.6, drift: 0.2, size: 0.22 });
+  }
+
+  function toggle() {
+    if (!engine) return;
+    if (engine.playing) {
+      engine.stop();
+      setPlaying(false);
+      hud.setStatus('');
+      return;
+    }
+    engine.play(song);
+    setPlaying(true);
+    hud.setStatus(`♪ ${esc(L(SONGS.find((s) => s.id === song).label))}`);
+  }
+
+  function strumOnce() {
+    engine?.strum(STRUM_CHORDS[Math.floor(Math.random() * STRUM_CHORDS.length)]);
+  }
+
+  return {
+    // encuadra la guitarra flotando y también a JotAI en su spot, tocándola
+    focus: () => ({ look: root.localToWorld(V(0.65, 0.7, 0)), zoom: 4.2 }),
+
+    enter() {
+      active = true;
+      engine = createGuitar({
+        onStrum,
+        onEnd: () => { setPlaying(false); hud.setStatus('¿Otra? 🎸'); c.cue?.('guitar:end'); },
+      });
+      hud.show({
+        icon: '🎸',
+        title: 'Guitarra',
+        tabs: SONGS.map((s) => ({ id: s.id, label: L(s.label) })),
+        active: song,
+        onTab: (id) => {
+          song = id;
+          if (engine.playing) { engine.play(id); hud.setStatus(`♪ ${esc(L(SONGS.find((s) => s.id === id).label))}`); }
+        },
+        actions: [{ id: 'play', label: '▶ Tocar', onClick: toggle }],
+        hint: 'Elige una canción · clic en la guitarra o Espacio para rasguear',
+        onBack: c.leave,
+      });
+      const card = el('div', 'gam-card');
+      card.innerHTML = `
+        <h3 class="gam-card__title">🎸 ${esc(L(c.content.title) || 'Guitarra')}</h3>
+        <p class="gam-card__text">${esc(L(c.content.message))}</p>`;
+      hud.setCard(card);
+      moveTo(SHOW, 800);
+    },
+
+    exit() {
+      engine?.destroy();
+      engine = null;
+      hover = false;
+      active = false;
+      holdK = 0;
+      tw.clear();
+      // de sus brazos (o de SHOW) de vuelta a la pared, derecha y a escala 1
+      const q0 = holder.quaternion.clone(), s0 = holder.scale.x;
+      const qRest = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, REST.rotZ));
+      const p0 = holder.position.clone();
+      tw.add(700, (p) => {
+        const e = ease(p);
+        holder.position.lerpVectors(p0, REST.pos, e);
+        holder.quaternion.slerpQuaternions(q0, qRest, e);
+        holder.scale.setScalar(lerp(s0, 1, e));
+      });
+      vib.fill(0);
+      strings.forEach((s) => { s.scale.x = 1; s.material.emissiveIntensity = 0; });
+      c.setOutline([]);
+      c.setCursor('default');
+    },
+
+    busy: () => tw.busy,
+
+    update(now, dt) {
+      tw.update(now);
+      if (active) hold(dt);
+      strings.forEach((s, i) => {
+        if (!vib[i] && s.scale.x === 1) return;
+        vib[i] = Math.max(0, vib[i] - dt * 2.2);
+        s.scale.x = 1 + (c.reducedMotion ? 0 : vib[i] * 2.5 * Math.abs(Math.sin(now * 0.09 + i)));
+        s.material.emissive.setHex(0xffd28a);
+        s.material.emissiveIntensity = vib[i] * 0.45;
+      });
+    },
+
+    pointerMove() {
+      hover = !!c.pick(c.parts);
+      c.setCursor(hover ? 'pointer' : 'default');
+      c.setOutline(hover ? c.parts : []);
+    },
+
+    pointerDown() {
+      if (c.pick(c.parts)) strumOnce();
+    },
+
+    key(e) {
+      if (e.code !== 'Space') return false;
+      e.preventDefault();
+      strumOnce();
+      return true;
+    },
+  };
+}
+
+/* ────────────────────────────────────────────────────
+   MÚSICA — barra de sonido: la playlist (gam-hotspots.json).
+──────────────────────────────────────────────────── */
+const SPOTIFY_EMBED = 'https://open.spotify.com/embed/';
+
+function soundbarStation(c) {
+  const { hud, root } = c;
+
+  return {
+    focus: () => ({ look: root.localToWorld(V(0, 0.04, 0)), zoom: 4.6 }),
+
+    enter() {
+      const ct = c.content;
+      hud.show({
+        icon: '🔊',
+        title: 'Música',
+        actions: ct.playlistUrl
+          ? [{ id: 'open', label: '▶ Abrir playlist', onClick: () => window.open(ct.playlistUrl, '_blank', 'noopener') }]
+          : [],
+        hint: 'Lo que suena mientras programo',
+        onBack: c.leave,
+      });
+      const tracks = (ct.tracks || []).map((t) => {
+        const inner = `<span class="gam-card__item-title">${esc(L(t.title))}</span><span class="gam-card__item-desc">${esc(L(t.artist))}</span>`;
+        return t.url
+          ? `<a class="gam-card__item" href="${esc(t.url)}" target="_blank" rel="noopener">${inner}</a>`
+          : `<div class="gam-card__item gam-card__item--static">${inner}</div>`;
+      }).join('');
+      const embed = typeof ct.spotifyEmbed === 'string' && ct.spotifyEmbed.startsWith(SPOTIFY_EMBED)
+        ? `<iframe class="gam-card__embed" src="${esc(ct.spotifyEmbed)}" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" title="Playlist"></iframe>`
+        : '';
+      const card = el('div', 'gam-card');
+      card.innerHTML = `
+        <h3 class="gam-card__title">🔊 ${esc(L(ct.title) || 'Música')}</h3>
+        <p class="gam-card__text">${esc(L(ct.message))}</p>
+        ${embed}
+        ${tracks ? `<p class="gam-card__label">En repetición</p><div class="gam-card__list">${tracks}</div>` : ''}`;
+      hud.setCard(card);
+    },
+
+    exit() {},
+
+    update() {},
   };
 }
 
@@ -1205,6 +1833,10 @@ const FACTORIES = {
   pukis: pukisStation,
   chess: chessStation,
   lumbre: lumbreStation,
+  medals: medalsStation,
+  starwars: starwarsStation,
+  guitar: guitarStation,
+  soundbar: soundbarStation,
 };
 
 /**

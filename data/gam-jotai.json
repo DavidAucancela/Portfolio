@@ -56,5 +56,64 @@
   ],
   "muse_lumbre": [
     { "es": "¿Ya jugaste Lumbre? Está buenísimo 🕯️", "en": "Have you played Lumbre? It's great 🕯️" }
+  ],
+  "guitar_intro": [
+    { "es": "¡Déjame a mí! Me sé tres canciones… más o menos 🎸", "en": "Let me! I know three songs… sort of 🎸" }
+  ],
+  "chess_hello": [
+    { "es": "Yo llevo las negras. Piensa bien cada jugada ♟️", "en": "I'll take black. Think every move through ♟️" }
+  ],
+  "chess_win": [
+    { "es": "¡Jaque mate! ¿La revancha? 😎", "en": "Checkmate! Rematch? 😎" },
+    { "es": "Gané… pero jugaste muy bien 🤖", "en": "I won… but you played really well 🤖" }
+  ],
+  "chess_lose": [
+    { "es": "Me ganaste… voy a recalcular 🤯", "en": "You beat me… recalculating 🤯" },
+    { "es": "¿Cómo no vi esa jugada? 😵", "en": "How did I miss that move? 😵" }
+  ],
+  "piano_win": [
+    { "es": "¡Tienes buen oído! 🎹", "en": "You've got a good ear! 🎹" }
+  ],
+  "piano_fail": [
+    { "es": "Casi… ¡otra vuelta! 🎹", "en": "So close… one more go! 🎹" },
+    { "es": "Esa nota se escapó 😅", "en": "That note got away 😅" }
+  ],
+  "juggle_drop": [
+    { "es": "¡Uy! Se escapó 🙈", "en": "Oops! It got away 🙈" }
+  ],
+  "skate_intro": [
+    { "es": "Ponme en «Montar». Te advierto que soy novato 🛹", "en": "Pick «Ride». Fair warning: I'm a beginner 🛹" }
+  ],
+  "skate_bail": [
+    { "es": "¡Casi me sale! 😅", "en": "I almost had it! 😅" },
+    { "es": "La próxima seguro sale… creo 🛹", "en": "Next one for sure… I think 🛹" },
+    { "es": "Eso fue a propósito 😳", "en": "That was on purpose 😳" }
+  ],
+  "medals_proud": [
+    { "es": "Estas medallas costaron muchas noches de estudio 🏅", "en": "These medals took a lot of late nights 🏅" }
+  ],
+  "music_vibe": [
+    { "es": "Esto suena mientras David programa 🎧", "en": "This plays while David codes 🎧" }
+  ],
+  "sw_force": [
+    { "es": "Hazlo, o no lo hagas. Pero no lo intentes ✨", "en": "Do or do not. There is no try ✨" }
+  ],
+  "lumbre_brag": [
+    { "es": "Ese juego lo hizo David en una game jam 🕯️", "en": "David made that game at a game jam 🕯️" }
+  ],
+  "bye": [
+    { "es": "¡Chao! Vuelve pronto 👋", "en": "Bye! Come back soon 👋" }
+  ],
+  "muse_guitar": [
+    { "es": "Algún día voy a afinar esa guitarra 🎸", "en": "Someday I'll tune that guitar 🎸" }
+  ],
+  "muse_medals": [
+    { "es": "Me gusta cómo brillan esas medallas ✨", "en": "I like how those medals shine ✨" }
+  ],
+  "muse_starwars": [
+    { "es": "Que la Fuerza te acompañe ✨", "en": "May the Force be with you ✨" }
+  ],
+  "muse_soundbar": [
+    { "es": "¿Ponemos música? 🎧", "en": "Some music? 🎧" }
   ]
 }

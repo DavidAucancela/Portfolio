@@ -42,7 +42,7 @@ import { createHud } from './gam-hud.js';
 import { createStations, LUMBRE_SHOTS } from './gam-stations.js';
 import { createJotai } from './gam-jotai.js';
 import { createJotaiBubble, createJotaiCaption } from './gam-jotai-bubble.js';
-import { createJotaiBrain, STATION_POSE } from './gam-jotai-brain.js';
+import { createJotaiBrain, STATION_IDS } from './gam-jotai-brain.js';
 import { createNavGrid } from './gam-jotai-nav.js';
 
 /* ────────────────────────────────────────────────────
@@ -113,8 +113,8 @@ const JOTAI_SPOTS = {
   window:     { at: [0.6, 2.1],   look: [0, 3.0, 0] },
   pukis:      { at: [0.54, -0.39], look: [0.45, 0.12, 0.05] },   // del lado de la cámara: se le ve la cara
   bookshelf:  { at: [0, 0.75],    look: [0, 1.1, 0] },
-  chess:      { at: [0, 0.75],    look: [0, 0.62, 0] },
-  juggling:   { at: [0, -0.65],   look: [0, 0.9, 0] },
+  chess:      { at: [0, -1.05],   look: [0, 0.62, 0] },       // detrás de su banquito (negras); el frente quedaba fuera del cuarto
+  juggling:   { at: [-0.7, -0.35], look: [-0.7, 0.8, 3] },    // al costado del pedestal, de frente (y detrás del ajedrez en la vista)
   skateboard: { at: [0, 0.5],     look: [0, 0.6, 0] },
   lumbre:     { at: [0, 0.8],     look: [0, 2.3, 0] },
   medals:     { at: [0.9, 1.25],  look: [0, 0.2, 0] },       // repisa sobre el escritorio: se para al costado del escritorio
@@ -122,6 +122,13 @@ const JOTAI_SPOTS = {
   guitar:     { at: [0.75, 0],    look: [0, 0.6, 0] },       // frente = +x (pared izquierda)
   soundbar:   { at: [0, 0.75],    look: [0, 0.04, 0] },      // frente al estante, mirando arriba
 };
+/* Asientos de estación (Fase 4), en coordenadas locales del mueble:
+   at = dónde se sienta, side = por dónde se sube/baja, topY = alto del
+   asiento, face = rumbo relativo al mueble (π = mirando hacia −z local). */
+const PIANO_SEAT = { at: [0, 0.5], side: [0.7, 0.5], topY: 0.5, face: Math.PI };       // banqueta, mirando el teclado
+const CHESS_SEAT = { at: [0, -0.62], side: [0, -1.05], topY: 0.385, face: 0 };         // banquito de las negras
+const JOTAI_SCALE = 0.92;
+
 /* Grilla de navegación: solo bloquea lo que ocupa piso a la altura del
    cuerpo (la alfombra no, lo colgado en la pared tampoco). */
 const NAV = { cell: 0.17, radius: 0.25, minY: 0.06, maxY: 1.1 };
@@ -790,8 +797,9 @@ export function mount(container, hotspots) {
           add(box(0.05, 0.03, 0.36), 0x101114, x, 0.015, 0.02);            // pata de piso
           add(box(0.06, 0.02, 0.06), 0x2a2d35, x, yTop, 0.02);             // soporte del teclado
         });
-        add(box(0.8, 0.08, 0.32), 0x3d2a18, 0, 0.46, 0.85);
-        [[-0.34, 0.74], [0.34, 0.74], [-0.34, 0.96], [0.34, 0.96]].forEach(([x, z]) => add(cyl(0.025, 0.42), 0x3d2a18, x, 0.21, z));
+        // banqueta: lo bastante cerca del teclado para que JotAI llegue sentado (ver PIANO_SEAT)
+        add(box(0.8, 0.08, 0.32), 0x3d2a18, 0, 0.46, PIANO_SEAT.at[1]);
+        [[-0.34, -0.11], [0.34, -0.11], [-0.34, 0.11], [0.34, 0.11]].forEach(([x, dz]) => add(cyl(0.025, 0.42), 0x3d2a18, x, 0.21, PIANO_SEAT.at[1] + dz));
         out.baseY = 0.8;
         break;
       }
@@ -915,10 +923,11 @@ export function mount(container, hotspots) {
             out.refs.squares.push(sq);
           }
         }
-        // dos banquitos a los lados de la mesa
-        [-0.66, 0.66].forEach((x) => {
-          add(cyl(0.15, 0.05), 0x3d2a18, x, 0.36, 0.02);
-          [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sz]) => add(cyl(0.02, 0.34), 0x2a1a10, x + sx * 0.09, 0.17, 0.02 + sz * 0.09));
+        // dos banquitos, uno de cada lado del tablero: el del fondo (negras) es
+        // el de JotAI, que juega de rival (ver CHESS_SEAT)
+        [CHESS_SEAT.at[1], -CHESS_SEAT.at[1]].forEach((z) => {
+          add(cyl(0.15, 0.05), 0x3d2a18, 0, 0.36, z);
+          [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sz]) => add(cyl(0.02, 0.34), 0x2a1a10, sx * 0.09, 0.17, z + sz * 0.09));
         });
         out.baseY = topY + 0.05;
         break;
@@ -1377,7 +1386,7 @@ export function mount(container, hotspots) {
   });
 
   /* ── JotAI: personaje del cuarto (modelo + globo + comportamiento) ── */
-  const jotai = createJotai({ reducedMotion, lite });
+  const jotai = createJotai({ reducedMotion, lite, scale: JOTAI_SCALE });
   jotai.root.position.set(JOTAI_HOME.x, 0, JOTAI_HOME.z);
   jotai.root.rotation.y = JOTAI_HOME.rotY;
   scene.add(jotai.root);
@@ -1429,6 +1438,22 @@ export function mount(container, hotspots) {
    *  Arrimada queda GIRADA hacia el monitor secundario (que ya mira al
    *  usuario): recta, el respaldo quedaba entre la cámara isométrica y JotAI
    *  y lo tapaba casi entero. */
+  /** Asiento de estación (banqueta del piano, banquito del ajedrez) para el brain. */
+  function makeSeatProp(id, { at, side, topY, face }) {
+    const o = objects.get(id);
+    if (!o) return null;
+    const v = new THREE.Vector3();
+    return {
+      seat() {
+        const s = o.root.localToWorld(v.set(at[0], topY, at[1]));
+        const seat = { x: s.x, z: s.z, topY: s.y, heading: (o.f.rotY || 0) + face };
+        const sd = o.root.localToWorld(v.set(side[0], 0, side[1]));
+        seat.side = { x: sd.x, z: sd.z };
+        return seat;
+      },
+    };
+  }
+
   function makeChairProp() {
     const desk = objects.get('desk');
     const ch = desk?.refs.chair;
@@ -1457,9 +1482,11 @@ export function mount(container, hotspots) {
   const jotaiBrain = createJotaiBrain({
     jotai, bubble: jotaiBubble, caption: jotaiCaption, nav: jotaiNav, spots: jotaiSpots,
     reducedMotion,
+    scale: JOTAI_SCALE,
     viewHeading: Math.atan2(ISO_DIR.x, ISO_DIR.z),   // de frente a la cámara
     props: {
       chair: makeChairProp(),
+      seats: { bench: makeSeatProp('piano', PIANO_SEAT), stool: makeSeatProp('chess', CHESS_SEAT) },
       // `stations` / `stationSys` se crean más abajo: estas flechas recién corren desde el loop
       petPukis: () => stations.get('pukis')?.react?.({ sound: false }),
       emit: (...args) => stationSys.emit(...args),
@@ -1470,7 +1497,8 @@ export function mount(container, hotspots) {
   const jotaiAnchor = new THREE.Vector3();
   let jotaiHovered = false;
   let jotaiFailed = false;    // un error en su update no debe congelar el loop del cuarto
-  let jotaiFocused = false;   // ver `jotaiWantsFocus` en frame(): capa de foco mientras está "de servicio"
+  let jotaiFocused = false;
+  const _handL = new THREE.Vector3(), _handR = new THREE.Vector3(), _belly = new THREE.Vector3();   // ver `jotaiWantsFocus` en frame(): capa de foco mientras está "de servicio"
   // QA desde consola: __gamJotai.brain.goTo('pukis') · console.log(__gamJotai.nav.debugString())
   if (import.meta.env.DEV) window.__gamJotai = { jotai, brain: jotaiBrain, bubble: jotaiBubble, nav: jotaiNav, spots: jotaiSpots };
 
@@ -1658,6 +1686,14 @@ export function mount(container, hotspots) {
     onEnvScene: (t) => !jotaiFailed && jotaiBrain.wantsStage(t),
     // estaciones con rol propio (§11 del plan) avisan al brain: hoy solo el piano
     cue: (evt, data) => { if (!jotaiFailed) jotaiBrain.cue(evt, data); },
+    // JotAI en las estaciones (Fase 4) — todos devuelven null/false si no está
+    // (o si su update falló): la estación sigue funcionando igual que sin él
+    jotaiHere: () => !jotaiFailed,
+    jotaiRiding: () => !jotaiFailed && jotaiBrain.riding,
+    jotaiHands: () => (!jotaiFailed && jotaiBrain.duty === 'juggling' && !jotaiBrain.moving ? jotai.handsWorld(_handL, _handR) : null),
+    jotaiGuitar: () => (!jotaiFailed && jotaiBrain.duty === 'guitar' && !jotaiBrain.moving
+      ? { belly: jotai.root.localToWorld(_belly.set(0, 0.6, 0.27)), heading: jotai.root.rotation.y }
+      : null),
   }, objects);
   const stations = stationSys.stations;
 
@@ -2287,7 +2323,7 @@ export function mount(container, hotspots) {
         jotaiBrain.update(now, { zoomed, focusLook, cursorLook, envT });
         // estación con rol propio (§11): mientras esté ahí parado, que no salga
         // desenfocado junto al objeto enfocado (ver `setFocusLayer`)
-        const jotaiWantsFocus = !!(zoomed && STATION_POSE[zoomed.id] && jotaiBrain.current === zoomed.id);
+        const jotaiWantsFocus = !!(zoomed && STATION_IDS.has(zoomed.id) && jotaiBrain.duty === zoomed.id);
         if (jotaiWantsFocus !== jotaiFocused) { setFocusLayer(jotai.root, jotaiWantsFocus); jotaiFocused = jotaiWantsFocus; }
         // sentado, sube y baja con el escritorio cuando este se levanta por el hover
         jotai.root.position.y = jotaiBrain.seated && deskRoot ? deskRoot.userData.lift : 0;

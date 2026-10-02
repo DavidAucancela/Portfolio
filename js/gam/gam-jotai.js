@@ -35,6 +35,12 @@
  * Fase 3: poses `sit` / `type` / `sleepDesk` / `crouch`, clips `stretch`
  * (cuello de resorte al máximo) / `typing` (loop) / `pet` / `startle`, cara
  * `yawn`. `slideTo` = tramos cortos fuera de la grilla (subirse a la silla).
+ *
+ * Fase 4 (estaciones): poses `pianoSit` / `chessSit` / `chin` / `guitarHold`
+ * / `juggle` / `ride` / `fallSit`, clips `reachL/R`, `scratch`, `strum`,
+ * `juggleHands` (loop), `pointL/R`, `salute`, `bob` (loop), `hop`, `wobble`,
+ * `dust`. `setPose(name, { hipsY })` sienta a otra altura y `handsWorld()`
+ * da las palmas en el mundo.
  */
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
@@ -109,6 +115,44 @@ const POSES = {
     ...STAND_ARMS,
     hipL: [-0.6, 0, 0], hipR: [-0.6, 0, 0], kneeL: [1.2, 0, 0], kneeR: [1.2, 0, 0],
     hipsY: -0.055, torso: [0.4, 0, 0],
+  },
+  /* ── Fase 4: estaciones ── */
+  // sentado al piano (banqueta): piernas de `sit` + brazos al teclado; la altura
+  // del asiento la pasa la escena (`setPose('pianoSit', { hipsY })`)
+  pianoSit: { ...SIT_LEGS, ...PIANO_ARMS },
+  // sentado al ajedrez: manos sobre las rodillas, atento al tablero
+  chessSit: {
+    ...SIT_LEGS, torso: [0.18, 0, 0],
+    shoulderL: [-0.75, 0, 0.18], shoulderR: [-0.75, 0, -0.18], elbowL: [-0.55, 0, 0], elbowR: [-0.55, 0, 0],
+  },
+  // pensando (turno de la IA): mano derecha al mentón
+  chin: {
+    ...SIT_LEGS, torso: [0.22, 0, 0], head: [0.12, 0, -0.08],
+    shoulderL: [-0.75, 0, 0.18], elbowL: [-0.55, 0, 0],
+    shoulderR: [-1.15, 0, -0.32], elbowR: [-2.0, 0, 0.35], wristR: [0.4, 0, 0],
+  },
+  // guitarra en brazos: izquierda arriba en el mástil, derecha cruzada sobre la boca
+  guitarHold: {
+    torso: [0.08, 0, 0],
+    shoulderL: [-1.0, 0, 0.75], elbowL: [-0.9, 0, 0], wristL: [0, 0, 0.2],
+    shoulderR: [-0.75, 0, -0.1], elbowR: [-1.35, 0, 0.5],
+  },
+  // malabares: antebrazos adelante y arriba, manos separadas
+  juggle: {
+    shoulderL: [-0.3, 0, 0.3], shoulderR: [-0.3, 0, -0.3],
+    elbowL: [-1.15, 0, 0], elbowR: [-1.15, 0, 0], head: [-0.2, 0, 0],
+  },
+  // sobre la patineta: rodillas un poco flexionadas y brazos abiertos para el equilibrio
+  ride: {
+    hipL: [-0.3, 0, 0], hipR: [-0.3, 0, 0], kneeL: [0.6, 0, 0], kneeR: [0.6, 0, 0],
+    shoulderL: [0, 0, 1.25], shoulderR: [0, 0, -1.25], elbowL: [0, 0, 0.25], elbowR: [0, 0, -0.25],
+    torso: [0.12, 0, 0],
+  },
+  // se cayó sentado al piso (la cadera baja hasta casi tocar el suelo)
+  fallSit: {
+    hipL: [-1.45, 0, 0.15], hipR: [-1.45, 0, -0.15], kneeL: [0.4, 0, 0], kneeR: [0.4, 0, 0],
+    shoulderL: [0.5, 0, 0.5], shoulderR: [0.5, 0, -0.5], elbowL: [-0.3, 0, 0], elbowR: [-0.3, 0, 0],
+    torso: [-0.2, 0, 0], hipsY: -0.27,
   },
 };
 
@@ -187,6 +231,53 @@ const CLIPS = {
     [350, PET_A], [700, PET_B], [1050, PET_A], [1400, PET_B], [1750, PET_A],
     [2150, {}],
   ],
+  /* ── Fase 4: estaciones ── */
+  // estira el brazo hacia una pieza del tablero (antes de que se mueva)
+  reachL: [[0, {}], [280, { shoulderL: [-1.45, 0, 0.1], elbowL: [-0.15, 0, 0], torso: [0.32, 0, 0] }], [700, { shoulderL: [-1.45, 0, 0.1], elbowL: [-0.15, 0, 0], torso: [0.32, 0, 0] }], [1000, {}]],
+  reachR: [[0, {}], [280, { shoulderR: [-1.45, 0, -0.1], elbowR: [-0.15, 0, 0], torso: [0.32, 0, 0] }], [700, { shoulderR: [-1.45, 0, -0.1], elbowR: [-0.15, 0, 0], torso: [0.32, 0, 0] }], [1000, {}]],
+  // se rasca la cabeza (perdió)
+  scratch: [
+    [0, {}],
+    [300, { shoulderR: [-0.6, 0, -1.9], elbowR: [0, 0, -1.8], head: [0, 0, 0.18] }],
+    [500, { shoulderR: [-0.6, 0, -1.9], elbowR: [0, 0, -2.1], head: [0, 0, 0.18] }],
+    [700, { shoulderR: [-0.6, 0, -1.9], elbowR: [0, 0, -1.8], head: [0, 0, 0.18] }],
+    [900, { shoulderR: [-0.6, 0, -1.9], elbowR: [0, 0, -2.1], head: [0, 0, 0.18] }],
+    [1300, {}],
+  ],
+  // rasguea: el antebrazo derecho baja y sube sobre la boca de la guitarra
+  strum: [[0, {}], [90, { elbowR: [-1.1, 0, 0.75], torso: [0.1, 0.06, 0] }], [220, {}]],
+  // malabares (loop): las manos suben y bajan alternadas, como lanzando
+  juggleHands: [
+    [0, { elbowL: [-1.25, 0, 0], elbowR: [-0.85, 0, 0] }],
+    [400, { elbowL: [-0.85, 0, 0], elbowR: [-1.25, 0, 0] }],
+    [800, { elbowL: [-1.25, 0, 0], elbowR: [-0.85, 0, 0] }],
+  ],
+  // señala con el brazo estirado (izquierdo / derecho)
+  pointL: [[0, {}], [260, { shoulderL: [-1.4, 0, 0.35], elbowL: [-0.05, 0, 0], head: [0, 0.2, 0] }], [1500, { shoulderL: [-1.4, 0, 0.35], elbowL: [-0.05, 0, 0], head: [0, 0.2, 0] }], [1900, {}]],
+  pointR: [[0, {}], [260, { shoulderR: [-1.4, 0, -0.35], elbowR: [-0.05, 0, 0], head: [0, -0.2, 0] }], [1500, { shoulderR: [-1.4, 0, -0.35], elbowR: [-0.05, 0, 0], head: [0, -0.2, 0] }], [1900, {}]],
+  // saludo jedi: la mano derecha a la frente, una pequeña reverencia
+  salute: [
+    [0, {}],
+    [300, { shoulderR: [-1.3, 0, -0.9], elbowR: [-1.9, 0, 0.6], head: [0.1, 0, 0] }],
+    [900, { shoulderR: [-1.3, 0, -0.9], elbowR: [-1.9, 0, 0.6], head: [0.25, 0, 0], torso: [0.25, 0, 0] }],
+    [1500, { shoulderR: [-1.3, 0, -0.9], elbowR: [-1.9, 0, 0.6], head: [0.1, 0, 0] }],
+    [1900, {}],
+  ],
+  // menea la cabeza al ritmo (loop)
+  bob: [[0, { head: [0.12, 0, 0.05] }], [300, { head: [-0.04, 0, -0.05] }], [600, { head: [0.12, 0, 0.05] }]],
+  // patineta: se agacha y salta… y la tabla no se despega
+  hop: [[0, {}], [260, { hipsY: -0.07, torso: [0.3, 0, 0] }], [420, { hipsY: 0.09, shoulderL: [0, 0, 1.6], shoulderR: [0, 0, -1.6] }], [640, { hipsY: -0.04 }], [900, {}]],
+  // tambalea con los brazos como hélice
+  wobble: [
+    [0, {}],
+    [180, { torso: [0.05, 0, 0.22], shoulderL: [0, 0, 2.0], shoulderR: [0, 0, -0.6] }],
+    [380, { torso: [0.05, 0, -0.22], shoulderL: [0, 0, 0.6], shoulderR: [0, 0, -2.0] }],
+    [580, { torso: [0.05, 0, 0.18], shoulderL: [0, 0, 2.0], shoulderR: [0, 0, -0.6] }],
+    [780, { torso: [0.05, 0, -0.18], shoulderL: [0, 0, 0.6], shoulderR: [0, 0, -2.0] }],
+    [1050, {}],
+  ],
+  // se sacude el polvo al levantarse
+  dust: [[0, {}], [200, { shoulderL: [-0.4, 0, 0.1], elbowL: [-0.6, 0, -0.6], torso: [0.25, 0, 0] }], [400, { shoulderL: [-0.4, 0, 0.1], elbowL: [-0.2, 0, -0.6], torso: [0.25, 0, 0] }], [600, { shoulderL: [-0.4, 0, 0.1], elbowL: [-0.6, 0, -0.6], torso: [0.25, 0, 0] }], [900, {}]],
   // sobresalto: salta, brazos afuera, cabeza atrás
   startle: [
     [0, {}],
@@ -505,9 +596,11 @@ export function createJotai({ reducedMotion = false, lite = false, scale = 0.92 
     r?.();
   }
 
-  /** Cambia la pose base (la transición la hace la misma amortiguación). */
-  function setPose(name) {
-    if (POSES[name]) basePose = POSES[name];
+  /** Cambia la pose base (la transición la hace la misma amortiguación).
+   *  `over` pisa valores de la pose — ej. `{ hipsY }` para un asiento de
+   *  otra altura que la silla (banqueta del piano, banquito del ajedrez). */
+  function setPose(name, over = null) {
+    if (POSES[name]) basePose = over ? { ...POSES[name], ...over } : POSES[name];
   }
 
   /** Canal escalar (`hipsY` / `neckS`): el de la base + lo que sume el clip. */
@@ -532,6 +625,12 @@ export function createJotai({ reducedMotion = false, lite = false, scale = 0.92 
   }
   function headTop(out = new THREE.Vector3()) {
     return J.head.localToWorld(out.set(0, 0.42, 0));
+  }
+  /** Palmas de las manos en el mundo (malabares, guitarra). */
+  function handsWorld(outL = new THREE.Vector3(), outR = new THREE.Vector3()) {
+    J.wristL.localToWorld(outL.set(0, -0.05, 0));
+    J.wristR.localToWorld(outR.set(0, -0.05, 0));
+    return { left: outL, right: outR };
   }
 
   /* ── Locomoción ──
@@ -813,7 +912,7 @@ export function createJotai({ reducedMotion = false, lite = false, scale = 0.92 
   mouth.paint('smile');
 
   return {
-    root, meshes, setFace, play, setLookTarget, setTalking, headTop, headWorld,
+    root, meshes, setFace, play, setLookTarget, setTalking, headTop, headWorld, handsWorld,
     followPath, faceTo, slideTo, stop, setPose, stopClip, update, dispose,
     get moving() { return !!move || !!slide; },
     get busy() { return !!move || !!slide || !!clip; },   // rodando o en medio de un clip

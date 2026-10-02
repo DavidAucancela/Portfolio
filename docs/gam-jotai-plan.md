@@ -1,8 +1,8 @@
 # Modo `.gam` — JotAI como personaje del cuarto (plan)
 
-> Estado: **aprobado** (2026-09-24) — **fases 1 a 3 hechas** (la 1 revisada por
+> Estado: **aprobado** (2026-09-24) — **fases 1 a 4 hechas** (la 1 revisada por
 > David en navegador el 2026-09-25; la 2 y la 3 verificadas en headless el
-> 2026-09-29). Siguiente: Fase 4 (estaciones). Se apoya en el diorama
+> 2026-09-29; la 4 el 2026-10-02, ver §12). Siguiente: Fase 5 (pulido). Se apoya en el diorama
 > Three.js actual (`gam-three-scene.js` + `gam-stations.js`); ver
 > `docs/gam-mode-plan.md` para el contexto del modo.
 >
@@ -284,14 +284,16 @@ escritorio para despertarlo.
 ✅ *La secuencia se lee como una pequeña historia sin que el visitante
 toque nada más.*
 
-**Fase 4: estaciones.** — ⏭ **SIGUIENTE** (ver §11). Piano (manos por IK + demo del Reto) → ajedrez (rival)
-→ malabares (cascada en sus manos) → patineta (pestaña Montar + caída) →
-Pukis, estante, Lumbre, puerta. Una estación por commit.
+**Fase 4: estaciones.** — ✔ **HECHA** (ver §12). Antes se redefinieron los objetos del
+cuarto (+ Logros, póster de Yoda, guitarra, barra de sonido). Piano (banqueta + demo del
+Reto, sin IK), guitarra (la toca en brazos), ajedrez (rival, del lado de las negras),
+malabares (cascada en sus manos), patineta (pestaña Montar + caídas), Logros, barra de
+sonido, Star Wars, Pukis, estante, Lumbre y puerta.
 ✅ *Ninguna estación agrega espera y todas funcionan igual con JotAI
 desactivado.*
 
-**Fase 5: pulido.** Frases bilingües, analítica, reduced-motion, prueba en
-táctil real, ajuste de encuadres y la documentación.
+**Fase 5: pulido.** — ⏭ **SIGUIENTE**. Analítica (`gam_jotai`), reduced-motion,
+prueba en táctil real y en GPU, ajuste fino de encuadres, revisar el copy de las frases.
 
 ---
 
@@ -480,3 +482,65 @@ y `nav.clear()` en cada tramo.
 - La pantalla del escritorio no pasa a "protector" mientras duerme (el plan lo sugería).
 - Nada de analítica todavía (`gam_jotai` en `js/analytics.js`, Fase 5).
 - No se probó en un dispositivo táctil real ni en un navegador con GPU (solo headless).
+
+---
+
+## 12. Fase 4 — cómo quedó (2026-10-02)
+
+Rama `feat/gam-jotai-fase4` (desde `main`, sin push). Commits: objetos nuevos (`cbc1a18`,
+`6a99767`, `34ac886`, `b43d931`) y JotAI en las estaciones (el siguiente).
+
+**Objetos del cuarto (decididos con David el 2026-10-01):** los 10 de antes + **Logros**
+(`medals`, repisa de medallas = certificados de `sec-projects.json`, click → `PDFModal`,
+botón a la trayectoria), **Star Wars** (`starwars`, póster de Yoda real, solo se acerca),
+**guitarra** (`guitar`, clásica con cutaway calcada de la de David, `gam-guitar.js`) y
+**barra de sonido** (`soundbar`, estilo Mi Soundbar sobre el estante, la playlist).
+Pendiente de David: canciones de la guitarra y la playlist (placeholders en
+`gam-hotspots.json` / `SONGS`).
+
+**Brain (`gam-jotai-brain.js`):**
+- `ROLES` (tabla por estación: `seat`, `pose`, `face`, `clip`/`loop`, `near`, `point`,
+  `faceCam`, `line`) reemplaza a `STATION_POSE`; `STATION_IDS` se exporta para la capa de
+  foco. `enterStation(f)` → `travel` → (sentarse / arrimarse / girarse a cámara) → `duty = id`.
+  `leaveStation()` al salir del zoom: se levanta con calma (`standFrom`) o vuelve al spot si
+  estaba arrimado (Pukis).
+- Asientos de estación: `props.seats = { bench, stool }` (`makeSeatProp` en la escena:
+  `PIANO_SEAT` / `CHESS_SEAT`, coords locales). `sitOn(name)` / `standFrom()`; estado
+  `perch` + `perchHips`. `interrupt({ keepPerch })`: sin `keepPerch` baja de golpe al costado
+  (noche, otra estación). La silla del escritorio sigue aparte (`seated`, rutina nocturna).
+  `hipsForSeat(topY)` / `hipsForStand(y)` pasan alturas del mundo a `hipsY` con `scale`.
+- `cue(evento, datos)` despacha por prefijo (`CUE_STATION`) y solo si está de servicio ahí:
+  `piano:key|phase`, `guitar:strum|end`, `chess:think|move|end`, `juggle:mode|catch|fail`,
+  `skate:mount|pos|trick|dismount`, `medals:pick`, `book:pick`, `lumbre:shot`, `pukis:pet`.
+- De servicio puede hablar con zoom (el globo no se oculta) y su `gaze` le gana al objeto
+  enfocado (mirar la tecla que suena, la pieza que mueve). `farewell()` en la puerta.
+- Getters nuevos: `duty`, `riding`, `moving`.
+
+**Personaje (`gam-jotai.js`):** poses `pianoSit`, `chessSit`, `chin`, `guitarHold`,
+`juggle`, `ride`, `fallSit`; clips `reachL/R`, `scratch`, `strum`, `juggleHands`,
+`pointL/R`, `salute`, `bob`, `hop`, `wobble`, `dust`; `setPose(name, { hipsY })`,
+`handsWorld()`.
+
+**Escena:** banqueta del piano más cerca del teclado; los banquitos del ajedrez pasaron a
+los lados del tablero (el del fondo = negras = JotAI) — de paso arregla que el spot del
+ajedrez quedaba fuera del cuarto y no tenía camino. Spot de malabares al costado del
+pedestal. Ganchos en el `base` de las estaciones: `jotaiHere()`, `jotaiRiding()`,
+`jotaiHands()`, `jotaiGuitar()` (todos null/false sin JotAI).
+
+**Estaciones:** el piano avisa las fases del Reto (`onPhase` en `gam-piano.js`); la
+guitarra pasa de flotar a sus brazos (`hold()`, escala 0.62, en diagonal); el ajedrez
+avisa think/move/end y espera 260 ms para que estire el brazo; los malabares hacen la
+cascada entre sus palmas (`jotaiCascade`); la patineta tiene **Ver / Montar** (tabla
+acostada, círculo `RIDE` entre Pukis y el pedestal, trucos que siempre fallan: `stuck`,
+`shoot`, `wobble`).
+
+**Verificado (headless, SwiftShader):** brain con reloj virtual en las 11 estaciones (llega,
+queda de servicio, cues, sale, la noche desde la banqueta); capturas de piano, guitarra,
+ajedrez, malabares, patineta (montar + caída), Logros y Pukis; JotAI desactivado (la
+patineta no ofrece Montar, el ajedrez juega igual). **No** probado en GPU real ni táctil.
+
+**Pendientes:**
+- Las manos del piano son por lado (sin IK); el piano se ve de espaldas a JotAI.
+- Al salir de la patineta montado, queda donde estaba la tabla (en la grilla, pero no en su spot).
+- Analítica `gam_jotai` y reduced-motion fino (Fase 5).
+

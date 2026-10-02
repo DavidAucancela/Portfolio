@@ -571,9 +571,11 @@ export function createJotaiBrain({
     speak('poke', 'greeting', pokes.length === 1 ? 'wave' : 'nod');
   }
 
-  /** Pose base de la estación, a la altura del asiento si está sentado. */
-  function dutyPose(name) {
-    jotai.setPose(name, perch ? { hipsY: perchHips } : null);
+  /** Pose base de la estación, a la altura del asiento si está sentado.
+   *  `over` pisa articulaciones (ej. el brazo que se estira a una tecla). */
+  function dutyPose(name, over = null) {
+    const o = { ...(over || {}), ...(perch ? { hipsY: perchHips } : {}) };
+    jotai.setPose(name, Object.keys(o).length ? o : null);
   }
 
   /** Señala `world` con el brazo del lado en que queda y lo mira. */
@@ -621,10 +623,16 @@ export function createJotaiBrain({
   function leaveStation() {
     const wasPerch = perch;
     const was = duty;
+    const wasRiding = riding;
     interrupt(AFTER_POKE, { keepPerch: true });
     duty = null;
     riding = false;
     if (wasPerch) run('leave', (ok) => standFrom(ok));
+    else if (wasRiding && spots[was]) {
+      // se salió montado en la patineta: se baja y vuelve rodando a su lugar
+      jotai.setPose('stand');
+      run('leave', (ok) => travel(was, ok));
+    }
     else if (was && ROLES[was]?.near && spots[was]) {
       // estaba arrimado (Pukis): vuelve a su spot, que está en la grilla
       const sp = spots[was];
@@ -716,12 +724,25 @@ export function createJotaiBrain({
     const station = CUE_STATION[evt.split(':')[0]];
     if (sleeping || !station || duty !== station) return;
     switch (evt) {
-      case 'piano:key':
+      case 'piano:key': {
         gaze = data.world || null;
         gazeUntil = clock + 600;
-        // en el turno del visitante solo mira; en la demo y en Libre "toca"
-        if (pianoPhase !== 'turn') jotai.play(data.left ? 'pianoKeyL' : 'pianoKeyR');
+        // en el turno del visitante solo mira; en la demo y en Libre "toca":
+        // la mano del lado de la tecla se estira hacia ella (sin IK: hombro
+        // abierto según qué tan al costado está) y el torso se gira un poco
+        if (pianoPhase === 'turn' || !data.world) break;
+        const lx = jotai.root.worldToLocal(data.world.clone()).x;   // +x = su izquierda
+        const k = Math.max(-1, Math.min(1, lx / 0.55));
+        const left = k >= 0;
+        const reach = Math.abs(k);
+        dutyPose('pianoSit', {
+          torso: [0.22, k * 0.35, 0],
+          shoulderL: [-1.05 - (left ? reach * 0.2 : 0), 0, 0.15 + (left ? reach * 0.55 : 0)],
+          shoulderR: [-1.05 - (!left ? reach * 0.2 : 0), 0, -0.15 - (!left ? reach * 0.55 : 0)],
+        });
+        jotai.play(left ? 'pianoKeyL' : 'pianoKeyR');
         break;
+      }
       case 'piano:phase':
         pianoPhase = data.phase;
         if (data.phase === 'demo') jotai.setFace('thinking', 1500);

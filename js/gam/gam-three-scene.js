@@ -79,7 +79,7 @@ const FURN_SCALE = 1.15; // muebles más grandes que su diseño base ("se ven ch
 ──────────────────────────────────────────────────── */
 const WALL_FACING = Math.PI / 2;
 const FURNITURE = [
-  { id: 'piano',      x: -3.06,        z: 0.31,  rotY: WALL_FACING, color: 0xffb020, label: '🎹 Piano',            kind: 'minigame', zoom: 2.5, viewTilt: 0.45, scale: 1.354 },
+  { id: 'piano',      x: -3.06,        z: 0.31,  rotY: WALL_FACING, view: 0.62, color: 0xffb020, label: '🎹 Piano',  kind: 'minigame', zoom: 2.5, scale: 1.354 },   // view: de 3/4, se ve a JotAI de perfil en la banqueta (de frente quedaba de espaldas)
   { id: 'desk',       x: -0.3,         z: -2.93, rotY: 0,    color: 0x3b82f6, label: '🖥️ Escritorio',       kind: 'list', zoom: 2.0, artHeight: 1.9 },
   { id: 'juggling',   x: 3.05,         z: 0.81,  y: 0.006, rotY: Math.PI / 2, color: 0xff8a3d, label: '🤹 Malabares',        kind: 'video', zoom: 3, scale: 1.35 },
   { id: 'door',       x: -3.42,        z: 2.45,  rotY: WALL_FACING, color: 0x94a3b8, label: '🚪 Salir',            kind: 'exit', zoom: 2.2, scale: 1.085 },
@@ -909,7 +909,8 @@ export function mount(container, hotspots) {
         add(box(0.24, 0.014, 0.19), 0xc9ccd2, -0.35, topY + 0.007, -0.24);            // base
         add(box(0.07, 0.3, 0.03), 0xc9ccd2, -0.35, topY + 0.17, -0.3);                // cuello
         add(box(0.96, 0.6, 0.035), 0xd9dce1, -0.35, topY + 0.52, -0.27);              // cuerpo
-        out.flickers.push(add(box(0.9, 0.5, 0.01), 0x222222, -0.35, topY + 0.565, -0.25, screenExtra(codeTex)));
+        const screen1 = add(box(0.9, 0.5, 0.01), 0x222222, -0.35, topY + 0.565, -0.25, screenExtra(codeTex));
+        out.flickers.push(screen1);
         add(box(0.03, 0.03, 0.005), 0x9a9da3, -0.35, topY + 0.26, -0.25);             // logo del mentón
 
         // monitor secundario, girado hacia el usuario
@@ -921,7 +922,9 @@ export function mount(container, hotspots) {
         add2(box(0.22, 0.02, 0.16), 0x1a1a1a, 0, topY + 0.01, 0);
         add2(box(0.05, 0.28, 0.05), 0x1a1a1a, 0, topY + 0.15, -0.03);
         add2(box(0.72, 0.44, 0.04), 0x151515, 0, topY + 0.44, -0.02);
-        out.flickers.push(add2(box(0.66, 0.38, 0.01), 0x222222, 0, topY + 0.44, 0.005, screenExtra(makeScreenTexture('gallery', 9))));
+        const screen2 = add2(box(0.66, 0.38, 0.01), 0x222222, 0, topY + 0.44, 0.005, screenExtra(makeScreenTexture('gallery', 9)));
+        out.flickers.push(screen2);
+        out.refs.screens = [screen1, screen2];   // protector de pantalla mientras JotAI duerme
 
         // trackpad + mouse (sin teclado)
         add(box(0.16, 0.01, 0.12), 0xe6e8ec, -0.2, topY + 0.02, 0.26);
@@ -1492,6 +1495,48 @@ export function mount(container, hotspots) {
     if (f.interactive !== false) interactiveMeshes.push(group);
     loadArt(group, f, built.refs);
   });
+
+  /* ── Protector de pantalla del escritorio (mientras JotAI duerme) ──
+     Un canvas chico: "JotAI · zzz" rebotando sobre negro, estilo DVD. Al
+     despertarse, cada pantalla recupera su textura. */
+  const saver = (() => {
+    const cv = document.createElement('canvas');
+    cv.width = 256; cv.height = 160;
+    const g = cv.getContext('2d');
+    const tex = new THREE.CanvasTexture(cv);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    const box2 = { x: 40, y: 30, vx: 38, vy: 26, hue: 190 };
+    let on = false, last = 0;
+    const screens = objects.get('desk')?.refs.screens || [];
+    const saved = screens.map((m) => ({ map: m.material.map, emissiveMap: m.material.emissiveMap }));
+    function draw(dt) {
+      g.fillStyle = '#05070a'; g.fillRect(0, 0, 256, 160);
+      box2.x += box2.vx * dt; box2.y += box2.vy * dt;
+      if (box2.x < 4 || box2.x > 256 - 108) { box2.vx *= -1; box2.hue = (box2.hue + 70) % 360; }
+      if (box2.y < 18 || box2.y > 160 - 8) { box2.vy *= -1; box2.hue = (box2.hue + 70) % 360; }
+      box2.x = Math.max(4, Math.min(256 - 108, box2.x)); box2.y = Math.max(18, Math.min(152, box2.y));
+      g.fillStyle = `hsl(${box2.hue}, 90%, 62%)`;
+      g.font = 'bold 22px "Courier New", monospace';
+      g.fillText('JotAI', box2.x, box2.y);
+      g.font = '14px "Courier New", monospace';
+      g.fillText('z z z', box2.x + 70, box2.y - 12);
+      tex.needsUpdate = true;
+    }
+    return {
+      update(sleeping, now) {
+        if (sleeping !== on) {
+          on = sleeping;
+          screens.forEach((m, i) => {
+            m.material.map = on ? tex : saved[i].map;
+            m.material.emissiveMap = on ? tex : saved[i].emissiveMap;
+            m.material.needsUpdate = true;
+          });
+          if (on) { last = now; draw(0); }
+        }
+        if (on && now - last > 66) { draw(Math.min(0.2, (now - last) / 1000)); last = now; }
+      },
+    };
+  })();
 
   /* ── Trofeos: cambia el Aegis hecho en código por el modelo real ── */
   (function loadAegisModels() {
@@ -2589,6 +2634,7 @@ export function mount(container, hotspots) {
           cursorLook = jotaiLook;
         }
         jotaiBrain.update(now, { zoomed, focusLook, cursorLook, envT });
+        saver.update(jotaiBrain.sleeping, now);
         // estación con rol propio (§11): mientras esté ahí parado, que no salga
         // desenfocado junto al objeto enfocado (ver `setFocusLayer`)
         const jotaiWantsFocus = !!(zoomed && STATION_IDS.has(zoomed.id) && jotaiBrain.duty === zoomed.id);

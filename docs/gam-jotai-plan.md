@@ -596,10 +596,11 @@ notas" de AU-D en la guitarra (B – F# – E – Esus4) y la playlist «3vol Fe
   no separa las piezas; se puede separar por UV si hace falta.
 - Brillo de los trofeos violeta/dorado en la repisa (se ven oscuros).
 
-**Deudas técnicas:**
-- Piano: manos por lado, sin IK; la cámara lo ve de espaldas.
-- Patineta: si se sale montado, JotAI queda donde estaba la tabla (en la grilla, no en su spot).
-- La pantalla del escritorio no pasa a "protector" mientras duerme (de la Fase 3).
+**Deudas técnicas** (resueltas el 2026-10-02, salvo la última):
+- ✔ Piano: estira el brazo hacia la tecla que suena (hombro según qué tan al costado está, torso
+  girado; sin IK) y la cámara lo ve de 3/4 (`view: 0.62`), no de espaldas.
+- ✔ Patineta: si se sale montado, se baja y vuelve rodando a su spot (`leaveStation`).
+- ✔ Escritorio: protector de pantalla ("JotAI · zzz" rebotando) mientras duerme (`saver`).
 - Paseando puede cruzar por delante de un objeto mientras la cámara vuela hacia él.
 
 **Fase 5 (pulido):** analítica `gam_jotai` en `js/analytics.js`, reduced-motion fino, prueba

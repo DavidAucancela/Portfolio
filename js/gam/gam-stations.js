@@ -14,6 +14,10 @@
  *   pukis       → acariciarlo: corazones, cola, orejas
  *   chess       → tablero 3D: juegas con blancas contra una IA sencilla
  *   lumbre      → póster de mi juego Lumbre: capturas + enlaces
+ *   medals      → Logros: medallas = certificados (PDFModal) + trayectoria
+ *   starwars    → póster Star Wars: tarjeta de fan + sable
+ *   guitar      → se despega de la pared y toca canciones (gam-guitar.js)
+ *   soundbar    → barra de sonido: la playlist + LEDs de ecualizador
  *
  * Contrato: `createStations(base, objects)` devuelve Map(id → estación). Una
  * estación es { focus(), enter(), exit(), update(now, dt), busy?(), pointerMove?,
@@ -25,9 +29,11 @@ import * as THREE from 'three';
 import { getAudioContext, envelope } from './gam-audio.js';
 import { createPiano, KEY_BINDINGS } from './gam-piano.js';
 import { createJuggling, ZONE_CENTER } from './gam-juggling.js';
+import { createGuitar, SONGS } from './gam-guitar.js';
 import { newGame, legalMoves, applyMove, chooseMove, status as chessStatus, isWhite } from './gam-chess.js';
 import { LangSwitcher } from '../lang.js';
 import { ProjectGallery } from '../project-gallery.js';
+import { PDFModal } from '../pdf-modal.js';
 
 /* ────────────────────────────────────────────────────
    Utilidades compartidas
@@ -1195,6 +1201,397 @@ function lumbreStation(c) {
   };
 }
 
+/* ────────────────────────────────────────────────────
+   LOGROS — repisa de medallas: cada caja es un logro de sec-projects.json.
+   Hover = la medalla brilla; click = descripción + certificado (PDFModal).
+──────────────────────────────────────────────────── */
+const MEDAL_IDS = ['prac-001', 'cert-001', 'cert-002'];   // cajas de izquierda a derecha
+
+function medalsStation(c) {
+  const { root, refs, hud } = c;
+  const boxes = refs.boxes;                // [{ meshes, medal, relief, top }]
+  const owner = new Map();
+  boxes.forEach((b, i) => b.meshes.forEach((m) => owner.set(m, i)));
+  let items = [];
+  let hovered = -1;
+  let selected = -1;
+  let card = null;
+
+  const titleOf = (i) => (items[i] ? L(items[i].title) : `Logro ${i + 1}`);
+
+  function pickBox() {
+    const hit = c.pick(boxes.flatMap((b) => b.meshes));
+    return hit ? (owner.get(hit.object) ?? -1) : -1;
+  }
+
+  function shine(i, k) {
+    const b = boxes[i];
+    [b.medal, b.relief].forEach((m) => {
+      m.material.emissive.setHex(k > 0 ? 0xffc94a : m.userData.baseEmissive);
+      m.material.emissiveIntensity = k > 0 ? k : m.userData.baseEmissiveIntensity;
+    });
+  }
+
+  function openDoc(d) {
+    if (d?.url) PDFModal.open(d.url, L(d.label) || 'Certificado');
+  }
+
+  function showDefault() {
+    card = el('div', 'gam-card');
+    card.innerHTML = `
+      <h3 class="gam-card__title">🏅 ${esc(L(c.content.title) || 'Logros')}</h3>
+      <p class="gam-card__text">${esc(L(c.content.message))}</p>
+      <p class="gam-card__hint">Pasa el cursor sobre una medalla y haz clic para ver el logro.</p>
+      <button type="button" class="gam-card__cta">Ver trayectoria completa →</button>`;
+    card.querySelector('.gam-card__cta').addEventListener('click', () => {
+      window.dispatchEvent(new CustomEvent('portfolio:syncTrayectoria'));
+    });
+    hud.setCard(card);
+  }
+
+  function showItem(i) {
+    const p = items[i];
+    if (!p) return;
+    const docs = p.docs || [];
+    const n = el('div', 'gam-card');
+    n.innerHTML = `
+      <h3 class="gam-card__title">🏅 ${esc(L(p.title))}</h3>
+      <p class="gam-card__text">${esc(L(p.description))}</p>
+      ${docs.length > 1 ? `<p class="gam-card__label">Certificados</p><div class="gam-card__list">${docs.map((d, k) => `
+        <button type="button" class="gam-card__item" data-doc="${k}"><span class="gam-card__item-title">📄 ${esc(L(d.label))}</span></button>`).join('')}</div>` : ''}
+      ${docs.length === 1 ? '<button type="button" class="gam-card__cta">Ver certificado →</button>' : ''}
+      <button type="button" class="gam-card__link">← Ver todos los logros</button>`;
+    n.querySelector('.gam-card__cta')?.addEventListener('click', () => openDoc(docs[0]));
+    n.querySelectorAll('[data-doc]').forEach((b) => b.addEventListener('click', () => openDoc(docs[Number(b.dataset.doc)])));
+    n.querySelector('.gam-card__link').addEventListener('click', () => { selected = -1; hud.setCard(card); });
+    hud.setCard(n);
+  }
+
+  return {
+    focus: () => ({ look: root.localToWorld(V(0, 0.2, 0)), zoom: 4.4 }),
+
+    enter() {
+      hud.show({
+        icon: '🏅',
+        title: 'Logros',
+        hint: 'Pasa el cursor sobre una medalla · clic para ver el certificado',
+        onBack: c.leave,
+      });
+      showDefault();
+      loadJSON('data/sec-projects.json').then((all) => {
+        items = MEDAL_IDS.map((id) => all.find((p) => p.id === id) || null);
+      });
+    },
+
+    exit() {
+      if (hovered >= 0) shine(hovered, 0);
+      hovered = selected = -1;
+      boxes.forEach((b) => b.medal.scale.setScalar(1));
+      c.setOutline([]);
+      c.setLabel(null);
+      c.setCursor('default');
+    },
+
+    update(now) {
+      // la medalla elegida "late" suave dentro de su caja
+      boxes.forEach((b, i) => {
+        const k = i === selected && !c.reducedMotion ? 1 + 0.06 * Math.sin(now * 0.006) : 1;
+        b.medal.scale.setScalar(k);
+        b.relief.scale.setScalar(k);
+      });
+    },
+
+    pointerMove() {
+      const i = pickBox();
+      if (i === hovered) return;
+      if (hovered >= 0) shine(hovered, 0);
+      hovered = i;
+      c.setCursor(i >= 0 ? 'pointer' : 'default');
+      if (i >= 0) {
+        shine(i, 0.6);
+        c.setOutline(boxes[i].meshes);
+        c.setLabel(titleOf(i), root.localToWorld(boxes[i].top.clone()));
+      } else {
+        c.setOutline([]);
+        c.setLabel(null);
+      }
+    },
+
+    pointerDown() {
+      const i = pickBox();
+      if (i < 0) return;
+      selected = i;
+      showItem(i);
+      envelope(getAudioContext(), { freq: 784, type: 'triangle', duration: 0.14, gain: 0.06 });
+      c.glyphs.emit('✦', '#ffc94a', root.localToWorld(boxes[i].top.clone()), { size: 0.22, rise: 0.4 });
+    },
+  };
+}
+
+/* ────────────────────────────────────────────────────
+   STAR WARS — el póster: tarjeta de fan + sable (zumbido sintetizado).
+──────────────────────────────────────────────────── */
+function starwarsStation(c) {
+  const { root, refs, hud } = c;
+  const { img } = refs.poster;
+  const tw = createTweens(c.reducedMotion);
+
+  /** Zumbido de sable: dos sierras casi afinadas por un pasabajos. */
+  function hum() {
+    const ctx = getAudioContext();
+    if (!ctx) return;
+    if (ctx.state === 'suspended') ctx.resume();
+    const t0 = ctx.currentTime;
+    const out = ctx.createGain();
+    const lp = ctx.createBiquadFilter();
+    lp.type = 'lowpass';
+    lp.frequency.setValueAtTime(300, t0);
+    lp.frequency.exponentialRampToValueAtTime(900, t0 + 0.25);
+    out.gain.setValueAtTime(0.0001, t0);
+    out.gain.exponentialRampToValueAtTime(0.07, t0 + 0.12);
+    out.gain.setValueAtTime(0.07, t0 + 0.9);
+    out.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.6);
+    lp.connect(out).connect(ctx.destination);
+    [90, 93.5].forEach((f) => {
+      const o = ctx.createOscillator();
+      o.type = 'sawtooth';
+      o.frequency.setValueAtTime(f * 0.6, t0);
+      o.frequency.exponentialRampToValueAtTime(f, t0 + 0.2);
+      o.connect(lp);
+      o.start(t0);
+      o.stop(t0 + 1.65);
+    });
+  }
+
+  function ignite() {
+    hum();
+    c.glyphs.emit('✦', '#7ad7ff', root.localToWorld(V(0.2, 3.35, 0.1)), { size: 0.28, rise: 0.4 });
+    const m = img.material;
+    if (!m.emissiveMap) { m.emissiveMap = m.map; m.needsUpdate = true; }
+    m.emissive.setHex(0xffffff);
+    tw.add(1400, (p) => { m.emissiveIntensity = 0.55 * Math.sin(Math.PI * p); }, () => { m.emissiveIntensity = 0; });
+  }
+
+  return {
+    focus: () => ({ look: root.localToWorld(V(0, 2.9, 0)), zoom: 6 }),
+
+    enter() {
+      const ct = c.content;
+      hud.show({
+        icon: '⭐',
+        title: 'Star Wars',
+        actions: [{ id: 'saber', label: '⚔️ Sable', onClick: ignite }],
+        hint: 'Que la Fuerza te acompañe',
+        onBack: c.leave,
+      });
+      const favs = (ct.favorites || []).map((f) => `
+        <p class="gam-card__label">${esc(L(f.label))}</p>
+        <p class="gam-card__text">${esc(L(f.value))}</p>`).join('');
+      const card = el('div', 'gam-card');
+      card.innerHTML = `
+        <h3 class="gam-card__title">⭐ ${esc(L(ct.title) || 'Star Wars')}</h3>
+        <p class="gam-card__text">${esc(L(ct.message))}</p>${favs}`;
+      hud.setCard(card);
+      ignite();
+    },
+
+    exit() {
+      tw.clear();
+      img.material.emissiveIntensity = 0;
+    },
+
+    busy: () => tw.busy,
+
+    update(now) { tw.update(now); },
+  };
+}
+
+/* ────────────────────────────────────────────────────
+   GUITARRA — se despega de la pared y toca canciones (gam-guitar.js).
+   Click en la guitarra (o Espacio) = un rasgueo suelto.
+──────────────────────────────────────────────────── */
+function guitarStation(c) {
+  const { root, refs, hud } = c;
+  const { holder } = refs.guitar;
+  const strings = refs.strings;
+  const tw = createTweens(c.reducedMotion);
+  const REST = { pos: V(0, 0, 0), rotZ: 0.1 };
+  const SHOW = { pos: V(0.5, 0.25, 0), rotZ: -0.35 };   // despegada e inclinada, como en brazos
+  const vib = new Array(strings.length).fill(0);
+  const STRUM_CHORDS = ['Em', 'C', 'G', 'Am', 'F'];
+  let engine = null;
+  let song = SONGS[0].id;
+  let hover = false;
+
+  function moveTo(to, ms) {
+    const p0 = holder.position.clone();
+    const z0 = holder.rotation.z;
+    tw.add(ms, (p) => {
+      const e = ease(p);
+      holder.position.lerpVectors(p0, to.pos, e);
+      holder.rotation.z = lerp(z0, to.rotZ, e);
+    });
+  }
+
+  function setPlaying(on) {
+    hud.setAction('play', { label: on ? '■ Parar' : '▶ Tocar' });
+  }
+
+  function onStrum({ strings: hit }) {
+    hit.forEach((i) => { vib[i] = 1; });
+    const p = holder.localToWorld(V(0.1, 0.5, 0));
+    c.glyphs.emit(hit.length > 1 ? '♫' : '♪', '#ffd28a', p, { rise: 0.6, drift: 0.2, size: 0.22 });
+  }
+
+  function toggle() {
+    if (!engine) return;
+    if (engine.playing) {
+      engine.stop();
+      setPlaying(false);
+      hud.setStatus('');
+      return;
+    }
+    engine.play(song);
+    setPlaying(true);
+    hud.setStatus(`♪ ${esc(L(SONGS.find((s) => s.id === song).label))}`);
+  }
+
+  function strumOnce() {
+    engine?.strum(STRUM_CHORDS[Math.floor(Math.random() * STRUM_CHORDS.length)]);
+  }
+
+  return {
+    focus: () => ({ look: root.localToWorld(V(0.5, 0.75, 0)), zoom: 3.6 }),
+
+    enter() {
+      engine = createGuitar({
+        onStrum,
+        onEnd: () => { setPlaying(false); hud.setStatus('¿Otra? 🎸'); },
+      });
+      hud.show({
+        icon: '🎸',
+        title: 'Guitarra',
+        tabs: SONGS.map((s) => ({ id: s.id, label: L(s.label) })),
+        active: song,
+        onTab: (id) => {
+          song = id;
+          if (engine.playing) { engine.play(id); hud.setStatus(`♪ ${esc(L(SONGS.find((s) => s.id === id).label))}`); }
+        },
+        actions: [{ id: 'play', label: '▶ Tocar', onClick: toggle }],
+        hint: 'Elige una canción · clic en la guitarra o Espacio para rasguear',
+        onBack: c.leave,
+      });
+      const card = el('div', 'gam-card');
+      card.innerHTML = `
+        <h3 class="gam-card__title">🎸 ${esc(L(c.content.title) || 'Guitarra')}</h3>
+        <p class="gam-card__text">${esc(L(c.content.message))}</p>`;
+      hud.setCard(card);
+      moveTo(SHOW, 800);
+    },
+
+    exit() {
+      engine?.destroy();
+      engine = null;
+      hover = false;
+      tw.clear();
+      moveTo(REST, 700);
+      vib.fill(0);
+      strings.forEach((s) => { s.scale.x = 1; s.material.emissiveIntensity = 0; });
+      c.setOutline([]);
+      c.setCursor('default');
+    },
+
+    busy: () => tw.busy,
+
+    update(now, dt) {
+      tw.update(now);
+      strings.forEach((s, i) => {
+        if (!vib[i] && s.scale.x === 1) return;
+        vib[i] = Math.max(0, vib[i] - dt * 2.2);
+        s.scale.x = 1 + (c.reducedMotion ? 0 : vib[i] * 2.5 * Math.abs(Math.sin(now * 0.09 + i)));
+        s.material.emissive.setHex(0xffd28a);
+        s.material.emissiveIntensity = vib[i] * 1.4;
+      });
+    },
+
+    pointerMove() {
+      hover = !!c.pick(c.parts);
+      c.setCursor(hover ? 'pointer' : 'default');
+      c.setOutline(hover ? c.parts : []);
+    },
+
+    pointerDown() {
+      if (c.pick(c.parts)) strumOnce();
+    },
+
+    key(e) {
+      if (e.code !== 'Space') return false;
+      e.preventDefault();
+      strumOnce();
+      return true;
+    },
+  };
+}
+
+/* ────────────────────────────────────────────────────
+   MÚSICA — barra de sonido: la playlist (gam-hotspots.json) + LEDs que laten.
+──────────────────────────────────────────────────── */
+const SPOTIFY_EMBED = 'https://open.spotify.com/embed/';
+
+function soundbarStation(c) {
+  const { refs, hud, root } = c;
+  const leds = refs.leds;
+  let active = false;
+
+  return {
+    focus: () => ({ look: root.localToWorld(V(0, 0.4, 0)), zoom: 4.2 }),
+
+    enter() {
+      active = true;
+      const ct = c.content;
+      hud.show({
+        icon: '🔊',
+        title: 'Música',
+        actions: ct.playlistUrl
+          ? [{ id: 'open', label: '▶ Abrir playlist', onClick: () => window.open(ct.playlistUrl, '_blank', 'noopener') }]
+          : [],
+        hint: 'Lo que suena mientras programo',
+        onBack: c.leave,
+      });
+      const tracks = (ct.tracks || []).map((t) => {
+        const inner = `<span class="gam-card__item-title">${esc(L(t.title))}</span><span class="gam-card__item-desc">${esc(L(t.artist))}</span>`;
+        return t.url
+          ? `<a class="gam-card__item" href="${esc(t.url)}" target="_blank" rel="noopener">${inner}</a>`
+          : `<div class="gam-card__item gam-card__item--static">${inner}</div>`;
+      }).join('');
+      const embed = typeof ct.spotifyEmbed === 'string' && ct.spotifyEmbed.startsWith(SPOTIFY_EMBED)
+        ? `<iframe class="gam-card__embed" src="${esc(ct.spotifyEmbed)}" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" title="Playlist"></iframe>`
+        : '';
+      const card = el('div', 'gam-card');
+      card.innerHTML = `
+        <h3 class="gam-card__title">🔊 ${esc(L(ct.title) || 'Música')}</h3>
+        <p class="gam-card__text">${esc(L(ct.message))}</p>
+        ${embed}
+        ${tracks ? `<p class="gam-card__label">En repetición</p><div class="gam-card__list">${tracks}</div>` : ''}`;
+      hud.setCard(card);
+    },
+
+    exit() {
+      active = false;
+      leds.forEach((m) => { m.material.emissiveIntensity = m.userData.baseEmissiveIntensity; });
+    },
+
+    update(now) {
+      if (!active) return;
+      // ecualizador: cada LED a su propio ritmo
+      leds.forEach((m, i) => {
+        const level = c.reducedMotion ? 0.5 : (Math.sin(now * 0.004 * (1 + (i % 3) * 0.45) + i * 0.9) + 1) / 2;
+        m.material.emissiveIntensity = 0.3 + level * 2.6;
+      });
+    },
+  };
+}
+
 const FACTORIES = {
   piano: pianoStation,
   desk: deskStation,
@@ -1205,6 +1602,10 @@ const FACTORIES = {
   pukis: pukisStation,
   chess: chessStation,
   lumbre: lumbreStation,
+  medals: medalsStation,
+  starwars: starwarsStation,
+  guitar: guitarStation,
+  soundbar: soundbarStation,
 };
 
 /**

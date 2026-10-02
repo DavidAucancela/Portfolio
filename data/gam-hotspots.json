@@ -118,5 +118,97 @@
     ],
     "liveUrl": "https://lager.itch.io/lumbre",
     "repoUrl": "https://github.com/Lager-GJ/main"
+  },
+  {
+    "id": "medals",
+    "icon": "🏅",
+    "title": {
+      "es": "Logros",
+      "en": "Achievements"
+    },
+    "message": {
+      "es": "Cada medalla es un paso en ciberseguridad: mis prácticas en la ESPOCH y las certificaciones de Cisco e IBM.",
+      "en": "Each medal is a step in cybersecurity: my internship at ESPOCH and the Cisco and IBM certifications."
+    }
+  },
+  {
+    "id": "starwars",
+    "icon": "⭐",
+    "title": {
+      "es": "Star Wars",
+      "en": "Star Wars"
+    },
+    "message": {
+      "es": "Fan de Star Wars desde niño. (Texto pendiente)",
+      "en": "Star Wars fan since I was a kid. (Text pending)"
+    },
+    "favorites": [
+      {
+        "label": {
+          "es": "Película favorita",
+          "en": "Favorite movie"
+        },
+        "value": {
+          "es": "Pendiente",
+          "en": "Pending"
+        }
+      },
+      {
+        "label": {
+          "es": "Personaje",
+          "en": "Character"
+        },
+        "value": {
+          "es": "Pendiente",
+          "en": "Pending"
+        }
+      },
+      {
+        "label": {
+          "es": "Dato curioso",
+          "en": "Fun fact"
+        },
+        "value": {
+          "es": "Pendiente",
+          "en": "Pending"
+        }
+      }
+    ]
+  },
+  {
+    "id": "guitar",
+    "icon": "🎸",
+    "title": {
+      "es": "Guitarra",
+      "en": "Guitar"
+    },
+    "message": {
+      "es": "Mi guitarra acústica. Elige una canción y escúchala. (Canciones pendientes)",
+      "en": "My acoustic guitar. Pick a song and listen. (Songs pending)"
+    }
+  },
+  {
+    "id": "soundbar",
+    "icon": "🔊",
+    "title": {
+      "es": "Música",
+      "en": "Music"
+    },
+    "message": {
+      "es": "Lo que suena mientras programo. (Playlist pendiente)",
+      "en": "What plays while I code. (Playlist pending)"
+    },
+    "playlistUrl": null,
+    "spotifyEmbed": null,
+    "tracks": [
+      {
+        "title": {
+          "es": "Canción pendiente",
+          "en": "Song pending"
+        },
+        "artist": "—",
+        "url": null
+      }
+    ]
   }
 ]

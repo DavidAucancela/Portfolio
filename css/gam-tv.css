@@ -1212,6 +1212,17 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+a.gam-card__item { text-decoration: none; }
+.gam-card__item--static { cursor: default; }
+.gam-card__item--static:hover { background: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.08); transform: none; }
+.gam-card__embed {
+  display: block;
+  width: 100%;
+  height: 152px;
+  margin: 0 0 0.6rem;
+  border: 0;
+  border-radius: 12px;
+}
 .gam-card__cta {
   width: 100%;
   margin-top: 0.5rem;

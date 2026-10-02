@@ -88,6 +88,13 @@ const FURNITURE = [
   { id: 'chess',      x: 1.97,         z: 2.48,   rotY: 0,           color: 0xe8d9b5, label: '♟️ Ajedrez',          kind: 'minigame', zoom: 7.5, elev: 1.15, scale: 1.469 },
   { id: 'pukis',      x: 0.61,         z: -2.45, rotY: -Math.PI / 2, color: 0xe9dcc0, label: '🐾 Pukis',            kind: 'info', zoom: 4.2, scale: 1.096, view: Math.PI / 2, artHeight: 0.5 },
   { id: 'bookshelf',  x: -3.14,        z: -2.53, rotY: WALL_FACING, color: 0xb14eff, label: '📚 Estante',          kind: 'list', zoom: 2.6, viewTilt: 0.5, scale: 1.3 },
+  // Ex decoración (2026-10-01): mismas posiciones en el mundo que tenían como
+  // decoración suelta, ahora con estación propia. Van al final: las teclas
+  // 1–9 siguen apuntando a los de arriba.
+  { id: 'medals',     x: -0.3,         z: -HALF + 0.15, y: 2.55, rotY: 0, color: 0xffc94a, label: '🏅 Logros',      kind: 'info', zoom: 4.4, scale: 1, noLift: true },
+  { id: 'starwars',   x: 0.44 - 1.13 * 2.35, z: 0.44 - 1.13 * HALF, y: 0, rotY: 0, color: 0xffe81f, label: '⭐ Star Wars', kind: 'info', zoom: 6, scale: 1.13, noLift: true },
+  { id: 'guitar',     x: -HALF + 0.3,  z: -1.34, rotY: 0, view: Math.PI / 2, color: 0xc98a4b, label: '🎸 Guitarra',  kind: 'minigame', zoom: 3.6, scale: 1 },
+  { id: 'soundbar',   x: -2.26,        z: -HALF + 0.26, rotY: 0, color: 0x7aa2ff, label: '🔊 Música',          kind: 'list', zoom: 4.2, scale: 1 },
 ];
 
 /* JotAI (docs/gam-jotai-plan.md) — vive en el cuarto. Arranca en su rincón
@@ -110,6 +117,10 @@ const JOTAI_SPOTS = {
   juggling:   { at: [0, -0.65],   look: [0, 0.9, 0] },
   skateboard: { at: [0, 0.5],     look: [0, 0.6, 0] },
   lumbre:     { at: [0, 0.8],     look: [0, 2.3, 0] },
+  medals:     { at: [0.9, 1.25],  look: [0, 0.2, 0] },       // repisa sobre el escritorio: se para al costado del escritorio
+  starwars:   { at: [0, 1.0],     look: [0, 2.9, 0] },
+  guitar:     { at: [0.75, 0],    look: [0, 0.6, 0] },       // frente = +x (pared izquierda)
+  soundbar:   { at: [0, 0.8],     look: [0, 0.4, 0] },
 };
 /* Grilla de navegación: solo bloquea lo que ocupa piso a la altura del
    cuerpo (la alfombra no, lo colgado en la pared tampoco). */
@@ -737,37 +748,9 @@ export function mount(container, hotspots) {
     tagEdit(rug, 'alfombra');
   }
 
-  // Repisa de medallas sobre el escritorio + tira LED cian: 3 cajas
-  // display cerradas, con tapa de vidrio al frente que deja ver la medalla
-  // dorada entera apoyada adentro (en vez de las copas de antes).
-  {
-    const shelfX = -0.3, shelfY = 2.55, shelfZ = -HALF + 0.15;
-    const shelfGroup = new THREE.Group();
-    decor.add(shelfGroup);
-    addPart(shelfGroup, decorParts, box(2.4, 0.05, 0.3), 0xe8e4dc, shelfX, shelfY, shelfZ);
-    addPart(shelfGroup, decorParts, box(2.3, 0.02, 0.02), 0x00e5ff, shelfX, shelfY - 0.04, shelfZ + 0.13, glow(0x00e5ff));
-    tagEdit(shelfGroup, 'repisa_medallas');
-    const gold = { metalness: 0.85, roughness: 0.25 };
-    const glass = { metalness: 0.1, roughness: 0.05, transparent: true, opacity: 0.22 };
-    [[-0.65, 1], [0, 1.15], [0.65, 1]].forEach(([dx, s], i) => {
-      const boxGroup = new THREE.Group();
-      decor.add(boxGroup);
-      tagEdit(boxGroup, `medalla_${i + 1}`);
-      const baseY = shelfY + 0.025;
-      const bw = 0.32 * s, bh = 0.34 * s, bd = 0.22 * s;
-      // caja: fondo + 4 lados oscuros, dejando el frente (+z) abierto para el vidrio
-      addPart(boxGroup, decorParts, box(bw, bh, bd), 0x1c1f26, shelfX + dx, baseY + bh / 2, shelfZ, { roughness: 0.6 });
-      // vidrio frontal
-      addPart(boxGroup, decorParts, box(bw * 0.92, bh * 0.85, 0.01), 0xbfe6ff, shelfX + dx, baseY + bh / 2, shelfZ + bd / 2 + 0.006, glass);
-      // cinta corta colgando desde el marco superior
-      addPart(boxGroup, decorParts, box(0.03 * s, 0.06 * s, 0.01), 0xc0392b, shelfX + dx, baseY + bh - 0.05 * s, shelfZ + bd / 2 - 0.02, { roughness: 0.7 });
-      // medalla: disco dorado + relieve central, encarada al vidrio
-      const medal = addPart(boxGroup, decorParts, cyl(0.1 * s, 0.014 * s), 0xffc94a, shelfX + dx, baseY + bh / 2 - 0.02 * s, shelfZ + bd / 2 - 0.05, gold);
-      medal.rotation.x = Math.PI / 2;
-      const relief = addPart(boxGroup, decorParts, cyl(0.06 * s, 0.006 * s), 0xffe27a, shelfX + dx, baseY + bh / 2 - 0.02 * s, shelfZ + bd / 2 - 0.043, gold);
-      relief.rotation.x = Math.PI / 2;
-    });
-  }
+  // (la repisa de medallas, el póster Star Wars y la guitarra eran decoración
+  // suelta acá; desde 2026-10-01 son objetos de FURNITURE: 'medals',
+  // 'starwars', 'guitar' en buildFurnitureGroup)
 
   // Ventana nocturna (pared trasera, sobre la terminal) + luz fría.
   {
@@ -780,20 +763,6 @@ export function mount(container, hotspots) {
       wx, wy, wz + 0.012
     ), 'ventana_vista');
     windowLight.position.set(wx, wy - 0.1, wz + 1.1);
-  }
-
-  // Pósters + marcos.
-  {
-    const posterGroup = new THREE.Group();
-    posterGroup.position.set(0.44, 0, 0.44);
-    posterGroup.scale.setScalar(1.13);
-    decor.add(posterGroup);
-    tagEdit(posterGroup, 'poster_starwars');
-    const p1 = new THREE.MeshStandardMaterial({ map: makePosterStarWars(), roughness: 0.8 });
-    const img = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.86), p1);
-    img.position.set(-2.35, 2.9, -HALF + 0.034);
-    posterGroup.add(img);
-    addPart(posterGroup, decorParts, box(0.68, 0.92, 0.03), 0x1a1a1a, -2.35, 2.9, -HALF + 0.012);
   }
 
   // Reloj de pared (la manecilla de segundos anima en el loop).
@@ -824,27 +793,6 @@ export function mount(container, hotspots) {
     hand(0.21, 0.014, now.getMinutes() * (Math.PI / 30), 0.038);
     clockSecond = hand(0.23, 0.007, 0, 0.044);
     clockSecond.children[0].material.color.setHex(0xc0392b);
-  }
-
-  // Guitarra acústica apoyada contra la pared izquierda (frente hacia +x).
-  {
-    const guitar = new THREE.Group();
-    guitar.position.set(-HALF + 0.3, 0, -1.34);
-    guitar.rotation.z = 0.1;
-    decor.add(guitar);
-    tagEdit(guitar, 'guitarra');
-    const wood = 0xc98a4b;
-    const lower = addPart(guitar, decorParts, cyl(0.17, 0.09), wood, 0, 0.3, 0, { roughness: 0.55 });
-    lower.rotation.z = Math.PI / 2;
-    const upper = addPart(guitar, decorParts, cyl(0.13, 0.09), wood, 0, 0.55, 0, { roughness: 0.55 });
-    upper.rotation.z = Math.PI / 2;
-    addPart(guitar, decorParts, box(0.09, 0.14, 0.2), wood, 0, 0.43, 0, { roughness: 0.55 });        // cintura
-    const hole = addPart(guitar, decorParts, cyl(0.045, 0.006), 0x1a0f08, 0.047, 0.5, 0);
-    hole.rotation.z = Math.PI / 2;
-    addPart(guitar, decorParts, box(0.012, 0.03, 0.14), 0x2b1a10, 0.05, 0.22, 0);                     // puente
-    addPart(guitar, decorParts, box(0.035, 0.6, 0.05), 0x2b1a10, 0.02, 0.98, 0);                      // mástil
-    addPart(guitar, decorParts, box(0.04, 0.16, 0.07), 0x2b1a10, 0.02, 1.34, 0);                      // clavijero
-    [-0.02, 0.02].forEach((dz) => addPart(guitar, decorParts, box(0.004, 1.0, 0.004), 0xd8d8d0, 0.05, 0.82, dz)); // cuerdas
   }
 
   /** Devuelve { group, baseY, parts, lampAnchor?, breathe?, floaters?,
@@ -1215,6 +1163,95 @@ export function mount(container, hotspots) {
           }
         });
         out.baseY = 1.0;
+        break;
+      }
+
+      case 'medals': {
+        // Repisa sobre el escritorio + tira LED cian: 3 cajas display con
+        // tapa de vidrio al frente y la medalla dorada adentro. Cada caja es
+        // un logro (ver medalsStation). Origen = centro de la repisa.
+        add(box(2.4, 0.05, 0.3), 0xe8e4dc, 0, 0, 0);
+        add(box(2.3, 0.02, 0.02), 0x00e5ff, 0, -0.04, 0.13, glow(0x00e5ff));
+        // un brillo propio leve: adentro de la caja oscura, sin él la medalla casi no se ve
+        const gold = { metalness: 0.85, roughness: 0.25, emissive: 0x6b4a00, emissiveIntensity: 0.6 };
+        const glass = { metalness: 0.1, roughness: 0.05, transparent: true, opacity: 0.22 };
+        out.refs.boxes = [[-0.65, 1], [0, 1.15], [0.65, 1]].map(([dx, s]) => {
+          const by = 0.025;
+          const bw = 0.32 * s, bh = 0.34 * s, bd = 0.22 * s;
+          // caja: fondo + 4 lados oscuros, el frente (+z) lo cierra el vidrio
+          // (antes era un bloque macizo del fondo entero y la medalla quedaba
+          // adentro de la geometría: no se veía)
+          const dark = { roughness: 0.6 };
+          const shell = add(box(bw, bh, bd * 0.6), 0x1c1f26, dx, by + bh / 2, -bd * 0.2, dark);
+          const walls = [
+            add(box(0.022, bh, bd), 0x1c1f26, dx - bw / 2 + 0.011, by + bh / 2, 0, dark),
+            add(box(0.022, bh, bd), 0x1c1f26, dx + bw / 2 - 0.011, by + bh / 2, 0, dark),
+            add(box(bw, 0.022, bd), 0x1c1f26, dx, by + bh - 0.011, 0, dark),
+            add(box(bw, 0.022, bd), 0x1c1f26, dx, by + 0.011, 0, dark),
+          ];
+          const pane = add(box(bw * 0.92, bh * 0.85, 0.01), 0xbfe6ff, dx, by + bh / 2, bd / 2 + 0.006, glass);
+          // cinta corta colgando desde el marco superior
+          const ribbon = add(box(0.03 * s, 0.06 * s, 0.01), 0xc0392b, dx, by + bh - 0.05 * s, bd / 2 - 0.02, { roughness: 0.7 });
+          // medalla: disco dorado + relieve central, encarada al vidrio
+          const medal = add(cyl(0.1 * s, 0.014 * s), 0xffc94a, dx, by + bh / 2 - 0.02 * s, bd / 2 - 0.05, gold);
+          medal.rotation.x = Math.PI / 2;
+          const relief = add(cyl(0.06 * s, 0.006 * s), 0xffe27a, dx, by + bh / 2 - 0.02 * s, bd / 2 - 0.043, gold);
+          relief.rotation.x = Math.PI / 2;
+          return { meshes: [shell, ...walls, pane, ribbon, medal, relief], medal, relief, top: new THREE.Vector3(dx, by + bh + 0.08, bd / 2) };
+        });
+        out.baseY = 0.2;
+        break;
+      }
+
+      case 'starwars': {
+        // Póster enmarcado en la pared trasera (origen = pie de la pared).
+        add(box(0.68, 0.92, 0.03), 0x1a1a1a, 0, 2.9, 0.012);
+        const img = add(new THREE.PlaneGeometry(0.62, 0.86), 0xffffff, 0, 2.9, 0.034, { map: makePosterStarWars(), roughness: 0.8 });
+        out.refs.poster = { img };
+        out.baseY = 2.9;
+        break;
+      }
+
+      case 'guitar': {
+        // Guitarra acústica apoyada contra la pared izquierda (frente hacia +x).
+        // `holder` = la guitarra entera: la estación la despega de la pared.
+        const holder = new THREE.Group();
+        holder.rotation.z = 0.1;   // apoyada
+        group.add(holder);
+        const g = (...args) => addPart(holder, parts, ...args);
+        const wood = 0xc98a4b;
+        const lower = g(cyl(0.17, 0.09), wood, 0, 0.3, 0, { roughness: 0.55 });
+        lower.rotation.z = Math.PI / 2;
+        const upper = g(cyl(0.13, 0.09), wood, 0, 0.55, 0, { roughness: 0.55 });
+        upper.rotation.z = Math.PI / 2;
+        g(box(0.09, 0.14, 0.2), wood, 0, 0.43, 0, { roughness: 0.55 });          // cintura
+        const hole = g(cyl(0.045, 0.006), 0x1a0f08, 0.047, 0.5, 0);
+        hole.rotation.z = Math.PI / 2;
+        g(box(0.012, 0.03, 0.14), 0x2b1a10, 0.05, 0.22, 0);                       // puente
+        g(box(0.035, 0.6, 0.05), 0x2b1a10, 0.02, 0.98, 0);                        // mástil
+        g(box(0.04, 0.16, 0.07), 0x2b1a10, 0.02, 1.34, 0);                        // clavijero
+        // 6 cuerdas (de la grave a la aguda) — vibran al tocarse
+        out.refs.strings = [0, 1, 2, 3, 4, 5].map((i) => g(new THREE.BoxGeometry(0.004, 1.06, 0.003), 0xd8d8d0, 0.052, 0.79, -0.022 + i * 0.0088, { metalness: 0.6, roughness: 0.3 }));
+        out.refs.guitar = { holder };
+        out.baseY = 0.6;
+        break;
+      }
+
+      case 'soundbar': {
+        // Mueble bajo con barra de sonido, entre el estante y el escritorio,
+        // bajo el póster Star Wars. Los LEDs laten con la estación abierta.
+        add(box(0.8, 0.34, 0.36), 0x2a2018, 0, 0.17, 0, { roughness: 0.75 });               // mueble
+        add(box(0.74, 0.012, 0.3), 0x3a2c20, 0, 0.346, 0, { roughness: 0.6 });               // tapa
+        add(box(0.72, 0.1, 0.13), 0x15171c, 0, 0.405, 0.04, { roughness: 0.5 });            // barra
+        add(box(0.66, 0.06, 0.006), 0x2b2f38, 0, 0.412, 0.106, { roughness: 0.95 });         // rejilla
+        out.refs.leds = Array.from({ length: 10 }, (_, i) =>
+          add(box(0.04, 0.01, 0.006), 0x7aa2ff, -0.27 + i * 0.06, 0.37, 0.107, glow(0x7aa2ff, 0.35)));
+        // dos vinilos (fundas) apoyados detrás de la barra, de cara a la cámara
+        [[-0.2, -0.1, 0xc0392b], [-0.06, -0.135, 0x06ffa5]].forEach(([x, z, c]) => {
+          const sleeve = add(box(0.22, 0.22, 0.012), c, x, 0.463, z, { roughness: 0.8 });
+          sleeve.rotation.x = -0.12;
+        });
+        out.baseY = 0.4;
         break;
       }
 

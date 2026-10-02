@@ -87,7 +87,9 @@ js/
     gam-three-scene.js         # Cuarto diorama (Three.js): cámara ortográfica, luces, postprocesado,
                                # muebles, ciclo día/noche, ruteo de pointer/teclado hacia las estaciones
     gam-stations.js            # Estaciones: cada objeto se vuelve interactivo al hacer zoom (piano,
-                               # escritorio, estante, ventana, patineta, malabares, Pukis, ajedrez, Lumbre)
+                               # escritorio, estante, ventana, patineta, malabares, Pukis, ajedrez, Lumbre,
+                               # Logros, póster Star Wars, guitarra, barra de sonido)
+    gam-guitar.js              # Motor de la guitarra (Karplus–Strong + canciones; las cuerdas son 3D)
     gam-hud.js                 # HUD DOM de las estaciones: barra superior, tarjeta, pines, estado
     gam-jotai.js               # JotAI 3D en el cuarto: modelo en código, rig, poses/clips, caras, vida
     gam-jotai-brain.js         # Comportamiento de JotAI (saludo, click, paseo, rutina de noche; luego estaciones)
@@ -105,7 +107,7 @@ data/
   dev-projects.json           # 13 proyectos del modo .dev (cargados con fetch en runtime)
   ia-projects.json            # 7 proyectos del modo .ia (cargados con fetch en runtime)
   sec-projects.json           # 7 proyectos del modo .sec (labs HTB + prácticas + certs)
-  gam-hotspots.json           # Contenido bilingüe de los 9 objetos interactuables del modo .gam
+  gam-hotspots.json           # Contenido bilingüe de los 13 objetos interactuables del modo .gam
   gam-jotai.json              # Frases bilingües de JotAI dentro del cuarto (hello / poke / tickle)
   gam-projects.json           # Vacío — fallback para projects.js en modo .gam (no se usa hoy)
   personal.json               # Bio, email, redes, timeline
@@ -337,7 +339,13 @@ objeto se vuelve interactivo **dentro de la escena** — ya no se abre un panel 
   se despega de la pared y se gira arrastrando (+ kickflip/shove-it); malabares = cascada +
   reto; Pukis = acariciarlo; ajedrez = tablero 3D contra una IA (`gam-chess.js`); Lumbre =
   póster del juego en la pared izquierda (capturas 1–4 + enlaces a itch.io y al repo — antes
-  era una card de `dev-projects.json`, ahora vive solo acá). `interactive:false` en
+  era una card de `dev-projects.json`, ahora vive solo acá). Desde 2026-10-01 (ex
+  decoración, al final de `FURNITURE` para no correr las teclas 1–9): Logros (`medals`) =
+  repisa de medallas, cada caja = un logro de `sec-projects.json` (`MEDAL_IDS`), click →
+  `PDFModal` + botón a la trayectoria; Star Wars (`starwars`) = tarjeta de fan + sable;
+  guitarra (`guitar`) = se despega de la pared y toca canciones (`gam-guitar.js`); barra
+  de sonido (`soundbar`, nueva) = la playlist (`tracks`/`playlistUrl`/`spotifyEmbed` en
+  `gam-hotspots.json`). Copy de Star Wars, canciones y playlist: placeholders. `interactive:false` en
   `FURNITURE` sigue disponible para dejar un mueble como pura decoración.
 - **`gam-hud.js`** — barra superior (título, pestañas, acciones, "← Volver Esc"), línea de
   estado, tarjeta lateral (hoja inferior en portrait) y pines. Estilos `.gam-hud*`/`.gam-card*`.
@@ -462,7 +470,7 @@ están abiertas (`scene.pause`/`resume`, así el jugador no se mueve detrás del
 
 **Progreso** (`gam-loader.js`): cada interacción no-`exit` marca su `id` como
 descubierto en `localStorage('gam-discovered')`; `#gam-progress` (esquina sup. izq.
-de la TV) muestra `X/9` (`DISCOVERABLE_IDS`) y persiste entre visitas. Al completar los 9 objetos, un
+de la TV) muestra `X/13` (`DISCOVERABLE_IDS`) y persiste entre visitas. Al completar los 13 objetos, un
 toast breve una vez por sesión (no un panel — no compite con el que ya se abre para
 el objeto que completó la ronda).
 

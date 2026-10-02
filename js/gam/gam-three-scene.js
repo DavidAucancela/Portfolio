@@ -91,7 +91,7 @@ const FURNITURE = [
   // Ex decoración (2026-10-01): mismas posiciones en el mundo que tenían como
   // decoración suelta, ahora con estación propia. Van al final: las teclas
   // 1–9 siguen apuntando a los de arriba.
-  { id: 'medals',     x: -0.3,         z: -HALF + 0.15, y: 2.55, rotY: 0, color: 0xffc94a, label: '🏅 Logros',      kind: 'info', zoom: 4.4, scale: 1, noLift: true },
+  { id: 'medals',     x: -0.3,         z: -HALF + 0.15, y: 2.55, rotY: 0, color: 0xffc94a, label: '🏆 Trofeos',     kind: 'info', zoom: 4.4, scale: 1, noLift: true },
   { id: 'starwars',   x: 0.44 - 1.13 * 2.35, z: 0.44 - 1.13 * HALF, y: 0, rotY: 0, color: 0xffe81f, label: '⭐ Star Wars', kind: 'info', zoom: 6, scale: 1.13, noLift: true },
   { id: 'guitar',     x: -3.14,        z: -1.28, y: 0.022, rotY: 0, view: Math.PI / 2, color: 0xc98a4b, label: '🎸 Guitarra',  kind: 'minigame', zoom: 5.2, scale: 1.13 },
   { id: 'soundbar',   x: -3.16,        z: -2.53, y: 2.6, rotY: WALL_FACING, color: 0x7aa2ff, label: '🔊 Música', kind: 'list', zoom: 4.6, scale: 2.21, noLift: true },   // encima del estante
@@ -175,6 +175,74 @@ function easeInOutCubic(t) {
    Texturas pintadas en <canvas> — todo el arte del cuarto (piso, ventana,
    neón, pósters, alfombra, plaquita) sale de código: cero archivos nuevos.
 ──────────────────────────────────────────────────── */
+/* ── Trofeos de Dota 2 (Aegis de The International) ──
+   Forma del escudo en coordenadas normalizadas [-1, 1] (más ancho que alto,
+   borde superior apenas curvo y el de abajo redondeado en tres lóbulos);
+   AEGIS escala a ~0.24 u de ancho. El esmalte es la misma forma un poco más
+   chica con UVs reasignadas a [0, 1] para la textura de los remolinos. */
+const AEGIS_COLORS = [0x6a3fc4, 0x14894e, 0xc9a24a];   // violeta · verde · dorado (como los de David)
+function aegisShape(k = 1) {
+  const sh = new THREE.Shape();
+  const P = (x, y) => [x * k, y * k];
+  sh.moveTo(...P(-0.92, 0.5));
+  sh.quadraticCurveTo(...P(0, 0.78), ...P(0.92, 0.5));
+  sh.quadraticCurveTo(...P(1.08, 0.05), ...P(0.86, -0.42));
+  sh.quadraticCurveTo(...P(0.62, -0.82), ...P(0.3, -0.8));
+  sh.quadraticCurveTo(...P(0, -0.98), ...P(-0.3, -0.8));
+  sh.quadraticCurveTo(...P(-0.62, -0.82), ...P(-0.86, -0.42));
+  sh.quadraticCurveTo(...P(-1.08, 0.05), ...P(-0.92, 0.5));
+  return sh;
+}
+const AEGIS = (() => {
+  const U = 0.12, depth = 0.014;
+  const rim = new THREE.ExtrudeGeometry(aegisShape(1), { depth: depth / U, curveSegments: 24, bevelEnabled: true, bevelThickness: 0.06, bevelSize: 0.05, bevelSegments: 2 });
+  rim.scale(U, U, U);
+  const plate = new THREE.ShapeGeometry(aegisShape(0.82), 24);
+  const uv = plate.attributes.uv;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, (uv.getX(i) / 0.82 + 1) / 2, (uv.getY(i) / 0.82 + 1) / 2);
+  plate.scale(U, U, U);
+  return { rim, plate, depth: depth + 0.06 * U };
+})();
+/** Esmalte del Aegis: fondo del color + los dos remolinos de plata (yin-yang). */
+function aegisTexture(color) {
+  const c = new THREE.Color(color);
+  return canvasTexture(256, 256, (ctx, w, h) => {
+    const g = ctx.createRadialGradient(w / 2, h / 2, 10, w / 2, h / 2, w * 0.6);
+    g.addColorStop(0, `#${c.clone().offsetHSL(0, 0, 0.12).getHexString()}`);
+    g.addColorStop(1, `#${c.clone().offsetHSL(0, 0, -0.12).getHexString()}`);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = '#e2e4e8';
+    ctx.fillStyle = '#e2e4e8';
+    ctx.lineCap = 'round';
+    ctx.lineWidth = 30;
+    const cx = w / 2, cy = h / 2;
+    // dos "comas" enfrentadas alrededor del botón central
+    ctx.beginPath(); ctx.arc(cx - 26, cy - 8, 52, Math.PI * 1.05, Math.PI * 1.95); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx + 26, cy + 8, 52, Math.PI * 0.05, Math.PI * 0.95); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx - 70, cy + 6, 16, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + 70, cy - 6, 16, 0, Math.PI * 2); ctx.fill();
+    // relieve: líneas finas oscuras sobre la plata
+    ctx.strokeStyle = 'rgba(40,40,48,0.35)';
+    ctx.lineWidth = 2;
+    for (let r = 40; r < 64; r += 7) {
+      ctx.beginPath(); ctx.arc(cx - 26, cy - 8, r, Math.PI * 1.1, Math.PI * 1.9); ctx.stroke();
+      ctx.beginPath(); ctx.arc(cx + 26, cy + 8, r, Math.PI * 0.1, Math.PI * 0.9); ctx.stroke();
+    }
+  });
+}
+let _aegisPlaque = null;
+function aegisPlaque() {
+  _aegisPlaque ??= canvasTexture(256, 64, (ctx, w, h) => {
+    ctx.fillStyle = '#0d0d0f'; ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = '#8a6a2a'; ctx.lineWidth = 3; ctx.strokeRect(4, 4, w - 8, h - 8);
+    ctx.fillStyle = '#d9b45a'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.font = 'italic 26px Georgia, serif'; ctx.fillText('The International', w / 2, h / 2 - 4);
+    ctx.font = '11px Georgia, serif'; ctx.fillText('DOTA 2 CHAMPIONSHIPS', w / 2, h / 2 + 18);
+  });
+  return _aegisPlaque;
+}
+
 function canvasTexture(w, h, draw) {
   const c = document.createElement('canvas');
   c.width = w; c.height = h;
@@ -1120,37 +1188,49 @@ export function mount(container, hotspots) {
       }
 
       case 'medals': {
-        // Repisa sobre el escritorio + tira LED cian: 3 cajas display con
-        // tapa de vidrio al frente y la medalla dorada adentro. Cada caja es
-        // un logro (ver medalsStation). Origen = centro de la repisa.
+        // Repisa sobre el escritorio + tira LED cian con los 3 trofeos de Dota 2
+        // de David: réplicas del Aegis de The International en cajas negras con
+        // tapa de vidrio (izq. violeta, centro verde, der. dorado). Cada caja es
+        // un `holder` con origen en su centro: la estación la trae al frente,
+        // la gira con el mouse y abre la tapa (ver medalsStation).
         add(box(2.4, 0.05, 0.3), 0xe8e4dc, 0, 0, 0);
         add(box(2.3, 0.02, 0.02), 0x00e5ff, 0, -0.04, 0.13, glow(0x00e5ff));
-        // un brillo propio leve: adentro de la caja oscura, sin él la medalla casi no se ve
-        const gold = { metalness: 0.85, roughness: 0.25, emissive: 0x6b4a00, emissiveIntensity: 0.6 };
-        const glass = { metalness: 0.1, roughness: 0.05, transparent: true, opacity: 0.22 };
-        out.refs.boxes = [[-0.65, 1], [0, 1.15], [0.65, 1]].map(([dx, s]) => {
-          const by = 0.025;
-          const bw = 0.32 * s, bh = 0.34 * s, bd = 0.22 * s;
-          // caja: fondo + 4 lados oscuros, el frente (+z) lo cierra el vidrio
-          // (antes era un bloque macizo del fondo entero y la medalla quedaba
-          // adentro de la geometría: no se veía)
-          const dark = { roughness: 0.6 };
-          const shell = add(box(bw, bh, bd * 0.6), 0x1c1f26, dx, by + bh / 2, -bd * 0.2, dark);
-          const walls = [
-            add(box(0.022, bh, bd), 0x1c1f26, dx - bw / 2 + 0.011, by + bh / 2, 0, dark),
-            add(box(0.022, bh, bd), 0x1c1f26, dx + bw / 2 - 0.011, by + bh / 2, 0, dark),
-            add(box(bw, 0.022, bd), 0x1c1f26, dx, by + bh - 0.011, 0, dark),
-            add(box(bw, 0.022, bd), 0x1c1f26, dx, by + 0.011, 0, dark),
+        const frame = { roughness: 0.45, metalness: 0.1 };
+        const glass = { metalness: 0.1, roughness: 0.05, transparent: true, opacity: 0.18 };
+        const silver = { metalness: 0.55, roughness: 0.3 };
+        const bw = 0.34, bh = 0.36, bd = 0.2, wt = 0.02;
+        out.refs.boxes = AEGIS_COLORS.map((enamel, i) => {
+          const holder = new THREE.Group();
+          holder.position.set((i - 1) * 0.65, 0.025 + bh / 2, 0);
+          group.add(holder);
+          const h = (...args) => addPart(holder, parts, ...args);
+          // caja negra: fondo + 4 lados (el frente lo cierra la tapa de vidrio)
+          const meshes = [
+            h(box(bw, bh, wt), 0x0b0b0d, 0, 0, -bd / 2 + wt / 2, frame),
+            h(box(wt, bh, bd), 0x0b0b0d, -bw / 2 + wt / 2, 0, 0, frame),
+            h(box(wt, bh, bd), 0x0b0b0d, bw / 2 - wt / 2, 0, 0, frame),
+            h(box(bw, wt, bd), 0x0b0b0d, 0, bh / 2 - wt / 2, 0, frame),
+            h(box(bw, wt, bd), 0x0b0b0d, 0, -bh / 2 + wt / 2, 0, frame),
           ];
-          const pane = add(box(bw * 0.92, bh * 0.85, 0.01), 0xbfe6ff, dx, by + bh / 2, bd / 2 + 0.006, glass);
-          // cinta corta colgando desde el marco superior
-          const ribbon = add(box(0.03 * s, 0.06 * s, 0.01), 0xc0392b, dx, by + bh - 0.05 * s, bd / 2 - 0.02, { roughness: 0.7 });
-          // medalla: disco dorado + relieve central, encarada al vidrio
-          const medal = add(cyl(0.1 * s, 0.014 * s), 0xffc94a, dx, by + bh / 2 - 0.02 * s, bd / 2 - 0.05, gold);
-          medal.rotation.x = Math.PI / 2;
-          const relief = add(cyl(0.06 * s, 0.006 * s), 0xffe27a, dx, by + bh / 2 - 0.02 * s, bd / 2 - 0.043, gold);
-          relief.rotation.x = Math.PI / 2;
-          return { meshes: [shell, ...walls, pane, ribbon, medal, relief], medal, relief, top: new THREE.Vector3(dx, by + bh + 0.08, bd / 2) };
+          // tapa de vidrio con bisagra en el borde izquierdo
+          const door = new THREE.Group();
+          door.position.set(-bw / 2 + wt, 0, bd / 2);
+          holder.add(door);
+          const pane = addPart(door, parts, box(bw - wt * 2, bh - wt * 2, 0.006), 0xcfe6ff, (bw - wt * 2) / 2, 0, 0, glass);
+          meshes.push(pane);
+          // el Aegis: aro de plata extruido + esmalte de color con los remolinos + botón central
+          const aegis = new THREE.Group();
+          aegis.position.set(0, 0.025, -bd / 2 + wt + 0.025);
+          holder.add(aegis);
+          const rim = addPart(aegis, parts, AEGIS.rim, 0xd4d7dc, 0, 0, 0, silver);
+          const plate = addPart(aegis, parts, AEGIS.plate, 0xffffff, 0, 0, AEGIS.depth + 0.002,
+            { map: aegisTexture(enamel), roughness: 0.25, metalness: 0.2, emissive: enamel, emissiveIntensity: 0.12 });
+          const boss = addPart(aegis, parts, cyl(0.026, 0.012, 0.03, 24), 0xd4d7dc, 0, 0.004, AEGIS.depth + 0.008, silver);
+          boss.rotation.x = Math.PI / 2;
+          meshes.push(rim, plate, boss);
+          // placa negra al pie con "The International" en dorado
+          meshes.push(h(new THREE.PlaneGeometry(0.11, 0.028), 0xffffff, 0, -bh / 2 + wt + 0.03, -bd / 2 + wt + 0.04, { map: aegisPlaque(), roughness: 0.4 }));
+          return { holder, door, aegis, meshes, rest: holder.position.clone(), top: new THREE.Vector3(holder.position.x, 0.025 + bh + 0.06, bd / 2) };
         });
         out.baseY = 0.2;
         break;

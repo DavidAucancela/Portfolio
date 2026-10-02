@@ -490,9 +490,9 @@ y `nav.clear()` en cada tramo.
 Rama `feat/gam-jotai-fase4` (desde `main`, sin push). Commits: objetos nuevos (`cbc1a18`,
 `6a99767`, `34ac886`, `b43d931`) y JotAI en las estaciones (el siguiente).
 
-**Objetos del cuarto (decididos con David el 2026-10-01):** los 10 de antes + **Logros**
-(`medals`, repisa de medallas = certificados de `sec-projects.json`, click → `PDFModal`,
-botón a la trayectoria), **Star Wars** (`starwars`, póster de Yoda real, solo se acerca),
+**Objetos del cuarto (decididos con David el 2026-10-01):** los 10 de antes + **Trofeos**
+(`medals`, los 3 Aegis de Dota 2 en cajas: al frente, giran con el mouse, se abren y
+muestran edición + año — cambiado el 2026-10-02, antes eran certificados), **Star Wars** (`starwars`, póster de Yoda real, solo se acerca),
 **guitarra** (`guitar`, clásica con cutaway calcada de la de David, `gam-guitar.js`) y
 **barra de sonido** (`soundbar`, estilo Mi Soundbar sobre el estante, la playlist).
 Pendiente de David: canciones de la guitarra y la playlist (placeholders en

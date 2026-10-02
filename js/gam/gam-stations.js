@@ -14,7 +14,7 @@
  *   pukis       → acariciarlo: corazones, cola, orejas
  *   chess       → tablero 3D: juegas con blancas contra una IA sencilla
  *   lumbre      → póster de mi juego Lumbre: capturas + enlaces
- *   medals      → Logros: medallas = certificados (PDFModal) + trayectoria
+ *   medals      → 3 trofeos de Dota 2: al frente, giran con el mouse, se abren
  *   starwars    → póster de Yoda: se despega de la pared y viene al frente
  *   guitar      → se despega de la pared y toca canciones (gam-guitar.js)
  *   soundbar    → barra de sonido: la playlist
@@ -33,7 +33,6 @@ import { createGuitar, SONGS } from './gam-guitar.js';
 import { newGame, legalMoves, applyMove, chooseMove, status as chessStatus, isWhite } from './gam-chess.js';
 import { LangSwitcher } from '../lang.js';
 import { ProjectGallery } from '../project-gallery.js';
-import { PDFModal } from '../pdf-modal.js';
 
 /* ────────────────────────────────────────────────────
    Utilidades compartidas
@@ -1354,115 +1353,157 @@ function lumbreStation(c) {
 }
 
 /* ────────────────────────────────────────────────────
-   LOGROS — repisa de medallas: cada caja es un logro de sec-projects.json.
-   Hover = la medalla brilla; click = descripción + certificado (PDFModal).
+   TROFEOS — los 3 Aegis de Dota 2 (The International) en sus cajas.
+   Click en una caja → viene al frente y gira siguiendo al mouse; otro click
+   → se abre la tapa de vidrio, el Aegis sale un poco y aparece su tarjeta
+   (edición + año, de gam-hotspots.json `trophies`). Click afuera → vuelve.
 ──────────────────────────────────────────────────── */
-const MEDAL_IDS = ['prac-001', 'cert-001', 'cert-002'];   // cajas de izquierda a derecha
-
 function medalsStation(c) {
   const { root, refs, hud } = c;
-  const boxes = refs.boxes;                // [{ meshes, medal, relief, top }]
+  const boxes = refs.boxes;                // [{ holder, door, aegis, meshes, rest, top }]
   const owner = new Map();
   boxes.forEach((b, i) => b.meshes.forEach((m) => owner.set(m, i)));
-  let items = [];
+  const tw = createTweens(c.reducedMotion);
+  const FRONT = { pos: V(0, 0.12, 0.62), s: 2.1 };   // al frente, grande, frente a la cámara
+  const DOOR_OPEN = -1.95;                            // la tapa gira sobre su bisagra (borde izquierdo)
   let hovered = -1;
-  let selected = -1;
-  let card = null;
+  let focused = -1;      // caja al frente (o -1)
+  let opened = false;
+  let rot = { yaw: 0, pitch: 0 }, want = { yaw: 0, pitch: 0 };
 
-  const titleOf = (i) => (items[i] ? L(items[i].title) : `Logro ${i + 1}`);
+  const trophy = (i) => (c.content.trophies || [])[i] || {};
 
-  function pickBox() {
-    const hit = c.pick(boxes.flatMap((b) => b.meshes));
+  function pickBox(list = boxes.map((_, i) => i)) {
+    const hit = c.pick(list.flatMap((i) => boxes[i].meshes));
     return hit ? (owner.get(hit.object) ?? -1) : -1;
   }
 
-  function shine(i, k) {
-    const b = boxes[i];
-    [b.medal, b.relief].forEach((m) => {
-      m.material.emissive.setHex(k > 0 ? 0xffc94a : m.userData.baseEmissive);
-      m.material.emissiveIntensity = k > 0 ? k : m.userData.baseEmissiveIntensity;
-    });
-  }
-
-  function openDoc(d) {
-    if (d?.url) PDFModal.open(d.url, L(d.label) || 'Certificado');
-  }
-
-  function showDefault() {
-    card = el('div', 'gam-card');
+  function showCard(i) {
+    const t = trophy(i);
+    const year = t.year ? String(t.year) : 'Año pendiente';
+    const card = el('div', 'gam-card');
     card.innerHTML = `
-      <h3 class="gam-card__title">🏅 ${esc(L(c.content.title) || 'Logros')}</h3>
-      <p class="gam-card__text">${esc(L(c.content.message))}</p>
-      <p class="gam-card__hint">Pasa el cursor sobre una medalla y haz clic para ver el logro.</p>
-      <button type="button" class="gam-card__cta">Ver trayectoria completa →</button>`;
-    card.querySelector('.gam-card__cta').addEventListener('click', () => {
-      window.dispatchEvent(new CustomEvent('portfolio:syncTrayectoria'));
-    });
+      <h3 class="gam-card__title">🏆 ${esc(L(t.title) || 'Trofeo Dota 2')}</h3>
+      <p class="gam-card__text">${esc(L(t.edition) || 'The International')} · <strong>${esc(year)}</strong></p>`;
     hud.setCard(card);
   }
 
-  function showItem(i) {
-    const p = items[i];
-    if (!p) return;
-    const docs = p.docs || [];
-    const n = el('div', 'gam-card');
-    n.innerHTML = `
-      <h3 class="gam-card__title">🏅 ${esc(L(p.title))}</h3>
-      <p class="gam-card__text">${esc(L(p.description))}</p>
-      ${docs.length > 1 ? `<p class="gam-card__label">Certificados</p><div class="gam-card__list">${docs.map((d, k) => `
-        <button type="button" class="gam-card__item" data-doc="${k}"><span class="gam-card__item-title">📄 ${esc(L(d.label))}</span></button>`).join('')}</div>` : ''}
-      ${docs.length === 1 ? '<button type="button" class="gam-card__cta">Ver certificado →</button>' : ''}
-      <button type="button" class="gam-card__link">← Ver todos los logros</button>`;
-    n.querySelector('.gam-card__cta')?.addEventListener('click', () => openDoc(docs[0]));
-    n.querySelectorAll('[data-doc]').forEach((b) => b.addEventListener('click', () => openDoc(docs[Number(b.dataset.doc)])));
-    n.querySelector('.gam-card__link').addEventListener('click', () => { selected = -1; hud.setCard(card); });
-    hud.setCard(n);
+  /** Mueve la caja i entre su lugar en la repisa y el frente. */
+  function place(i, front, ms, done) {
+    const h = boxes[i].holder;
+    const p0 = h.position.clone(), s0 = h.scale.x;
+    const p1 = front ? FRONT.pos : boxes[i].rest;
+    const s1 = front ? FRONT.s : 1;
+    const r0 = { x: h.rotation.x, y: h.rotation.y };
+    tw.add(ms, (p) => {
+      const e = ease(p);
+      h.position.lerpVectors(p0, p1, e);
+      h.scale.setScalar(lerp(s0, s1, e));
+      if (!front) h.rotation.set(lerp(r0.x, 0, e), lerp(r0.y, 0, e), 0);
+    }, done);
+  }
+
+  function setDoor(i, open, ms) {
+    const { door, aegis } = boxes[i];
+    const d0 = door.rotation.y, z0 = aegis.position.z;
+    const z1 = aegis.userData.z0 + (open ? 0.06 : 0);
+    tw.add(ms, (p) => {
+      const e = ease(p);
+      door.rotation.y = lerp(d0, open ? DOOR_OPEN : 0, e);
+      aegis.position.z = lerp(z0, z1, e);
+    });
+  }
+
+  function bring(i) {
+    if (focused === i) return;
+    if (focused >= 0) putBack();
+    focused = i;
+    opened = false;
+    rot = { yaw: 0, pitch: 0 };
+    want = { yaw: 0, pitch: 0 };
+    c.setOutline([]);
+    c.setLabel(null);
+    place(i, true, 700);
+    hud.setHint('Mueve el mouse para girarlo · clic para abrir la caja · clic afuera para dejarlo');
+    envelope(getAudioContext(), { freq: 523, type: 'triangle', duration: 0.12, gain: 0.05 });
+    c.cue?.('medals:pick', { world: root.localToWorld(boxes[i].top.clone()) });
+  }
+
+  function open() {
+    if (focused < 0 || opened) return;
+    opened = true;
+    setDoor(focused, true, 650);
+    showCard(focused);
+    envelope(getAudioContext(), { freq: 784, type: 'triangle', duration: 0.18, gain: 0.06 });
+    c.glyphs.emit('✦', '#ffd76a', root.localToWorld(FRONT.pos.clone().add(V(0, 0.35, 0))), { size: 0.26, rise: 0.4 });
+  }
+
+  function putBack() {
+    if (focused < 0) return;
+    const i = focused;
+    if (opened) setDoor(i, false, 400);
+    place(i, false, 650);
+    focused = -1;
+    opened = false;
+    hud.setCard(null);
+    hud.setHint('Haz clic en un trofeo para verlo de cerca');
   }
 
   return {
-    focus: () => ({ look: root.localToWorld(V(0, 0.2, 0)), zoom: 4.4 }),
+    focus: () => ({ look: root.localToWorld(V(0, 0.2, 0.3)), zoom: 4.4 }),
 
     enter() {
+      boxes.forEach((b) => { b.aegis.userData.z0 ??= b.aegis.position.z; });
       hud.show({
-        icon: '🏅',
-        title: 'Logros',
-        hint: 'Pasa el cursor sobre una medalla · clic para ver el certificado',
+        icon: '🏆',
+        title: L(c.content.title) || 'Trofeos',
+        hint: 'Haz clic en un trofeo para verlo de cerca',
         onBack: c.leave,
-      });
-      showDefault();
-      loadJSON('data/sec-projects.json').then((all) => {
-        items = MEDAL_IDS.map((id) => all.find((p) => p.id === id) || null);
       });
     },
 
     exit() {
-      if (hovered >= 0) shine(hovered, 0);
-      hovered = selected = -1;
-      boxes.forEach((b) => b.medal.scale.setScalar(1));
+      tw.clear();
+      boxes.forEach((b) => {
+        b.holder.position.copy(b.rest);
+        b.holder.scale.setScalar(1);
+        b.holder.rotation.set(0, 0, 0);
+        b.door.rotation.y = 0;
+        b.aegis.position.z = b.aegis.userData.z0 ?? b.aegis.position.z;
+      });
+      hovered = focused = -1;
+      opened = false;
       c.setOutline([]);
       c.setLabel(null);
       c.setCursor('default');
     },
 
-    update(now) {
-      // la medalla elegida "late" suave dentro de su caja
-      boxes.forEach((b, i) => {
-        const k = i === selected && !c.reducedMotion ? 1 + 0.06 * Math.sin(now * 0.006) : 1;
-        b.medal.scale.setScalar(k);
-        b.relief.scale.setScalar(k);
-      });
+    busy: () => tw.busy,
+
+    update(now, dt) {
+      tw.update(now);
+      if (focused < 0) return;
+      // gira siguiendo al mouse (suave)
+      const k = c.reducedMotion ? 1 : Math.min(1, dt * 6);
+      rot.yaw += (want.yaw - rot.yaw) * k;
+      rot.pitch += (want.pitch - rot.pitch) * k;
+      const h = boxes[focused].holder;
+      h.rotation.set(rot.pitch, rot.yaw, 0);
     },
 
-    pointerMove() {
+    pointerMove(ndc) {
+      if (focused >= 0) {
+        want = { yaw: clamp(ndc.x, -1, 1) * 0.75, pitch: clamp(-ndc.y, -1, 1) * 0.35 };
+        c.setCursor(pickBox([focused]) >= 0 && !opened ? 'pointer' : 'default');
+        return;
+      }
       const i = pickBox();
       if (i === hovered) return;
-      if (hovered >= 0) shine(hovered, 0);
       hovered = i;
       c.setCursor(i >= 0 ? 'pointer' : 'default');
       if (i >= 0) {
-        shine(i, 0.6);
         c.setOutline(boxes[i].meshes);
-        c.setLabel(titleOf(i), root.localToWorld(boxes[i].top.clone()));
+        c.setLabel(L(trophy(i).title) || 'Trofeo Dota 2', root.localToWorld(boxes[i].top.clone()));
       } else {
         c.setOutline([]);
         c.setLabel(null);
@@ -1470,13 +1511,14 @@ function medalsStation(c) {
     },
 
     pointerDown() {
+      if (tw.busy) return;
+      if (focused >= 0) {
+        if (pickBox([focused]) >= 0) open();
+        else putBack();
+        return;
+      }
       const i = pickBox();
-      if (i < 0) return;
-      selected = i;
-      showItem(i);
-      c.cue?.('medals:pick', { world: root.localToWorld(boxes[i].top.clone()) });
-      envelope(getAudioContext(), { freq: 784, type: 'triangle', duration: 0.14, gain: 0.06 });
-      c.glyphs.emit('✦', '#ffc94a', root.localToWorld(boxes[i].top.clone()), { size: 0.22, rise: 0.4 });
+      if (i >= 0) bring(i);
     },
   };
 }

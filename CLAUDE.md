@@ -340,9 +340,10 @@ objeto se vuelve interactivo **dentro de la escena** — ya no se abre un panel 
   reto; Pukis = acariciarlo; ajedrez = tablero 3D contra una IA (`gam-chess.js`); Lumbre =
   póster del juego en la pared izquierda (capturas 1–4 + enlaces a itch.io y al repo — antes
   era una card de `dev-projects.json`, ahora vive solo acá). Desde 2026-10-01 (ex
-  decoración, al final de `FURNITURE` para no correr las teclas 1–9): Logros (`medals`) =
-  repisa de medallas, cada caja = un logro de `sec-projects.json` (`MEDAL_IDS`), click →
-  `PDFModal` + botón a la trayectoria; Star Wars (`starwars`) = póster de Yoda
+  decoración, al final de `FURNITURE` para no correr las teclas 1–9): Trofeos (`medals`) =
+  repisa con los 3 Aegis de Dota 2 de David (The International) en cajas negras: click →
+  la caja viene al frente y gira con el mouse, otro click → se abre la tapa y sale la
+  tarjeta con la edición y el año (`trophies` en `gam-hotspots.json`); Star Wars (`starwars`) = póster de Yoda
   (`public/images/posters/`) que se despega de la pared y viene al frente, sin tarjeta;
   guitarra (`guitar`) = clásica con cutaway (calcada de la de David), se despega de la
   pared y toca canciones (`gam-guitar.js`); barra de sonido (`soundbar`, nueva, estilo Mi
@@ -389,7 +390,7 @@ objeto se vuelve interactivo **dentro de la escena** — ya no se abre un panel 
   `props.seats`) y queda "de servicio" (`brain.duty`): toca el
   piano y la demo del Reto, toca la guitarra en brazos, es el rival del ajedrez (de pie, del lado de las negras), hace la
   cascada de malabares en sus manos, monta la patineta (pestaña Montar; los trucos siempre
-  le fallan), señala medallas/libros/Lumbre, menea la cabeza con la música, saluda al
+  le fallan), señala los trofeos/libros/Lumbre, menea la cabeza con la música, saluda al
   póster de Yoda, acaricia a Pukis y se despide en la puerta. Las estaciones le avisan con
   `c.cue(evento, datos)` y leen `c.jotaiHands/jotaiGuitar/jotaiRiding/jotaiHere` — todo
   opcional: sin JotAI funcionan igual.

@@ -121,15 +121,44 @@
   },
   {
     "id": "medals",
-    "icon": "🏅",
+    "icon": "🏆",
     "title": {
-      "es": "Logros",
-      "en": "Achievements"
+      "es": "Trofeos",
+      "en": "Trophies"
     },
     "message": {
-      "es": "Cada medalla es un paso en ciberseguridad: mis prácticas en la ESPOCH y las certificaciones de Cisco e IBM.",
-      "en": "Each medal is a step in cybersecurity: my internship at ESPOCH and the Cisco and IBM certifications."
-    }
+      "es": "Mis tres Aegis de Dota 2 — The International.",
+      "en": "My three Dota 2 Aegis — The International."
+    },
+    "trophies": [
+      {
+        "title": {
+          "es": "Trofeo Dota 2",
+          "en": "Dota 2 trophy"
+        },
+        "edition": "The International",
+        "color": "violeta",
+        "year": null
+      },
+      {
+        "title": {
+          "es": "Trofeo Dota 2",
+          "en": "Dota 2 trophy"
+        },
+        "edition": "The International",
+        "color": "verde",
+        "year": null
+      },
+      {
+        "title": {
+          "es": "Trofeo Dota 2",
+          "en": "Dota 2 trophy"
+        },
+        "edition": "The International",
+        "color": "dorado",
+        "year": null
+      }
+    ]
   },
   {
     "id": "starwars",

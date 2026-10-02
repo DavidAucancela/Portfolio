@@ -88,7 +88,7 @@ js/
                                # muebles, ciclo día/noche, ruteo de pointer/teclado hacia las estaciones
     gam-stations.js            # Estaciones: cada objeto se vuelve interactivo al hacer zoom (piano,
                                # escritorio, estante, ventana, patineta, malabares, Pukis, ajedrez, Lumbre,
-                               # Logros, póster Star Wars, guitarra, barra de sonido)
+                               # Trofeos (Aegis), póster de Yoda, guitarra, barra de sonido)
     gam-guitar.js              # Motor de la guitarra (Karplus–Strong + canciones; las cuerdas son 3D)
     gam-hud.js                 # HUD DOM de las estaciones: barra superior, tarjeta, pines, estado
     gam-jotai.js               # JotAI 3D en el cuarto: modelo en código, rig, poses/clips, caras, vida
@@ -367,7 +367,7 @@ pellizco / +− hacen zoom también en la vista general del cuarto (hacia el cur
   defecto · 1 noche) mueve sol, relleno, luz de ventana, lámpara, neón, cielo de la ventana
   y fondo; lo anima la estación de la ventana y **se queda como el jugador lo dejó**.
 - **JotAI vive en el cuarto** (plan completo y fases en **`docs/gam-jotai-plan.md`** — su
-  **§11 "Traspaso"** tiene el estado actual, convenciones del rig, el arranque de la Fase 4
+  **§12** tiene el estado final (Fases 4–5, PR #60) y §11 las convenciones del rig
   y cómo verificar en headless: leerla antes de seguir). Hecho
   100% en código (`gam-jotai.js`), calcado del render `public/images/jotai/body.png`: ojos LED
   en aro, boca LED en canvas (oscura se perdía sobre la cara gris), cuello de resorte, placa

@@ -202,7 +202,6 @@ const AEGIS_MODEL = 'public/models/aegis/aegis.glb';
 const SKATE_MODEL = 'public/models/skate/skate.glb';
 const SKATE_SCAN = { length: 0.81, halfWidth: 0.108 };   // medidas del escaneo (m)
 const SKATE_LENGTH = 1.2;                                  // largo de la tabla en el pivot (unidades locales)
-const SKATE_THICK = 0.012;                                 // grosor real de la tabla (m): lija = cara de stickers − esto
 const AEGIS_WIDTH = 0.25;   // ancho del Aegis dentro de la caja (unidades locales)
 function aegisShape(k = 1) {
   // cúpula redonda arriba; abajo dos lóbulos a los costados y el centro hundido
@@ -1548,64 +1547,114 @@ export function mount(container, hotspots) {
       mat.side = THREE.DoubleSide;          // por los bordes del escaneo que quedan abiertos
       const mesh = new THREE.Mesh(geo, mat);
       mesh.scale.setScalar(k);
-      /* Perfil de la tabla a lo largo (nose y tail levantados): por cada franja,
-         la altura de la cara de stickers en el centro. La lija va SKATE_THICK por
-         debajo, siguiendo ese perfil — plana dejaba un hueco en las puntas. El
-         escaneo ya viene sin la "falda" que el escáner estiraba hasta el piso. */
-      const pos = geo.attributes.position;
-      const BIN = 0.01, Y0 = -SKATE_SCAN.length / 2, NB = Math.round(SKATE_SCAN.length / BIN);
-      const cols = Array.from({ length: NB }, () => []);
-      for (let i = 0; i < pos.count; i++) {
-        if (Math.abs(pos.getX(i)) > 0.05) continue;
-        const bi = Math.floor((pos.getY(i) - Y0) / BIN);
-        if (bi >= 0 && bi < NB) cols[bi].push(pos.getZ(i));
-      }
-      const prof = cols.map((c) => (c.length > 8 ? c.sort((p1, p2) => p1 - p2)[Math.floor(c.length * 0.05)] : null));
-      for (let i = 0; i < NB; i++) prof[i] ??= prof[i - 1] ?? prof.find((v) => v != null);
-      const gripAt = (y) => {
-        const f = clamp01((y - Y0) / SKATE_SCAN.length) * (NB - 1);
-        const i = Math.floor(f), t = f - i;
-        return (prof[i] + ((prof[Math.min(NB - 1, i + 1)] - prof[i]) * t)) - SKATE_THICK;
-      };
-      const gripC = gripAt(0);
+      /* Contorno real de la tabla (medido en el pipeline, en los extras del
+         mesh): por franja a lo largo, la altura de la cara de stickers (`surf`,
+         sigue nose y tail) y los bordes izq./der. (`xl`/`xr`, una forma limpia y
+         simétrica ajustada al escaneo — el contorno medido era ruidoso en las
+         puntas). El escaneo viene recortado con esa forma y 3 mm por debajo de la
+         cara (el canto original era un fleco);
+         acá se arman la lija (grilla con ese contorno, `thick` por debajo) y un
+         canto limpio de madera que une lija y cara, sin huecos. */
+      const O = src.userData.skateOutline;
+      if (!O) return;
+      const n = O.y.length;
+      const gripZ = (i) => O.surf[i] - O.thick;
+      const gripC = gripZ(Math.floor(n / 2));
       const GRIP_Z = -0.025;                // la lija (al centro) queda donde estaba la de la tabla en código
       mesh.position.set(0, 0.6, GRIP_Z - gripC * k);
       mesh.castShadow = mesh.receiveShadow = true;
       mesh.userData.baseEmissive = 0;
       mesh.userData.baseEmissiveIntensity = mat.emissiveIntensity ?? 1;
-      // lija: grilla con el contorno de la tabla (cápsula) que sigue el perfil, mirando a −z
-      const L = SKATE_SCAN.length / 2, W = SKATE_SCAN.halfWidth * 0.98;
-      const NX = 8, NY = 90;
-      const verts = [], uvs = [], ids = [];
-      for (let j = 0; j <= NY; j++) {
-        const y = -L + (2 * L * j) / NY;
-        const k2 = Math.abs(y) - (L - W);
-        const hw = k2 <= 0 ? W : Math.sqrt(Math.max(0, W * W - k2 * k2));
-        for (let i2 = 0; i2 <= NX; i2++) {
-          const x = (-1 + (2 * i2) / NX) * hw;
-          verts.push(x, y, gripAt(y));
-          uvs.push(x / (2 * W) + 0.5, y / (2 * L) + 0.5);
+      // forma limpia (medida en el pipeline): ancho constante + puntas redondeadas.
+      // La cara está curvada a lo ancho: `faceAt` interpola centro (surf) → canto (edge).
+      const yEnd = O.ends, W = O.halfW, CXo = O.cx;
+      const halfAt = (y) => { const d = Math.max(yEnd[0] + W - y, y - (yEnd[1] - W), 0); return Math.sqrt(Math.max(0, W * W - d * d)); };
+      const lerpArr = (arr, y) => {
+        const f = clamp01((y - O.y[0]) / (O.y[n - 1] - O.y[0])) * (n - 1);
+        const i = Math.floor(f), t = f - i;
+        return arr[i] + (arr[Math.min(n - 1, i + 1)] - arr[i]) * t;
+      };
+      const faceAt = (x, y) => {
+        const hw = Math.max(1e-4, halfAt(y)), u = Math.min(1, Math.abs(x - CXo) / hw);
+        // en las puntas (poco ancho) el perfil del canto es ruidoso: manda el del centro
+        const wEdge = u * u * Math.min(1, hw / 0.05);
+        return lerpArr(O.surf, y) + (lerpArr(O.edge, y) - lerpArr(O.surf, y)) * wEdge;
+      };
+      const EDGE = 0.0012;                  // la lija y el canto asoman apenas: tapan el borde del escaneo
+      const LIP = 0.008;                    // labio de madera sobre la cara: tapa el corte dentado del escaneo
+      const ROWS = 120, NX = 10;
+      // contorno exterior (lija y canto): la misma forma agrandada EDGE en todo el borde, puntas incluidas
+      const halfOut = (y) => { const d = Math.max(yEnd[0] + W - y, y - (yEnd[1] - W), 0); const R = W + EDGE; return Math.sqrt(Math.max(0, R * R - d * d)); };
+      // filas: las puntas redondas se muestrean por ángulo (si no, salen en pico); el tramo recto, parejo
+      const CAP = 16, R = W + EDGE, cA = yEnd[0] + W, cB = yEnd[1] - W;
+      const ys2 = [];
+      for (let q = 0; q < CAP; q++) ys2.push(cA - R * Math.cos((q / CAP) * (Math.PI / 2)));
+      for (let q = 0; q <= ROWS; q++) ys2.push(cA + ((cB - cA) * q) / ROWS);
+      for (let q = CAP - 1; q >= 0; q--) ys2.push(cB + R * Math.cos((q / CAP) * (Math.PI / 2)));
+      const NROWS = ys2.length - 1;
+      const yAt = (j) => ys2[j];
+      const mkMesh = (verts, uvs, ids, material) => {
+        const g2 = new THREE.BufferGeometry();
+        g2.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+        if (uvs) g2.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+        g2.setIndex(ids);
+        g2.computeVertexNormals();
+        const m2 = new THREE.Mesh(g2, material);
+        m2.castShadow = true;
+        m2.userData.baseEmissive = 0;
+        m2.userData.baseEmissiveIntensity = 1;
+        return m2;
+      };
+      // lija: grilla que sigue el contorno y la curva de la tabla, `thick` por debajo de la cara
+      const gv = [], gu = [], gi = [];
+      for (let j = 0; j <= NROWS; j++) {
+        const y = yAt(j), hw = halfOut(y);
+        for (let c = 0; c <= NX; c++) {
+          const x = CXo + (-1 + (2 * c) / NX) * hw;
+          gv.push(x, y, faceAt(x, y) - O.thick);
+          gu.push((x - CXo) / (2 * (W + EDGE)) + 0.5, (y - yEnd[0]) / (yEnd[1] - yEnd[0]));
         }
       }
-      for (let j = 0; j < NY; j++) for (let i2 = 0; i2 < NX; i2++) {
-        const a0 = j * (NX + 1) + i2, b0 = a0 + NX + 1;
-        ids.push(a0, a0 + 1, b0, a0 + 1, b0 + 1, b0);   // normal hacia −z
+      for (let j = 0; j < NROWS; j++) for (let c = 0; c < NX; c++) {
+        const a0 = j * (NX + 1) + c, b0 = a0 + NX + 1;
+        gi.push(a0, a0 + 1, b0, a0 + 1, b0 + 1, b0);
       }
-      const gripGeo = new THREE.BufferGeometry();
-      gripGeo.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
-      gripGeo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-      gripGeo.setIndex(ids);
-      gripGeo.computeVertexNormals();
-      const grip = new THREE.Mesh(gripGeo, new THREE.MeshStandardMaterial({ map: makeGripTexture(), roughness: 0.95, side: THREE.DoubleSide }));
-      grip.castShadow = grip.receiveShadow = true;
-      grip.userData.baseEmissive = 0;
-      grip.userData.baseEmissiveIntensity = 1;
+      const grip = mkMesh(gv, gu, gi, new THREE.MeshStandardMaterial({ map: makeGripTexture(), roughness: 0.95, side: THREE.DoubleSide }));
+      grip.receiveShadow = true;
+      // contorno (anillo): lado izquierdo de punta a punta y vuelta por el derecho
+      const ring = [];
+      for (let j = 0; j <= NROWS; j++) ring.push({ y: yAt(j), s: -1 });
+      for (let j = NROWS; j >= 0; j--) ring.push({ y: yAt(j), s: 1 });
+      const outer = (q) => [CXo + q.s * halfOut(q.y), q.y];
+      const inner = (q) => {
+        const y = Math.min(yEnd[1] - LIP, Math.max(yEnd[0] + LIP, q.y));
+        return [CXo + q.s * Math.max(0, halfAt(y) - LIP), y];
+      };
+      const wood = new THREE.MeshStandardMaterial({ color: 0xb8875a, roughness: 0.8, side: THREE.DoubleSide });
+      // canto: de la lija hasta 1 mm sobre la cara · labio: del canto hacia adentro, sobre la cara
+      const wv = [], wi = [], lv = [], li = [];
+      ring.forEach((q) => {
+        const [ox, oy] = outer(q), [ix, iy] = inner(q);
+        const top = faceAt(ox, oy) + 0.001;
+        wv.push(ox, oy, faceAt(ox, oy) - O.thick, ox, oy, top);
+        lv.push(ox, oy, top, ix, iy, faceAt(ix, iy) + 0.0008);
+      });
+      for (let q = 0; q < ring.length; q++) {
+        const a0 = q * 2, b0 = ((q + 1) % ring.length) * 2;
+        wi.push(a0, b0, a0 + 1, b0, b0 + 1, a0 + 1);
+        li.push(a0, b0, a0 + 1, b0, b0 + 1, a0 + 1);
+      }
+      const wall = mkMesh(wv, null, wi, wood);
+      const lip = mkMesh(lv, null, li, wood);
+      wall.add(lip);
+      grip.add(wall);
       mesh.add(grip);                       // mismas coordenadas que el escaneo
       sk.placeholder.forEach((m) => { m.visible = false; });
       sk.pivot.add(mesh);
       const root = objects.get('skateboard');
-      root.parts.push(mesh, grip);
-      [mesh, grip].forEach((m) => { m.userData.furniture = root.f; m.userData.rootGroup = root.root; });
+      const lipMesh = wall.children[0];
+      root.parts.push(mesh, grip, wall, lipMesh);
+      [mesh, grip, wall, lipMesh].forEach((m) => { m.userData.furniture = root.f; m.userData.rootGroup = root.root; });
       // ruedas: lo más bajo del escaneo (z máx) · lija: GRIP_Z, con la tabla acostada queda arriba
       sk.dims.wheel = mesh.position.z + geo.boundingBox.max.z * k;
       sk.dims.deck = sk.dims.wheel - GRIP_Z;

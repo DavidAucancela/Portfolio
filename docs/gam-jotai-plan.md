@@ -524,12 +524,13 @@ Los 10 de antes + 4 nuevos (decididos con David el 2026-10-01, todos al final de
   roseta, trastes, 6 cuerdas que vibran). Se despega de la pared y toca canciones
   (`gam-guitar.js`, Karplus–Strong); con JotAI, la toca él en brazos.
 - **Patineta** (de antes) — ahora con el **escaneo real** de David
-  (`public/models/skate/skate.glb`, 2.6 MB): limpio de restos del piso y orientado en el
-  pipeline, y sin la "falda" que el escáner estiraba desde los cantos hasta el piso. La cara
-  de la lija no salió en el escaneo (estaba contra el piso): la tapa una lija hecha en código
-  que **sigue el perfil real de la tabla** (nose y tail levantados), `SKATE_THICK` (12 mm) por
-  debajo de la cara de stickers (`loadSkateModel`) — antes era plana y dejaba un hueco. `refs.skate.dims` = cuánto bajan las
-  ruedas / alto de la lija, que usa la pestaña Montar.
+  (`public/models/skate/skate.glb`). Pipeline en `scripts/gam-models/`: limpio de restos del
+  piso, orientado, y recortado con un **contorno limpio y simétrico** ajustado al escaneo
+  (ancho constante + puntas redondas) y 3 mm bajo la cara de stickers (el canto escaneado era
+  un fleco). El contorno y los perfiles (`surf` centro, `edge` canto — la tabla está curvada a
+  lo ancho y tiene nose/tail) van en los extras del mesh. `loadSkateModel` arma con eso: la
+  lija (sigue contorno y curva, 12 mm bajo la cara), un canto de madera y un labio de 8 mm
+  sobre la cara que tapa el corte — sin huecos ni flecos. `refs.skate.dims` lo usa Montar.
 - **Barra de sonido** (`soundbar`) — estilo Mi Soundbar, sola encima del estante. Tarjeta
   con la playlist (`tracks` / `playlistUrl` / `spotifyEmbed`).
 

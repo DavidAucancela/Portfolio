@@ -665,7 +665,7 @@ export function createJotaiBrain({
 
   /** Al enfocar un objeto. Sentado: solo el escritorio le importa (lo
    *  despierta de un salto y se queda en la silla). De pie: si el objeto
-   *  tiene un rol propio (`STATION_POSE`) va hacia él; si no, y está (o va)
+   *  tiene un rol propio (`ROLES`) va hacia él; si no, y está (o va)
    *  al lado del objeto, se aparta a su rincón para no quedar entre la
    *  cámara y el objeto — el ajedrez se ve con zoom 7.5 desde el frente,
    *  justo donde está su spot. */

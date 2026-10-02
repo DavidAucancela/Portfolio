@@ -105,6 +105,7 @@ export function createGuitar({ onStrum, onEnd } = {}) {
 
   function strum(chord = 'Em', dir = 'down') {
     const v = CHORDS[chord];
+    if (!v) { console.warn(`[gam-guitar] acorde desconocido: ${chord}`); return; }   // typo en SONGS: no rompe la canción
     const strings = v.map((m, i) => (m == null ? -1 : i)).filter((i) => i >= 0);
     const ordered = dir === 'up' ? [...strings].reverse() : strings;
     const ctx = ctxOrNull();

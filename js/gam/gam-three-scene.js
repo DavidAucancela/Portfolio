@@ -80,21 +80,21 @@ const WALL_FACING = Math.PI / 2;
 const FURNITURE = [
   { id: 'piano',      x: -3.06,        z: 0.31,  rotY: WALL_FACING, color: 0xffb020, label: '🎹 Piano',            kind: 'minigame', zoom: 2.5, viewTilt: 0.45, scale: 1.354 },
   { id: 'desk',       x: -0.3,         z: -2.93, rotY: 0,    color: 0x3b82f6, label: '🖥️ Escritorio',       kind: 'list', zoom: 2.0, artHeight: 1.9 },
-  { id: 'juggling',   x: 2.97,         z: 0.25,  rotY: 0,           color: 0xff8a3d, label: '🤹 Malabares',        kind: 'video', zoom: 3, scale: 1.35 },
+  { id: 'juggling',   x: 3.05,         z: 0.81,  y: 0.006, rotY: 0,           color: 0xff8a3d, label: '🤹 Malabares',        kind: 'video', zoom: 3, scale: 1.35 },
   { id: 'door',       x: -3.42,        z: 2.45,  rotY: WALL_FACING, color: 0x94a3b8, label: '🚪 Salir',            kind: 'exit', zoom: 2.2, scale: 1.085 },
-  { id: 'skateboard', x: 3.0,          z: -HALF + 0.32, rotY: 0,    color: 0x06ffa5, label: '🛹 Patineta',         kind: '3d', zoom: 2.6 },
+  { id: 'skateboard', x: 2.8,          z: -3.08, y: 0.018, rotY: 0, color: 0x06ffa5, label: '🛹 Patineta',         kind: '3d', zoom: 2.6, scale: 1.15 },
   { id: 'window',     x: 2.36,         z: -3.42, y: 0,   rotY: 0,           color: 0x7aa2ff, label: '🪟 Ventana',          kind: 'info', zoom: 3.2, scale: 1, noLift: true },
   { id: 'lumbre',     x: -3.38,        z: -0.04, y: 0,   rotY: WALL_FACING, color: 0xffb020, label: '🕯️ Lumbre',           kind: 'info', zoom: 6.5, scale: 1.085, noLift: true, viewTilt: 0.5 },
-  { id: 'chess',      x: 1.97,         z: 2.48,   rotY: 0,           color: 0xe8d9b5, label: '♟️ Ajedrez',          kind: 'minigame', zoom: 7.5, elev: 1.15, scale: 1.469 },
-  { id: 'pukis',      x: 0.61,         z: -2.45, rotY: -Math.PI / 2, color: 0xe9dcc0, label: '🐾 Pukis',            kind: 'info', zoom: 4.2, scale: 1.096, view: Math.PI / 2, artHeight: 0.5 },
+  { id: 'chess',      x: 1.89,         z: 2.44,  y: 0.068, rotY: 0,           color: 0xe8d9b5, label: '♟️ Ajedrez',          kind: 'minigame', zoom: 7.5, elev: 1.15, scale: 1.469 },
+  { id: 'pukis',      x: 1.91,         z: -2.45, y: 0.044, rotY: -Math.PI / 2, color: 0xe9dcc0, label: '🐾 Pukis',            kind: 'info', zoom: 4.2, scale: 1.096, view: Math.PI / 2, artHeight: 0.5 },
   { id: 'bookshelf',  x: -3.14,        z: -2.53, rotY: WALL_FACING, color: 0xb14eff, label: '📚 Estante',          kind: 'list', zoom: 2.6, viewTilt: 0.5, scale: 1.3 },
   // Ex decoración (2026-10-01): mismas posiciones en el mundo que tenían como
   // decoración suelta, ahora con estación propia. Van al final: las teclas
   // 1–9 siguen apuntando a los de arriba.
   { id: 'medals',     x: -0.3,         z: -HALF + 0.15, y: 2.55, rotY: 0, color: 0xffc94a, label: '🏅 Logros',      kind: 'info', zoom: 4.4, scale: 1, noLift: true },
   { id: 'starwars',   x: 0.44 - 1.13 * 2.35, z: 0.44 - 1.13 * HALF, y: 0, rotY: 0, color: 0xffe81f, label: '⭐ Star Wars', kind: 'info', zoom: 6, scale: 1.13, noLift: true },
-  { id: 'guitar',     x: -HALF + 0.3,  z: -1.34, rotY: 0, view: Math.PI / 2, color: 0xc98a4b, label: '🎸 Guitarra',  kind: 'minigame', zoom: 5.2, scale: 1 },
-  { id: 'soundbar',   x: -3.14,        z: -2.53, y: 2.0 * 1.3, rotY: WALL_FACING, color: 0x7aa2ff, label: '🔊 Música', kind: 'list', zoom: 4.6, scale: 1.3, noLift: true },   // encima del estante
+  { id: 'guitar',     x: -3.14,        z: -1.28, y: 0.022, rotY: 0, view: Math.PI / 2, color: 0xc98a4b, label: '🎸 Guitarra',  kind: 'minigame', zoom: 5.2, scale: 1.13 },
+  { id: 'soundbar',   x: -3.16,        z: -2.53, y: 2.6, rotY: WALL_FACING, color: 0x7aa2ff, label: '🔊 Música', kind: 'list', zoom: 4.6, scale: 2.21, noLift: true },   // encima del estante
 ];
 
 /* JotAI (docs/gam-jotai-plan.md) — vive en el cuarto. Arranca en su rincón
@@ -688,8 +688,8 @@ export function mount(container, hotspots) {
       new THREE.BoxGeometry(2.6, 0.03, 1.9),
       [rugEdge, rugEdge, new THREE.MeshStandardMaterial({ map: makeRugTexture(), roughness: 0.95 }), rugEdge, rugEdge, rugEdge]
     );
-    rug.position.set(0.04, -0.005, -1.76);
-    rug.scale.setScalar(1.444);
+    rug.position.set(0.14, -0.005, -1.64);
+    rug.scale.setScalar(1.632);
     rug.receiveShadow = true;
     decor.add(rug);
     tagEdit(rug, 'alfombra');

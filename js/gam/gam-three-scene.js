@@ -113,7 +113,7 @@ const JOTAI_SPOTS = {
   window:     { at: [0.6, 2.1],   look: [0, 3.0, 0] },
   pukis:      { at: [0.54, -0.39], look: [0.45, 0.12, 0.05] },   // del lado de la cámara: se le ve la cara
   bookshelf:  { at: [0, 0.75],    look: [0, 1.1, 0] },
-  chess:      { at: [0, -1.05],   look: [0, 0.62, 0] },       // detrás de su banquito (negras); el frente quedaba fuera del cuarto
+  chess:      { at: [0, -0.75],   look: [0, 0.62, 0] },       // del lado de las negras (el frente quedaba fuera del cuarto); al jugar se arrima
   juggling:   { at: [-0.7, -0.35], look: [-0.7, 0.8, 3] },    // al costado del pedestal, de frente (y detrás del ajedrez en la vista)
   skateboard: { at: [0, 0.5],     look: [0, 0.6, 0] },
   lumbre:     { at: [0, 0.8],     look: [0, 2.3, 0] },
@@ -126,7 +126,6 @@ const JOTAI_SPOTS = {
    at = dónde se sienta, side = por dónde se sube/baja, topY = alto del
    asiento, face = rumbo relativo al mueble (π = mirando hacia −z local). */
 const PIANO_SEAT = { at: [0, 0.5], side: [0.7, 0.5], topY: 0.5, face: Math.PI };       // banqueta, mirando el teclado
-const CHESS_SEAT = { at: [0, -0.62], side: [0, -1.05], topY: 0.385, face: 0 };         // banquito de las negras
 const JOTAI_SCALE = 0.92;
 
 /* Grilla de navegación: solo bloquea lo que ocupa piso a la altura del
@@ -153,8 +152,6 @@ const Y_AXIS = new THREE.Vector3(0, 1, 0);
 const PARALLAX_YAW = 0.03;    // rad (~1.7°) — el diorama "gira" levemente siguiendo el puntero
 const PARALLAX_PITCH = 0.02;
 const DRIFT_YAW = 0.02;       // deriva autónoma, no depende de mover el mouse
-const FREE_LOOK_YAW = 0.35;   // rad (~20°) — mismo parallax, rango mucho mayor al enfocar un objeto:
-const FREE_LOOK_PITCH = 0.2;  // mover el cursor por la pantalla deja ver otros ángulos sin arrastrar
 const TRANSITION_MS = 750;
 const FOCUS_LERP = 0.07;      // suavizado del dimming al enfocar/desenfocar un objeto
 const HOVER_GLOW = 0.22;      // bajo a propósito: no debe pasar el umbral del bloom
@@ -923,9 +920,9 @@ export function mount(container, hotspots) {
             out.refs.squares.push(sq);
           }
         }
-        // dos banquitos, uno de cada lado del tablero: el del fondo (negras) es
-        // el de JotAI, que juega de rival (ver CHESS_SEAT)
-        [CHESS_SEAT.at[1], -CHESS_SEAT.at[1]].forEach((z) => {
+        // un solo banquito, del lado de las blancas (el visitante): JotAI juega
+        // de pie del otro lado, solo rueda hasta la mesa cuando hay partida
+        [0.62].forEach((z) => {
           add(cyl(0.15, 0.05), 0x3d2a18, 0, 0.36, z);
           [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sz]) => add(cyl(0.02, 0.34), 0x2a1a10, sx * 0.09, 0.17, z + sz * 0.09));
         });
@@ -1438,7 +1435,7 @@ export function mount(container, hotspots) {
    *  Arrimada queda GIRADA hacia el monitor secundario (que ya mira al
    *  usuario): recta, el respaldo quedaba entre la cámara isométrica y JotAI
    *  y lo tapaba casi entero. */
-  /** Asiento de estación (banqueta del piano, banquito del ajedrez) para el brain. */
+  /** Asiento de estación (banqueta del piano) para el brain. */
   function makeSeatProp(id, { at, side, topY, face }) {
     const o = objects.get(id);
     if (!o) return null;
@@ -1486,7 +1483,7 @@ export function mount(container, hotspots) {
     viewHeading: Math.atan2(ISO_DIR.x, ISO_DIR.z),   // de frente a la cámara
     props: {
       chair: makeChairProp(),
-      seats: { bench: makeSeatProp('piano', PIANO_SEAT), stool: makeSeatProp('chess', CHESS_SEAT) },
+      seats: { bench: makeSeatProp('piano', PIANO_SEAT) },
       // `stations` / `stationSys` se crean más abajo: estas flechas recién corren desde el loop
       petPukis: () => stations.get('pukis')?.react?.({ sound: false }),
       emit: (...args) => stationSys.emit(...args),
@@ -2232,22 +2229,15 @@ export function mount(container, hotspots) {
       }
     }
 
-    // Parallax + deriva: giro sutil del diorama en reposo; al enfocar un objeto el
-    // mismo parallax pasa a un rango mucho mayor — mover el cursor por la pantalla
-    // orbita la cámara alrededor del objeto para verlo desde otros ángulos, sin
-    // consumir el click. Congelado mientras `dragging` (una estación como la
-    // patineta o el ajedrez está usando el arrastre para lo suyo) para no sumar
-    // el giro de cámara al gesto del usuario.
+    // Parallax + deriva: giro sutil del diorama en reposo. Con un objeto
+    // enfocado la cámara se queda fija de frente (antes el cursor la orbitaba
+    // alrededor del objeto — se sacó a pedido de David: el objeto "giraba").
     if (!reducedMotion) {
       const idle = !zoomed;
-      if (idle || !dragging) {
-        const yawRange = idle ? PARALLAX_YAW : FREE_LOOK_YAW;
-        const pitchRange = idle ? PARALLAX_PITCH : FREE_LOOK_PITCH;
-        const yawTarget = pointerParallax.x * yawRange + (idle ? Math.sin(now * 0.00018) * DRIFT_YAW : 0);
-        const pitchTarget = -pointerParallax.y * pitchRange;
-        yaw += (yawTarget - yaw) * 0.05;
-        pitch += (pitchTarget - pitch) * 0.05;
-      }
+      const yawTarget = idle ? pointerParallax.x * PARALLAX_YAW + Math.sin(now * 0.00018) * DRIFT_YAW : 0;
+      const pitchTarget = idle ? -pointerParallax.y * PARALLAX_PITCH : 0;
+      yaw += (yawTarget - yaw) * 0.05;
+      pitch += (pitchTarget - pitch) * 0.05;
 
       // Animaciones en reposo — todas apagadas con prefers-reduced-motion.
       breathers.forEach((m) => { m.scale.y = (m.userData.baseScaleY ?? 0.7) + Math.sin(now * 0.0025) * 0.025; });

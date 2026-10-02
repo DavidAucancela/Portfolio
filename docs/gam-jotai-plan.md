@@ -504,8 +504,8 @@ Pendiente de David: canciones de la guitarra y la playlist (placeholders en
   foco. `enterStation(f)` → `travel` → (sentarse / arrimarse / girarse a cámara) → `duty = id`.
   `leaveStation()` al salir del zoom: se levanta con calma (`standFrom`) o vuelve al spot si
   estaba arrimado (Pukis).
-- Asientos de estación: `props.seats = { bench, stool }` (`makeSeatProp` en la escena:
-  `PIANO_SEAT` / `CHESS_SEAT`, coords locales). `sitOn(name)` / `standFrom()`; estado
+- Asientos de estación: `props.seats = { bench }` (`makeSeatProp` en la escena:
+  `PIANO_SEAT`, coords locales). `sitOn(name)` / `standFrom()`; estado
   `perch` + `perchHips`. `interrupt({ keepPerch })`: sin `keepPerch` baja de golpe al costado
   (noche, otra estación). La silla del escritorio sigue aparte (`seated`, rutina nocturna).
   `hipsForSeat(topY)` / `hipsForStand(y)` pasan alturas del mundo a `hipsY` con `scale`.
@@ -516,14 +516,16 @@ Pendiente de David: canciones de la guitarra y la playlist (placeholders en
   enfocado (mirar la tecla que suena, la pieza que mueve). `farewell()` en la puerta.
 - Getters nuevos: `duty`, `riding`, `moving`.
 
-**Personaje (`gam-jotai.js`):** poses `pianoSit`, `chessSit`, `chin`, `guitarHold`,
+**Personaje (`gam-jotai.js`):** poses `pianoSit`, `chessStand`, `chin`, `guitarHold`,
 `juggle`, `ride`, `fallSit`; clips `reachL/R`, `scratch`, `strum`, `juggleHands`,
 `pointL/R`, `salute`, `bob`, `hop`, `wobble`, `dust`; `setPose(name, { hipsY })`,
 `handsWorld()`.
 
-**Escena:** banqueta del piano más cerca del teclado; los banquitos del ajedrez pasaron a
-los lados del tablero (el del fondo = negras = JotAI) — de paso arregla que el spot del
-ajedrez quedaba fuera del cuarto y no tenía camino. Spot de malabares al costado del
+**Escena:** banqueta del piano más cerca del teclado; el ajedrez quedó con **un solo
+banquito** (el del visitante, blancas): JotAI juega **de pie** del lado de las negras, solo
+rueda hasta la mesa cuando hay partida (pedido de David, 2026-10-02) — de paso se arregló
+que el spot del ajedrez quedaba fuera del cuarto. Mesa y pedestal de malabares girados 90°.
+Al enfocar un objeto la cámara ya **no orbita** con el cursor (se sacó el free-look). Spot de malabares al costado del
 pedestal. Ganchos en el `base` de las estaciones: `jotaiHere()`, `jotaiRiding()`,
 `jotaiHands()`, `jotaiGuitar()` (todos null/false sin JotAI).
 

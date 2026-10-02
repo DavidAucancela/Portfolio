@@ -385,9 +385,9 @@ objeto se vuelve interactivo **dentro de la escena** — ya no se abre un panel 
   Rutinas con `run()` + token `seq` cancelable, esperas/animaciones atadas al reloj del
   loop (la pausa del cuarto las pausa).
   **Las estaciones (Fase 4, `docs/gam-jotai-plan.md` §12):** al enfocar un objeto con rol
-  (`ROLES` en el brain) va a su spot, se sienta si hace falta (banqueta del piano, banquito
-  de las negras del ajedrez: `props.seats`) y queda "de servicio" (`brain.duty`): toca el
-  piano y la demo del Reto, toca la guitarra en brazos, es el rival del ajedrez, hace la
+  (`ROLES` en el brain) va a su spot, se sienta si hace falta (banqueta del piano:
+  `props.seats`) y queda "de servicio" (`brain.duty`): toca el
+  piano y la demo del Reto, toca la guitarra en brazos, es el rival del ajedrez (de pie, del lado de las negras), hace la
   cascada de malabares en sus manos, monta la patineta (pestaña Montar; los trucos siempre
   le fallan), señala medallas/libros/Lumbre, menea la cabeza con la música, saluda al
   póster de Yoda, acaricia a Pukis y se despide en la puerta. Las estaciones le avisan con

@@ -36,7 +36,7 @@
  * (cuello de resorte al máximo) / `typing` (loop) / `pet` / `startle`, cara
  * `yawn`. `slideTo` = tramos cortos fuera de la grilla (subirse a la silla).
  *
- * Fase 4 (estaciones): poses `pianoSit` / `chessSit` / `chin` / `guitarHold`
+ * Fase 4 (estaciones): poses `pianoSit` / `chessStand` / `chin` / `guitarHold`
  * / `juggle` / `ride` / `fallSit`, clips `reachL/R`, `scratch`, `strum`,
  * `juggleHands` (loop), `pointL/R`, `salute`, `bob` (loop), `hop`, `wobble`,
  * `dust`. `setPose(name, { hipsY })` sienta a otra altura y `handsWorld()`
@@ -120,14 +120,15 @@ const POSES = {
   // sentado al piano (banqueta): piernas de `sit` + brazos al teclado; la altura
   // del asiento la pasa la escena (`setPose('pianoSit', { hipsY })`)
   pianoSit: { ...SIT_LEGS, ...PIANO_ARMS },
-  // sentado al ajedrez: manos sobre las rodillas, atento al tablero
-  chessSit: {
-    ...SIT_LEGS, torso: [0.18, 0, 0],
-    shoulderL: [-0.75, 0, 0.18], shoulderR: [-0.75, 0, -0.18], elbowL: [-0.55, 0, 0], elbowR: [-0.55, 0, 0],
+  // de pie frente al tablero: manos apoyadas en el borde de la mesa y el cuello
+  // de resorte estirado para asomarse por encima de la mesa (es bajito)
+  chessStand: {
+    torso: [0.12, 0, 0], neckS: 1.9,
+    shoulderL: [-0.85, 0, 0.18], shoulderR: [-0.85, 0, -0.18], elbowL: [-0.45, 0, 0], elbowR: [-0.45, 0, 0],
   },
   // pensando (turno de la IA): mano derecha al mentón
   chin: {
-    ...SIT_LEGS, torso: [0.22, 0, 0], head: [0.12, 0, -0.08],
+    torso: [0.16, 0, 0], head: [0.12, 0, -0.08], neckS: 1.9,
     shoulderL: [-0.75, 0, 0.18], elbowL: [-0.55, 0, 0],
     shoulderR: [-1.15, 0, -0.32], elbowR: [-2.0, 0, 0.35], wristR: [0.4, 0, 0],
   },
@@ -598,7 +599,7 @@ export function createJotai({ reducedMotion = false, lite = false, scale = 0.92 
 
   /** Cambia la pose base (la transición la hace la misma amortiguación).
    *  `over` pisa valores de la pose — ej. `{ hipsY }` para un asiento de
-   *  otra altura que la silla (banqueta del piano, banquito del ajedrez). */
+   *  otra altura que la silla (banqueta del piano). */
   function setPose(name, over = null) {
     if (POSES[name]) basePose = over ? { ...POSES[name], ...over } : POSES[name];
   }

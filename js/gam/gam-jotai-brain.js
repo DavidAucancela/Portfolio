@@ -24,8 +24,7 @@
  * pausa del cuarto también pausa las rutinas.
  *
  * Fase 4: las estaciones. Al enfocar un objeto con papel propio (`ROLES`)
- * va a su spot, se sienta si hace falta (banqueta del piano, banquito del
- * ajedrez: `props.seats`) y queda "de servicio" (`duty`): las estaciones le
+ * va a su spot, se sienta si hace falta (banqueta del piano: `props.seats`) y queda "de servicio" (`duty`): las estaciones le
  * avisan qué pasa con `cue(evento, datos)` (tecla del piano, jugada de la IA,
  * truco de patineta…) y él reacciona. Al salir del zoom se levanta y vuelve a
  * lo suyo. Mientras está de servicio puede hablar aunque haya zoom.
@@ -76,7 +75,7 @@ const CLEARANCE = 1.4;                 // a menos de esto del objeto enfocado, s
 const ROLES = {
   piano:      { seat: 'bench', pose: 'pianoSit', face: 'greeting' },
   guitar:     { pose: 'guitarHold', face: 'success', faceCam: true, line: 'guitar_intro' },
-  chess:      { seat: 'stool', pose: 'chessSit', face: 'greeting', line: 'chess_hello' },
+  chess:      { pose: 'chessStand', face: 'greeting', near: 0.18, line: 'chess_hello' },   // de pie, arrimado a la mesa
   juggling:   { pose: 'juggle', face: 'listening', clip: 'juggleHands', loop: true },
   skateboard: { pose: 'stand', face: 'greeting', line: 'skate_intro' },
   medals:     { pose: 'stand', face: 'success', point: true, line: 'medals_proud' },
@@ -125,7 +124,7 @@ const rand = ([a, b]) => a + Math.random() * (b - a);
  * props (opcionales — sin ellos la rutina nocturna se salta esa parte):
  *   chair: { set(k 0..1), seat() → { x, z, heading, side: {x,z} } } — k=1 arrimada al escritorio
  *   seats: { [nombre]: { seat() → { x, z, heading, side: {x,z}, topY } } } — asientos
- *          de estación (banqueta del piano, banquito del ajedrez); `topY` = altura
+ *          de estación (banqueta del piano); `topY` = altura
  *          del asiento en el mundo
  *   petPukis(): reacción de Pukis (corazones, cola)
  *   emit(glyph, color, pos, opts): glifo flotante
@@ -168,7 +167,7 @@ export function createJotaiBrain({
   let captionKey = null;       // subtítulo de la rutina en curso ('night' | 'dawn')
 
   let duty = null;             // estación donde está "de servicio" (Fase 4) o null
-  let perch = null;            // asiento de estación en el que está sentado ('bench' | 'stool')
+  let perch = null;            // asiento de estación en el que está sentado ('bench')
   let perchHips = 0;           // hipsY de ese asiento
   let riding = false;          // arriba de la patineta (la estación mueve la tabla y él va encima)
   let pianoPhase = 'free';     // momento del Reto del piano (ver gam-piano.js onPhase)
@@ -373,7 +372,7 @@ export function createJotaiBrain({
     return ok();
   }
 
-  /* ── Asientos de estación (banqueta, banquito) ── */
+  /* ── Asientos de estación (banqueta del piano) ── */
   /** Del spot de la estación al asiento: rueda al costado y se sube. */
   async function sitOn(name, ok) {
     const prop = props.seats?.[name];
@@ -745,14 +744,14 @@ export function createJotaiBrain({
         jotai.setFace('thinking', 0);
         break;
       case 'chess:move':
-        dutyPose('chessSit');
+        dutyPose('chessStand');
         jotai.setFace('idle');
         gaze = data.world || null;
         gazeUntil = clock + 1000;
         jotai.play(data.left ? 'reachL' : 'reachR');
         break;
       case 'chess:end':
-        dutyPose('chessSit');
+        dutyPose('chessStand');
         if (data.winner === 'b') { jotai.setFace('success', 2600); jotai.play('nod'); say(line('chess_win')); }
         else if (data.winner === 'w') { jotai.setFace('confused', 2600); jotai.play('scratch'); say(line('chess_lose')); }
         break;

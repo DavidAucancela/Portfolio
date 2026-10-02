@@ -540,7 +540,9 @@ tres módulos chicos, cada uno con un rol distinto:
 'gam:start'     // Phaser terminó de montarse (boot exitoso)
 'gam:score'     // fin de una ronda de piano/malabares → detail: { game, score }
 ```
-`js/analytics.js` los traduce a `gam_interact`/`gam_start`/`gam_minigame_score` en
+`js/analytics.js` los traduce a `gam_interact`/`gam_start`/`gam_minigame_score` (y
+`gam:jotai` → `gam_jotai` con `action`: poke, tickle, wake, routine_night/dawn, station,
+skate_bail, chess_end, farewell — ver `report()` en `gam-jotai-brain.js`) en
 Vercel Analytics, mismo criterio que el resto de los eventos custom del sitio.
 
 ## Secciones en index.html

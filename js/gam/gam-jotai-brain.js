@@ -120,6 +120,12 @@ const SPOT_ACTS = {
 
 const rand = ([a, b]) => a + Math.random() * (b - a);
 
+/** Analítica (Fase 5): js/analytics.js traduce `gam:jotai` a track('gam_jotai').
+ *  Payload plano (string/number) — lo exige @vercel/analytics. */
+function report(action, extra = {}) {
+  window.dispatchEvent(new CustomEvent('gam:jotai', { detail: { action, ...extra } }));
+}
+
 /**
  * props (opcionales — sin ellos la rutina nocturna se salta esa parte):
  *   chair: { set(k 0..1), seat() → { x, z, heading, side: {x,z} } } — k=1 arrimada al escritorio
@@ -431,6 +437,7 @@ export function createJotaiBrain({
 
   /** Anochecer: se estira → Pukis → escritorio → escribe → se duerme. */
   function night() {
+    report('routine_night');
     return run('night', async (ok) => {
       showCaption('night');
       if (!seated) {
@@ -478,6 +485,7 @@ export function createJotaiBrain({
 
   /** Amanecer: se despierta, se estira sentado, se baja y saluda. */
   function dawn() {
+    report('routine_dawn');
     return run('dawn', async (ok) => {
       showCaption('dawn');
       if (sleeping) {
@@ -501,6 +509,7 @@ export function createJotaiBrain({
   function skip() {
     const which = routine;
     if (which !== 'night' && which !== 'dawn') return;
+    report('skip_scene', { routine: which });
     interrupt(which === 'dawn' ? rand(STROLL_EVERY) : AFTER_POKE);
     const s = props.chair?.seat();
     if (which === 'night' && s) {
@@ -553,6 +562,7 @@ export function createJotaiBrain({
   function poke() {
     const now = performance.now();
     if (sleeping) {
+      report('wake');
       interrupt(BACK_TO_SLEEP);
       wakeStartled();
       if (!greeted) { markGreeted(); say(line('hello')); } else say(line('wake'));
@@ -564,9 +574,11 @@ export function createJotaiBrain({
     pokes.push(now);
     if (pokes.length >= TICKLE_POKES) {
       pokes = [];
+      report('tickle');
       speak('tickle', 'confused', 'giggle');
       return;
     }
+    if (pokes.length === 1) report('poke');   // 1 por racha de toques, no por cada click
     if (!greeted) { markGreeted(); speak('hello', 'greeting', 'wave'); return; }
     speak('poke', 'greeting', pokes.length === 1 ? 'wave' : 'nod');
   }
@@ -610,6 +622,7 @@ export function createJotaiBrain({
       if (role.faceCam && !(await jotai.faceTo(f.view ?? f.rotY ?? 0))) return;
       if (!ok()) return;
       duty = f.id;
+      report('station', { station: f.id });
       pianoPhase = 'free';
       dutyPose(role.pose);
       jotai.setFace(role.face, 1800);
@@ -643,6 +656,7 @@ export function createJotaiBrain({
   /** Puerta: saluda con la mano antes de irse (no demora el cambio de modo). */
   function farewell(f) {
     if (sleeping) return;
+    report('farewell');
     interrupt(AFTER_POKE);
     duty = f.id;   // así el globo no se oculta durante el zoom a la puerta
     faceViewer();
@@ -680,6 +694,7 @@ export function createJotaiBrain({
   /** Patineta: un truco que nunca le sale (la estación anima la tabla). */
   function skateBail(variant) {
     riding = false;
+    report('skate_bail', { variant });
     run('skate', async (ok) => {
       const board = { x: jotai.root.position.x, z: jotai.root.position.z };
       const h = jotai.root.rotation.y;
@@ -772,6 +787,7 @@ export function createJotaiBrain({
         jotai.play(data.left ? 'reachL' : 'reachR');
         break;
       case 'chess:end':
+        report('chess_end', { winner: data.winner || 'draw' });
         dutyPose('chessStand');
         if (data.winner === 'b') { jotai.setFace('success', 2600); jotai.play('nod'); say(line('chess_win')); }
         else if (data.winner === 'w') { jotai.setFace('confused', 2600); jotai.play('scratch'); say(line('chess_lose')); }

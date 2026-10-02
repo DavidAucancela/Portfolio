@@ -9,7 +9,7 @@
     { "es": "Estoy aprendiendo a andar en patineta… más o menos.", "en": "I'm learning to skate… sort of." },
     { "es": "¿Una partida de ajedrez? Te advierto que pienso rápido.", "en": "Up for chess? Fair warning: I think fast." },
     { "es": "Desde la ventana se ve Quito de noche 🌙", "en": "You can see Quito at night from the window 🌙" },
-    { "es": "En el estante están los proyectos de IA. Algunos los ayudé a pensar 🤖", "en": "The AI projects live on the shelf. I helped think up a few 🤖" }
+    { "es": "En el estante hay 41 libros de David. Yo voy por el tercero 📚", "en": "There are 41 of David's books on the shelf. I'm on my third 📚" }
   ],
   "tickle": [
     { "es": "¡Oye! ¡Me haces cosquillas en los circuitos! 😵‍💫", "en": "Hey! That tickles my circuits! 😵‍💫" },
@@ -37,7 +37,7 @@
   ],
   "muse_pukis": [
     { "es": "Shh… Pukis está soñando 💤", "en": "Shh… Pukis is dreaming 💤" },
-    { "es": "La mejor perrita del cuarto 🐾", "en": "Best dog in the room 🐾" }
+    { "es": "El mejor perro del cuarto 🐾", "en": "Best dog in the room 🐾" }
   ],
   "muse_desk": [
     { "es": "Uy, cuánto código sin commitear…", "en": "Whoa, so much uncommitted code…" }
@@ -90,7 +90,7 @@
     { "es": "Eso fue a propósito 😳", "en": "That was on purpose 😳" }
   ],
   "medals_proud": [
-    { "es": "¡Los Aegis de The International! Ábrelos, son de verdad 🏆", "en": "The International Aegis! Open them, they're the real deal 🏆" }
+    { "es": "¡Los Aegis de The International! Abre una caja para verlos de cerca 🏆", "en": "The International Aegis! Open a case to see them up close 🏆" }
   ],
   "music_vibe": [
     { "es": "Esto suena mientras David programa 🎧", "en": "This plays while David codes 🎧" }
@@ -105,7 +105,8 @@
     { "es": "¡Chao! Vuelve pronto 👋", "en": "Bye! Come back soon 👋" }
   ],
   "muse_guitar": [
-    { "es": "Algún día voy a afinar esa guitarra 🎸", "en": "Someday I'll tune that guitar 🎸" }
+    { "es": "Algún día voy a afinar esa guitarra 🎸", "en": "Someday I'll tune that guitar 🎸" },
+    { "es": "Ya casi me sale «Tres notas» 🎶", "en": "I almost have «Tres notas» down 🎶" }
   ],
   "muse_medals": [
     { "es": "Algún día levanto un Aegis yo también 🏆", "en": "Someday I'll lift an Aegis too 🏆" }

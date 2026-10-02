@@ -112,7 +112,7 @@ const JOTAI_SPOTS = {
   piano:      { at: [0, 1.4],     look: [0, 0.8, 0.1] },
   desk:       { at: [0.75, 1.2],  look: [-0.35, 1.3, -0.25] },
   window:     { at: [0.6, 2.1],   look: [0, 3.0, 0] },
-  pukis:      { at: [0.54, -0.39], look: [0.45, 0.12, 0.05] },   // del lado de la cámara: se le ve la cara
+  pukis:      { at: [0.45, 0.6], look: [0.45, 0.12, 0.05] },     // detrás de Pukis (la cámara lo ve desde +x): no lo tapa y se le ve la cara
   bookshelf:  { at: [0, 0.75],    look: [0, 1.1, 0] },
   chess:      { at: [0, -0.75],   look: [0, 0.62, 0] },       // del lado de las negras (el frente quedaba fuera del cuarto); al jugar se arrima
   juggling:   { at: [-0.7, -0.35], look: [-0.7, 0.8, 3] },    // al costado del pedestal, de frente (y detrás del ajedrez en la vista)

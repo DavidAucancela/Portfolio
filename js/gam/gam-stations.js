@@ -355,7 +355,6 @@ function bookshelfStation(c) {
   let bookInfo = new Map();               // mesh → { title, author }
   let hoveredBook = null;
   let selected = null;
-  let card = null;
 
   function assign() {
     if (assigned) return;
@@ -374,24 +373,14 @@ function bookshelfStation(c) {
     });
   }
 
-  function showDefaultCard() {
-    card = el('div', 'gam-card');
-    card.innerHTML = `
-      <h3 class="gam-card__title">📚 ${esc(L(c.content.title) || 'Estante')}</h3>
-      <p class="gam-card__text">${esc(L(c.content.message))}</p>
-      <p class="gam-card__hint">Pasa el cursor sobre un libro y haz clic para verlo.</p>
-    `;
-    hud.setCard(card);
-  }
-
   function showBook(info) {
     const n = el('div', 'gam-card');
     n.innerHTML = `
       <h3 class="gam-card__title">📖 ${esc(info.title)}</h3>
       <p class="gam-card__text">${esc(info.author)}</p>
-      <button type="button" class="gam-card__link">← Ver todos los libros</button>
+      <button type="button" class="gam-card__link">← Volver al estante</button>
     `;
-    n.querySelector('.gam-card__link').addEventListener('click', () => { selected = null; hud.setCard(card); });
+    n.querySelector('.gam-card__link').addEventListener('click', () => { selected = null; hud.setCard(null); });
     hud.setCard(n);
   }
 
@@ -406,7 +395,6 @@ function bookshelfStation(c) {
     enter() {
       hud.show({ icon: '📚', title: 'Estante', hint: 'Pasa el cursor sobre un libro · clic para verlo', onBack: c.leave });
       assign();
-      showDefaultCard();
     },
 
     exit() {
@@ -963,11 +951,6 @@ function pukisStation(c) {
         status: statusFor(0),
         onBack: c.leave,
       });
-      const card = el('div', 'gam-card');
-      card.innerHTML = `
-        <h3 class="gam-card__title">🐾 ${esc(L(c.content.title) || 'Pukis')}</h3>
-        <p class="gam-card__text">${esc(L(c.content.message))}</p>`;
-      hud.setCard(card);
     },
 
     exit() {
@@ -1338,12 +1321,6 @@ function lumbreStation(c) {
         hint: 'Cambia de captura con los números',
         onBack: c.leave,
       });
-      const card = el('div', 'gam-card');
-      card.innerHTML = `
-        <h3 class="gam-card__title">🕯️ ${esc(L(ct.title) || 'Lumbre')}</h3>
-        <p class="gam-card__text">${esc(L(ct.message))}</p>
-        <div class="gam-card__chips">${(ct.tags || []).map(t => `<span class="gam-card__chip">${esc(t)}</span>`).join('')}</div>`;
-      hud.setCard(card);
       show(0);
     },
 
@@ -1713,11 +1690,6 @@ function guitarStation(c) {
         hint: 'Elige una canción · clic en la guitarra o Espacio para rasguear',
         onBack: c.leave,
       });
-      const card = el('div', 'gam-card');
-      card.innerHTML = `
-        <h3 class="gam-card__title">🎸 ${esc(L(c.content.title) || 'Guitarra')}</h3>
-        <p class="gam-card__text">${esc(L(c.content.message))}</p>`;
-      hud.setCard(card);
       moveTo(SHOW, 800);
     },
 

@@ -153,31 +153,6 @@
   max-height: 100%;
 }
 
-/* ─── Contador de objetos explorados ─── */
-.gam-progress {
-  position: absolute;
-  top: 0.7rem;
-  left: 0.7rem;
-  z-index: 3;
-  padding: 0.3rem 0.7rem;
-  border-radius: 999px;
-  background: rgba(26, 18, 6, 0.75);
-  border: 1px solid rgba(255, 176, 32, 0.35);
-  backdrop-filter: blur(6px);
-  font-family: var(--font-mono, monospace);
-  font-size: 0.75rem;
-  color: #f5e9d6;
-  transition: background 0.3s ease, color 0.3s ease;
-}
-
-.gam-progress[hidden] { display: none; }
-
-.gam-progress.is-complete {
-  background: var(--color-accent);
-  color: #1a1206;
-  font-weight: 700;
-}
-
 /* ─── Botón de mute ─── */
 .gam-mute {
   position: absolute;
@@ -1480,7 +1455,6 @@ body[data-theme="gam"] {
   .gam-hud__btn,
   .gam-hud__back { font-size: 0.72rem; padding: 0.32rem 0.5rem; min-height: 32px; }
   .gam-hud__hint { max-width: calc(100% - 1.5rem); }
-  .gam-progress { top: 0.5rem; left: 0.5rem; font-size: 0.7rem; }
   .gam-mute { top: 0.5rem; right: 0.5rem; }
   .gam-credits__title { letter-spacing: 0.06em; }
 }

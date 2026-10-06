@@ -2056,7 +2056,6 @@ export function mount(container, hotspots) {
     if (hovered) {
       setMeshHoverVisual(hovered, true);
       renderer.domElement.style.cursor = 'pointer';
-      label.textContent = hovered.userData.furniture.label;
       if (outlinePass) outlinePass.selectedObjects = hovered.userData.artSprite ? [] : hovered.userData.hoverMeshes;
     } else {
       renderer.domElement.style.cursor = 'default';
@@ -2095,7 +2094,6 @@ export function mount(container, hotspots) {
     jotaiHovered = on;
     if (on) {
       renderer.domElement.style.cursor = 'pointer';
-      label.textContent = '🤖 JotAI';
       if (outlinePass) outlinePass.selectedObjects = jotai.meshes;
     } else if (!hovered) {
       renderer.domElement.style.cursor = 'default';
@@ -2658,21 +2656,8 @@ export function mount(container, hotspots) {
       if (label.textContent !== labelOverride.text) label.textContent = labelOverride.text;
       label.style.transform = `translate(${px.toFixed(1)}px, ${py.toFixed(1)}px) translate(-50%, -100%)`;
       label.classList.add('is-visible');
-    } else if (hovered && !zoomed) {
-      const f = hovered.userData.furniture;
-      projected.set(f.x, hovered.userData.labelTop + hovered.userData.lift, f.z).project(camera);
-      const px = (projected.x * 0.5 + 0.5) * container.clientWidth;
-      const py = (-projected.y * 0.5 + 0.5) * container.clientHeight;
-      label.style.transform = `translate(${px.toFixed(1)}px, ${py.toFixed(1)}px) translate(-50%, -100%)`;
-      label.classList.add('is-visible');
-    } else if (jotaiHovered && !zoomed && !jotaiBubble.visible) {
-      jotai.headTop(projected).project(camera);
-      const px = (projected.x * 0.5 + 0.5) * container.clientWidth;
-      const py = (-projected.y * 0.5 + 0.5) * container.clientHeight;
-      if (label.textContent !== '🤖 JotAI') label.textContent = '🤖 JotAI';
-      label.style.transform = `translate(${px.toFixed(1)}px, ${py.toFixed(1)}px) translate(-50%, -100%)`;
-      label.classList.add('is-visible');
     } else {
+      // el hover de muebles y de JotAI se marca solo con el brillo — sin etiqueta de nombre
       label.classList.remove('is-visible');
     }
 

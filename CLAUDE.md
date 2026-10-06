@@ -488,10 +488,10 @@ están abiertas (`scene.pause`/`resume`, así el jugador no se mueve detrás del
 `videoUrl`/`modelUrl` (`null` hoy — malabares y patineta, pendientes de esos assets).
 
 **Progreso** (`gam-loader.js`): cada interacción no-`exit` marca su `id` como
-descubierto en `localStorage('gam-discovered')`; `#gam-progress` (esquina sup. izq.
-de la TV) muestra `X/13` (`DISCOVERABLE_IDS`) y persiste entre visitas. Al completar los 13 objetos, un
-toast breve una vez por sesión (no un panel — no compite con el que ya se abre para
-el objeto que completó la ronda).
+descubierto en `localStorage('gam-discovered')` (`DISCOVERABLE_IDS`, 13). Sin contador
+visible (el `#gam-progress` se quitó): solo lo leen los créditos al salir por la puerta.
+El hover de los muebles y de JotAI se marca solo con el brillo/contorno — sin etiqueta
+de nombre (`.gam-label` queda solo para `setLabel()` de las estaciones, ej. libros).
 
 **Audio y feedback de interacción (`gam-audio.js` + `gam-ambience.js` + `gam-fx.js`)** —
 tres módulos chicos, cada uno con un rol distinto:

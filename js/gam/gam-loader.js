@@ -12,7 +12,6 @@ import { ProjectGallery } from '../project-gallery.js';
 import { GamTV } from './gam-tv.js';
 
 let _game            = null;
-let _sceneInstance   = null; // referencia directa a la GamScene activa — usada por _celebrateComplete()
 let _booting         = false;
 let _hotspotsPromise = null;
 let _lastNonGamMode  = null;
@@ -28,9 +27,9 @@ const _projectsCache = {};
 let _skillsPromise = null;
 
 /* ────────────────────────────────────────────────────
-   PROGRESO — cuántos de los 10 objetos interactuables ya se exploraron,
-   persistido entre visitas (localStorage, no depende de terminar el
-   juego de una sentada). La puerta ('exit') no cuenta como objeto.
+   PROGRESO — cuántos objetos interactuables ya se exploraron, persistido
+   entre visitas (localStorage). No se muestra en pantalla: solo lo usan
+   los créditos al salir por la puerta ('exit' no cuenta como objeto).
 ──────────────────────────────────────────────────── */
 const DISCOVER_KEY = 'gam-discovered';
 // terminal/diplomas salieron de la lista — son solo objetos decorativos del
@@ -52,44 +51,11 @@ function _saveDiscovered() {
 }
 
 let _discovered = _loadDiscovered();
-let _celebrated = false; // no repetir el aviso de "recorriste todo" dentro de la misma sesión
-
-function _updateProgressUI() {
-  const el = document.getElementById('gam-progress');
-  if (!el) return;
-  el.hidden = _discovered.size === 0;
-  el.textContent = `🔎 ${_discovered.size}/${DISCOVERABLE_IDS.length}`;
-}
 
 function _markDiscovered(id) {
   if (!DISCOVERABLE_IDS.includes(id) || _discovered.has(id)) return;
   _discovered.add(id);
   _saveDiscovered();
-  _updateProgressUI();
-  if (_discovered.size === DISCOVERABLE_IDS.length) _celebrateComplete();
-}
-
-/** Toast breve en el mismo lugar del contador — no compite con el panel
- *  que ya se está abriendo para el objeto que completó la ronda. */
-function _celebrateComplete() {
-  if (_celebrated) return;
-  _celebrated = true;
-  const el = document.getElementById('gam-progress');
-  if (!el) return;
-  el.classList.add('is-complete');
-  const prev = el.textContent;
-  el.textContent = LangSwitcher.getLang() === 'en' ? '🎉 Found them all!' : '🎉 ¡Encontraste todo!';
-  // try/catch a propósito: esta llamada corre dentro del mismo stack síncrono
-  // que _interact()/update() en GamScene (via window.dispatchEvent) — un throw
-  // sin capturar acá se propaga hasta el step de Phaser y congela el loop
-  // entero (ver el comentario largo en GamScene._interact()). El toast de
-  // arriba ya se aplicó y no depende de esto.
-  try { _sceneInstance?.celebrateComplete?.(); }
-  catch (err) { console.error('[GamLoader] celebrateComplete falló (no fatal):', err); }
-  setTimeout(() => {
-    el.classList.remove('is-complete');
-    el.textContent = prev;
-  }, 4000);
 }
 
 function _esc(s) {
@@ -145,10 +111,6 @@ async function _boot() {
     if (ThemeSwitcher.getCurrentMode() !== 'gam') { _booting = false; return; }
 
     _game = GamThreeScene.mount(rootEl, hotspots);
-    // celebrateComplete() es Phaser-only (ver _celebrateComplete() más abajo);
-    // con _sceneInstance en null esa llamada se salta en silencio (?.), el
-    // toast de #gam-progress sigue funcionando igual.
-    _sceneInstance = null;
 
     GamTV.onBooted();
     window.dispatchEvent(new CustomEvent('gam:start'));
@@ -186,7 +148,6 @@ function _destroy() {
     _game.destroy(true);
     _game = null;
   }
-  _sceneInstance = null;
   document.body.classList.remove('gam-playing');
   _closeModal();
 }
@@ -383,7 +344,6 @@ function init() {
   GamTV.onStart(_handleStart);
   _bindModal();
   _bindTrajectoryResume();
-  _updateProgressUI(); // refleja el progreso de visitas anteriores apenas arranca
 
   window.addEventListener('portfolio:modeChange', (e) => {
     const mode = e.detail.mode;

@@ -27,9 +27,9 @@
  */
 import * as THREE from 'three';
 import { getAudioContext, envelope } from './gam-audio.js';
-import { createPiano, KEY_BINDINGS } from './gam-piano.js';
+import { createPiano, KEY_BINDINGS, NOTE_LABELS, learnStars } from './gam-piano.js';
 import { createJuggling, ZONE_CENTER } from './gam-juggling.js';
-import { createGuitar, SONGS } from './gam-guitar.js';
+import { createGuitar, SONGS, CHORD_SET, chordFrets, stringFor, OPEN } from './gam-guitar.js';
 import { newGame, legalMoves, applyMove, chooseMove, status as chessStatus, isWhite } from './gam-chess.js';
 import { LangSwitcher } from '../lang.js';
 import { ProjectGallery } from '../project-gallery.js';
@@ -146,8 +146,28 @@ function loadJSON(path) {
 const L = (v) => LangSwitcher.L(v);
 
 /* ────────────────────────────────────────────────────
-   PIANO — teclas 3D tocables. Pestañas Libre / Reto en el HUD.
+   PIANO — teclas 3D tocables con su nota escrita encima. Pestañas Libre /
+   Reto / Aprender en el HUD, las tres con vista frontal y mucho zoom (el
+   piano ocupa la pantalla y se toca más fácil). JotAI, sentado en la
+   banqueta, "toca" cada nota que suena (la tuya, la demo del Reto o
+   "Escuchar"): gira la cabeza y el torso hacia la tecla y estira la mano. Aprender: aparece un atril con la partitura
+   de la canción, la nota que toca va en naranja (y su tecla se ilumina en
+   azul) y hay que tocarla para avanzar.
 ──────────────────────────────────────────────────── */
+const SHEET = { w: 1.1, h: 0.443, px: 1536 };   // atril chico: entre el panel del piano y el póster de Lumbre   // la partitura: tamaño en el mundo (local) y ancho del canvas
+const SHEET_PER = 12;                          // notas por "página" de la partitura
+const SERIF = 'Georgia, "Times New Roman", serif';
+
+function canvasTex(w, h, draw) {
+  const cv = document.createElement('canvas');
+  cv.width = w; cv.height = h;
+  draw(cv.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(cv);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8;
+  return t;
+}
+
 function pianoStation(c) {
   const { root, refs, hud } = c;
   const keys = refs.keys;
@@ -155,8 +175,197 @@ function pianoStation(c) {
   const tones = keys.map((_, i) => `hsl(${28 + i * 22}, 95%, 62%)`);
   let engine = null;
   let hovered = -1;
+  let mode = 'free';
+  let learnSt = null;      // último estado de Aprender (ver createPiano onLearn)
+  let missAt = 0;          // nota equivocada: la actual se pinta en rojo un momento
 
   const keyWorld = (i) => keys[i].getWorldPosition(new THREE.Vector3()).add(V(0, 0.12, 0));
+
+  /* La nota (y su tecla del teclado) escrita sobre la parte de adelante de
+     cada tecla blanca — hija de la tecla, así baja con ella al tocarla. */
+  keys.forEach((k, i) => {
+    if (!k.geometry.boundingBox) k.geometry.computeBoundingBox();
+    const kw = k.geometry.boundingBox.max.x - k.geometry.boundingBox.min.x;
+    const tex = canvasTex(128, 140, (g, w, h) => {
+      g.textAlign = 'center';
+      g.textBaseline = 'middle';
+      g.fillStyle = '#3a2a1c';
+      g.font = `bold ${NOTE_LABELS[i].length > 2 ? 44 : 52}px ${SERIF}`;
+      g.fillText(NOTE_LABELS[i], w / 2, 50);
+      g.fillStyle = '#9a7a52';
+      g.font = 'bold 36px "Courier New", monospace';
+      g.fillText(KEY_BINDINGS[i], w / 2, 108);
+    });
+    const label = new THREE.Mesh(
+      new THREE.PlaneGeometry(kw * 0.86, kw * 0.94),
+      new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }),
+    );
+    label.rotation.x = -Math.PI / 2;
+    label.position.set(0, 0.0156, 0.058);   // tecla: 0.03 de alto, 0.2 de largo; adelante, fuera de las negras
+    label.raycast = () => {};                // los clicks siguen yendo a la tecla
+    k.add(label);
+  });
+
+  /* Atril con la partitura: hijo del piano (así entra en la capa de foco),
+     escondido salvo en Aprender. Inclinado hacia atrás para mirar a la cámara. */
+  const sheet = (() => {
+    const cv = document.createElement('canvas');
+    cv.width = SHEET.px;
+    cv.height = Math.round(SHEET.px * SHEET.h / SHEET.w);
+    const tex = new THREE.CanvasTexture(cv);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 8;
+    const group = new THREE.Group();
+    // apoyado sobre el panel de control (abajo no tapa las teclas) y lo bastante bajo
+    // para no montarse sobre el póster de Lumbre, que cuelga justo encima del piano
+    group.position.set(0, 1.05, -0.07);
+    group.rotation.x = -0.25;
+    const board = new THREE.Mesh(new THREE.BoxGeometry(SHEET.w + 0.06, SHEET.h + 0.06, 0.02), new THREE.MeshStandardMaterial({ color: 0x15171b, roughness: 0.6 }));
+    board.position.z = -0.012;
+    // sin luz: con material estándar + bloom el papel se quemaba en blanco y no se leía nada
+    const paper = new THREE.Mesh(new THREE.PlaneGeometry(SHEET.w, SHEET.h), new THREE.MeshBasicMaterial({ map: tex, color: 0xb8b2a6 }));
+    const lip = new THREE.Mesh(new THREE.BoxGeometry(SHEET.w + 0.06, 0.03, 0.05), board.material);
+    lip.position.set(0, -SHEET.h / 2 - 0.02, 0.01);
+    group.add(board, paper, lip);
+    group.visible = false;
+    root.add(group);
+    return { group, cv, g: cv.getContext('2d'), tex };
+  })();
+
+  function drawSheet() {
+    const { g, cv, tex } = sheet;
+    const W = cv.width, H = cv.height;
+    const st = learnSt;
+    g.fillStyle = '#f7f1e3';
+    g.fillRect(0, 0, W, H);
+    if (!st?.song) { tex.needsUpdate = true; return; }
+    const { song, step, mistakes, listening, done } = st;
+    const n = song.notes.length;
+
+    // encabezado: título, mejor puntaje y avance
+    g.fillStyle = '#1b1b1f';
+    g.textAlign = 'left';
+    g.textBaseline = 'alphabetic';
+    g.font = `bold 58px ${SERIF}`;
+    g.fillText(L(song.title), 48, 74);
+    const best = learnStars(song.id);
+    g.textAlign = 'right';
+    g.font = `52px ${SERIF}`;
+    g.fillStyle = '#c98a00';
+    g.fillText('★'.repeat(best) + '☆'.repeat(3 - best), W - 48, 66);
+    g.fillStyle = '#5a5248';
+    g.font = `36px ${SERIF}`;
+    g.fillText(listening ? '🔊 escuchando…' : `nota ${Math.min(step + 1, n)} / ${n} · errores ${mistakes}`, W - 48, 118);
+
+    // pentagrama
+    const gap = 26, top = 190, bottom = top + 4 * gap;   // línea de abajo = Mi4 (tecla 2)
+    const noteY = (i) => bottom - (i - 2) * gap / 2;
+    g.strokeStyle = '#2a2622';
+    g.lineWidth = 3;
+    for (let k = 0; k < 5; k++) { g.beginPath(); g.moveTo(40, top + k * gap); g.lineTo(W - 40, top + k * gap); g.stroke(); }
+    g.fillStyle = '#2a2622';
+    g.textAlign = 'left';
+    g.font = `150px ${SERIF}`;
+    g.fillText('𝄞', 44, bottom + 30);
+    g.font = `bold 46px ${SERIF}`;
+    g.textAlign = 'center';
+    g.fillText(String(song.meter || 4), 168, top + gap * 2 - 4);
+    g.fillText('4', 168, bottom + 2);
+
+    // compases: tiempo acumulado antes de cada nota
+    const meter = song.meter || 4, pickup = song.pickup || 0;
+    const beatAt = [];
+    song.notes.reduce((t, nn, k) => { beatAt[k] = t; return t + nn.dur; }, 0);
+
+    const start = Math.floor(Math.min(step, n - 1) / SHEET_PER) * SHEET_PER;
+    const x0 = 210, x1 = W - 60, sp = (x1 - x0) / SHEET_PER;
+    const now = performance.now();
+    for (let k = start; k < Math.min(n, start + SHEET_PER); k++) {
+      const { i, dur } = song.notes[k];
+      const x = x0 + (k - start + 0.5) * sp, y = noteY(i);
+      const b = beatAt[k] - pickup;
+      if (k > start && b > 0 && Math.abs(b / meter - Math.round(b / meter)) < 1e-6) {
+        g.strokeStyle = '#2a2622'; g.lineWidth = 3;
+        g.beginPath(); g.moveTo(x - sp / 2, top); g.lineTo(x - sp / 2, bottom); g.stroke();
+      }
+      const isCur = k === step && !done;
+      const col = k < step || done ? '#2f9e5b' : isCur ? (missAt && now - missAt < 450 ? '#e0403a' : '#ff8a00') : '#1b1b1f';
+      if (isCur) {
+        g.fillStyle = 'rgba(255,138,0,0.16)';
+        g.fillRect(x - sp / 2 + 6, top - 70, sp - 12, bottom - top + 150);
+      }
+      // líneas adicionales (Do4 abajo; La5 y Do6 arriba)
+      g.strokeStyle = col; g.lineWidth = 3;
+      const ledgers = [];
+      if (i <= 0) ledgers.push(0);
+      for (let li = 12; li <= i; li += 2) ledgers.push(li);   // La5, Do6, Mi6…
+      ledgers.forEach((li) => { g.beginPath(); g.moveTo(x - 30, noteY(li)); g.lineTo(x + 30, noteY(li)); g.stroke(); });
+      // cabeza (hueca en blanca/redonda), plica, corchete y puntillo
+      g.save();
+      g.translate(x, y);
+      g.rotate(-0.35);
+      g.beginPath();
+      g.ellipse(0, 0, 17, 12, 0, 0, Math.PI * 2);
+      if (dur >= 2) { g.lineWidth = 5; g.strokeStyle = col; g.stroke(); } else { g.fillStyle = col; g.fill(); }
+      g.restore();
+      if (dur < 4) {
+        const up = i < 6;
+        const sx = up ? x + 15 : x - 15, ey = up ? y - 86 : y + 86;
+        g.strokeStyle = col; g.lineWidth = 4;
+        g.beginPath(); g.moveTo(sx, y); g.lineTo(sx, ey); g.stroke();
+        if (dur === 0.5) {
+          g.beginPath(); g.moveTo(sx, ey);
+          g.quadraticCurveTo(sx + 26, ey + (up ? 26 : -26), sx + 18, ey + (up ? 50 : -50));
+          g.stroke();
+        }
+      }
+      if (dur === 1.5) { g.fillStyle = col; g.beginPath(); g.arc(x + 30, y - 4, 5, 0, Math.PI * 2); g.fill(); }
+      // nombre de la nota + tecla del teclado
+      g.fillStyle = col;
+      g.textAlign = 'center';
+      g.font = `${isCur ? 'bold ' : ''}46px ${SERIF}`;
+      g.fillText(NOTE_LABELS[i], x, H - 92);
+      g.font = 'bold 36px "Courier New", monospace';
+      g.fillStyle = isCur ? '#ff8a00' : '#8a8176';
+      g.fillText(KEY_BINDINGS[i], x, H - 44);
+    }
+    // barra de avance
+    g.fillStyle = '#e4dccb';
+    g.fillRect(48, H - 26, W - 96, 10);
+    g.fillStyle = done ? '#2f9e5b' : '#ff8a00';
+    g.fillRect(48, H - 26, (W - 96) * (done ? 1 : step / n), 10);
+
+    if (done) {
+      g.fillStyle = 'rgba(247,241,227,0.86)';
+      g.fillRect(0, 120, W, H - 160);
+      g.fillStyle = '#2f9e5b';
+      g.textAlign = 'center';
+      g.font = `bold 64px ${SERIF}`;
+      g.fillText(done === 3 ? '¡Perfecta!' : done === 2 ? '¡Muy bien!' : '¡Terminaste!', W / 2, H / 2 + 6);
+      g.fillStyle = '#c98a00';
+      g.font = `72px ${SERIF}`;
+      g.fillText('★'.repeat(done) + '☆'.repeat(3 - done), W / 2, H / 2 + 92);
+    }
+    tex.needsUpdate = true;
+  }
+
+  function onLearn(st) {
+    learnSt = st;
+    if (st.miss != null) missAt = performance.now();
+    const n = st.song.notes.length;
+    const title = L(st.song.title);
+    if (st.done) {
+      hud.setStatus(`<strong>${esc(title)}</strong> — ${'★'.repeat(st.done)}${'☆'.repeat(3 - st.done)} · ↻ para repetir o ▶ para otra canción`);
+      c.glyphs.emit('★', '#ffd23f', root.localToWorld(V(0, 1.5, -0.1)), { size: 0.4, rise: 0.6, life: 2 });
+      c.cue?.('piano:learnDone', { stars: st.done });
+    } else if (st.listening) {
+      hud.setStatus(`🔊 <strong>${esc(title)}</strong> — escucha y sigue la partitura`);
+    } else {
+      hud.setStatus(`<strong>${esc(title)}</strong> · nota ${st.step + 1}/${n} · errores ${st.mistakes}`);
+    }
+    hud.setAction('listen', { disabled: !!st.listening });
+    drawSheet();
+  }
 
   function flash(i) {
     press[i] = 1;
@@ -169,31 +378,55 @@ function pianoStation(c) {
     return hit ? keys.indexOf(hit.object) : -1;
   }
 
+  function setTab(id) {
+    mode = id;
+    engine.setMode(id);
+    const learning = id === 'learn';
+    hud.setAction('start', { hidden: id !== 'challenge', label: '▶ Empezar secuencia' });
+    ['prev', 'listen', 'restart', 'next'].forEach((a) => hud.setAction(a, { hidden: !learning }));
+    hud.setHint(learning
+      ? 'Toca la nota en naranja (su tecla brilla en azul) · ◀ ▶ cambia de canción'
+      : 'Haz clic en las teclas · o usa tu teclado: Z–M graves · A–J medias · Q–I agudas');
+    sheet.group.visible = learning;
+    if (!learning) { learnSt = null; missAt = 0; }
+  }
+
   return {
-    focus: () => ({ look: root.localToWorld(V(0, 0.8, 0.08)), zoom: 4.6 }),
+    // de frente y desde bastante arriba (igual en las 3 pestañas): teclas y
+    // partitura a la vez, con JotAI sentado en la banqueta adelante
+    focus: () => ({
+      look: root.localToWorld(V(0, 0.95, -0.02)),
+      zoom: 4.4,   // 3 octavas: el piano entero (y la partitura) entran a lo ancho
+      dir: V(0, 1.5, 1).applyQuaternion(root.getWorldQuaternion(new THREE.Quaternion())),
+    }),
 
     enter() {
+      mode = 'free';
       engine = createPiano({
         onFlash: flash,
         onStatus: (t) => hud.setStatus(t),
         onEnd: () => hud.setAction('start', { hidden: false, label: '↻ Otra vuelta' }),
         onHot: () => c.glyphs.emit('🔥', '#ffb020', keyWorld(4), { rise: 0.9, size: 0.34 }),
         onPhase: (phase, score) => c.cue?.('piano:phase', { phase, score }),
+        onLearn,
       });
       hud.show({
         icon: '🎹',
         title: 'Piano',
-        tabs: [{ id: 'free', label: 'Libre' }, { id: 'challenge', label: 'Reto' }],
+        tabs: [{ id: 'free', label: 'Libre' }, { id: 'challenge', label: 'Reto' }, { id: 'learn', label: 'Aprender' }],
         active: 'free',
-        onTab: (id) => {
-          engine.setMode(id);
-          hud.setAction('start', { hidden: id !== 'challenge', label: '▶ Empezar secuencia' });
-        },
-        actions: [{
-          id: 'start', label: '▶ Empezar secuencia', hidden: true,
-          onClick: () => { engine.start(); hud.setAction('start', { hidden: true }); },
-        }],
-        hint: 'Haz clic en las teclas · o usa A S D F G H J K L ; Z X C V B',
+        onTab: setTab,
+        actions: [
+          {
+            id: 'start', label: '▶ Empezar secuencia', hidden: true,
+            onClick: () => { engine.start(); hud.setAction('start', { hidden: true }); },
+          },
+          { id: 'prev', label: '◀', hidden: true, onClick: () => engine.nextSong(-1) },
+          { id: 'listen', label: '🔊 Escuchar', hidden: true, onClick: () => engine.listen() },
+          { id: 'restart', label: '↻', hidden: true, onClick: () => engine.learn(learnSt?.song.id) },
+          { id: 'next', label: '▶', hidden: true, onClick: () => engine.nextSong(1) },
+        ],
+        hint: 'Haz clic en las teclas · o usa tu teclado: Z–M graves · A–J medias · Q–I agudas',
         onBack: c.leave,
       });
       engine.setMode('free');
@@ -202,19 +435,32 @@ function pianoStation(c) {
     exit() {
       engine?.destroy();
       engine = null;
+      mode = 'free';
+      learnSt = null;
+      sheet.group.visible = false;
       keys.forEach((k, i) => { press[i] = 0; k.position.y = k.userData.baseY; k.rotation.x = 0; k.material.emissive.setHex(0); k.material.emissiveIntensity = 0; });
       c.setOutline([]);
     },
 
     update(now, dt) {
+      // Aprender: la tecla de la nota que toca brilla en azul (late suave)
+      const target = mode === 'learn' && learnSt && !learnSt.done && !learnSt.listening
+        ? learnSt.song.notes[learnSt.step]?.i ?? -1 : -1;
+      const pulse = 0.45 + 0.25 * Math.sin(now * 0.008);
       keys.forEach((k, i) => {
         press[i] = Math.max(0, press[i] - dt * 5);
         const h = hovered === i ? 0.25 : 0;
         k.position.y = k.userData.baseY - 0.014 * press[i];
         k.rotation.x = 0.09 * press[i];
-        k.material.emissive.setHex(0xffb020);
-        k.material.emissiveIntensity = Math.max(press[i] * 0.9, h);
+        if (i === target && press[i] < 0.3) {
+          k.material.emissive.setHex(0x1f6fff);
+          k.material.emissiveIntensity = Math.max(pulse * 1.15, h);
+        } else {
+          k.material.emissive.setHex(0xffb020);
+          k.material.emissiveIntensity = Math.max(press[i] * 0.9, h);
+        }
       });
+      if (missAt && now - missAt > 450) { missAt = 0; drawSheet(); }   // el rojo del error se apaga
     },
 
     pointerMove() {
@@ -237,41 +483,104 @@ function pianoStation(c) {
 }
 
 /* ────────────────────────────────────────────────────
-   DESK — pantallas vivas, pines con detalles y tarjeta de proyectos.
+   DESK — laptop + monitor, pines con detalles y tarjeta de proyectos.
+   Al entrar las pantallas están bloqueadas (hiperespacio de Star Wars):
+   JotAI se sienta, teclea la contraseña y se desbloquean; al salir vuelven
+   a bloquearse. Sin JotAI se desbloquean solas. Los auriculares vienen al
+   frente con un clic (como los trofeos).
 ──────────────────────────────────────────────────── */
 const DESK_STACK = ['Django', 'React', 'Angular', 'Node.js', 'PostgreSQL', 'Docker'];
 
 function deskStation(c) {
   const { root, refs, hud } = c;
+  const tw = createTweens(c.reducedMotion);
+  const screens = () => refs.screenCtl;    // lo crea la escena después de armar los muebles
+  const PASS = 8;                          // largo de la "contraseña" que teclea JotAI
+  const KEY_MS = 170;
+  const WAIT_JOTAI = 9000;                 // si no llega a la silla (sin camino), desbloquea igual
   let spawnT = 0;
-  const monitorTop = () => root.localToWorld(V(-0.35, 1.55, -0.2));
+  let waited = 0;                          // ms esperando a que JotAI se siente
+  let typed = 0;                           // ms tecleando la contraseña
+  let unlockAt = 0;
+  const monitorTop = () => root.localToWorld(V(-0.36, 1.4, -0.16));
+  const HINT = 'Clic en los auriculares para verlos de cerca · elige un proyecto en la tarjeta';
+
+  /* auriculares: click → al frente, giran con el mouse; otro click → de vuelta */
+  const ph = refs.phones;
+  const FRONT = { pos: V(0.1, 1.72, 0.7), s: 2.3 };   // flotando sobre el escritorio, por encima de la silla
+  let phonesOut = false;
+  let rot = { yaw: 0, pitch: 0 }, want = { yaw: 0, pitch: 0 };
 
   const pinDefs = [
-    [V(-0.35, 1.25, -0.2), 'Monitor principal — el editor siempre abierto ⌨️'],
-    [V(0.72, 1.19, -0.15), 'Segundo monitor — galería de proyectos 🖼️'],
-    [V(-1.05, 0.98, 0.0), 'Laptop — pruebas rápidas y demos'],
-    [V(-0.2, 0.83, 0.24), 'Teclado con luz RGB que cambia de color 🌈'],
+    [V(-0.36, 1.12, -0.16), 'Laptop — el editor siempre abierto ⌨️'],
+    [V(0.5, 1.21, -0.18), 'Segundo monitor — galería de proyectos 🖼️'],
+    [V(-0.36, 0.8, 0.38), 'Base con ventilador — que no se caliente 🌀'],
+    [V(0.72, 0.82, 0.11), 'Mouse — el de siempre 🖱️'],
     [V(-1.11, 1.25, -0.16), 'Lámpara — de aquí sale la luz cálida del rincón 💡'],
-    [V(1.12, 0.98, 0.1), 'Auriculares — lo-fi para compilar 🎧'],
-    [V(-0.72, 0.88, 0.3), 'Café: el combustible oficial ☕'],
+    [V(-0.97, 0.95, 0.22), 'Café: el combustible oficial ☕'],
   ];
+
+  function pickPhones() {
+    return ph && c.pick(ph.meshes) ? true : false;
+  }
+
+  function movePhones(out, ms) {
+    const h = ph.holder;
+    const p0 = h.position.clone(), s0 = h.scale.x;
+    const r0 = { x: h.rotation.x, y: h.rotation.y };
+    tw.add(ms, (p) => {
+      const e = ease(p);
+      h.position.lerpVectors(p0, out ? FRONT.pos : ph.rest, e);
+      h.scale.setScalar(lerp(s0, out ? FRONT.s : 1, e));
+      h.rotation.set(lerp(r0.x, 0, e), lerp(r0.y, out ? 0 : ph.restYaw, e), 0);
+    });
+  }
+
+  function bringPhones() {
+    phonesOut = true;
+    rot = { yaw: 0, pitch: 0 };
+    want = { yaw: 0, pitch: 0 };
+    c.setOutline([]);
+    movePhones(true, 650);
+    hud.setHint('Mueve el mouse para girarlos · clic para dejarlos en su soporte');
+    envelope(getAudioContext(), { freq: 523, type: 'triangle', duration: 0.12, gain: 0.05 });
+    c.glyphs.emit('♪', '#ffb020', root.localToWorld(FRONT.pos.clone().add(V(0, 0.3, 0))), { size: 0.24, rise: 0.4 });
+  }
+
+  function putPhonesBack() {
+    phonesOut = false;
+    movePhones(false, 600);
+    hud.setHint(HINT);
+  }
+
+  function unlock() {
+    screens()?.set('work');
+    unlockAt = 0;
+    envelope(getAudioContext(), { freq: 660, type: 'sine', duration: 0.16, gain: 0.05 });
+    setTimeout(() => envelope(getAudioContext(), { freq: 880, type: 'sine', duration: 0.2, gain: 0.05 }), 110);
+    c.glyphs.emit('🔓', '#7cc4ff', monitorTop(), { size: 0.28, rise: 0.5, life: 1.6 });
+    c.cue?.('desk:unlock');
+  }
 
   return {
     focus: () => ({ look: root.localToWorld(V(0.05, 1.0, -0.1)), zoom: 2.7 }),
 
     enter() {
       hud.show({
-        icon: '🖥️',
+        icon: '💻',
         title: 'Escritorio',
-        hint: 'Pasa el cursor sobre los puntos ✦ para ver detalles · elige un proyecto en la tarjeta',
+        hint: HINT,
         onBack: c.leave,
       });
       // localToWorld muta el vector que recibe — clonar, o la 2ª visita usaría coords de mundo como locales
       hud.setPins(pinDefs.map(([p, text]) => ({ pos: root.localToWorld(p.clone()), text: esc(text) })));
+      waited = typed = 0;
+      unlockAt = 0;
+      screens()?.set('lock');
 
       const card = el('div', 'gam-card');
       card.innerHTML = `
-        <h3 class="gam-card__title">🖥️ ${esc(L(c.content.title) || 'Escritorio')}</h3>
+        <h3 class="gam-card__title">💻 ${esc(L(c.content.title) || 'Escritorio')}</h3>
         <p class="gam-card__text">${esc(L(c.content.message))}</p>
         <div class="gam-card__chips">${DESK_STACK.map(t => `<span class="gam-card__chip">${esc(t)}</span>`).join('')}</div>
         <p class="gam-card__label">Proyectos</p>
@@ -295,18 +604,72 @@ function deskStation(c) {
     },
 
     exit() {
+      tw.clear();
       refs.scrollTex.forEach(t => { t.offset.y = 0; });
+      screens()?.set('lock');
+      if (ph) {
+        ph.holder.position.copy(ph.rest);
+        ph.holder.scale.setScalar(1);
+        ph.holder.rotation.set(0, ph.restYaw, 0);
+      }
+      phonesOut = false;
+      c.setOutline([]);
+      c.setCursor('default');
     },
 
+    busy: () => tw.busy,
+
     update(now, dt) {
-      // el código "se escribe": la textura de las pantallas se desplaza
-      refs.scrollTex.forEach((t, i) => { t.offset.y = ((now * 0.00004 * (i + 1)) % 1); });
-      spawnT -= dt;
-      if (spawnT <= 0) {
-        spawnT = 0.9;
-        const glyphs = ['</>', '{ }', 'λ', '=>', '01'];
-        c.glyphs.emit(glyphs[Math.floor(Math.random() * glyphs.length)], '#7cc4ff', monitorTop().add(V((Math.random() - 0.5) * 0.4, 0, 0)), { size: 0.3, rise: 0.6, life: 2 });
+      tw.update(now);
+      const ms = dt * 1000;
+      const scr = screens();
+      // bloqueada: espera a que JotAI se siente y teclee la contraseña
+      if (scr && scr.mode === 'lock') {
+        const ready = !c.jotaiHere?.() ? waited > 500 : c.jotaiAtDesk?.() || waited > WAIT_JOTAI;
+        if (!ready) waited += ms;
+        else {
+          typed += ms;
+          const n = Math.min(PASS, Math.floor(typed / KEY_MS));
+          scr.setDots(n);
+          if (n >= PASS && !unlockAt) unlockAt = now + 350;
+          if (unlockAt && now >= unlockAt) unlock();
+        }
       }
+      if (scr && scr.mode === 'work') {
+        // el código "se escribe": la textura de la pantalla se desplaza
+        refs.scrollTex.forEach((t, i) => { t.offset.y = ((now * 0.00004 * (i + 1)) % 1); });
+        if (refs.fan && !c.reducedMotion) refs.fan.rotation.y += dt * 14;
+        spawnT -= dt;
+        if (spawnT <= 0) {
+          spawnT = 0.9;
+          const glyphs = ['</>', '{ }', 'λ', '=>', '01'];
+          c.glyphs.emit(glyphs[Math.floor(Math.random() * glyphs.length)], '#7cc4ff', monitorTop().add(V((Math.random() - 0.5) * 0.4, 0, 0)), { size: 0.3, rise: 0.6, life: 2 });
+        }
+      }
+      if (phonesOut && !tw.busy) {
+        const k = c.reducedMotion ? 1 : Math.min(1, dt * 6);
+        rot.yaw += (want.yaw - rot.yaw) * k;
+        rot.pitch += (want.pitch - rot.pitch) * k;
+        ph.holder.rotation.set(rot.pitch, rot.yaw, 0);
+      }
+    },
+
+    pointerMove(ndc) {
+      if (!ph) return;
+      if (phonesOut) {
+        want = { yaw: clamp(ndc.x, -1, 1) * 0.9, pitch: clamp(-ndc.y, -1, 1) * 0.4 };
+        c.setCursor('pointer');
+        return;
+      }
+      const over = pickPhones();
+      c.setCursor(over ? 'pointer' : 'default');
+      c.setOutline(over ? ph.meshes : []);
+    },
+
+    pointerDown() {
+      if (!ph || tw.busy) return;
+      if (phonesOut) putPhonesBack();
+      else if (pickPhones()) bringPhones();
     },
   };
 }
@@ -1273,7 +1636,8 @@ function chessStation(c) {
 }
 
 /* ────────────────────────────────────────────────────
-   LUMBRE — póster de mi juego: capturas, descripción y enlaces.
+   LUMBRE — póster de mi juego: capturas (pestañas 1–4, teclas 1–4 o clic
+   en el póster para pasar a la siguiente).
 ──────────────────────────────────────────────────── */
 export const LUMBRE_SHOTS = [
   { src: 'public/images/projects/lumbre/lumbre-01.webp', aspect: 2.446 },
@@ -1301,32 +1665,38 @@ function lumbreStation(c) {
     img.material.emissiveMap = textures[i];
     img.material.needsUpdate = true;
     img.scale.y = (PW / aspect) / (PW / LUMBRE_SHOTS[0].aspect);
+    hud.setTab(String(i));
   }
+
+  const overPoster = () => !!c.pick([img]);
 
   return {
     focus: () => ({ look: root.localToWorld(V(0, 2.12, 0)), zoom: 4.2 }),
 
     enter() {
-      const ct = c.content;
       hud.show({
         icon: '🕯️',
         title: 'Lumbre',
         tabs: LUMBRE_SHOTS.map((_, i) => ({ id: String(i), label: `${i + 1}` })),
         active: '0',
         onTab: (id) => { show(Number(id)); c.cue?.('lumbre:shot'); },
-        actions: [
-          { id: 'play', label: '▶ Jugar en itch.io', onClick: () => window.open(ct.liveUrl, '_blank', 'noopener') },
-          { id: 'code', label: '</> Código', onClick: () => window.open(ct.repoUrl, '_blank', 'noopener') },
-        ],
-        hint: 'Cambia de captura con los números',
+        hint: 'Clic en el póster o en los números para cambiar de captura',
         onBack: c.leave,
       });
       show(0);
     },
 
-    exit() { show(0); },
+    exit() { show(0); c.setCursor('default'); },
 
     update() {},
+
+    pointerMove() { c.setCursor(overPoster() ? 'pointer' : 'default'); },
+
+    pointerDown() {
+      if (!overPoster()) return;
+      show((current + 1) % LUMBRE_SHOTS.length);
+      c.cue?.('lumbre:shot');
+    },
 
     key(e) {
       const n = Number(e.key);
@@ -1582,8 +1952,39 @@ function starwarsStation(c) {
 
 /* ────────────────────────────────────────────────────
    GUITARRA — se despega de la pared y toca canciones (gam-guitar.js).
+   Pestañas Canciones / Acordes; un atril con la partitura aparece al lado.
    Click en la guitarra (o Espacio) = un rasgueo suelto.
 ──────────────────────────────────────────────────── */
+/* ── Partitura de la guitarra: atril de pie junto a JotAI ──
+   Canciones: un compás por casilla con el acorde y su diagrama (o la
+   tablatura, si es una melodía); se marca lo que va sonando.
+   Acordes: los 8 de CHORD_SET con su diagrama — clic o teclas 1–8. */
+const GSHEET = { w: 0.84, h: 0.6, px: 1024 };
+const STRING_NAMES = ['E', 'A', 'D', 'G', 'B', 'e'];
+
+/** Diagrama de acorde: 6 cuerdas (grave a la izquierda), 4 trastes, x / o arriba. */
+function drawChordDiagram(g, x, y, w, h, frets, col = '#1b1b1f') {
+  const sx = w / 5, fy = h / 4;
+  g.strokeStyle = col;
+  g.fillStyle = col;
+  g.lineWidth = 2;
+  for (let s = 0; s < 6; s++) { g.beginPath(); g.moveTo(x + s * sx, y); g.lineTo(x + s * sx, y + h); g.stroke(); }
+  for (let f = 0; f <= 4; f++) {
+    g.lineWidth = f === 0 ? 6 : 2;   // la cejuela, más gruesa
+    g.beginPath(); g.moveTo(x, y + f * fy); g.lineTo(x + w, y + f * fy); g.stroke();
+  }
+  g.lineWidth = 2.5;
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  g.font = `bold ${Math.round(sx * 0.9)}px ${SERIF}`;
+  frets.forEach((f, s) => {
+    const cx = x + s * sx;
+    if (f < 0) g.fillText('×', cx, y - sx * 0.6);
+    else if (f === 0) { g.beginPath(); g.arc(cx, y - sx * 0.6, sx * 0.28, 0, Math.PI * 2); g.stroke(); }
+    else { g.beginPath(); g.arc(cx, y + (f - 0.5) * fy, Math.min(sx, fy) * 0.34, 0, Math.PI * 2); g.fill(); }
+  });
+}
+
 function guitarStation(c) {
   const { root, refs, hud } = c;
   const { holder } = refs.guitar;
@@ -1597,12 +1998,176 @@ function guitarStation(c) {
   let song = SONGS[0].id;
   let hover = false;
   let active = false;
+  let tab = 'songs';        // 'songs' | 'chords'
+  let step = -1;            // evento de la canción que acaba de sonar (-1 = parada)
+  let chordSel = -1;        // acorde elegido en la pestaña Acordes
+  const songById = (id) => SONGS.find((s) => s.id === id) || SONGS[0];
+
+  /* Atril de pie a la derecha de JotAI (en pantalla): solo mientras dura la estación. */
+  const sheet = (() => {
+    const cv = document.createElement('canvas');
+    cv.width = GSHEET.px;
+    cv.height = Math.round(GSHEET.px * GSHEET.h / GSHEET.w);
+    const tex = new THREE.CanvasTexture(cv);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 8;
+    const metal = new THREE.MeshStandardMaterial({ color: 0x1a1c21, roughness: 0.45, metalness: 0.6 });
+    const stand = new THREE.Group();
+    stand.position.set(0.95, 0, -0.9);   // más a la derecha lo tapaba la lámpara del escritorio
+    stand.rotation.y = Math.PI / 2;                  // de cara a la cámara (frente = +x)
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 1.02, 10), metal);
+    pole.position.y = 0.51;
+    stand.add(pole);
+    for (let k = 0; k < 3; k++) {                    // trípode
+      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.3, 8), metal);
+      const a = (k / 3) * Math.PI * 2;
+      leg.position.set(Math.cos(a) * 0.1, 0.1, Math.sin(a) * 0.1);
+      leg.rotation.set(Math.sin(a) * 0.75, 0, -Math.cos(a) * 0.75);
+      stand.add(leg);
+    }
+    const board = new THREE.Group();
+    board.position.y = 1.02 + GSHEET.h / 2 - 0.04;   // alto: que la punta del mástil pase por debajo
+    board.rotation.x = -0.32;                        // inclinado hacia atrás
+    stand.add(board);
+    const back = new THREE.Mesh(new THREE.BoxGeometry(GSHEET.w + 0.04, GSHEET.h + 0.04, 0.012), metal);
+    back.position.z = -0.008;
+    const paper = new THREE.Mesh(new THREE.PlaneGeometry(GSHEET.w, GSHEET.h), new THREE.MeshBasicMaterial({ map: tex, color: 0xb8b2a6 }));
+    const lip = new THREE.Mesh(new THREE.BoxGeometry(GSHEET.w + 0.04, 0.025, 0.04), metal);
+    lip.position.set(0, -GSHEET.h / 2 - 0.015, 0.012);
+    board.add(back, paper, lip);
+    stand.visible = false;
+    root.add(stand);
+    return { stand, paper, cv, g: cv.getContext('2d'), tex };
+  })();
+
+  /* Layout de la grilla de Acordes (en px del canvas), compartido entre dibujo y clic. */
+  const CHORD_GRID = { cols: 4, x0: 40, y0: 150, cw: (GSHEET.px - 80) / 4, ch: 290 };
+
+  function drawSheet() {
+    const { g, cv, tex } = sheet;
+    const W = cv.width, H = cv.height;
+    g.fillStyle = '#f7f1e3';
+    g.fillRect(0, 0, W, H);
+    g.textBaseline = 'alphabetic';
+    if (tab === 'chords') {
+      g.fillStyle = '#1b1b1f';
+      g.textAlign = 'left';
+      g.font = `bold 58px ${SERIF}`;
+      g.fillText('Acordes', 40, 78);
+      g.fillStyle = '#5a5248';
+      g.font = `30px ${SERIF}`;
+      g.fillText('clic en uno o teclas 1–8 para tocarlo', 40, 122);
+      CHORD_SET.forEach((name, i) => {
+        const cx = CHORD_GRID.x0 + (i % CHORD_GRID.cols) * CHORD_GRID.cw;
+        const cy = CHORD_GRID.y0 + Math.floor(i / CHORD_GRID.cols) * CHORD_GRID.ch;
+        const sel = i === chordSel;
+        if (sel) { g.fillStyle = 'rgba(255,138,0,0.18)'; g.fillRect(cx + 6, cy, CHORD_GRID.cw - 12, CHORD_GRID.ch - 14); }
+        const col = sel ? '#e07800' : '#1b1b1f';
+        g.fillStyle = col;
+        g.textAlign = 'center';
+        g.font = `bold 52px ${SERIF}`;
+        g.fillText(name, cx + CHORD_GRID.cw / 2, cy + 56);
+        drawChordDiagram(g, cx + 50, cy + 100, CHORD_GRID.cw - 100, 140, chordFrets(name), col);
+        g.fillStyle = sel ? '#e07800' : '#8a8176';
+        g.font = 'bold 30px "Courier New", monospace';
+        g.fillText(String(i + 1), cx + CHORD_GRID.cw / 2, cy + 272);
+      });
+      tex.needsUpdate = true;
+      return;
+    }
+
+    const sg = songById(song);
+    const playingNow = !!engine?.playing && step >= 0;
+    g.fillStyle = '#1b1b1f';
+    g.textAlign = 'left';
+    g.font = `bold 52px ${SERIF}`;
+    g.fillText(L(sg.label), 40, 74);
+    g.fillStyle = '#5a5248';
+    g.font = `30px ${SERIF}`;
+    const how = sg.melody ? 'melodía · tablatura' : sg.style === 'arpeggio' ? 'arpegio · cuerdas 5-3-2-1-2-3-4-3' : 'rasgueo · ↓  ↓↑  ↑↓↑';
+    g.fillText(`${sg.bpm} bpm · ${how}`, 40, 118);
+
+    if (sg.melody) {
+      // tablatura: 6 líneas (la aguda arriba), el traste de cada nota en su cuerda
+      const top = 200, gap = 52, x0 = 110, x1 = W - 40;
+      g.strokeStyle = '#2a2622'; g.lineWidth = 2.5;
+      g.fillStyle = '#2a2622'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.font = `bold 30px ${SERIF}`;
+      for (let k = 0; k < 6; k++) {
+        const y = top + k * gap;
+        g.beginPath(); g.moveTo(x0 - 20, y); g.lineTo(x1, y); g.stroke();
+        g.fillText(STRING_NAMES[5 - k], 60, y);
+      }
+      const sp = (x1 - x0) / sg.melody.length;
+      sg.melody.forEach((m, i) => {
+        const s = stringFor(m), fret = m - OPEN[s];
+        const x = x0 + (i + 0.5) * sp, y = top + (5 - s) * gap;
+        const cur = playingNow && i === step, done = playingNow && i < step;
+        g.fillStyle = '#f7f1e3';
+        g.beginPath(); g.arc(x, y, 22, 0, Math.PI * 2); g.fill();
+        if (cur) { g.fillStyle = 'rgba(255,138,0,0.25)'; g.beginPath(); g.arc(x, y, 30, 0, Math.PI * 2); g.fill(); }
+        g.fillStyle = cur ? '#e07800' : done ? '#2f9e5b' : '#1b1b1f';
+        g.font = `bold 40px ${SERIF}`;
+        g.fillText(String(fret), x, y + 2);
+      });
+      g.textBaseline = 'alphabetic';
+    } else {
+      // un compás por casilla: acorde + diagrama chico
+      const cols = 4, x0 = 40, y0 = 150, cw = (W - 80) / cols;
+      const rows = Math.ceil(sg.bars.length / cols), ch = Math.min(190, (H - y0 - 30) / rows);
+      const curBar = playingNow ? Math.floor(sg.events[step][0] / 4) : -1;
+      sg.bars.forEach((name, i) => {
+        const cx = x0 + (i % cols) * cw, cy = y0 + Math.floor(i / cols) * ch;
+        const cur = i === curBar, done = curBar >= 0 && i < curBar;
+        if (cur) { g.fillStyle = 'rgba(255,138,0,0.2)'; g.fillRect(cx + 4, cy + 4, cw - 8, ch - 8); }
+        g.strokeStyle = '#2a2622'; g.lineWidth = 3;
+        g.beginPath(); g.moveTo(cx + cw, cy + 12); g.lineTo(cx + cw, cy + ch - 12); g.stroke();   // barra de compás
+        const col = cur ? '#e07800' : done ? '#2f9e5b' : '#1b1b1f';
+        g.fillStyle = col;
+        g.textAlign = 'left';
+        g.font = `bold ${Math.round(ch * (name.length > 3 ? 0.19 : 0.3))}px ${SERIF}`;   // "Esus4" más chico: no pisa el diagrama
+        g.fillText(name, cx + 14, cy + ch * 0.58);
+        const dw = cw * 0.4, dh = ch * 0.56;
+        drawChordDiagram(g, cx + cw - dw - 22, cy + ch * 0.3, dw, dh, chordFrets(name), col);
+      });
+      g.strokeStyle = '#2a2622'; g.lineWidth = 3;
+      for (let r = 0; r < rows; r++) { g.beginPath(); g.moveTo(x0, y0 + r * ch + 12); g.lineTo(x0, y0 + r * ch + ch - 12); g.stroke(); }
+    }
+    tex.needsUpdate = true;
+  }
+
+  function playChord(i) {
+    chordSel = i;
+    engine?.strum(CHORD_SET[i]);
+    drawSheet();
+  }
+
+  function setTab(id) {
+    tab = id;
+    const songs = id === 'songs';
+    ['prev', 'play', 'next'].forEach((a) => hud.setAction(a, { hidden: !songs }));
+    if (!songs && engine?.playing) { engine.stop(); setPlaying(false); step = -1; }
+    hud.setStatus(songs ? `♪ ${esc(L(songById(song).label))}` : '');
+    hud.setHint(songs
+      ? '‹ › cambia de canción · clic en la guitarra o Espacio para rasguear'
+      : 'Clic en un acorde de la partitura o teclas 1–8 · Espacio repite el último');
+    drawSheet();
+  }
+
+  function changeSong(dir) {
+    const k = SONGS.findIndex((s) => s.id === song);
+    song = SONGS[(k + dir + SONGS.length) % SONGS.length].id;
+    step = -1;
+    if (engine?.playing) engine.play(song);
+    hud.setStatus(`♪ ${esc(L(songById(song).label))}`);
+    drawSheet();
+  }
 
   /* En brazos de JotAI: cuando llega (c.jotaiGuitar), la guitarra pasa de
      flotar frente a la cámara a sus brazos — más chica (es más alta que él),
      de frente a donde mira y cruzada en diagonal. `holdK` funde una posición
      con la otra. Sin JotAI se queda en SHOW, tocándose sola. */
-  const HELD_SCALE = 0.62;
+  const HELD_SCALE = 0.8;                 // grande en sus brazos: la guitarra es la protagonista
   const HELD_TILT = -0.95;                // diagonal: el mástil hacia su izquierda y arriba
   const BODY_CENTER = V(0, 0.3, 0);       // centro de la caja en el holder (la guitarra arranca en el piso)
   let holdK = 0;
@@ -1655,41 +2220,49 @@ function guitarStation(c) {
     if (engine.playing) {
       engine.stop();
       setPlaying(false);
-      hud.setStatus('');
+      step = -1;
+      drawSheet();
       return;
     }
+    step = -1;
     engine.play(song);
     setPlaying(true);
-    hud.setStatus(`♪ ${esc(L(SONGS.find((s) => s.id === song).label))}`);
   }
 
   function strumOnce() {
+    if (tab === 'chords' && chordSel >= 0) { playChord(chordSel); return; }
     engine?.strum(STRUM_CHORDS[Math.floor(Math.random() * STRUM_CHORDS.length)]);
   }
 
   return {
-    // encuadra la guitarra flotando y también a JotAI en su spot, tocándola
-    focus: () => ({ look: root.localToWorld(V(0.65, 0.7, 0)), zoom: 4.2 }),
+    // encuadra a JotAI con la guitarra y el atril con la partitura a su lado
+    focus: () => ({ look: root.localToWorld(V(0.8, 0.86, -0.36)), zoom: 3.7 }),
 
     enter() {
       active = true;
       engine = createGuitar({
         onStrum,
-        onEnd: () => { setPlaying(false); hud.setStatus('¿Otra? 🎸'); c.cue?.('guitar:end'); },
+        onStep: ({ index }) => { step = index; drawSheet(); },
+        onEnd: () => { setPlaying(false); step = -1; drawSheet(); hud.setStatus('¿Otra? 🎸'); c.cue?.('guitar:end'); },
       });
+      tab = 'songs';
+      step = -1;
+      chordSel = -1;
       hud.show({
         icon: '🎸',
         title: 'Guitarra',
-        tabs: SONGS.map((s) => ({ id: s.id, label: L(s.label) })),
-        active: song,
-        onTab: (id) => {
-          song = id;
-          if (engine.playing) { engine.play(id); hud.setStatus(`♪ ${esc(L(SONGS.find((s) => s.id === id).label))}`); }
-        },
-        actions: [{ id: 'play', label: '▶ Tocar', onClick: toggle }],
-        hint: 'Elige una canción · clic en la guitarra o Espacio para rasguear',
+        tabs: [{ id: 'songs', label: 'Canciones' }, { id: 'chords', label: 'Acordes' }],
+        active: 'songs',
+        onTab: setTab,
+        actions: [
+          { id: 'prev', label: '‹', onClick: () => changeSong(-1) },
+          { id: 'play', label: '▶ Tocar', onClick: toggle },
+          { id: 'next', label: '›', onClick: () => changeSong(1) },
+        ],
         onBack: c.leave,
       });
+      setTab('songs');
+      sheet.stand.visible = true;
       moveTo(SHOW, 800);
     },
 
@@ -1710,6 +2283,7 @@ function guitarStation(c) {
         holder.quaternion.slerpQuaternions(q0, qRest, e);
         holder.scale.setScalar(lerp(s0, 1, e));
       });
+      sheet.stand.visible = false;
       vib.fill(0);
       strings.forEach((s) => { s.scale.x = 1; s.material.emissiveIntensity = 0; });
       c.setOutline([]);
@@ -1737,10 +2311,25 @@ function guitarStation(c) {
     },
 
     pointerDown() {
+      if (tab === 'chords') {
+        // clic en un acorde del atril: la uv del papel dice en qué casilla cayó
+        const hit = c.pick([sheet.paper]);
+        if (hit?.uv) {
+          const px = hit.uv.x * sheet.cv.width, py = (1 - hit.uv.y) * sheet.cv.height;
+          const col = Math.floor((px - CHORD_GRID.x0) / CHORD_GRID.cw), row = Math.floor((py - CHORD_GRID.y0) / CHORD_GRID.ch);
+          const i = row * CHORD_GRID.cols + col;
+          if (col >= 0 && col < CHORD_GRID.cols && row >= 0 && i < CHORD_SET.length) { playChord(i); return; }
+        }
+      }
       if (c.pick(c.parts)) strumOnce();
     },
 
     key(e) {
+      const n = Number(e.key);
+      if (tab === 'chords' && n >= 1 && n <= CHORD_SET.length && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        playChord(n - 1);
+        return true;
+      }
       if (e.code !== 'Space') return false;
       e.preventDefault();
       strumOnce();

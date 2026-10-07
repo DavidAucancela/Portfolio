@@ -73,6 +73,7 @@ const CLEARANCE = 1.4;                 // a menos de esto del objeto enfocado, s
      point → señala lo que mira al llegar
      line  → frase (1×/sesión por clave) */
 const ROLES = {
+  desk:       { chair: true, pose: 'type', face: 'thinking', clip: 'typing', loop: true, line: 'desk_unlock' },   // se sienta y teclea la contraseña
   piano:      { seat: 'bench', pose: 'pianoSit', face: 'greeting' },
   guitar:     { pose: 'guitarHold', face: 'success', faceCam: true, line: 'guitar_intro' },
   chess:      { pose: 'chessStand', face: 'greeting', near: 0.18, line: 'chess_hello' },   // de pie, arrimado a la mesa
@@ -90,7 +91,7 @@ const ROLES = {
 export const STATION_IDS = new Set(Object.keys(ROLES));
 /* Prefijo del cue → estación que lo manda. */
 const CUE_STATION = {
-  piano: 'piano', guitar: 'guitar', chess: 'chess', juggle: 'juggling', skate: 'skateboard',
+  desk: 'desk', piano: 'piano', guitar: 'guitar', chess: 'chess', juggle: 'juggling', skate: 'skateboard',
   medals: 'medals', book: 'bookshelf', lumbre: 'lumbre', pukis: 'pukis',
 };
 
@@ -607,7 +608,17 @@ export function createJotaiBrain({
     const role = ROLES[f.id];
     interrupt(AFTER_POKE);
     run('station', async (ok) => {
-      if (!(await travel(f.id, ok)) || !ok()) return;
+      if (role.chair) {
+        // escritorio: si dormía en la silla se despierta de un salto; si no, la arrima y se sube
+        if (sleeping) {
+          wakeStartled();
+          await sleep(900);
+          if (!ok()) return;
+        }
+        if (!(await sitDown(ok)) || !ok()) return;
+        gaze = props.chair.seat().look;
+        gazeUntil = Infinity;
+      } else if (!(await travel(f.id, ok)) || !ok()) return;
       const sp = spots[f.id];
       if (role.seat) {
         if (!(await sitOn(role.seat, ok))) return;
@@ -640,7 +651,12 @@ export function createJotaiBrain({
     interrupt(AFTER_POKE, { keepPerch: true });
     duty = null;
     riding = false;
-    if (wasPerch) run('leave', (ok) => standFrom(ok));
+    if (was === 'desk' && seated) {
+      // de noche se queda en la silla y vuelve a dormirse; de día se baja
+      if (phase === 'night') nextAt = clock + BACK_TO_SLEEP;
+      else run('leave', (ok) => getUp(ok));
+    }
+    else if (wasPerch) run('leave', (ok) => standFrom(ok));
     else if (wasRiding && spots[was]) {
       // se salió montado en la patineta: se baja y vuelve rodando a su lugar
       jotai.setPose('stand');
@@ -663,21 +679,14 @@ export function createJotaiBrain({
     speak('bye', 'greeting', 'wave');
   }
 
-  /** Al enfocar un objeto. Sentado: solo el escritorio le importa (lo
-   *  despierta de un salto y se queda en la silla). De pie: si el objeto
+  /** Al enfocar un objeto. Sentado: solo el escritorio le importa (si
+   *  dormía se despierta de un salto y teclea la contraseña). De pie: si el objeto
    *  tiene un rol propio (`ROLES`) va hacia él; si no, y está (o va)
    *  al lado del objeto, se aparta a su rincón para no quedar entre la
    *  cámara y el objeto — el ajedrez se ve con zoom 7.5 desde el frente,
    *  justo donde está su spot. */
   function onZoom(f) {
-    if (seated) {
-      if (f.id === 'desk') {
-        const wasAsleep = sleeping;
-        interrupt(BACK_TO_SLEEP);
-        if (wasAsleep) wakeStartled();
-      }
-      return;
-    }
+    if (seated && f.id !== 'desk') return;
     if (STATION_IDS.has(f.id)) { enterStation(f); return; }
     if (f.kind === 'exit') { farewell(f); return; }
     const pos = jotai.root.position;
@@ -742,10 +751,10 @@ export function createJotaiBrain({
       case 'piano:key': {
         gaze = data.world || null;
         gazeUntil = clock + 600;
-        // en el turno del visitante solo mira; en la demo y en Libre "toca":
+        // en los 3 modos "toca" cada nota que suena (también las del visitante):
         // la mano del lado de la tecla se estira hacia ella (sin IK: hombro
         // abierto según qué tan al costado está) y el torso se gira un poco
-        if (pianoPhase === 'turn' || !data.world) break;
+        if (!data.world) break;
         const lx = jotai.root.worldToLocal(data.world.clone()).x;   // +x = su izquierda
         const k = Math.max(-1, Math.min(1, lx / 0.55));
         const left = k >= 0;
@@ -768,6 +777,11 @@ export function createJotaiBrain({
           if (data.score >= 5) jotai.play('nod');
           say(line(data.score >= 5 ? 'piano_win' : 'piano_fail'));
         }
+        break;
+      case 'piano:learnDone':
+        jotai.setFace(data.stars >= 2 ? 'success' : 'greeting', 2200);
+        jotai.play('nod');
+        say(line(data.stars === 3 ? 'piano_learn_perfect' : 'piano_learn_done'));
         break;
       case 'guitar:strum':
         jotai.play('strum');
@@ -832,6 +846,9 @@ export function createJotaiBrain({
         });
         break;
       }
+      case 'desk:unlock':
+        jotai.setFace('success', 1400);
+        break;
       case 'medals:pick':
       case 'book:pick':
         pointAt(data.world);
@@ -888,7 +905,7 @@ export function createJotaiBrain({
       zoomedNow = zoomed;
       if (zoomed) onZoom(zoomed);
       // se sale de una estación con rol propio: se levanta y vuelve a lo suyo
-      else if (was && (STATION_IDS.has(was.id) || duty) && !seated && !sleeping) leaveStation();
+      else if (was && (STATION_IDS.has(was.id) || duty) && (!seated || duty === 'desk') && !sleeping) leaveStation();
       else if (was && phase === 'night' && !sleeping) nextAt = Math.max(nextAt, clock + BACK_TO_SLEEP * 0.8);
       showCaption(captionKey);   // se oculta con zoom, vuelve al salir
     }

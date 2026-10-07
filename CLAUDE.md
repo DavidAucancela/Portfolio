@@ -88,7 +88,7 @@ js/
                                # muebles, ciclo día/noche, ruteo de pointer/teclado hacia las estaciones
     gam-stations.js            # Estaciones: cada objeto se vuelve interactivo al hacer zoom (piano,
                                # escritorio, estante, ventana, patineta, malabares, Pukis, ajedrez, Lumbre,
-                               # Logros, póster Star Wars, guitarra, barra de sonido)
+                               # Trofeos (Aegis), póster de Yoda, guitarra, barra de sonido)
     gam-guitar.js              # Motor de la guitarra (Karplus–Strong + canciones; las cuerdas son 3D)
     gam-hud.js                 # HUD DOM de las estaciones: barra superior, tarjeta, pines, estado
     gam-jotai.js               # JotAI 3D en el cuarto: modelo en código, rig, poses/clips, caras, vida
@@ -335,12 +335,27 @@ objeto **centrado**, y se vuelve interactivo **dentro de la escena**. Sin doble 
 pellizco / +− hacen zoom también en la vista general del cuarto (hacia el cursor) — ya no se abre un panel modal:
 - **`gam-stations.js`** — una fábrica por objeto: `{ focus(), enter(), exit(), update(now,dt),
   busy?(), pointerMove/Down/Up?(ndc), key?(e) }`. Piano = teclas 3D tocables + pestañas
-  Libre/Reto; escritorio = pantallas vivas + pines + tarjeta de proyectos; estante = libros
+  Libre/Reto/Aprender (22 teclas blancas, 3 octavas Do4–Do7; teclado de la compu: una octava
+  por fila, `Z–M` graves · `A–J` medias · `Q–U` agudas · `I` = Do7, ver `KEY_BINDINGS`), las tres con vista frontal y mucho zoom (`focus()` de una estación
+  puede devolver `dir`; `refocus()` también lo usa) y la nota + tecla del teclado escritas
+  sobre cada tecla. Aprender: atril con la partitura de `LEARN_SONGS` en `gam-piano.js`
+  (solo teclas blancas), nota actual en naranja y su tecla en azul, errores → estrellas en
+  `localStorage('gam-piano-learn')`, "Escuchar" la toca sola. JotAI, sentado en la banqueta,
+  "toca" cada nota que suena (gira cabeza y torso hacia la tecla y estira la mano); escritorio = laptop plateada sobre base con ventilador + monitor secundario
+  (calcados del escritorio real de David, sin teclado suelto), mouse y taza grandes, pines y
+  tarjeta de proyectos. Las pantallas tienen **bloqueo**: fuera de la estación muestran el
+  hiperespacio de Star Wars (`public/images/posters/hyperspace.webp`) con hora y campo de
+  contraseña (`deskScreens` en la escena → `refs.screenCtl`, modos `lock`/`work`; el
+  protector "JotAI · zzz" va si está bloqueada y JotAI duerme). Al entrar, JotAI se sienta
+  (`ROLES.desk`, `chair:true`), teclea la contraseña (puntitos) y se desbloquea; sin JotAI se
+  desbloquea solo. Mientras está sentado, el respaldo de la silla se vuelve translúcido.
+  Los auriculares (`refs.phones`) vienen al frente con un clic y giran con el mouse, como
+  los trofeos; estante = libros
   de proyectos IA que se sacan al pasar el mouse; ventana = anochece/amanece; patineta =
   escaneo real (`public/models/skate/skate.glb` + lija en código), se despega de la pared y
   se gira arrastrando (+ kickflip/shove-it); malabares = cascada +
   reto; Pukis = acariciarlo; ajedrez = tablero 3D contra una IA (`gam-chess.js`); Lumbre =
-  póster del juego en la pared izquierda (capturas 1–4 + enlaces a itch.io y al repo — antes
+  póster del juego en la pared izquierda (capturas 1–4: pestañas, teclas o clic en el póster — antes
   era una card de `dev-projects.json`, ahora vive solo acá). Desde 2026-10-01 (ex
   decoración, al final de `FURNITURE` para no correr las teclas 1–9): Trofeos (`medals`) =
   repisa con los 3 Aegis de Dota 2 de David (The International: violeta/cobre TI 2019,
@@ -351,8 +366,13 @@ pellizco / +− hacen zoom también en la vista general del cuarto (hacia el cur
   la caja viene al frente y gira con el mouse, otro click → se abre la tapa y sale la
   tarjeta con la edición y el año (`trophies` en `gam-hotspots.json`); Star Wars (`starwars`) = póster de Yoda
   (`public/images/posters/`) que se despega de la pared, viene al frente (sin tarjeta) y gira con el mouse;
-  guitarra (`guitar`) = clásica con cutaway (calcada de la de David), se despega de la
-  pared y toca canciones (`gam-guitar.js`); barra de sonido (`soundbar`, nueva, estilo Mi
+  guitarra (`guitar`) = clásica con cutaway (calcada de la de David), más grande (escala
+  1.3; en brazos de JotAI `HELD_SCALE` 0.8), se despega de la pared y toca canciones
+  (`gam-guitar.js`). Pestañas Canciones / Acordes con un atril de pie al lado (solo en la
+  estación): Canciones = un compás por casilla con el acorde y su diagrama (o tablatura si
+  es melodía), se marca lo que suena (`onStep` del motor); ‹ › cambia de canción. Acordes =
+  `CHORD_SET` (8 acordes, `chordFrets()`), clic en el atril (uv del papel) o teclas 1–8. La
+  silla del escritorio se vuelve translúcida en esta cámara (quedaba delante de JotAI); barra de sonido (`soundbar`, nueva, estilo Mi
   Soundbar blanca sin luces, encima del estante) = la playlist (`tracks`/`playlistUrl`/`spotifyEmbed` en
   `gam-hotspots.json`). Guitarra: "Tres notas" de AU-D + 3 ritmos propios; playlist «3vol Fest» (embed de
   Spotify); estante con los 41 libros reales de David (`bookshelf.books`). `interactive:false` en
@@ -367,7 +387,7 @@ pellizco / +− hacen zoom también en la vista general del cuarto (hacia el cur
   defecto · 1 noche) mueve sol, relleno, luz de ventana, lámpara, neón, cielo de la ventana
   y fondo; lo anima la estación de la ventana y **se queda como el jugador lo dejó**.
 - **JotAI vive en el cuarto** (plan completo y fases en **`docs/gam-jotai-plan.md`** — su
-  **§11 "Traspaso"** tiene el estado actual, convenciones del rig, el arranque de la Fase 4
+  **§12** tiene el estado final (Fases 4–5, PR #60) y §11 las convenciones del rig
   y cómo verificar en headless: leerla antes de seguir). Hecho
   100% en código (`gam-jotai.js`), calcado del render `public/images/jotai/body.png`: ojos LED
   en aro, boca LED en canvas (oscura se perdía sobre la cara gris), cuello de resorte, placa
@@ -385,16 +405,17 @@ pellizco / +− hacen zoom también en la vista general del cuarto (hacia el cur
   enfocan el objeto junto al que está, se aparta a su rincón (`makeRoom`). **La noche
   (Fase 3):** el brain sigue `env.t` con histéresis (≥0.75 noche, ≤0.25 día). Al anochecer
   se estira, acaricia a Pukis (`react()` de la estación de Pukis), arrima la silla
-  (`out.refs.chair` → `makeChairProp()`, queda girada hacia el monitor secundario para que
-  el respaldo no lo tape), escribe y se duerme; al amanecer se levanta y se estira. Si el
-  cuarto arranca de noche ya está dormido. Tocarlo o abrir el escritorio lo despierta de un
-  salto y a los 10 s vuelve a dormirse. La ventana vuelve sola a la vista general
+  (`out.refs.chair` → `makeChairProp()`, queda frente a la laptop, un poco de costado),
+  escribe y se duerme; al amanecer se levanta y se estira. Si el
+  cuarto arranca de noche ya está dormido. Tocarlo lo despierta de un salto y a los 10 s
+  vuelve a dormirse; abrir el escritorio lo despierta y teclea la contraseña (al salir se queda
+  en la silla y se vuelve a dormir). La ventana vuelve sola a la vista general
   (`onEnvScene`) y un subtítulo con "Saltar" (`createJotaiCaption`) acompaña la rutina.
   Rutinas con `run()` + token `seq` cancelable, esperas/animaciones atadas al reloj del
   loop (la pausa del cuarto las pausa).
   **Las estaciones (Fase 4, `docs/gam-jotai-plan.md` §12):** al enfocar un objeto con rol
   (`ROLES` en el brain) va a su spot, se sienta si hace falta (banqueta del piano:
-  `props.seats`) y queda "de servicio" (`brain.duty`): toca el
+  `props.seats`) y queda "de servicio" (`brain.duty`): desbloquea la laptop, toca el
   piano y la demo del Reto, toca la guitarra en brazos, es el rival del ajedrez (de pie, del lado de las negras), hace la
   cascada de malabares en sus manos, monta la patineta (pestaña Montar; los trucos siempre
   le fallan), señala los trofeos/libros/Lumbre, menea la cabeza con la música, saluda al
@@ -488,10 +509,10 @@ están abiertas (`scene.pause`/`resume`, así el jugador no se mueve detrás del
 `videoUrl`/`modelUrl` (`null` hoy — malabares y patineta, pendientes de esos assets).
 
 **Progreso** (`gam-loader.js`): cada interacción no-`exit` marca su `id` como
-descubierto en `localStorage('gam-discovered')`; `#gam-progress` (esquina sup. izq.
-de la TV) muestra `X/13` (`DISCOVERABLE_IDS`) y persiste entre visitas. Al completar los 13 objetos, un
-toast breve una vez por sesión (no un panel — no compite con el que ya se abre para
-el objeto que completó la ronda).
+descubierto en `localStorage('gam-discovered')` (`DISCOVERABLE_IDS`, 13). Sin contador
+visible (el `#gam-progress` se quitó): solo lo leen los créditos al salir por la puerta.
+El hover de los muebles y de JotAI se marca solo con el brillo/contorno — sin etiqueta
+de nombre (`.gam-label` queda solo para `setLabel()` de las estaciones, ej. libros).
 
 **Audio y feedback de interacción (`gam-audio.js` + `gam-ambience.js` + `gam-fx.js`)** —
 tres módulos chicos, cada uno con un rol distinto:

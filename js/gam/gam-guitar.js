@@ -15,8 +15,11 @@
  */
 import { getAudioContext } from './gam-audio.js';
 
-const OPEN = [40, 45, 50, 55, 59, 64];          // MIDI de las cuerdas al aire (Mi La Re Sol Si Mi)
+export const OPEN = [40, 45, 50, 55, 59, 64];   // MIDI de las cuerdas al aire (Mi La Re Sol Si Mi)
 const CHORDS = {                                 // una nota por cuerda, null = no suena
+  D:  [null, null, 50, 57, 62, 66], // xx0232
+  A:  [null, 45, 52, 57, 61, 64],   // x02220
+  Dm: [null, null, 50, 57, 62, 65], // xx0231
   C:  [null, 48, 52, 55, 60, 64],
   G:  [43, 47, 50, 55, 59, 67],
   Am: [null, 45, 52, 57, 60, 64],
@@ -27,6 +30,14 @@ const CHORDS = {                                 // una nota por cuerda, null = 
   E:  [40, 47, 52, 56, 59, 64],     // 022100
   Esus4: [40, 47, 52, 57, 59, 64],  // 022200 — la "E con variación" de Tres notas
 };
+/** Traste de cada cuerda (grave → aguda) para dibujar el diagrama; -1 = no suena. */
+export function chordFrets(name) {
+  const v = CHORDS[name];
+  return v ? v.map((m, i) => (m == null ? -1 : m - OPEN[i])) : null;
+}
+/** Los acordes de la pestaña Acordes (teclas 1–8). */
+export const CHORD_SET = ['C', 'G', 'D', 'Am', 'Em', 'F', 'A', 'E'];
+
 const NOTE_SEC = 1.6;                            // largo de cada buffer
 const STRUM_GAP = 0.016;                         // s entre cuerda y cuerda al rasguear
 
@@ -44,13 +55,18 @@ function arpeggio(chords) {
 }
 const ODE = [64, 64, 65, 67, 67, 65, 64, 62, 60, 60, 62, 64, 64, 62, 62];
 
+/* `bars` (un acorde por compás de 4 tiempos) y `melody` solo sirven para
+   dibujar la partitura en la estación; lo que suena sale de `events`. */
+const TRES = ['B', 'F#', 'E', 'Esus4', 'B', 'F#', 'E', 'Esus4', 'B', 'F#', 'E', 'E'];
+const STRUM = ['C', 'G', 'Am', 'F', 'C', 'G', 'F', 'C'];
+const ARP = ['Am', 'C', 'G', 'Em', 'Am', 'F', 'G', 'Am'];
 export const SONGS = [
   // "Tres notas" de AU-D (la que toca David): B – F# – E – E(variación), rasgueada
   { id: 'tresnotas', label: { es: 'Tres notas · AU-D', en: 'Tres notas · AU-D' }, bpm: 92,
-    events: strumPattern(['B', 'F#', 'E', 'Esus4', 'B', 'F#', 'E', 'Esus4', 'B', 'F#', 'E', 'E']) },
-  { id: 'strum', label: { es: 'Rasgueo', en: 'Strum' }, bpm: 100, events: strumPattern(['C', 'G', 'Am', 'F', 'C', 'G', 'F', 'C']) },
-  { id: 'arpeggio', label: { es: 'Arpegio', en: 'Arpeggio' }, bpm: 84, events: arpeggio(['Am', 'C', 'G', 'Em', 'Am', 'F', 'G', 'Am']) },
-  { id: 'ode', label: { es: 'Oda a la alegría', en: 'Ode to Joy' }, bpm: 120,
+    bars: TRES, style: 'strum', events: strumPattern(TRES) },
+  { id: 'strum', label: { es: 'Rasgueo', en: 'Strum' }, bpm: 100, bars: STRUM, style: 'strum', events: strumPattern(STRUM) },
+  { id: 'arpeggio', label: { es: 'Arpegio', en: 'Arpeggio' }, bpm: 84, bars: ARP, style: 'arpeggio', events: arpeggio(ARP) },
+  { id: 'ode', label: { es: 'Oda a la alegría', en: 'Ode to Joy' }, bpm: 120, melody: ODE,
     events: ODE.map((m, i) => [i + (i === 14 ? 0.5 : 0), 'note', m]) },
 ];
 
@@ -83,7 +99,7 @@ function pluck(ctx, midi, when, gain) {
 }
 
 /** Cuerda donde cae una nota suelta: la más aguda que la alcanza. */
-function stringFor(midi) {
+export function stringFor(midi) {
   for (let s = OPEN.length - 1; s >= 0; s--) if (midi >= OPEN[s]) return s;
   return 0;
 }
@@ -91,8 +107,10 @@ function stringFor(midi) {
 /**
  * callbacks: onStrum({ strings, dir }) — sonaron esas cuerdas (0 = la grave)
  *            onEnd(songId) — terminó la canción (no se llama con stop())
+ *            onStep({ index, beat }) — sonó el evento `index` de la canción
+ *              (en el tiempo `beat`): la partitura marca el compás / la nota
  */
-export function createGuitar({ onStrum, onEnd } = {}) {
+export function createGuitar({ onStrum, onEnd, onStep } = {}) {
   const timers = [];
   let playing = null;
   const clearTimers = () => { timers.forEach(clearTimeout); timers.length = 0; };
@@ -125,9 +143,12 @@ export function createGuitar({ onStrum, onEnd } = {}) {
     playing = song.id;
     const beat = 60000 / song.bpm;
     let last = 0;
-    song.events.forEach(([b, kind, v, dir]) => {
+    song.events.forEach(([b, kind, v, dir], index) => {
       last = Math.max(last, b);
-      timers.push(setTimeout(() => (kind === 'chord' ? strum(v, dir) : note(v)), b * beat));
+      timers.push(setTimeout(() => {
+        if (kind === 'chord') strum(v, dir); else note(v);
+        onStep?.({ index, beat: b });
+      }, b * beat));
     });
     timers.push(setTimeout(() => { playing = null; onEnd?.(song.id); }, (last + 1.5) * beat));
   }

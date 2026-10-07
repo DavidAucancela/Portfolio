@@ -39,6 +39,16 @@
     { "es": "Shh… Pukis está soñando 💤", "en": "Shh… Pukis is dreaming 💤" },
     { "es": "El mejor perro del cuarto 🐾", "en": "Best dog in the room 🐾" }
   ],
+  "desk_unlock": [
+    { "es": "Contraseña… ✱✱✱✱✱✱✱✱ ¡listo, a trabajar!", "en": "Password… ✱✱✱✱✱✱✱✱ done, back to work!" }
+  ],
+  "piano_learn_done": [
+    { "es": "¡Bien! Otra vuelta y sale perfecta.", "en": "Nice! One more round and it'll be perfect." },
+    { "es": "Ya casi. La práctica hace al maestro 🎹", "en": "Almost there. Practice makes perfect 🎹" }
+  ],
+  "piano_learn_perfect": [
+    { "es": "¡Sin un solo error! Eres un crack 🌟", "en": "Not a single mistake! You're a star 🌟" }
+  ],
   "muse_desk": [
     { "es": "Uy, cuánto código sin commitear…", "en": "Whoa, so much uncommitted code…" }
   ],

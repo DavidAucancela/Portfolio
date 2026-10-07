@@ -45,6 +45,7 @@ import { createJotai } from './gam-jotai.js';
 import { createJotaiBubble, createJotaiCaption } from './gam-jotai-bubble.js';
 import { createJotaiBrain, STATION_IDS } from './gam-jotai-brain.js';
 import { createNavGrid } from './gam-jotai-nav.js';
+import { LangSwitcher } from '../lang.js';
 
 /* ────────────────────────────────────────────────────
    CUARTO — S = lado del piso, H = alto de pared, T = grosor. Piso con la
@@ -79,7 +80,7 @@ const FURN_SCALE = 1.15; // muebles más grandes que su diseño base ("se ven ch
 ──────────────────────────────────────────────────── */
 const WALL_FACING = Math.PI / 2;
 const FURNITURE = [
-  { id: 'piano',      x: -3.06,        z: 0.31,  rotY: WALL_FACING, view: 0.62, color: 0xffb020, label: '🎹 Piano',  kind: 'minigame', zoom: 2.5, scale: 1.354 },   // view: de 3/4, se ve a JotAI de perfil en la banqueta (de frente quedaba de espaldas)
+  { id: 'piano',      x: -3.06,        z: 0.42,  rotY: WALL_FACING, view: 0.62, color: 0xffb020, label: '🎹 Piano',  kind: 'minigame', zoom: 2.5, scale: 1.354 },   // view: de 3/4, se ve a JotAI de perfil en la banqueta (de frente quedaba de espaldas)
   { id: 'desk',       x: -0.3,         z: -2.93, rotY: 0,    color: 0x3b82f6, label: '🖥️ Escritorio',       kind: 'list', zoom: 2.0, artHeight: 1.9 },
   { id: 'juggling',   x: 3.05,         z: 0.81,  y: 0.006, rotY: Math.PI / 2, color: 0xff8a3d, label: '🤹 Malabares',        kind: 'video', zoom: 3, scale: 1.35 },
   { id: 'door',       x: -3.42,        z: 2.45,  rotY: WALL_FACING, color: 0x94a3b8, label: '🚪 Salir',            kind: 'exit', zoom: 2.2, scale: 1.085 },
@@ -94,7 +95,7 @@ const FURNITURE = [
   // 1–9 siguen apuntando a los de arriba.
   { id: 'medals',     x: -0.3,         z: -HALF + 0.15, y: 2.55, rotY: 0, color: 0xffc94a, label: '🏆 Trofeos',     kind: 'info', zoom: 4.4, scale: 1, noLift: true },
   { id: 'starwars',   x: 0.44 - 1.13 * 2.35, z: 0.44 - 1.13 * HALF, y: 0, rotY: 0, color: 0xffe81f, label: '⭐ Star Wars', kind: 'info', zoom: 6, scale: 1.13, noLift: true },
-  { id: 'guitar',     x: -3.14,        z: -1.28, y: 0.022, rotY: 0, view: Math.PI / 2, color: 0xc98a4b, label: '🎸 Guitarra',  kind: 'minigame', zoom: 5.2, scale: 1.13 },
+  { id: 'guitar',     x: -3.14,        z: -1.28, y: 0.022, rotY: 0, view: Math.PI / 2, color: 0xc98a4b, label: '🎸 Guitarra',  kind: 'minigame', zoom: 5.2, scale: 1.3 },   // más grande: es protagonista
   { id: 'soundbar',   x: -3.16,        z: -2.53, y: 2.6, rotY: WALL_FACING, color: 0x7aa2ff, label: '🔊 Música', kind: 'list', zoom: 4.6, scale: 2.21, noLift: true },   // encima del estante
 ];
 
@@ -126,7 +127,7 @@ const JOTAI_SPOTS = {
 /* Asientos de estación (Fase 4), en coordenadas locales del mueble:
    at = dónde se sienta, side = por dónde se sube/baja, topY = alto del
    asiento, face = rumbo relativo al mueble (π = mirando hacia −z local). */
-const PIANO_SEAT = { at: [0, 0.5], side: [0.7, 0.5], topY: 0.5, face: Math.PI };       // banqueta, mirando el teclado
+const PIANO_SEAT = { at: [0, 0.42], side: [0.7, 0.42], topY: 0.5, face: Math.PI };   // cerca del teclado: sentado, las manos llegan a las teclas       // banqueta, mirando el teclado
 const JOTAI_SCALE = 0.92;
 
 /* Grilla de navegación: solo bloquea lo que ocupa piso a la altura del
@@ -164,6 +165,7 @@ const HOVER_LIFT = 0.07;      // cuánto sube el objeto bajo el cursor
 const ART_BASE = 'public/images/gam/';
 const DEFAULT_ART_HEIGHT = 1.6;
 const STARWARS_POSTER = 'public/images/posters/yoda-do-or-do-not.webp';
+const HYPERSPACE_WALL = 'public/images/posters/hyperspace.webp';   // fondo de la pantalla de bloqueo del escritorio
 
 const lerp = (a, b, t) => a + (b - a) * t;
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
@@ -485,6 +487,25 @@ function makeScreenTexture(kind, seed) {
         }
       }
     }
+  });
+}
+
+/** Teclado de la laptop: teclas negras sobre el aluminio (vista desde arriba). */
+function makeLaptopKeysTexture() {
+  return canvasTexture(256, 96, (ctx, w, h) => {
+    ctx.fillStyle = '#c6c9ce';
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = '#16171a';
+    const rows = [14, 14, 13, 12, 11];
+    rows.forEach((n, r) => {
+      const kw = (w - 8) / 14.4;
+      let x = 4 + (14 - n) * kw * 0.5;
+      for (let k = 0; k < n; k++) {
+        ctx.fillRect(x, 4 + r * 15.5, kw - 2.5, 12.5);
+        x += kw;
+      }
+    });
+    ctx.fillRect(w * 0.3, 4 + 5 * 15.5, w * 0.4, 10);   // barra espaciadora
   });
 }
 
@@ -850,30 +871,31 @@ export function mount(container, hotspots) {
     switch (f.id) {
       case 'piano': {
         // Teclado eléctrico sobre soporte en X: cuerpo negro con panel de control
-        // (parlantes, pantalla, botones), 15 teclas blancas (2 octavas) + negras,
+        // (parlantes, pantalla, botones), 22 teclas blancas (3 octavas) + negras,
         // soporte cruzado con patas y banqueta al frente.
         const black = 0x15171b;
         const topY = 0.77;
-        add(box(1.3, 0.07, 0.36), black, 0, topY - 0.035, 0.02);            // cuerpo
-        add(box(1.3, 0.05, 0.17), 0x0f1013, 0, topY + 0.02, -0.1);          // panel de control trasero
-        [-0.5, 0.5].forEach(x => add(box(0.22, 0.012, 0.12), 0x07080a, x, topY + 0.05, -0.1)); // parlantes
+        const KEYS = 22, kw = 0.08;                                           // mismo ancho de tecla que con 2 octavas: el piano crece
+        const PW = KEYS * kw + 0.1;
+        add(box(PW, 0.07, 0.36), black, 0, topY - 0.035, 0.02);             // cuerpo
+        add(box(PW, 0.05, 0.17), 0x0f1013, 0, topY + 0.02, -0.1);           // panel de control trasero
+        [-0.72, 0.72].forEach(x => add(box(0.26, 0.012, 0.12), 0x07080a, x, topY + 0.05, -0.1)); // parlantes
         add(box(0.2, 0.012, 0.06), 0x1a2a3a, 0, topY + 0.05, -0.1, glow(0x4aa8ff, 0.7)); // pantalla LCD
         [-0.24, -0.17, 0.17, 0.24].forEach((x, k) => add(box(0.045, 0.012, 0.03), k % 2 ? 0xc9c9c9 : 0x8a8f98, x, topY + 0.05, -0.12));
         [-0.11, 0.11].forEach(x => add(cyl(0.02, 0.02), 0x8a8f98, x, topY + 0.055, -0.07));      // perillas
-        add(box(1.32, 0.02, 0.03), 0x0b0c0e, 0, topY - 0.005, 0.2);                            // labio frontal
+        add(box(PW + 0.02, 0.02, 0.03), 0x0b0c0e, 0, topY - 0.005, 0.2);                       // labio frontal
 
-        // 15 teclas blancas (una por nota, ver gam-piano.js) + 10 negras decorativas
-        const KEYS = 15, kw = 1.2 / KEYS;
+        // 22 teclas blancas (una por nota, ver gam-piano.js) + negras decorativas
         out.refs.keys = [];
         for (let i = 0; i < KEYS; i++) {
           const key = add(box(kw * 0.94, 0.03, 0.2), 0xf2e6d2, (i - (KEYS - 1) / 2) * kw, topY + 0.015, 0.1);
           key.userData.baseY = topY + 0.015;
           out.refs.keys.push(key);
         }
-        [0, 1, 3, 4, 5, 7, 8, 10, 11, 12].forEach(i => add(box(kw * 0.56, 0.03, 0.12), 0x0b0b0d, (i - (KEYS - 1) / 2 + 0.5) * kw, topY + 0.035, 0.05));
+        [0, 1, 2].flatMap(o => [0, 1, 3, 4, 5].map(n => o * 7 + n)).forEach(i => add(box(kw * 0.56, 0.03, 0.12), 0x0b0b0d, (i - (KEYS - 1) / 2 + 0.5) * kw, topY + 0.035, 0.05));
 
         // soporte en X: dos barras cruzadas, patas de piso y perilla central
-        const dx = 0.5, yTop = topY - 0.075, yBot = 0.03;
+        const dx = 0.72, yTop = topY - 0.075, yBot = 0.03;
         const len = Math.hypot(2 * dx, yTop - yBot), ang = Math.atan2(yTop - yBot, 2 * dx);
         [ang, -ang].forEach(a => {
           const bar = add(box(len, 0.035, 0.035), 0x101114, 0, (yTop + yBot) / 2, 0.02);
@@ -892,43 +914,82 @@ export function mount(container, hotspots) {
       }
 
       case 'desk': {
-        // El protagonista: escritorio ancho, dos monitores, laptop, teclado
-        // con brillo RGB, tapete, cables, lámpara con PointLight real, taza,
+        // El protagonista: escritorio ancho, laptop sobre base con ventilador,
+        // monitor secundario, mouse, cables, lámpara con PointLight real, taza,
         // auriculares y silla gamer (retirada hacia atrás para no tapar las
         // pantallas desde la cámara isométrica).
         const topY = 0.75;
         add(box(2.6, 0.07, 0.8), 0x6b4a30, 0, topY - 0.035, 0);
         [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sz]) => add(box(0.06, topY - 0.07, 0.06), 0x2a2a2a, sx * 1.24, (topY - 0.07) / 2, sz * 0.34));
-        add(box(1.5, 0.01, 0.5), 0x1a1d24, 0.1, topY + 0.005, 0.14);                 // tapete
-        add(box(1.5, 0.012, 0.02), 0xffb020, 0.1, topY + 0.006, 0.4);                // borde ámbar
 
-        // Mac de escritorio (estilo iMac: aluminio, mentón inferior, pie plano)
+        // Laptop (estilo MacBook plateada) sobre una base con ventilador,
+        // inclinada hacia el usuario — calcada del escritorio real de David.
+        const LAP = { x: -0.36, z: 0.08, s: 1.32 };                                   // la laptop es la protagonista: grande
+        const pad = new THREE.Group();
+        pad.position.set(LAP.x, topY + 0.07, LAP.z);
+        pad.rotation.x = 0.12;                                                        // la parte de atrás más alta
+        pad.scale.setScalar(LAP.s);
+        group.add(pad);
+        const addP = (...args) => addPart(pad, parts, ...args);
+        addP(box(0.62, 0.022, 0.46), 0x16181d, 0, 0, 0, { roughness: 0.55 });         // placa (malla negra)
+        addP(box(0.56, 0.006, 0.012), 0x2b8cff, 0, -0.004, 0.232, glow(0x2b8cff, 1.2)); // LED azul del borde frontal
+        // ventilador debajo de la placa: aro + aspas que giran (ver deskStation)
+        addP(new THREE.TorusGeometry(0.15, 0.008, 8, 32), 0x0d0e11, 0, -0.024, 0).rotation.x = Math.PI / 2;
+        addP(new THREE.TorusGeometry(0.15, 0.004, 8, 32), 0x2b8cff, 0, -0.03, 0, glow(0x2b8cff, 1.4)).rotation.x = Math.PI / 2;
+        const fan = new THREE.Group();
+        fan.position.set(0, -0.026, 0);
+        pad.add(fan);
+        for (let i = 0; i < 7; i++) {
+          const blade = addPart(fan, parts, box(0.12, 0.004, 0.04), 0x24272e, 0, 0, 0);
+          blade.position.set(Math.cos((i / 7) * Math.PI * 2) * 0.075, 0, Math.sin((i / 7) * Math.PI * 2) * 0.075);
+          blade.rotation.set(0.35, -(i / 7) * Math.PI * 2, 0);
+        }
+        addPart(fan, parts, cyl(0.035, 0.012), 0x1a1c21, 0, 0, 0);
+        out.refs.fan = fan;
+        // patas: goma al frente, soportes altos atrás
+        add(box(0.6 * LAP.s, 0.024, 0.03), 0x0d0e11, LAP.x, topY + 0.012, LAP.z + 0.21 * LAP.s);
+        [-0.27, 0.27].forEach(x => add(box(0.04, 0.1, 0.04), 0x0d0e11, LAP.x + x * LAP.s, topY + 0.05, LAP.z - 0.19 * LAP.s));
+
+        const lap = new THREE.Group();
+        lap.position.set(0, 0.011, 0);
+        pad.add(lap);
+        const addL = (...args) => addPart(lap, parts, ...args);
+        addL(box(0.5, 0.016, 0.34), 0xc6c9ce, 0, 0.008, 0, { metalness: 0.45, roughness: 0.35 });   // base
+        addL(new THREE.BoxGeometry(0.44, 0.002, 0.16), 0xffffff, 0, 0.017, -0.06, { map: makeLaptopKeysTexture(), roughness: 0.6 });   // teclado
+        addL(box(0.19, 0.003, 0.11), 0xb7bac0, 0, 0.0165, 0.1, { metalness: 0.3, roughness: 0.3 });   // trackpad
+        const lid = new THREE.Group();
+        lid.position.set(0, 0.016, -0.168);                                           // bisagra
+        lid.rotation.x = -0.26;                                                       // abierta, apenas reclinada
+        lap.add(lid);
+        const addLid = (...args) => addPart(lid, parts, ...args);
+        addLid(box(0.5, 0.33, 0.012), 0xc6c9ce, 0, 0.165, 0, { metalness: 0.45, roughness: 0.35 });   // tapa
+        addLid(new THREE.BoxGeometry(0.484, 0.314, 0.003), 0x08090b, 0, 0.165, 0.0065);                  // marco negro
         const codeTex = makeScreenTexture('code', 3);
         codeTex.wrapT = THREE.RepeatWrapping;
         out.refs.scrollTex = [codeTex];
-        add(box(0.24, 0.014, 0.19), 0xc9ccd2, -0.35, topY + 0.007, -0.24);            // base
-        add(box(0.07, 0.3, 0.03), 0xc9ccd2, -0.35, topY + 0.17, -0.3);                // cuello
-        add(box(0.96, 0.6, 0.035), 0xd9dce1, -0.35, topY + 0.52, -0.27);              // cuerpo
-        const screen1 = add(box(0.9, 0.5, 0.01), 0x222222, -0.35, topY + 0.565, -0.25, screenExtra(codeTex));
+        const screen1 = addLid(new THREE.BoxGeometry(0.46, 0.288, 0.002), 0x222222, 0, 0.17, 0.0085, screenExtra(codeTex));
         out.flickers.push(screen1);
-        add(box(0.03, 0.03, 0.005), 0x9a9da3, -0.35, topY + 0.26, -0.25);             // logo del mentón
+        out.refs.laptopScreen = screen1;
 
-        // monitor secundario, girado hacia el usuario
+        // monitor secundario (portátil sobre su soporte), girado hacia el usuario
         const m2 = new THREE.Group();
-        m2.position.set(0.72, 0, -0.22);
-        m2.rotation.y = -0.32;
+        m2.position.set(0.5, 0, -0.2);
+        m2.rotation.y = -0.3;
         group.add(m2);
         const add2 = (...args) => addPart(m2, parts, ...args);
-        add2(box(0.22, 0.02, 0.16), 0x1a1a1a, 0, topY + 0.01, 0);
-        add2(box(0.05, 0.28, 0.05), 0x1a1a1a, 0, topY + 0.15, -0.03);
-        add2(box(0.72, 0.44, 0.04), 0x151515, 0, topY + 0.44, -0.02);
-        const screen2 = add2(box(0.66, 0.38, 0.01), 0x222222, 0, topY + 0.44, 0.005, screenExtra(makeScreenTexture('gallery', 9)));
+        add2(box(0.36, 0.06, 0.18), 0x15161a, 0, topY + 0.03, 0);                     // soporte
+        add2(box(0.05, 0.22, 0.04), 0x15161a, 0, topY + 0.15, -0.03);
+        add2(box(0.66, 0.42, 0.03), 0x111214, 0, topY + 0.46, -0.02);
+        const screen2 = add2(new THREE.BoxGeometry(0.62, 0.38, 0.004), 0x222222, 0, topY + 0.46, -0.003, screenExtra(makeScreenTexture('gallery', 9)));
         out.flickers.push(screen2);
-        out.refs.screens = [screen1, screen2];   // protector de pantalla mientras JotAI duerme
+        out.refs.screens = [screen1, screen2];   // pantalla de bloqueo / trabajo / protector (ver makeDeskScreens)
 
-        // trackpad + mouse (sin teclado)
-        add(box(0.16, 0.01, 0.12), 0xe6e8ec, -0.2, topY + 0.02, 0.26);
-        add(box(0.06, 0.03, 0.1), 0xf5f5f5, 0.42, topY + 0.02, 0.26);
+        // mouse grande sobre su tapete con apoyamuñecas
+        add(box(0.36, 0.008, 0.32), 0x1d2026, 0.74, topY + 0.004, 0.16, { roughness: 0.9 });
+        add(box(0.34, 0.034, 0.08), 0x22252c, 0.74, topY + 0.021, 0.28, { roughness: 0.9 });
+        const mouse = add(sph(0.072), 0xe8e9ec, 0.72, topY + 0.022, 0.11, { roughness: 0.3, metalness: 0.2 });
+        mouse.scale.set(0.95, 0.42, 1.5);
+        mouse.rotation.y = 0.15;
 
         // lámpara (base, brazo, pantalla, bombilla emisiva) → PointLight real
         add(cyl(0.08, 0.03), 0xf0f0f0, -1.15, topY + 0.015, -0.22);
@@ -937,30 +998,45 @@ export function mount(container, hotspots) {
         out.bulb = add(sph(0.045), 0xffd9a0, -1.11, topY + 0.47, -0.16, glow(0xffd9a0, 1.5));
         out.lampAnchor = new THREE.Vector3(-1.11, topY + 0.4, -0.1);
 
-        // taza + auriculares en su soporte
-        add(cyl(0.04, 0.09), 0xf5efe0, -0.72, topY + 0.045, 0.3);
-        add(cyl(0.034, 0.006), 0x3a2216, -0.72, topY + 0.087, 0.3, { roughness: 0.3 });   // café
+        // taza grande de café
+        const MUG = { x: -0.97, z: 0.22, r: 0.07, h: 0.15 };
+        add(cyl(MUG.r, MUG.h), 0xf5efe0, MUG.x, topY + MUG.h / 2, MUG.z);
+        add(cyl(MUG.r * 0.86, 0.006), 0x3a2216, MUG.x, topY + MUG.h - 0.006, MUG.z, { roughness: 0.3 });   // café
         out.steam = [];
         for (let i = 0; i < 3; i++) {
-          const puff = add(sph(0.022), 0xffffff, -0.72, topY + 0.1, 0.3, { transparent: true, opacity: 0.3, roughness: 1, depthWrite: false });
+          const puff = add(sph(0.03), 0xffffff, MUG.x, topY + MUG.h + 0.01, MUG.z, { transparent: true, opacity: 0.3, roughness: 1, depthWrite: false });
           puff.castShadow = false;
-          puff.userData.steam = { base: topY + 0.1, phase: i / 3, x: -0.72, z: 0.3 };
+          puff.userData.steam = { base: topY + MUG.h + 0.01, phase: i / 3, x: MUG.x, z: MUG.z };
           out.steam.push(puff);
         }
-        add(new THREE.TorusGeometry(0.028, 0.008, 8, 12), 0xf5efe0, -0.68, topY + 0.05, 0.3);
-        add(cyl(0.05, 0.01), 0x1a1a1a, 1.12, topY + 0.005, 0.1);
-        add(cyl(0.01, 0.22), 0x1a1a1a, 1.12, topY + 0.115, 0.1);
-        const band = add(new THREE.TorusGeometry(0.09, 0.012, 8, 20, Math.PI), 0x1a1a1a, 1.12, topY + 0.2, 0.1);
-        band.rotation.z = 0;
-        [-0.09, 0.09].forEach(dx => {
-          const cup = add(cyl(0.04, 0.035), 0xffb020, 1.12 + dx, topY + 0.2, 0.1);
-          cup.rotation.z = Math.PI / 2;
-        });
+        add(new THREE.TorusGeometry(0.04, 0.011, 8, 14), 0xf5efe0, MUG.x + MUG.r, topY + MUG.h * 0.55, MUG.z);
 
-        // cables: de cada monitor hacia atrás y al piso
-        [[-0.35, -0.3], [0.7, -0.28]].forEach(([x, z]) => {
+        // auriculares colgados de su soporte — la estación los trae al frente (ver deskStation)
+        const PH = { x: -0.94, z: -0.2 };   // a la izquierda: a la derecha los tapaba la tarjeta de proyectos
+        add(cyl(0.07, 0.012), 0x1a1a1a, PH.x, topY + 0.006, PH.z);
+        add(cyl(0.012, 0.3), 0x1a1a1a, PH.x, topY + 0.15, PH.z);
+        add(box(0.05, 0.02, 0.06), 0x1a1a1a, PH.x, topY + 0.3, PH.z);
+        const phones = new THREE.Group();
+        phones.position.set(PH.x, topY + 0.315, PH.z);
+        phones.rotation.y = 0.75;                                                     // de tres cuartos: se leen como auriculares sin chocar con la laptop
+        group.add(phones);
+        const phoneMeshes = [];
+        const addH = (...args) => { const m = addPart(phones, parts, ...args); phoneMeshes.push(m); return m; };
+        addH(new THREE.TorusGeometry(0.12, 0.014, 10, 28, Math.PI), 0x1a1a1a, 0, -0.11, 0);   // diadema
+        addH(new THREE.TorusGeometry(0.105, 0.012, 8, 24, Math.PI), 0x3a3d44, 0, -0.11, 0, { roughness: 0.9 });  // acolchado
+        [-1, 1].forEach(s => {
+          addH(box(0.02, 0.06, 0.02), 0x8a8f98, s * 0.12, -0.13, 0, { metalness: 0.6, roughness: 0.3 });   // brazo
+          const cup = addH(cyl(0.058, 0.04), 0xffb020, s * 0.125, -0.19, 0, { roughness: 0.4 });
+          cup.rotation.z = Math.PI / 2;
+          const cushion = addH(cyl(0.05, 0.022), 0x24262c, s * 0.098, -0.19, 0, { roughness: 0.95 });
+          cushion.rotation.z = Math.PI / 2;
+        });
+        out.refs.phones = { holder: phones, meshes: phoneMeshes, rest: phones.position.clone(), restYaw: phones.rotation.y };
+
+        // cables: de la laptop y del monitor hacia atrás y al piso
+        [[-0.36, -0.2], [0.5, -0.26]].forEach(([x, z]) => {
           const curve = new THREE.CatmullRomCurve3([
-            new THREE.Vector3(x, topY + 0.2, z - 0.03),
+            new THREE.Vector3(x, topY + 0.06, z - 0.03),
             new THREE.Vector3(x, topY + 0.02, z - 0.1),
             new THREE.Vector3(x + 0.05, 0.5, z - 0.1),
             new THREE.Vector3(x + 0.1, 0.01, z - 0.06),
@@ -984,9 +1060,12 @@ export function mount(container, hotspots) {
         }
         addC(cyl(0.035, 0.36), 0x2a2a2a, 0, 0.24, 0);
         addC(box(0.52, 0.1, 0.5), 0x1c1f26, 0, 0.47, 0);
-        addC(box(0.5, 0.72, 0.09), 0x1c1f26, 0, 0.88, 0.25);
-        addC(box(0.3, 0.16, 0.08), 0x1c1f26, 0, 1.36, 0.25);
-        [-0.13, 0.13].forEach(x => addC(box(0.06, 0.6, 0.006), 0xffb020, x, 0.88, 0.298));
+        // respaldo: se vuelve translúcido con JotAI sentado (si no, lo tapa de espaldas a la cámara)
+        out.refs.chairBack = [
+          addC(box(0.5, 0.72, 0.09), 0x1c1f26, 0, 0.88, 0.25),
+          addC(box(0.3, 0.16, 0.08), 0x1c1f26, 0, 1.36, 0.25),
+          ...[-0.13, 0.13].map(x => addC(box(0.06, 0.6, 0.006), 0xffb020, x, 0.88, 0.298)),
+        ];
         [-0.29, 0.29].forEach(x => {
           addC(box(0.06, 0.03, 0.3), 0x2a2a2a, x, 0.68, 0.02);
           addC(box(0.03, 0.18, 0.03), 0x2a2a2a, x, 0.57, 0.04);
@@ -1065,8 +1144,12 @@ export function mount(container, hotspots) {
         const img = add(new THREE.PlaneGeometry(pw, pw / 2.446), 0xffffff, 0, wy + 0.091, 0.043, { map: shot, roughness: 0.6, emissive: 0xffffff, emissiveMap: shot, emissiveIntensity: 0.5 });
         const plate = canvasTexture(512, 64, (ctx, w, h) => {
           ctx.fillStyle = '#120d08'; ctx.fillRect(0, 0, w, h);
-          ctx.fillStyle = '#ffb020'; ctx.font = 'bold 30px "Courier New", monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-          ctx.fillText('L U M B R E  ·  Game Jam 2026', w / 2, h / 2 + 2);
+          ctx.fillStyle = '#ffb020'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          // achica la letra hasta que el título entra con margen (a 30px se cortaba en ambos extremos)
+          const title = 'L U M B R E  ·  Game Jam 2026';
+          let size = 30;
+          do { ctx.font = `bold ${size}px "Courier New", monospace`; } while (ctx.measureText(title).width > w - 40 && --size > 12);
+          ctx.fillText(title, w / 2, h / 2 + 2);
         });
         add(new THREE.PlaneGeometry(pw, pw * 0.125), 0xffffff, 0, wy - 0.60, 0.043, { map: plate, roughness: 0.6 });
         out.refs.poster = { img, shot };
@@ -1496,20 +1579,94 @@ export function mount(container, hotspots) {
     loadArt(group, f, built.refs);
   });
 
-  /* ── Protector de pantalla del escritorio (mientras JotAI duerme) ──
-     Un canvas chico: "JotAI · zzz" rebotando sobre negro, estilo DVD. Al
-     despertarse, cada pantalla recupera su textura. */
-  const saver = (() => {
-    const cv = document.createElement('canvas');
-    cv.width = 256; cv.height = 160;
-    const g = cv.getContext('2d');
-    const tex = new THREE.CanvasTexture(cv);
-    tex.colorSpace = THREE.SRGBColorSpace;
+  /* ── Pantallas del escritorio (laptop + monitor) ──
+     deskStation decide el modo con `refs.screenCtl.set(...)`:
+     · 'lock' — pantalla de bloqueo: fondo de hiperespacio de Star Wars, hora
+       y campo de contraseña en la laptop (`setDots(n)` mientras JotAI teclea);
+       el monitor muestra solo el fondo.
+     · 'work' — el editor que se desplaza (laptop) + la galería (monitor).
+     Bloqueada y con JotAI dormido, va el protector "JotAI · zzz" rebotando
+     estilo DVD. */
+  const deskScreens = (() => {
+    const desk = objects.get('desk');
+    const screens = desk?.refs.screens || [];
+    if (!screens.length) return { update() {} };
+    const workMaps = screens.map((m) => m.material.map);
+    const surface = (w, h) => {
+      const cv = document.createElement('canvas');
+      cv.width = w; cv.height = h;
+      const tex = new THREE.CanvasTexture(cv);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      return { cv, g: cv.getContext('2d'), tex };
+    };
+    const lockL = surface(512, 320), lockM = surface(512, 314), saver = surface(256, 160);
+    const SANS = '-apple-system, "SF Pro Display", "Helvetica Neue", Arial, sans-serif';
+    const wall = new Image();
+    let wallOk = false;
+    wall.onload = () => { wallOk = true; paintLock(); };
+    wall.src = HYPERSPACE_WALL;
+    let mode = 'lock', shown = null, dots = 0, minute = -1, last = 0;
     const box2 = { x: 40, y: 30, vx: 38, vy: 26, hue: 190 };
-    let on = false, last = 0;
-    const screens = objects.get('desk')?.refs.screens || [];
-    const saved = screens.map((m) => ({ map: m.material.map, emissiveMap: m.material.emissiveMap }));
-    function draw(dt) {
+
+    function cover({ g, cv }, dim) {
+      const w = cv.width, h = cv.height;
+      g.fillStyle = '#03050b';
+      g.fillRect(0, 0, w, h);
+      if (wallOk) {
+        const s = Math.max(w / wall.naturalWidth, h / wall.naturalHeight);
+        const dw = wall.naturalWidth * s, dh = wall.naturalHeight * s;
+        g.drawImage(wall, (w - dw) / 2, (h - dh) / 2, dw, dh);
+      }
+      g.fillStyle = `rgba(0,0,0,${dim})`;
+      g.fillRect(0, 0, w, h);
+    }
+
+    function paintLock() {
+      const d = new Date();
+      minute = d.getMinutes();
+      const en = LangSwitcher.getLang() === 'en';
+      const { g, cv, tex } = lockL;
+      const w = cv.width;
+      cover(lockL, 0.22);
+      g.textAlign = 'center';
+      g.fillStyle = 'rgba(255,255,255,0.9)';
+      g.font = `600 17px ${SANS}`;
+      g.fillText(d.toLocaleDateString(en ? 'en-US' : 'es-ES', { weekday: 'long', day: 'numeric', month: 'long' }), w / 2, 44);
+      g.font = `bold 78px ${SANS}`;
+      g.fillText(`${String(d.getHours()).padStart(2, '0')}:${String(minute).padStart(2, '0')}`, w / 2, 124);
+      // usuario + campo de contraseña
+      g.beginPath();
+      g.arc(w / 2, 214, 22, 0, Math.PI * 2);
+      g.fillStyle = 'rgba(255,255,255,0.88)';
+      g.fill();
+      g.fillStyle = '#1a1d24';
+      g.font = `bold 20px ${SANS}`;
+      g.fillText('D', w / 2, 221);
+      g.fillStyle = '#fff';
+      g.font = `600 15px ${SANS}`;
+      g.fillText('David', w / 2, 256);
+      g.fillStyle = 'rgba(255,255,255,0.22)';
+      if (g.roundRect) { g.beginPath(); g.roundRect(w / 2 - 80, 268, 160, 26, 13); g.fill(); }
+      else g.fillRect(w / 2 - 80, 268, 160, 26);
+      if (dots) {
+        g.fillStyle = '#fff';
+        for (let i = 0; i < dots; i++) {
+          g.beginPath();
+          g.arc(w / 2 - (dots - 1) * 7 + i * 14, 281, 4, 0, Math.PI * 2);
+          g.fill();
+        }
+      } else {
+        g.fillStyle = 'rgba(255,255,255,0.6)';
+        g.font = `13px ${SANS}`;
+        g.fillText(en ? 'Enter Password' : 'Contraseña', w / 2, 286);
+      }
+      tex.needsUpdate = true;
+      cover(lockM, 0.12);
+      lockM.tex.needsUpdate = true;
+    }
+
+    function paintSaver(dt) {
+      const { g, tex } = saver;
       g.fillStyle = '#05070a'; g.fillRect(0, 0, 256, 160);
       box2.x += box2.vx * dt; box2.y += box2.vy * dt;
       if (box2.x < 4 || box2.x > 256 - 108) { box2.vx *= -1; box2.hue = (box2.hue + 70) % 360; }
@@ -1522,20 +1679,41 @@ export function mount(container, hotspots) {
       g.fillText('z z z', box2.x + 70, box2.y - 12);
       tex.needsUpdate = true;
     }
-    return {
+
+    function show(which) {
+      if (which === shown) return;
+      shown = which;
+      screens.forEach((m, i) => {
+        const t = which === 'work' ? workMaps[i] : which === 'saver' ? saver.tex : (i === 0 ? lockL : lockM).tex;
+        m.material.map = t;
+        m.material.emissiveMap = t;
+        m.material.needsUpdate = true;
+      });
+    }
+
+    const ctl = {
+      get mode() { return mode; },
+      set(m) {
+        mode = m;
+        if (m === 'lock') { dots = 0; paintLock(); }
+      },
+      setDots(n) {
+        if (n === dots) return;
+        dots = n;
+        paintLock();
+      },
       update(sleeping, now) {
-        if (sleeping !== on) {
-          on = sleeping;
-          screens.forEach((m, i) => {
-            m.material.map = on ? tex : saved[i].map;
-            m.material.emissiveMap = on ? tex : saved[i].emissiveMap;
-            m.material.needsUpdate = true;
-          });
-          if (on) { last = now; draw(0); }
-        }
-        if (on && now - last > 66) { draw(Math.min(0.2, (now - last) / 1000)); last = now; }
+        const want = mode === 'work' ? 'work' : sleeping && dots === 0 ? 'saver' : 'lock';
+        if (want === 'saver' && shown !== 'saver') { last = now; paintSaver(0); }
+        show(want);
+        if (want === 'lock' && new Date().getMinutes() !== minute) paintLock();
+        if (want === 'saver' && now - last > 66) { paintSaver(Math.min(0.2, (now - last) / 1000)); last = now; }
       },
     };
+    desk.refs.screenCtl = ctl;
+    paintLock();
+    show('lock');
+    return ctl;
   })();
 
   /* ── Trofeos: cambia el Aegis hecho en código por el modelo real ── */
@@ -1760,9 +1938,8 @@ export function mount(container, hotspots) {
    *  su lugar (k=0, girada para no tapar las pantallas) a arrimada al
    *  escritorio (k=1); `seat()` = dónde queda JotAI sentado (mundo), hacia
    *  dónde mira, el costado libre desde el que se sube y la pantalla que mira.
-   *  Arrimada queda GIRADA hacia el monitor secundario (que ya mira al
-   *  usuario): recta, el respaldo quedaba entre la cámara isométrica y JotAI
-   *  y lo tapaba casi entero. */
+   *  Arrimada queda frente a la laptop pero un poco de costado: recta, el
+   *  respaldo quedaba entre la cámara y JotAI y lo tapaba casi entero. */
   /** Asiento de estación (banqueta del piano) para el brain. */
   function makeSeatProp(id, { at, side, topY, face }) {
     const o = objects.get(id);
@@ -1784,7 +1961,7 @@ export function mount(container, hotspots) {
     const ch = desk?.refs.chair;
     if (!ch) return null;
     const REST = { x: ch.position.x, z: ch.position.z, ry: ch.rotation.y };
-    const TUCK = { x: 0.35, z: 0.72, ry: -0.6 };
+    const TUCK = { x: 0.06, z: 0.72, ry: 0.42 };   // frente a la laptop, un poco de costado para no taparla
     const v = new THREE.Vector3();
     const w = (x, y, z) => { const p = desk.root.localToWorld(v.set(x, y, z)); return { x: p.x, y: p.y, z: p.z }; };
     return {
@@ -1797,7 +1974,7 @@ export function mount(container, hotspots) {
         const s = w(TUCK.x, 0, TUCK.z);
         // costado = eje +x local de la silla girada (por ahí se sube/baja)
         const side = w(TUCK.x + 0.5 * Math.cos(TUCK.ry), 0, TUCK.z - 0.5 * Math.sin(TUCK.ry));
-        const look = desk.root.localToWorld(new THREE.Vector3(0.72, 1.19, -0.22));   // monitor secundario
+        const look = desk.root.localToWorld(new THREE.Vector3(-0.36, 1.05, -0.16));   // pantalla de la laptop
         return { x: s.x, z: s.z, heading: desk.f.rotY + Math.PI + TUCK.ry, side: { x: side.x, z: side.z }, look };
       },
     };
@@ -1818,6 +1995,9 @@ export function mount(container, hotspots) {
     },
   });
   const deskRoot = objects.get('desk')?.root;
+  const chairBack = objects.get('desk')?.refs.chairBack || [];
+  const CHAIR_FADE = 0.28;
+  let chairFade = 1;
   const jotaiLook = new THREE.Vector3();
   const jotaiAnchor = new THREE.Vector3();
   let jotaiHovered = false;
@@ -2015,6 +2195,7 @@ export function mount(container, hotspots) {
     // JotAI en las estaciones (Fase 4) — todos devuelven null/false si no está
     // (o si su update falló): la estación sigue funcionando igual que sin él
     jotaiHere: () => !jotaiFailed,
+    jotaiAtDesk: () => !jotaiFailed && jotaiBrain.duty === 'desk' && jotaiBrain.seated && !jotaiBrain.moving,
     jotaiRiding: () => !jotaiFailed && jotaiBrain.riding,
     jotaiHands: () => (!jotaiFailed && jotaiBrain.duty === 'juggling' && !jotaiBrain.moving ? jotai.handsWorld(_handL, _handR) : null),
     jotaiGuitar: () => (!jotaiFailed && jotaiBrain.duty === 'guitar' && !jotaiBrain.moving
@@ -2056,7 +2237,6 @@ export function mount(container, hotspots) {
     if (hovered) {
       setMeshHoverVisual(hovered, true);
       renderer.domElement.style.cursor = 'pointer';
-      label.textContent = hovered.userData.furniture.label;
       if (outlinePass) outlinePass.selectedObjects = hovered.userData.artSprite ? [] : hovered.userData.hoverMeshes;
     } else {
       renderer.domElement.style.cursor = 'default';
@@ -2095,7 +2275,6 @@ export function mount(container, hotspots) {
     jotaiHovered = on;
     if (on) {
       renderer.domElement.style.cursor = 'pointer';
-      label.textContent = '🤖 JotAI';
       if (outlinePass) outlinePass.selectedObjects = jotai.meshes;
     } else if (!hovered) {
       renderer.domElement.style.cursor = 'default';
@@ -2247,13 +2426,15 @@ export function mount(container, hotspots) {
       ang += Math.max(-f.viewTilt, Math.min(f.viewTilt, d));
     }
     const frontDir = new THREE.Vector3(Math.sin(ang), f.elev ?? FRONT_ELEV, Math.cos(ang)).normalize();
+    const baseDir = frontDir.clone();
     if (fx) {
       look = fx.look;
       zoom = fx.zoom != null ? fx.zoom * FOCUS_ZOOM_BOOST : zoom;
+      if (fx.dir) frontDir.copy(fx.dir).normalize();   // la estación pide otro ángulo (piano → Aprender)
       // centrado en pantalla (antes `shift` lo corría a un lado para dejarle sitio a la tarjeta)
     }
     startTransition(look, zoom, onArrived, frontDir);
-    focusView = { look: look.clone(), zoom, dir: frontDir.clone() };
+    focusView = { look: look.clone(), zoom, dir: frontDir.clone(), baseDir };
     userZoom = 1;
     setFocusLayer(zoomedRoot, false);
     zoomed = f;
@@ -2264,14 +2445,17 @@ export function mount(container, hotspots) {
     setJotaiHover(false);
   }
 
-  /** Una estación cambió de encuadre (ej. patineta Ver ⇄ Montar): vuelve a
-   *  centrar la cámara en lo que devuelve su focus() ahora. */
+  /** Una estación cambió de encuadre (ej. patineta Ver ⇄ Montar, piano →
+   *  Aprender): vuelve a centrar la cámara en lo que devuelve su focus() ahora
+   *  — con su `dir` si trae uno, o el ángulo de siempre del objeto. */
   function refocus() {
     if (!zoomed || !focusView) return;
     const fx = stations.get(zoomed.id)?.focus?.();
     if (!fx) return;
     const zoom = fx.zoom != null ? fx.zoom * FOCUS_ZOOM_BOOST : focusView.zoom;
-    focusView = { look: fx.look.clone(), zoom, dir: focusView.dir };
+    const dir = fx.dir ? fx.dir.clone().normalize() : focusView.baseDir.clone();
+    focusView = { look: fx.look.clone(), zoom, dir, baseDir: focusView.baseDir };
+    focusLight.position.copy(focusView.look).addScaledVector(dir, 1.2).add(new THREE.Vector3(0, 0.6, 0));
     userZoom = 1;
     startTransition(focusView.look, zoom, camAnim?.onComplete || null, focusView.dir);
   }
@@ -2619,6 +2803,8 @@ export function mount(container, hotspots) {
     stationSys.updateGlyphs(dt);
     if (active) hud.updatePins(camera, container.clientWidth, container.clientHeight);
 
+    deskScreens.update(!jotaiFailed && jotaiBrain.sleeping, now);
+
     // JotAI: el brain decide qué mira (objeto enfocado > lo que mira en su
     // spot > cursor > deriva). El punto del cursor = el rayo a la altura de su
     // cabeza, adelantado hacia la cámara → mira "hacia afuera" de la pantalla.
@@ -2634,11 +2820,19 @@ export function mount(container, hotspots) {
           cursorLook = jotaiLook;
         }
         jotaiBrain.update(now, { zoomed, focusLook, cursorLook, envT });
-        saver.update(jotaiBrain.sleeping, now);
         // estación con rol propio (§11): mientras esté ahí parado, que no salga
         // desenfocado junto al objeto enfocado (ver `setFocusLayer`)
         const jotaiWantsFocus = !!(zoomed && STATION_IDS.has(zoomed.id) && jotaiBrain.duty === zoomed.id);
         if (jotaiWantsFocus !== jotaiFocused) { setFocusLayer(jotai.root, jotaiWantsFocus); jotaiFocused = jotaiWantsFocus; }
+        // respaldo de la silla translúcido mientras está sentado en ella (o tocando
+        // la guitarra: desde esa cámara la silla queda justo delante de él)
+        const chairGhost = jotaiBrain.seated || zoomed?.id === 'guitar';
+        chairFade += ((chairGhost ? CHAIR_FADE : 1) - chairFade) * (reducedMotion ? 1 : Math.min(1, dt * 5));
+        chairBack.forEach((m) => {
+          m.material.transparent = chairFade < 0.999;
+          m.material.opacity = chairFade;
+          m.material.depthWrite = chairFade > 0.6;
+        });
         // sentado, sube y baja con el escritorio cuando este se levanta por el hover
         jotai.root.position.y = jotaiBrain.seated && deskRoot ? deskRoot.userData.lift : 0;
         jotai.update(now, dt);
@@ -2658,21 +2852,8 @@ export function mount(container, hotspots) {
       if (label.textContent !== labelOverride.text) label.textContent = labelOverride.text;
       label.style.transform = `translate(${px.toFixed(1)}px, ${py.toFixed(1)}px) translate(-50%, -100%)`;
       label.classList.add('is-visible');
-    } else if (hovered && !zoomed) {
-      const f = hovered.userData.furniture;
-      projected.set(f.x, hovered.userData.labelTop + hovered.userData.lift, f.z).project(camera);
-      const px = (projected.x * 0.5 + 0.5) * container.clientWidth;
-      const py = (-projected.y * 0.5 + 0.5) * container.clientHeight;
-      label.style.transform = `translate(${px.toFixed(1)}px, ${py.toFixed(1)}px) translate(-50%, -100%)`;
-      label.classList.add('is-visible');
-    } else if (jotaiHovered && !zoomed && !jotaiBubble.visible) {
-      jotai.headTop(projected).project(camera);
-      const px = (projected.x * 0.5 + 0.5) * container.clientWidth;
-      const py = (-projected.y * 0.5 + 0.5) * container.clientHeight;
-      if (label.textContent !== '🤖 JotAI') label.textContent = '🤖 JotAI';
-      label.style.transform = `translate(${px.toFixed(1)}px, ${py.toFixed(1)}px) translate(-50%, -100%)`;
-      label.classList.add('is-visible');
     } else {
+      // el hover de muebles y de JotAI se marca solo con el brillo — sin etiqueta de nombre
       label.classList.remove('is-visible');
     }
 

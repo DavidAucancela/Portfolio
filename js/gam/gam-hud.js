@@ -135,6 +135,14 @@ export function createHud(container) {
     if (patch.disabled !== undefined) btn.disabled = patch.disabled;
   }
 
+  /** Marca la pestaña `id` como activa (cuando la estación cambia sin click en la pestaña). */
+  function setTab(id) {
+    tabsEl.querySelectorAll('.gam-hud__tab').forEach(t => {
+      t.classList.toggle('is-active', t.dataset.id === id);
+      t.setAttribute('aria-selected', String(t.dataset.id === id));
+    });
+  }
+
   function setStatus(html) { statusEl.innerHTML = html || ''; }
   function setHint(text) { hintEl.textContent = text || ''; }
 
@@ -173,5 +181,5 @@ export function createHud(container) {
 
   function destroy() { root.remove(); }
 
-  return { show, hide, setAction, setStatus, setHint, setCard, setPins, updatePins, destroy, el: root };
+  return { show, hide, setAction, setTab, setStatus, setHint, setCard, setPins, updatePins, destroy, el: root };
 }

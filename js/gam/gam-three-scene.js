@@ -2005,7 +2005,7 @@ export function mount(container, hotspots) {
   let jotaiFocused = false;
   const _handL = new THREE.Vector3(), _handR = new THREE.Vector3(), _belly = new THREE.Vector3();   // ver `jotaiWantsFocus` en frame(): capa de foco mientras está "de servicio"
   // QA desde consola: __gamJotai.brain.goTo('pukis') · console.log(__gamJotai.nav.debugString())
-  if (import.meta.env.DEV) window.__gamJotai = { jotai, brain: jotaiBrain, bubble: jotaiBubble, nav: jotaiNav, spots: jotaiSpots };
+  if (import.meta.env.DEV) window.__gamJotai = { jotai, brain: jotaiBrain, bubble: jotaiBubble, nav: jotaiNav, spots: jotaiSpots, furniture: FURNITURE };
 
   /* ── Momento del día: 0 = día · 0.5 = atardecer (el aspecto por defecto) ·
      1 = noche. Lo anima la estación de la cama (`env.animateTo`): mueve el

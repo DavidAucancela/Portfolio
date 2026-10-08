@@ -18,6 +18,9 @@
  * para todo .gam.
  */
 import { getAudioContext, envelope } from './gam-audio.js';
+import { LangSwitcher } from '../lang.js';
+
+const T = (es, en) => LangSwitcher.L({ es, en });
 
 const NOTES = [
   261.63, 293.66, 329.63, 349.23, 392.0, 440.0, 493.88,
@@ -147,7 +150,7 @@ export function createPiano({ onFlash, onStatus, onEnd, onHot, onPhase, onLearn 
         if (playerStep === sequence.length) {
           accepting = false;
           envelope(getAudioContext(), { freq: 660, type: 'sine', duration: 0.15, gain: 0.1 });
-          onStatus?.(`¡Bien! Secuencia de ${sequence.length}. Preparando la siguiente…`);
+          onStatus?.(T(`¡Bien! Secuencia de ${sequence.length}. Preparando la siguiente…`, `Nice! Sequence of ${sequence.length}. Getting the next one ready…`));
           onPhase?.('round');
           setTimer(_nextRound, 700);
         }
@@ -167,7 +170,7 @@ export function createPiano({ onFlash, onStatus, onEnd, onHot, onPhase, onLearn 
     if (m !== 'challenge') onPhase?.('free');
     if (m === 'learn') { learn(song?.id || LEARN_SONGS[0].id); return; }
     onStatus?.(m === 'challenge'
-      ? `Récord: <strong>${_bestScore()}</strong> — pulsa Empezar, escucha la secuencia y repítela.`
+      ? T(`Récord: <strong>${_bestScore()}</strong> — pulsa Empezar, escucha la secuencia y repítela.`, `Best: <strong>${_bestScore()}</strong> — press Start, listen to the sequence and repeat it.`)
       : '');
   }
 
@@ -217,7 +220,7 @@ export function createPiano({ onFlash, onStatus, onEnd, onHot, onPhase, onLearn 
   }
 
   function _playSequence() {
-    onStatus?.(`Secuencia de ${sequence.length} — mira bien…`);
+    onStatus?.(T(`Secuencia de ${sequence.length} — mira bien…`, `Sequence of ${sequence.length} — watch closely…`));
     onPhase?.('demo');
     sequence.forEach((note, i) => {
       setTimer(() => { _playNote(note); onFlash?.(note); }, i * 550);
@@ -225,7 +228,7 @@ export function createPiano({ onFlash, onStatus, onEnd, onHot, onPhase, onLearn 
     setTimer(() => {
       playerStep = 0;
       accepting = true;
-      onStatus?.('Tu turno.');
+      onStatus?.(T('Tu turno.', 'Your turn.'));
       onPhase?.('turn');
     }, sequence.length * 550 + 250);
   }
@@ -242,8 +245,8 @@ export function createPiano({ onFlash, onStatus, onEnd, onHot, onPhase, onLearn 
     localStorage.setItem(BEST_KEY, String(best));
     window.dispatchEvent(new CustomEvent('gam:score', { detail: { game: 'piano', score } }));
     onStatus?.(score > 0
-      ? `Se rompió en ${score} 🎹 — récord <strong>${best}</strong>`
-      : `Se rompió en la primera — récord <strong>${best}</strong>`);
+      ? T(`Se rompió en ${score} 🎹 — récord <strong>${best}</strong>`, `Broke at ${score} 🎹 — best <strong>${best}</strong>`)
+      : T(`Se rompió en la primera — récord <strong>${best}</strong>`, `Broke on the first one — best <strong>${best}</strong>`));
     sequence = [];
     onPhase?.('end', score);
     onEnd?.(score, best);

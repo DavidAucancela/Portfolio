@@ -62,6 +62,8 @@ const AFTER_POKE = 9000;               // tras tocarlo se queda un rato atento
 const MUSE_CHANCE = 0.3;               // probabilidad de comentar algo al llegar
 const RECENT = 3;                      // no repite los últimos N spots
 const CLEARANCE = 1.4;                 // a menos de esto del objeto enfocado, se aparta
+const AVOID_LEN = 4;                   // pasillo objeto → cámara que rodea al ir a una estación
+const AVOID_HALF = 0.75;               //   (largo y medio ancho, en unidades del cuarto)
 
 /* Fase 4 (estaciones): qué hace al enfocar cada objeto — en vez del
    apartarse genérico (`makeRoom` en `onZoom`) va a su spot y:
@@ -295,10 +297,20 @@ export function createJotaiBrain({
   }
 
   /** Va rodando hasta el spot `id` (sin gesto). */
+  /** Con la cámara en un objeto: el pasillo entre él y la cámara (lo que se ve
+   *  en cuadro). `travel` lo rodea para no cruzar por delante mientras la
+   *  cámara vuela hacia el objeto — antes pasaba de largo frente a ella. */
+  function viewCorridor() {
+    const f = zoomedNow;
+    if (!f) return null;
+    const ang = f.view ?? f.rotY ?? 0;
+    return { x: f.x, z: f.z, dx: Math.sin(ang), dz: Math.cos(ang), len: AVOID_LEN, half: AVOID_HALF };
+  }
+
   async function travel(id, ok) {
     const spot = spots[id];
     if (!spot || !nav) return false;
-    const path = nav.findPath(jotai.root.position, spot);
+    const path = nav.findPath(jotai.root.position, spot, viewCorridor());
     if (!path) return false;
     gaze = null;
     target = id;
@@ -809,6 +821,27 @@ export function createJotaiBrain({
       case 'juggle:mode':
         if (data.mode === 'watch') { dutyPose('juggle'); jotai.play('juggleHands', { loop: true }); }
         else { jotai.stopClip(); dutyPose('stand'); jotai.setFace('listening', 1500); }
+        break;
+      case 'juggle:pattern':
+        // cada truco: su gesto (una mano usa solo la derecha) y su frase, 1×/sesión
+        dutyPose('juggle');
+        jotai.play(data.id === 'onehand' ? 'juggleOne' : 'juggleHands', { loop: true });
+        jotai.setFace(data.id === 'four' ? 'thinking' : 'success', 1400);
+        sayOnce(`juggle_${data.id}`);
+        break;
+      case 'juggle:drop':
+        // 4 pelotas: se le caen siempre
+        jotai.stopClip();
+        jotai.setFace('confused', 2000);
+        jotai.play('scratch');
+        emit('✦', '#ff8a3d', { size: 0.22, rise: 0.35, life: 1.1 });
+        say(line('juggle_four_drop'));
+        break;
+      case 'juggle:retry':
+        dutyPose('juggle');
+        jotai.play('juggleHands', { loop: true });
+        jotai.setFace('thinking', 1200);
+        if (data.attempt % 3 === 0) say(line('juggle_four_retry'));
         break;
       case 'juggle:catch':
         jotai.play('nod');

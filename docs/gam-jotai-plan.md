@@ -593,12 +593,17 @@ notas" de AU-D en la guitarra (B – F# – E – Esus4) y la playlist «3vol Fe
 - Aegis TI 2020: todo el metal quedó dorado (el real tiene remolinos plateados) — el escaneo
   no separa las piezas; se puede separar por UV.
 
-**Deudas técnicas** (resueltas el 2026-10-02, salvo la última):
+**Deudas técnicas** (resueltas el 2026-10-02 y 2026-10-07):
 - ✔ Piano: estira el brazo hacia la tecla que suena (hombro según qué tan al costado está, torso
   girado; sin IK) y la cámara lo ve de 3/4 (`view: 0.62`), no de espaldas.
 - ✔ Patineta: si se sale montado, se baja y vuelve rodando a su spot (`leaveStation`).
 - ✔ Escritorio: protector de pantalla ("JotAI · zzz" rebotando) mientras duerme (`saver`).
-- Paseando puede cruzar por delante de un objeto mientras la cámara vuela hacia él.
+- ✔ (2026-10-07) Cruzaba por delante del objeto mientras la cámara volaba hacia él: con zoom,
+  `travel` le pasa a `nav.findPath(from, to, avoid)` el pasillo objeto → cámara (`viewCorridor()`,
+  `AVOID_LEN`/`AVOID_HALF`). Costo extra por celda, no bloqueo: igual llega a spots que están
+  adentro (banqueta, ajedrez) pero entra por el costado, y el suavizado no ataja por ahí.
+  Medido sobre todos los pares spot → estación: siempre hay camino; en cuadro p. ej. Lumbre
+  24.2 → 6.9, escritorio 10.7 → 1.3, trofeos 9.6 → 1.6 (unidades recorridas en el pasillo).
 
 **Fase 5 (pulido):** ✔ hecha (ver §8). Queda solo probar en un celular real.
 

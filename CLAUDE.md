@@ -103,6 +103,7 @@ js/
     gam-fx.js                    # Helpers de Phaser: burstParticles() + cameraPunch()
     gam-piano.js                # Motor del piano (lógica + Web Audio; las teclas son 3D en la estación)
     gam-juggling.js             # Motor del reto de malabares (lógica; la pelota/aro son 3D)
+    gam-juggle-patterns.js      # Patrones de JotAI (siteswap 3/51/40/4 + columnas) en el marco de sus manos
 
 data/
   dev-projects.json           # 13 proyectos del modo .dev (cargados con fetch en runtime)
@@ -343,8 +344,12 @@ pellizco / +− hacen zoom también en la vista general del cuarto (hacia el cur
   (solo teclas blancas), nota actual en naranja y su tecla en azul, errores → estrellas en
   `localStorage('gam-piano-learn')`, "Escuchar" la toca sola. En vertical (contenedor más alto que ancho) la cámara
   encuadra **una octava** (teclas de ~45px en vez de ~17px) y « » la corre; en Aprender sigue
-  sola a la nota. Los hints de las estaciones son `{es,en}` vía `H(mouse, touch?)` en
+  sola a la nota; en Aprender la partitura se corre a la octava, se achica al
+  ancho y la cámara baja el encuadre para que quede debajo del HUD. Los hints de las estaciones son `{es,en}` vía `H(mouse, touch?)` en
   `gam-stations.js` — con `pointer:coarse` se usa la variante táctil (sin "mouse"/teclado).
+  Todo el texto fijo del HUD (títulos, pestañas, botones, estados, también los de
+  `gam-piano.js`/`gam-juggling.js`) va por `T(es, en)` — se resuelve al mostrarse, así que un
+  cambio de idioma se ve al volver a entrar a la estación. Notas: solfeo en ES, C–B en EN.
   En la vista general, un toque que no pega en nada prueba anillos de 14/26px (`pickNear`). JotAI, sentado en la banqueta,
   "toca" cada nota que suena (gira cabeza y torso hacia la tecla y estira la mano); escritorio = laptop plateada sobre base con ventilador + monitor secundario
   (calcados del escritorio real de David, sin teclado suelto), mouse y taza grandes, pines y
@@ -358,8 +363,9 @@ pellizco / +− hacen zoom también en la vista general del cuarto (hacia el cur
   los trofeos; estante = libros
   de proyectos IA que se sacan al pasar el mouse; ventana = anochece/amanece; patineta =
   escaneo real (`public/models/skate/skate.glb` + lija en código), se despega de la pared y
-  se gira arrastrando (+ kickflip/shove-it); malabares = cascada +
-  reto; Pukis = acariciarlo; ajedrez = tablero 3D contra una IA (`gam-chess.js`); Lumbre =
+  se gira arrastrando (+ kickflip/shove-it); malabares = JotAI con 3 de las 6
+  pelotas (`gam-juggle-patterns.js`, siteswap con profundidad, cámara 3/4): Cascada, Inversa, Ducha,
+  Columnas, Una mano (2) y 4 pelotas (se le caen siempre, rebotan y reintenta) + reto; Pukis = acariciarlo; ajedrez = tablero 3D contra una IA (`gam-chess.js`); Lumbre =
   póster del juego en la pared izquierda (capturas 1–4: pestañas, teclas o clic en el póster — antes
   era una card de `dev-projects.json`, ahora vive solo acá). Desde 2026-10-01 (ex
   decoración, al final de `FURNITURE` para no correr las teclas 1–9): Trofeos (`medals`) =
@@ -384,6 +390,10 @@ pellizco / +− hacen zoom también en la vista general del cuarto (hacia el cur
   `FURNITURE` sigue disponible para dejar un mueble como pura decoración.
 - **`gam-hud.js`** — barra superior (título, pestañas, acciones, "← Volver Esc"), línea de
   estado, tarjeta lateral (hoja inferior en portrait) y pines. Estilos `.gam-hud*`/`.gam-card*`.
+  En celular (portrait o alto ≤520px): barra compacta, la ayuda va abajo (encima de la tarjeta,
+  `--hud-card-h`) y la tarjeta, si es larga (>22% del alto), arranca **plegada** — solo el título,
+  un toque la despliega. Barra/estado/ayuda usan `width:max-content`: con `left:50%` el
+  navegador les daba solo media pantalla y los botones se apilaban en 3–4 filas sobre el objeto.
 - **Contrato con `gam-loader.js`:** la escena sigue emitiendo `gam:interact` (progreso y
   analítica), ahora con `detail.inScene:true` — el loader marca el descubrimiento y **no abre
   panel**. La puerta (`kind:'exit'`) sigue cambiando de modo. `buildFurnitureGroup` deja
@@ -403,7 +413,8 @@ pellizco / +− hacen zoom también en la vista general del cuarto (hacia el cur
   seguidos = cosquillas). **Se mueve (Fase 2):** `gam-jotai-nav.js` arma una grilla 40×40
   sobre el piso con las cajas de cada *pieza* de mueble/decoración que ocupa piso a la altura
   del cuerpo (`NAV` en la escena; la alfombra y lo colgado no bloquean) + A\* con suavizado por
-  línea de vista; `jotai.followPath()` rueda (gira en el lugar, acelera, frena en los quiebres,
+  línea de vista (con zoom, `findPath(…, avoid)` rodea el pasillo objeto → cámara para no
+  cruzar el encuadre); `jotai.followPath()` rueda (gira en el lugar, acelera, frena en los quiebres,
   inclina el torso, ruedas por distancia). Cada 10–20 s sin que lo toquen pasea a un spot de
   `JOTAI_SPOTS` (coordenadas **locales** del mueble) y hace un gesto mirando el objeto
   (`SPOT_ACTS` en el brain; a veces comenta — claves `muse_<id>` de `gam-jotai.json`). Si
@@ -429,7 +440,7 @@ pellizco / +− hacen zoom también en la vista general del cuarto (hacia el cur
   opcional: sin JotAI funcionan igual.
   `pickAny()` en la escena lo compara por distancia con los muebles. Su `update` va en
   `try/catch` (`jotaiFailed`): un error lo desactiva sin congelar el loop. En dev,
-  `window.__gamJotai = { jotai, brain, nav, spots }` para QA desde consola
+  `window.__gamJotai = { jotai, brain, nav, spots, furniture }` para QA desde consola
   (`brain.goTo('pukis')`, `console.log(nav.debugString())`).
 - **Trampa:** los glifos flotantes (♪ ❤ z) van en una escena `overlay` dibujada DESPUÉS del
   composer — dentro de la escena principal el pase GTAO los trata como geometría opaca.
@@ -530,8 +541,8 @@ tres módulos chicos, cada uno con un rol distinto:
   (`startAmbience`/`stopAmbience`, dos osciladores en quinta + LFO de "respiración") y dos
   SFX vía `envelope()`: `playFootstep` (al caminar) y `playProximityBlip` (al entrar en
   rango de un hotspot, solo en el flanco ausente→presente). Todo gateado por
-  `this._muted` en `gam-scene.js` (botón `#gam-mute`, persistido en
-  `localStorage('gam-muted')`), **nunca** por `prefers-reduced-motion` — el audio no es
+  `this._muted` en `gam-scene.js` (el botón `#gam-mute` se quitó del HTML el 2026-10-08: solo
+  lo conectaba la escena de Phaser y en el cuarto Three.js no hacía nada; `localStorage('gam-muted')`), **nunca** por `prefers-reduced-motion` — el audio no es
   movimiento.
 - `gam-fx.js` — helpers puros de Phaser (sin audio): `burstParticles(scene, x, y, opts)`
   (textura de partícula generada en código con `Graphics.generateTexture`, nunca un

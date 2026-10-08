@@ -59,7 +59,8 @@
     { "es": "Ya calculé 12 jugadas por adelantado ♟️", "en": "I've already planned 12 moves ahead ♟️" }
   ],
   "muse_juggling": [
-    { "es": "Seis pelotas… yo con dos pinzas no llego.", "en": "Six balls… with two grippers I can't keep up." }
+    { "es": "Tres pelotas sí. Cuatro… estoy practicando.", "en": "Three balls, sure. Four… I'm practicing." },
+    { "es": "David las tejió a mano. Yo solo las tiro al aire 🧶", "en": "David knitted them by hand. I just throw them in the air 🧶" }
   ],
   "muse_skateboard": [
     { "es": "Esta vez sí me sale el kickflip. Creo.", "en": "This time I'll land the kickflip. I think." }
@@ -90,6 +91,34 @@
   ],
   "juggle_drop": [
     { "es": "¡Uy! Se escapó 🙈", "en": "Oops! It got away 🙈" }
+  ],
+  "juggle_cascade": [
+    { "es": "Cascada: cada pelota cruza al otro lado. ¡Mira la X!", "en": "Cascade: every ball crosses over. Watch the X!" }
+  ],
+  "juggle_reverse": [
+    { "es": "Al revés: lanzo por fuera y caen por el medio 🙃", "en": "Backwards: I throw from outside and they fall down the middle 🙃" }
+  ],
+  "juggle_shower": [
+    { "es": "Ducha: una arriba, otra por abajo… como una rueda ☔", "en": "Shower: one up high, one down low… like a wheel ☔" }
+  ],
+  "juggle_columns": [
+    { "es": "Columnas: suben derechito, sin cruzarse 📏", "en": "Columns: straight up, no crossing 📏" }
+  ],
+  "juggle_onehand": [
+    { "es": "Con una mano y dos pelotas. La otra se toma un café ☕", "en": "One hand, two balls. The other one is on a coffee break ☕" }
+  ],
+  "juggle_four": [
+    { "es": "¿Cuatro? Esta vez sí… creo 😬", "en": "Four? This time for sure… I think 😬" }
+  ],
+  "juggle_four_drop": [
+    { "es": "¡Ay! Cuatro son muchas 🙈", "en": "Ouch! Four is a lot 🙈" },
+    { "es": "Se me escaparon todas 😅", "en": "They all got away 😅" },
+    { "es": "Casi… ¡casi! (no, ni cerca)", "en": "Almost… almost! (no, not even close)" },
+    { "es": "Las pinzas no me dan para cuatro 🤖", "en": "My grippers can't handle four 🤖" }
+  ],
+  "juggle_four_retry": [
+    { "es": "Otra vez. La práctica hace al robot.", "en": "Again. Practice makes the robot." },
+    { "es": "Esta es la buena… 🤞", "en": "This is the one… 🤞" }
   ],
   "skate_intro": [
     { "es": "Ponme en «Montar». Te advierto que soy novato 🛹", "en": "Pick «Ride». Fair warning: I'm a beginner 🛹" }

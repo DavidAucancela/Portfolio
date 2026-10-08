@@ -10,6 +10,9 @@
  * localStorage.
  */
 import { getAudioContext, envelope } from './gam-audio.js';
+import { LangSwitcher } from '../lang.js';
+
+const T = (es, en) => LangSwitcher.L({ es, en });
 
 const BEST_KEY = 'gam-juggling-best';
 const ZONE_TOP_PCT = 78;   // % del recorrido donde empieza la zona de atrape
@@ -52,7 +55,7 @@ export function createJuggling({ reducedMotion = false, onStatus, onCatch, onFai
     score = 0;
     period = BASE_PERIOD_MS;
     startT = now;
-    onStatus?.(`Récord: <strong>${_bestScore()}</strong> — ¡atrápala en la zona!`);
+    onStatus?.(T(`Récord: <strong>${_bestScore()}</strong> — ¡atrápala en la zona!`, `Best: <strong>${_bestScore()}</strong> — catch it in the zone!`));
   }
 
   /** Devuelve el % actual de la pelota, o null si no hay ronda en curso. */
@@ -68,7 +71,7 @@ export function createJuggling({ reducedMotion = false, onStatus, onCatch, onFai
       const milestone = score > 0 && score % 5 === 0;
       if (milestone) envelope(getAudioContext(), { freq: 783.99, type: 'triangle', duration: 0.2, gain: 0.12 });
       else envelope(getAudioContext(), { freq: 523.25, type: 'sine', duration: 0.1, gain: 0.08 });
-      onStatus?.(`Atrapes: <strong>${score}</strong> — récord ${Math.max(_bestScore(), score)}`);
+      onStatus?.(T(`Atrapes: <strong>${score}</strong> — récord ${Math.max(_bestScore(), score)}`, `Catches: <strong>${score}</strong> — best ${Math.max(_bestScore(), score)}`));
       onCatch?.(score, milestone);
       startT = now; // reinicia la fase para que la próxima zona sea justa
     } else {
@@ -81,7 +84,7 @@ export function createJuggling({ reducedMotion = false, onStatus, onCatch, onFai
     const best = Math.max(_bestScore(), score);
     localStorage.setItem(BEST_KEY, String(best));
     window.dispatchEvent(new CustomEvent('gam:score', { detail: { game: 'juggling', score } }));
-    onStatus?.(`Se cayó en ${score} 🎾 — récord <strong>${best}</strong>`);
+    onStatus?.(T(`Se cayó en ${score} 🎾 — récord <strong>${best}</strong>`, `Dropped at ${score} 🎾 — best <strong>${best}</strong>`));
     onFail?.(score, best);
   }
 

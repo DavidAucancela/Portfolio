@@ -89,7 +89,6 @@
   <!-- Mode Bar — selector de modo encima del navbar -->
   <div id="mode-bar" class="mode-bar" role="toolbar" data-i18n-aria="modebar.aria" aria-label="Selector de modo — 4 modos disponibles">
     <div class="mode-bar__inner">
-      <span class="mode-bar__label" data-i18n="modebar.label">4 modos</span>
       <div class="mode-bar__chips">
         <button class="mode-bar-chip active" data-mode-option="dev" data-i18n-aria="modebar.dev.aria" aria-label=".dev — Modo desarrollador: proyectos full-stack">.dev</button>
         <button class="mode-bar-chip" data-mode-option="ia" data-i18n-aria="modebar.ia.aria" aria-label=".ia — Modo inteligencia artificial: proyectos con LLMs y ML">.ia</button>
@@ -152,9 +151,34 @@
 
       <!-- Acciones -->
       <div class="navbar__actions">
-<button id="lang-btn" class="btn btn-sm btn-outline lang-btn" title="Switch language / Cambiar idioma">
-          EN
+        <!-- Tour guiado (mismo recorrido que /tour en JotAI, ver ia-tour.js) -->
+        <button id="tour-btn" class="btn btn-sm btn-outline nav-pill-btn tour-btn" type="button"
+                data-i18n-aria="nav.tourAria" aria-label="Iniciar el tour guiado">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"/>
+            <polygon points="15.5 8.5 13.4 13.4 8.5 15.5 10.6 10.6 15.5 8.5" fill="currentColor" stroke="none"/>
+          </svg>
+          <span class="nav-pill-btn__label" data-i18n="nav.tour">Tour</span>
         </button>
+
+        <!-- Idioma: el mundo abre el menú para elegir -->
+        <div class="lang-menu">
+          <button id="lang-btn" class="btn btn-sm btn-outline nav-pill-btn lang-btn" type="button"
+                  aria-haspopup="true" aria-expanded="false" aria-controls="lang-list"
+                  data-i18n-aria="lang.aria" aria-label="Cambiar idioma">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>
+            </svg>
+            <span class="lang-btn__code" id="lang-btn-code">ES</span>
+          </button>
+          <ul class="lang-menu__list" id="lang-list" hidden>
+            <li><button type="button" class="lang-menu__item" data-lang="es" aria-pressed="false"><span>Español</span><span class="lang-menu__code">ES</span></button></li>
+            <li><button type="button" class="lang-menu__item" data-lang="en" aria-pressed="false"><span>English</span><span class="lang-menu__code">EN</span></button></li>
+          </ul>
+        </div>
         <button class="navbar__hamburger" id="hamburger-btn"
                 aria-label="Abrir menú" aria-expanded="false" aria-controls="mobile-menu">
           <span class="hamburger-line"></span>

@@ -1137,6 +1137,16 @@ sesión nueva, incluso para visitantes recurrentes que ya vieron el aviso de mod
 
 ### Panel de chat (bajo demanda)
 
+**Diseño (rediseño 2026-10, dirección "sin caja"):** panel translúcido con blur, con los
+colores del modo (`--bg-secondary`, borde y franja de cabecera teñidos del acento) y esquinas de
+12px — igual la ventana de comandos; la cabecera es
+solo el ícono de IA (chip con destello, gira mientras procesa) + "JotAI" + cerrar. JotAI escribe
+sin burbuja y el usuario en una burbuja teñida del acento. Tour y Comandos son atajos debajo del
+campo (`/tour`, `/comandos`, `/proyectos`) que también se pueden escribir (`SHORTCUTS`). Mientras
+busca la respuesta aparece como mensaje de JotAI un "Procesando…" con spinner (`_setBusy`, reemplaza
+a los puntitos de carga) y el botón de enviar queda deshabilitado hasta que la respuesta termina de
+escribirse. El trigger sigue siendo el personaje de cada modo (lentes, visor, etc.).
+
 Se abre **solo al hacer clic en el avatar**. El saludo se escribe únicamente en la
 **primera apertura**; las siguientes conservan el historial y enfocan el input directo.
 Nota CSS: `#jotai-panel[hidden] { display: none; }` es necesario — el `display: flex`
@@ -1255,27 +1265,28 @@ Proxy server-to-server hacia el mismo LLM Observatory (org-wide, no solo JotAI) 
 `ia-tokens-widget.js` del hero — trae el total agregado de tokens de todos los proyectos
 monitoreados. Sin relación directa con el fallback de JotAI más allá de compartir backend.
 
-### Tour guiado (`ia-tour.js`) — trayectoria + los 3 MODOS
-5 pasos globales (no por modo): los pasos de modo **cambian de modo de verdad**
-(`ThemeSwitcher.switchMode`) y muestran el grid de proyectos de ese modo:
+### Tour guiado (`ia-tour.js`) — 4 secciones con foco y desenfoque
+Se abre con `/tour` en JotAI o con el botón **Tour** de la navbar (`#tour-btn`, a la izquierda del
+idioma — ambos llaman a `_startTour` en `ia-mascot.js`). Textos bilingües (`T(es, en)`).
 
-| Paso | Modo | Demo |
-|------|------|------|
-| 1 | actual | Drawer de trayectoria — transversal, sin cambio de modo (evento `portfolio:syncTrayectoria`; cierra con clic en `#jonathan-panel-close`) |
-| 2 | `.dev` | Scroll a `#projects` + highlight del grid (proyectos full-stack) |
-| 3 | `.ia`  | Scroll a `#projects` + highlight del grid (proyectos de IA) |
-| 4 | `.sec` | Scroll a `#projects` + highlight del grid (labs y writeups) |
-| 5 | —      | Cierre: **restaura el modo inicial** del usuario + invita al chat |
+| Paso | Modo | Objetivo | Demo |
+|------|------|----------|------|
+| 1 Modos | el del usuario | `#mode-bar .mode-bar__chips` | los modos cambian solos cada 2s (`CYCLE_MS`); el chip activo brilla (`.mode-bar--touring`) |
+| 2 Trabajo seleccionado | el del usuario (si era .gam → .dev) | `#projects` | scroll a la sección |
+| 3 Modo .sec — el juego | `sec` | `#sec-terminal` | explica virus → integridad → reparar en la terminal |
+| 4 Modo .gam — el cuarto | `gam` | `.gam-tv__start` | explica el cuarto 3D |
 
-- API: `IaTour.start({ onState, onDone })` (acepta el legacy `start(mode, opts)`)
-- Saltar/Esc en cualquier paso → cierra la demo activa y restaura el modo inicial
-- Demos asíncronas con token (`_seq`): cambiar de paso rápido no deja callbacks zombis
-  (espera `MODE_SETTLE_MS = 650ms` tras cada switchMode)
-- **Sin velo**: las demos quedan interactivas; overlay en `z-index: 10600`
-  (sobre el PDF modal 10500) con `pointer-events: none` salvo el tooltip
-- El handler de teclado ignora eventos con foco en INPUT/TEXTAREA (la terminal usa Enter)
+- **Foco:** 4 velos (`.jt-veil`, `backdrop-filter: blur`) rodean el hueco de la sección y bloquean
+  clics; un marco con brillo (`.jt-frame`) se **desliza** hasta la sección de cada paso (lerp en un
+  `requestAnimationFrame` que sigue scroll y elementos fijos) y late al llegar (`.jt-frame__ping`).
+  La tarjeta va debajo / encima del hueco con una flecha hacia él (`data-arrow`), o adentro si no entra.
+- Al terminar o saltar (Esc) se restaura el modo inicial. `switchMode` se ignora durante otra
+  transición: el paso reintenta hasta que el modo queda puesto. Reduced motion: sin deslizamiento.
+- La barra de modos ya no tiene el texto "4 modos": solo los botones.
 - Los `modeChange` del tour no disparan el saludo temático de JotAI (`IaTour.isActive()`)
-- Botón "Tour 🗺" siempre visible en el header del panel; al finalizar JotAI reabre el panel
+
+**Idioma:** `#lang-btn` es un mundo (+ código actual) que abre `#lang-list` para elegir Español /
+English (`LangSwitcher.setLang`; `toggle()` sigue existiendo). ≤480px solo íconos en la navbar.
 
 ### IndexedDB cache de embeddings
 `ia-worker.js` almacena los vectores precomputados en IDB con clave = hash FNV-1a

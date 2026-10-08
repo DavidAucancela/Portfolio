@@ -616,14 +616,17 @@ export const IaMascot = (() => {
         <div class="jotai-swipe-handle" aria-hidden="true"></div>
 
         <div id="jotai-panel-header">
-          <button id="jotai-tour-btn" aria-label="Iniciar tour del portfolio">
-            Tour 🗺
-          </button>
-          <button id="jotai-commands-btn" aria-label="Ver lista de comandos">
-            Comandos 📋
-          </button>
+          <span class="jotai-ai-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="5" width="14" height="14" rx="3"/>
+              <path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/>
+              <path class="jotai-ai-icon__spark" d="M12 8.2l.95 2.35 2.35.95-2.35.95L12 14.8l-.95-2.35-2.35-.95 2.35-.95z" fill="currentColor" stroke="none"/>
+            </svg>
+          </span>
+          <span class="jotai-panel-name">${MASCOT_NAME}</span>
           <button id="jotai-panel-close" aria-label="Cerrar asistente">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
               <line x1="18" y1="6" x2="6" y2="18"/>
               <line x1="6" y1="6" x2="18" y2="18"/>
@@ -647,14 +650,14 @@ export const IaMascot = (() => {
             rows="1"
             aria-label="Escribe tu pregunta para ${MASCOT_NAME}"
           ></textarea>
-          <button id="jotai-send" aria-label="Enviar pregunta">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2.5"
-                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <line x1="22" y1="2" x2="11" y2="13"/>
-              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
-            </svg>
-          </button>
+          <button id="jotai-send" aria-label="Enviar pregunta">Enviar</button>
+        </div>
+
+        <!-- Atajos: también se pueden escribir en el campo (/tour, /comandos, /proyectos) -->
+        <div id="jotai-shortcuts">
+          <button id="jotai-tour-btn" aria-label="Iniciar tour del portfolio">/tour</button>
+          <button id="jotai-commands-btn" aria-label="Ver lista de comandos">/comandos</button>
+          <button class="jotai-shortcut" data-cmd="todos los proyectos" aria-label="Ver todos los proyectos">/proyectos</button>
         </div>
 
         <!-- Modal de Comandos con Tabs -->
@@ -731,17 +734,19 @@ export const IaMascot = (() => {
 
     /* Arranca la vida de ambos mascots */
     const bubbleSvg = _trigger.querySelector('.jotai-mascot');
-    const panelSvg  = widget.querySelector('.jotai-header-avatar .jotai-mascot');
     _startLife(bubbleSvg);
-    _startLife(panelSvg);
-    _initCursorTracking(panelSvg);
 
     /* Listeners */
     _trigger.addEventListener('click', _togglePanel);
     widget.querySelector('#jotai-panel-close').addEventListener('click', closePanel);
     widget.querySelector('#jotai-tour-btn').addEventListener('click', _startTour);
+    // Botón Tour de la navbar: el mismo recorrido que /tour
+    document.getElementById('tour-btn')?.addEventListener('click', _startTour);
     widget.querySelector('#jotai-commands-btn').addEventListener('click', _toggleCommandsModal);
     widget.querySelector('#jotai-commands-close').addEventListener('click', _closeCommandsModal);
+    widget.querySelectorAll('.jotai-shortcut').forEach(btn => {
+      btn.addEventListener('click', () => _handleSend(btn.dataset.cmd));
+    });
     // Tabs listener
     widget.querySelectorAll('.jotai-commands-tab').forEach(tab => {
       tab.addEventListener('click', e => {
@@ -1005,18 +1010,29 @@ export const IaMascot = (() => {
     _scrollToBottom();
   }
 
-  function _addLoadingDots() {
+  /* Mientras JotAI busca la respuesta (keywords, worker semántico o el
+     fallback de IA, que puede tardar hasta 8s) aparece como respuesta un
+     mensaje "Procesando…" y el ícono de la cabecera se anima. El botón de
+     enviar sigue deshabilitado hasta que la respuesta termina de escribirse
+     (lo rehabilita el final de _handleSend). */
+  function _setBusy(on) {
+    _panel.classList.toggle('is-busy', on);
+    document.getElementById('jotai-processing-msg')?.remove();
+    if (!on) return;
     const msg = document.createElement('div');
-    msg.className = 'jotai-msg jotai-msg--bot';
-    msg.id = 'jotai-loading-msg';
-    msg.innerHTML = `<div class="jotai-msg__bubble"><div class="jotai-dots"><span></span><span></span><span></span></div></div>`;
+    msg.className = 'jotai-msg jotai-msg--bot jotai-msg--processing';
+    msg.id = 'jotai-processing-msg';
+    msg.innerHTML = `<div class="jotai-msg__bubble"><span class="jotai-processing__spinner" aria-hidden="true"></span>Procesando…</div>`;
     _chat.appendChild(msg);
     _scrollToBottom();
   }
 
-  function _removeLoadingDots() {
-    document.getElementById('jotai-loading-msg')?.remove();
-  }
+  /* Atajos escritos en el campo: /tour, /comandos, /proyectos */
+  const SHORTCUTS = {
+    '/tour':      () => _startTour(),
+    '/comandos':  () => _toggleCommandsModal(),
+    '/proyectos': () => _handleSend('todos los proyectos'),
+  };
 
   /* ── QUICK REPLY CHIPS ──────────────────────────────────────── */
 
@@ -1042,6 +1058,8 @@ export const IaMascot = (() => {
     });
     const inputWrap = document.getElementById('jotai-input-wrap');
     _panel.insertBefore(container, inputWrap);
+    // Los chips achican el área del chat: sin esto el final de la respuesta queda tapado
+    _scrollToBottom();
   }
 
   function _getSuggestedChips(result) {
@@ -1117,6 +1135,12 @@ export const IaMascot = (() => {
   async function _handleSend(prefilledText = null) {
     const val = prefilledText !== null ? prefilledText : _input.value.trim();
     if (!val || _sendBtn.disabled) return;
+    const shortcut = SHORTCUTS[val.toLowerCase()];
+    if (shortcut) {
+      _input.value = '';
+      shortcut();
+      return;
+    }
     const _sendStart = performance.now();
 
     if (prefilledText === null) {
@@ -1134,7 +1158,7 @@ export const IaMascot = (() => {
     // Microcopy variado (Fase E)
     const thinkingMsg = THINKING_MESSAGES[Math.floor(Math.random() * THINKING_MESSAGES.length)];
     _setStatus(thinkingMsg);
-    _addLoadingDots();
+    _setBusy(true);
 
     // 1. Keywords / intent (síncrono, siempre disponible) — pasa contexto
     const kwResult  = IAAssistant.query(val, _context);
@@ -1170,8 +1194,6 @@ export const IaMascot = (() => {
         await new Promise(r => setTimeout(r, 420 + Math.random() * 250));
       }
     }
-
-    _removeLoadingDots();
 
     // Actualiza contexto conversacional
     _context.turns.push({ role: 'user', text: val });
@@ -1209,6 +1231,7 @@ export const IaMascot = (() => {
       }).catch(() => {});
 
       const targetState = finalResult.mood === 'excited' ? 'excited' : 'success';
+      _setBusy(false);
 
       if (finalResult.type === 'special') {
         if (finalResult.isHtml) {
@@ -1248,6 +1271,7 @@ export const IaMascot = (() => {
       _setState('talking');
       const aiMsg = await _askAiFallback(val, fallbackResult);
       const fallbackMsg = aiMsg || _buildCannedFallback(fallbackResult, val);
+      _setBusy(false);
       track('jotai_query', { resolved: aiMsg ? 'ai_fallback' : 'canned_fallback' });
 
       await _typewriterBotMessage(fallbackMsg);

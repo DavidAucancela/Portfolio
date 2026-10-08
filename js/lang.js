@@ -102,7 +102,6 @@ const TRANSLATIONS = {
     'footer.copy':    '© 2026 Jonathan Aucancela.',
     'footer.mode':    'Modo:',
     // Mode bar
-    'modebar.label':      '4 modos',
     'modebar.aria':       'Selector de modo — 4 modos disponibles',
     'modebar.dev.aria':   '.dev — Modo desarrollador: proyectos full-stack',
     'modebar.ia.aria':    '.ia — Modo inteligencia artificial: proyectos con LLMs y ML',
@@ -173,7 +172,9 @@ const TRANSLATIONS = {
     'gallery.imgAlt':     'imagen',
     'detail.closeAria':   'Cerrar detalle del proyecto',
     // Lang button
-    'lang.btn':       'EN',
+    'lang.aria':      'Cambiar idioma',
+    'nav.tour':       'Tour',
+    'nav.tourAria':   'Iniciar el tour guiado',
   },
   en: {
     // Nav desktop
@@ -272,7 +273,6 @@ const TRANSLATIONS = {
     'footer.copy':    '© 2026 Jonathan Aucancela.',
     'footer.mode':    'Mode:',
     // Mode bar
-    'modebar.label':      '4 modes',
     'modebar.aria':       'Mode selector — 4 modes available',
     'modebar.dev.aria':   '.dev — Developer mode: full-stack projects',
     'modebar.ia.aria':    '.ia — Artificial intelligence mode: LLM and ML projects',
@@ -343,7 +343,9 @@ const TRANSLATIONS = {
     'gallery.imgAlt':     'image',
     'detail.closeAria':   'Close project detail',
     // Lang button
-    'lang.btn':       'ES',
+    'lang.aria':      'Change language',
+    'nav.tour':       'Tour',
+    'nav.tourAria':   'Start the guided tour',
   },
 };
 
@@ -402,25 +404,61 @@ function _apply(lang) {
   document.documentElement.lang = lang;
 }
 
-function toggle() {
-  currentLang = currentLang === 'es' ? 'en' : 'es';
+function setLang(lang) {
+  if (!TRANSLATIONS[lang] || lang === currentLang) return;
+  currentLang = lang;
   localStorage.setItem('portfolio-lang', currentLang);
   _apply(currentLang);
-
-  const btn = document.getElementById('lang-btn');
-  if (btn) btn.textContent = TRANSLATIONS[currentLang]['lang.btn'];
-
+  _syncLangMenu();
   window.dispatchEvent(new CustomEvent('portfolio:langChange', { detail: { lang: currentLang } }));
+}
+
+function toggle() {
+  setLang(currentLang === 'es' ? 'en' : 'es');
+}
+
+/* ── Menú de idioma (botón con el mundo en la navbar) ── */
+function _syncLangMenu() {
+  const code = document.getElementById('lang-btn-code');
+  if (code) code.textContent = currentLang.toUpperCase();
+  document.querySelectorAll('.lang-menu__item').forEach((item) => {
+    item.setAttribute('aria-pressed', String(item.dataset.lang === currentLang));
+  });
+}
+
+function _bindLangMenu() {
+  const btn  = document.getElementById('lang-btn');
+  const list = document.getElementById('lang-list');
+  if (!btn || !list) return;
+
+  const open = (on) => {
+    list.hidden = !on;
+    btn.setAttribute('aria-expanded', String(on));
+    if (on) list.querySelector('[aria-pressed="true"]')?.focus();
+  };
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    open(list.hidden);
+  });
+  list.addEventListener('click', (e) => {
+    const item = e.target.closest('.lang-menu__item');
+    if (!item) return;
+    setLang(item.dataset.lang);
+    open(false);
+    btn.focus();
+  });
+  document.addEventListener('click', (e) => {
+    if (!list.hidden && !e.target.closest('.lang-menu')) open(false);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !list.hidden) { open(false); btn.focus(); }
+  });
 }
 
 function init() {
   _apply(currentLang);
-
-  const btn = document.getElementById('lang-btn');
-  if (btn) {
-    btn.textContent = TRANSLATIONS[currentLang]['lang.btn'];
-    btn.addEventListener('click', toggle);
-  }
+  _syncLangMenu();
+  _bindLangMenu();
 }
 
-export const LangSwitcher = { init, toggle, t, getLang, L };
+export const LangSwitcher = { init, toggle, setLang, t, getLang, L };

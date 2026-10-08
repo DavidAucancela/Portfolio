@@ -172,14 +172,6 @@ ul, ol { list-style: none; }
   gap: 0.6rem;
 }
 
-.mode-bar__label {
-  font-family: var(--font-display);
-  font-size: 12px;
-  color: var(--text-secondary);
-  letter-spacing: 0.06em;
-  user-select: none;
-}
-
 .mode-bar__chips {
   display: flex;
   align-items: center;
@@ -224,6 +216,35 @@ ul, ol { list-style: none; }
   color: var(--color-accent);
   background: var(--tag-bg);
   border-color: var(--color-accent);
+}
+
+/* ─── Tour, paso "Modos" (ia-tour.js): los modos cambian solos y el chip
+   activo brilla — borde que late y un destello que lo recorre ─── */
+.mode-bar--touring .mode-bar-chip.active {
+  overflow: hidden;
+  animation: mode-chip-glow 2s ease-in-out infinite;
+}
+.mode-bar--touring .mode-bar-chip.active::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 20%,
+    color-mix(in srgb, var(--color-accent) 45%, transparent) 50%, transparent 80%);
+  transform: translateX(-120%);
+  animation: mode-chip-sweep 2s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes mode-chip-glow {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 0%, transparent); }
+  50%      { box-shadow: 0 0 14px 2px color-mix(in srgb, var(--color-accent) 70%, transparent); }
+}
+@keyframes mode-chip-sweep {
+  0%   { transform: translateX(-120%); }
+  60%, 100% { transform: translateX(120%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mode-bar--touring .mode-bar-chip.active,
+  .mode-bar--touring .mode-bar-chip.active::before { animation: none; }
 }
 
 /* ─── Pulso sutil al presentar los modos (disparado por JotAI,
@@ -2111,7 +2132,6 @@ ul, ol { list-style: none; }
   .logo-pill .logo-suffix { padding: 5px 10px 5px 7px; }
   .navbar__hamburger { padding: 0.3rem; }
   /* "4 modos" se partía en 2 líneas; el aria-label del toolbar ya lo dice */
-  .mode-bar__label  { display: none; }
   .mode-bar__inner  { justify-content: center; }
 }
 
@@ -2510,14 +2530,93 @@ ul, ol { list-style: none; }
   background: rgba(159, 239, 0, 0.06);
 }
 
-/* ── Lang switcher ─────────────────────────────────────────── */
-.lang-btn {
+/* ── Navbar: Tour + idioma (mundo con menú) ─────────────────── */
+.nav-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 34px;
+  padding: 0 0.7rem;
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 0.72rem;
   letter-spacing: 0.08em;
-  min-width: 38px;
-  justify-content: center;
+}
+
+/* El Tour invita: su ícono gira despacio */
+.tour-btn svg { animation: tour-btn-spin 8s linear infinite; }
+@keyframes tour-btn-spin { to { transform: rotate(360deg); } }
+
+.lang-menu { position: relative; }
+
+.lang-menu__list {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  min-width: 160px;
+  margin: 0;
+  padding: 0.3rem;
+  list-style: none;
+  background: color-mix(in srgb, var(--bg-secondary) 94%, transparent);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent);
+  border-radius: 10px;
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.8);
+  animation: lang-menu-in 0.18s ease;
+}
+.lang-menu__list[hidden] { display: none; }
+@keyframes lang-menu-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.lang-menu__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  border: 0;
+  border-radius: 7px;
+  background: none;
+  color: var(--text-primary);
+  font: 500 0.85rem var(--font-body, 'Inter', sans-serif);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.lang-menu__item:hover,
+.lang-menu__item:focus-visible {
+  background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  outline: none;
+}
+.lang-menu__item[aria-pressed="true"] { color: var(--color-accent); }
+.lang-menu__item[aria-pressed="true"] .lang-menu__code::before { content: '✓ '; }
+.lang-menu__code {
+  font: 600 0.68rem var(--font-display);
+  letter-spacing: 0.08em;
+  opacity: 0.75;
+}
+
+@media (max-width: 480px) {
+  /* En pantallas angostas solo los íconos (el idioma se ve en el menú) */
+  .tour-btn .nav-pill-btn__label,
+  .lang-btn__code { display: none; }
+  .nav-pill-btn { width: 34px; padding: 0; justify-content: center; }
+  .navbar__actions { gap: 0.35rem; }
+}
+
+@media (max-width: 360px) {
+  .nav-pill-btn { width: 30px; height: 30px; }
+  .navbar__actions { gap: 0.2rem; }
+  .navbar__actions .cmd-nav-trigger { padding: 0.28rem 0.32rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tour-btn svg, .lang-menu__list { animation: none; }
 }
 
 /* ─────────────────────────────────────────────────────────────

@@ -1137,7 +1137,7 @@
 
 @media (max-width: 760px), (max-aspect-ratio: 9/10) {
   .gam-hud__bar { max-width: calc(100% - 1.5rem); top: 3rem; }
-  .gam-hud__status { top: 7.6rem; }
+  .gam-hud__status { top: calc(var(--hud-bar-b, 7.2rem) + 0.4rem); }
   .gam-hud__card {
     top: auto;
     left: 0.75rem;
@@ -1146,7 +1146,7 @@
     width: auto;
     max-height: 38%;
   }
-  .gam-hud__hint { bottom: auto; top: 10rem; }
+  .gam-hud__hint { bottom: auto; top: calc(var(--hud-bar-b, 7.2rem) + var(--hud-status-h, 0px) + 0.8rem); }
 }
 
 .gam-card__title { margin: 0 0 0.5rem; font-size: 1.05rem; color: #ffb020; }
@@ -1465,12 +1465,23 @@ body[data-theme="gam"] {
   .gam-tv__start-label { font-size: 1rem; }
 }
 
+/* Celular jugando: el footer (© y modo) le quitaba 30–40px al cuarto — en
+   horizontal eso es ~10% del alto. El © sigue en el prompt de inicio. */
+@media (max-width: 768px), (max-height: 520px) {
+  body.gam-playing[data-theme="gam"] { --gam-footer-h: 0px; }
+  body.gam-playing[data-theme="gam"] .footer { display: none; }
+}
+
+/* Dentro de una estación el HUD trae su propia ayuda: la general del cuarto
+   (toca un objeto · pellizca…) sobraba y se encimaba. */
+.gam-tv:has(.gam-hud.is-visible) .gam-tv__hint { visibility: hidden; }
+
 /* Teléfono en horizontal: poco alto → barras más finas para que el cuarto tenga espacio. */
 @media (max-height: 520px) {
   [data-theme="gam"] { --mode-bar-height: 28px; --nav-height: 52px; --gam-footer-h: 1.8rem; }
   [data-theme="gam"] .mode-bar { font-size: 0.72rem; }
   .gam-hud__bar { top: 0.4rem; }
-  .gam-hud__status { top: 3.4rem; }
+  .gam-hud__status { top: calc(var(--hud-bar-b, 3rem) + 0.4rem); }
   .gam-hud__hint { display: none; }
   .gam-hud__card { top: 3.6rem; max-height: calc(100% - 4.4rem); }
   .gam-credits__roll { gap: 1.4rem; }

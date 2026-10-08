@@ -51,6 +51,20 @@ export function createHud(container) {
 
   backBtn.addEventListener('click', () => onBackCb?.());
 
+  /* La barra crece a 2–3 filas en pantallas angostas (pestañas + acciones):
+     estado y ayuda se ubican debajo de su borde real (ver gam-tv.css), no a
+     una altura fija que asumía una sola fila y los encimaba con los botones. */
+  const barEl = $('.gam-hud__bar');
+  const placeBelowBar = () => {
+    root.style.setProperty('--hud-bar-b', `${barEl.offsetTop + barEl.offsetHeight}px`);
+    root.style.setProperty('--hud-status-h', `${statusEl.textContent.trim() ? statusEl.offsetHeight : 0}px`);
+  };
+  if ('ResizeObserver' in window) {
+    const ro = new ResizeObserver(placeBelowBar);
+    ro.observe(barEl);
+    ro.observe(statusEl);
+  }
+
   tabsEl.addEventListener('click', (e) => {
     const btn = e.target.closest('.gam-hud__tab');
     if (!btn) return;
@@ -102,6 +116,7 @@ export function createHud(container) {
       btn.dataset.id = a.id;
       btn.textContent = a.label;
       btn.hidden = !!a.hidden;
+      if (a.aria) btn.setAttribute('aria-label', a.aria);
       actionsEl.appendChild(btn);
       actionHandlers.set(a.id, a.onClick);
     });

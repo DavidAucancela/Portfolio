@@ -341,7 +341,11 @@ pellizco / +− hacen zoom también en la vista general del cuarto (hacia el cur
   puede devolver `dir`; `refocus()` también lo usa) y la nota + tecla del teclado escritas
   sobre cada tecla. Aprender: atril con la partitura de `LEARN_SONGS` en `gam-piano.js`
   (solo teclas blancas), nota actual en naranja y su tecla en azul, errores → estrellas en
-  `localStorage('gam-piano-learn')`, "Escuchar" la toca sola. JotAI, sentado en la banqueta,
+  `localStorage('gam-piano-learn')`, "Escuchar" la toca sola. En vertical (contenedor más alto que ancho) la cámara
+  encuadra **una octava** (teclas de ~45px en vez de ~17px) y « » la corre; en Aprender sigue
+  sola a la nota. Los hints de las estaciones son `{es,en}` vía `H(mouse, touch?)` en
+  `gam-stations.js` — con `pointer:coarse` se usa la variante táctil (sin "mouse"/teclado).
+  En la vista general, un toque que no pega en nada prueba anillos de 14/26px (`pickNear`). JotAI, sentado en la banqueta,
   "toca" cada nota que suena (gira cabeza y torso hacia la tecla y estira la mano); escritorio = laptop plateada sobre base con ventilador + monitor secundario
   (calcados del escritorio real de David, sin teclado suelto), mouse y taza grandes, pines y
   tarjeta de proyectos. Las pantallas tienen **bloqueo**: fuera de la estación muestran el

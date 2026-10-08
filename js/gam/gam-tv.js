@@ -10,6 +10,8 @@
  * ese mismo orquestador le avise en qué momento del ciclo de vida está.
  */
 
+import { LangSwitcher } from '../lang.js';
+
 let startBtn, loadingEl, hintEl, screenEl, promptEl;
 let _onStartCb = null;
 
@@ -30,6 +32,18 @@ function init() {
     _onStartCb();
     setTimeout(_launch, 600);
   });
+
+  _applyStartSub();
+  window.addEventListener('portfolio:langChange', _applyStartSub);
+}
+
+/** "click para empezar" → "toca para empezar" en táctil, y en el idioma activo. */
+function _applyStartSub() {
+  const sub = startBtn?.querySelector('.gam-tv__start-sub');
+  if (!sub) return;
+  sub.textContent = LangSwitcher.L(_coarse()
+    ? { es: 'toca para empezar', en: 'tap to start' }
+    : { es: 'click para empezar', en: 'click to start' });
 }
 
 let _launched = false;
@@ -66,7 +80,12 @@ function _reveal() {
     setTimeout(() => root.classList.remove('is-crt-on'), 1000);
   }
   if (hintEl) {
-    if (_coarse()) hintEl.textContent = 'Toca un objeto · pellizca para acercar · ← Volver para salir';
+    if (_coarse()) {
+      hintEl.textContent = LangSwitcher.L({
+        es: 'Toca un objeto · pellizca para acercar · la puerta es la salida',
+        en: 'Tap an object · pinch to zoom · the door is the way out',
+      });
+    }
     hintEl.hidden = false;
   }
 }

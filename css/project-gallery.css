@@ -367,6 +367,47 @@
   align-items: stretch;
 }
 
+/* Sin visor embebido (iOS/Android, ver js/pdf-support.js): tarjeta en lugar
+   del iframe — un iframe vacío dejaba media pantalla en negro. */
+.pgal__pdf-fallback {
+  margin: auto;
+  max-width: 320px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: center;
+  color: var(--text-secondary, #94a3b8);
+}
+.pgal__pdf-fallback[hidden] { display: none; }
+.pgal__pdf-fallback svg { color: var(--color-accent); opacity: 0.8; }
+.pgal__pdf-fallback-label {
+  margin: 0;
+  font-family: var(--font-display, monospace);
+  font-weight: 700;
+  color: var(--text-primary, #e2e8f0);
+}
+.pgal__pdf-fallback-note { margin: 0; font-size: 0.8rem; color: var(--text-muted, #64748b); }
+.pgal__pdf-fallback-actions { display: flex; gap: 0.6rem; margin-top: 0.4rem; }
+.pgal__pdf-fallback-btn {
+  min-height: 44px;
+  padding: 0 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 8px;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.15));
+  color: var(--text-primary, #e2e8f0);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+.pgal__pdf-fallback-btn--primary {
+  background: var(--color-accent);
+  border-color: transparent;
+  color: var(--btn-text, #fff);
+}
+
 /* ── Doc tabs (text labels in filmstrip) ── */
 .pgal__doc-tab {
   flex-shrink: 0;

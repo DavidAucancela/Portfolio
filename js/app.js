@@ -181,6 +181,16 @@ export function initApp() {
     mobileMenu.querySelectorAll('a').forEach(link => {
       link.addEventListener('click', _closeMobileMenu);
     });
+
+    // Tocar fuera (el velo) o Esc cierra el menú
+    document.addEventListener('click', e => {
+      if (!mobileMenu.classList.contains('open')) return;
+      if (mobileMenu.contains(e.target) || hamburgerBtn.contains(e.target)) return;
+      _closeMobileMenu();
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && mobileMenu.classList.contains('open')) _closeMobileMenu();
+    });
   }
 
   function _closeMobileMenu() {

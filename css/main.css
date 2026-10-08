@@ -1442,12 +1442,12 @@ ul, ol { list-style: none; }
 
 .card-btn--primary {
   background: var(--color-primary, #0066FF);
-  color: #fff;
+  color: var(--btn-text, #fff);   /* .ia/.sec/.gam: acento claro → texto oscuro */
   border: 1px solid transparent;
 }
 
 .card-btn--primary:hover {
-  background: #0052cc;
+  filter: brightness(0.88);       /* oscurece el acento del modo (antes azul fijo) */
 }
 
 .card-btn--outline {
@@ -2060,6 +2060,25 @@ ul, ol { list-style: none; }
   /* About stats */
   .about-stats { grid-template-columns: repeat(3, 1fr); }
 
+  /* Encabezados: la etiqueta (// sobre mí) siempre arriba del título. Con
+     ambos inline-block quedaban en la misma línea si el título era corto
+     ("Quién soy") y en dos si era largo ("Trabajo seleccionado"). */
+  .section-label { display: block; }
+
+  /* Menú hamburguesa: fondo sólido del tema (en táctil el blur se nota poco
+     y el 85% de --bg-nav dejaba leer el hero detrás de los links) + velo
+     sobre el resto de la página. El click en el velo lo cierra app.js. */
+  .navbar__mobile-menu {
+    /* Vive dentro de #navbar, cuyo backdrop-filter lo vuelve el bloque
+       contenedor de los fixed: el top del viewport sumaba la altura del
+       mode-bar dos veces y dejaba una franja de 34px. Anclado a la navbar. */
+    position: absolute;
+    top: 100%;
+    background: var(--bg-primary);
+    box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.55);
+    clip-path: inset(0 0 -100vmax 0);  /* el velo solo hacia abajo: la navbar (✕) queda nítida */
+  }
+
   /* Timeline */
   .timeline::before { left: 12px; }
   .timeline-dot { left: 3px; }
@@ -2081,6 +2100,19 @@ ul, ol { list-style: none; }
   .card-btn--process      { flex: 0 0 100%; justify-content: center; }
 
   /* El layout apilado fullbleed en touch lo maneja @media (hover: none). */
+}
+
+/* Teléfonos angostos (≤374px, ej. 320/360): logo + acciones no entraban y el
+   hamburguesa quedaba fuera de la pantalla. */
+@media (max-width: 374px) {
+  .navbar__inner    { gap: 0.5rem; }
+  .navbar__actions  { gap: 0.3rem; }
+  .logo-pill__name  { font-size: 0.95rem; padding: 5px 8px 5px 12px; }
+  .logo-pill .logo-suffix { padding: 5px 10px 5px 7px; }
+  .navbar__hamburger { padding: 0.3rem; }
+  /* "4 modos" se partía en 2 líneas; el aria-label del toolbar ya lo dice */
+  .mode-bar__label  { display: none; }
+  .mode-bar__inner  { justify-content: center; }
 }
 
 /* ═══════════════════════════════════════════════════

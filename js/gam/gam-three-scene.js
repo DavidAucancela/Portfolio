@@ -2592,9 +2592,30 @@ export function mount(container, hotspots) {
     }
     if (paused || zoomed) return;
     updatePointer(e);
-    const hit = pickAny();
+    const hit = pickAny() || (e.pointerType !== 'mouse' && coarsePointer ? pickNear(e) : null);
     if (hit === 'jotai') jotaiBrain.poke();
     else if (hit) interact(hit);
+  }
+
+  /* Táctil: en vertical los objetos miden ~20px y el dedo tapa más que eso.
+     Si el toque no pega en nada, prueba anillos alrededor (14 y 26px) y se
+     queda con el primer objeto que encuentre — el más cercano al dedo. */
+  const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
+  function pickNear(e) {
+    const rect = renderer.domElement.getBoundingClientRect();
+    for (const r of [14, 26]) {
+      for (let k = 0; k < 8; k++) {
+        const a = (k / 8) * Math.PI * 2;
+        pointerNDC.set(
+          ((e.clientX + Math.cos(a) * r - rect.left) / rect.width) * 2 - 1,
+          -((e.clientY + Math.sin(a) * r - rect.top) / rect.height) * 2 + 1,
+        );
+        const hit = pickAny();
+        if (hit) { updatePointer(e); return hit; }
+      }
+    }
+    updatePointer(e);
+    return null;
   }
 
   const ORDER = FURNITURE.filter(f => f.id !== 'door' && f.interactive !== false).map(f => f.id);

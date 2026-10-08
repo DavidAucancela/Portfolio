@@ -936,7 +936,8 @@ const SectionReveal = (() => {
   }
 
   function _observeAll() {
-    document.querySelectorAll('.animate-on-scroll, .timeline-item').forEach(el => {
+    // .stagger-item (ej. .about-stat) arranca en opacity:0 y solo se revela con .visible
+    document.querySelectorAll('.animate-on-scroll, .timeline-item, .stagger-item').forEach(el => {
       observer?.observe(el);
     });
   }

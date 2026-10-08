@@ -145,6 +145,17 @@ function loadJSON(path) {
 /** Resuelve un campo bilingüe {es,en} con el idioma activo. */
 const L = (v) => LangSwitcher.L(v);
 
+/* Táctil: no hay hover ni teclado — los hints de mouse ("pasa el cursor",
+   "mueve el mouse", "teclas Z–M") no se pueden seguir. */
+const TOUCH = window.matchMedia('(hover: none), (pointer: coarse)').matches;
+/** Texto de ayuda de una estación: {es,en} y, opcional, su variante táctil. */
+const H = (mouse, touch) => L(TOUCH && touch ? touch : mouse);
+const PIANO_HINT = () => H(
+  { es: 'Haz clic en las teclas · o usa tu teclado: Z–M graves · A–J medias · Q–I agudas', en: 'Click the keys · or use your keyboard: Z–M low · A–J mid · Q–I high' },
+  { es: 'Toca las teclas · « » cambia de octava', en: 'Tap the keys · « » changes octave' });
+const SKATE_HINT = () => H({ es: 'Arrastra para girarla en 3D · mira los stickers · voltéala para ver el grip', en: 'Drag to spin it in 3D · check the stickers · flip it to see the grip' });
+const TROPHY_HINT = () => H({ es: 'Haz clic en un trofeo para verlo de cerca', en: 'Click a trophy for a closer look' }, { es: 'Toca un trofeo para verlo de cerca', en: 'Tap a trophy for a closer look' });
+
 /* ────────────────────────────────────────────────────
    PIANO — teclas 3D tocables con su nota escrita encima. Pestañas Libre /
    Reto / Aprender en el HUD, las tres con vista frontal y mucho zoom (el
@@ -180,6 +191,22 @@ function pianoStation(c) {
   let missAt = 0;          // nota equivocada: la actual se pinta en rojo un momento
 
   const keyWorld = (i) => keys[i].getWorldPosition(new THREE.Vector3()).add(V(0, 0.12, 0));
+
+  /* Vertical (celular): con las 3 octavas a lo ancho cada tecla medía ~17px,
+     imposible de tocar con el dedo. Ahí la cámara encuadra una octava
+     (Do–Do, 8 teclas) y « » la corre; en Aprender sigue sola a la nota. */
+  const OCT = 7;
+  const OCT_MAX = Math.floor((keys.length - 1) / OCT) - 1;   // 22 teclas → octavas 0..2
+  let octave = 1;
+  const narrow = () => c.container.clientWidth < c.container.clientHeight;
+  function setOctave(o) {
+    o = Math.max(0, Math.min(OCT_MAX, o));
+    hud.setAction('octDown', { disabled: o === 0 });
+    hud.setAction('octUp', { disabled: o === OCT_MAX });
+    if (o === octave) return;
+    octave = o;
+    c.refocus?.();
+  }
 
   /* La nota (y su tecla del teclado) escrita sobre la parte de adelante de
      cada tecla blanca — hija de la tecla, así baja con ella al tocarla. */
@@ -351,6 +378,10 @@ function pianoStation(c) {
 
   function onLearn(st) {
     learnSt = st;
+    const target = !st.done && !st.listening ? st.song.notes[st.step]?.i : null;
+    if (narrow() && target != null && (target < octave * OCT || target > octave * OCT + OCT)) {
+      setOctave(Math.floor(Math.min(target, keys.length - 2) / OCT));
+    }
     if (st.miss != null) missAt = performance.now();
     const n = st.song.notes.length;
     const title = L(st.song.title);
@@ -385,8 +416,8 @@ function pianoStation(c) {
     hud.setAction('start', { hidden: id !== 'challenge', label: '▶ Empezar secuencia' });
     ['prev', 'listen', 'restart', 'next'].forEach((a) => hud.setAction(a, { hidden: !learning }));
     hud.setHint(learning
-      ? 'Toca la nota en naranja (su tecla brilla en azul) · ◀ ▶ cambia de canción'
-      : 'Haz clic en las teclas · o usa tu teclado: Z–M graves · A–J medias · Q–I agudas');
+      ? H({ es: 'Toca la nota en naranja (su tecla brilla en azul) · ◀ ▶ cambia de canción', en: 'Play the orange note (its key glows blue) · ◀ ▶ changes song' })
+      : PIANO_HINT());
     sheet.group.visible = learning;
     if (!learning) { learnSt = null; missAt = 0; }
   }
@@ -394,11 +425,17 @@ function pianoStation(c) {
   return {
     // de frente y desde bastante arriba (igual en las 3 pestañas): teclas y
     // partitura a la vez, con JotAI sentado en la banqueta adelante
-    focus: () => ({
-      look: root.localToWorld(V(0, 0.95, -0.02)),
-      zoom: 4.4,   // 3 octavas: el piano entero (y la partitura) entran a lo ancho
-      dir: V(0, 1.5, 1).applyQuaternion(root.getWorldQuaternion(new THREE.Quaternion())),
-    }),
+    focus: () => {
+      const look = root.localToWorld(V(0, 0.95, -0.02));
+      const dir = V(0, 1.5, 1).applyQuaternion(root.getWorldQuaternion(new THREE.Quaternion()));
+      // 3 octavas: el piano entero (y la partitura) entran a lo ancho
+      if (!narrow()) return { look, zoom: 4.4, dir };
+      // vertical: una octava — corre el centro desde el medio del teclado al de la octava
+      const mid = keyWorld(0).add(keyWorld(keys.length - 1)).multiplyScalar(0.5);
+      const oc = keyWorld(octave * OCT).add(keyWorld(octave * OCT + OCT)).multiplyScalar(0.5);
+      look.add(oc.sub(mid));
+      return { look, zoom: 4.4 * keys.length / (OCT + 1.6), dir };
+    },
 
     enter() {
       mode = 'free';
@@ -425,11 +462,14 @@ function pianoStation(c) {
           { id: 'listen', label: '🔊 Escuchar', hidden: true, onClick: () => engine.listen() },
           { id: 'restart', label: '↻', hidden: true, onClick: () => engine.learn(learnSt?.song.id) },
           { id: 'next', label: '▶', hidden: true, onClick: () => engine.nextSong(1) },
+          { id: 'octDown', label: '«', aria: L({ es: 'Octava más grave', en: 'Lower octave' }), hidden: !narrow(), onClick: () => setOctave(octave - 1) },
+          { id: 'octUp', label: '»', aria: L({ es: 'Octava más aguda', en: 'Higher octave' }), hidden: !narrow(), onClick: () => setOctave(octave + 1) },
         ],
-        hint: 'Haz clic en las teclas · o usa tu teclado: Z–M graves · A–J medias · Q–I agudas',
+        hint: PIANO_HINT(),
         onBack: c.leave,
       });
       engine.setMode('free');
+      setOctave(octave);   // estado inicial de « »
     },
 
     exit() {
@@ -437,6 +477,7 @@ function pianoStation(c) {
       engine = null;
       mode = 'free';
       learnSt = null;
+      octave = 1;
       sheet.group.visible = false;
       keys.forEach((k, i) => { press[i] = 0; k.position.y = k.userData.baseY; k.rotation.x = 0; k.material.emissive.setHex(0); k.material.emissiveIntensity = 0; });
       c.setOutline([]);
@@ -503,7 +544,9 @@ function deskStation(c) {
   let typed = 0;                           // ms tecleando la contraseña
   let unlockAt = 0;
   const monitorTop = () => root.localToWorld(V(-0.36, 1.4, -0.16));
-  const HINT = 'Clic en los auriculares para verlos de cerca · elige un proyecto en la tarjeta';
+  const HINT = () => H(
+    { es: 'Clic en los auriculares para verlos de cerca · elige un proyecto en la tarjeta', en: 'Click the headphones for a closer look · pick a project on the card' },
+    { es: 'Toca los auriculares para verlos de cerca · elige un proyecto en la tarjeta', en: 'Tap the headphones for a closer look · pick a project on the card' });
 
   /* auriculares: click → al frente, giran con el mouse; otro click → de vuelta */
   const ph = refs.phones;
@@ -542,7 +585,9 @@ function deskStation(c) {
     want = { yaw: 0, pitch: 0 };
     c.setOutline([]);
     movePhones(true, 650);
-    hud.setHint('Mueve el mouse para girarlos · clic para dejarlos en su soporte');
+    hud.setHint(H(
+      { es: 'Mueve el mouse para girarlos · clic para dejarlos en su soporte', en: 'Move the mouse to turn them · click to put them back' },
+      { es: 'Toca para dejarlos en su soporte', en: 'Tap to put them back on the stand' }));
     envelope(getAudioContext(), { freq: 523, type: 'triangle', duration: 0.12, gain: 0.05 });
     c.glyphs.emit('♪', '#ffb020', root.localToWorld(FRONT.pos.clone().add(V(0, 0.3, 0))), { size: 0.24, rise: 0.4 });
   }
@@ -550,7 +595,7 @@ function deskStation(c) {
   function putPhonesBack() {
     phonesOut = false;
     movePhones(false, 600);
-    hud.setHint(HINT);
+    hud.setHint(HINT());
   }
 
   function unlock() {
@@ -569,7 +614,7 @@ function deskStation(c) {
       hud.show({
         icon: '💻',
         title: 'Escritorio',
-        hint: HINT,
+        hint: HINT(),
         onBack: c.leave,
       });
       // localToWorld muta el vector que recibe — clonar, o la 2ª visita usaría coords de mundo como locales
@@ -756,7 +801,9 @@ function bookshelfStation(c) {
     focus: () => ({ look: root.localToWorld(V(0, 1.15, 0.15)), zoom: 2.6 }),
 
     enter() {
-      hud.show({ icon: '📚', title: 'Estante', hint: 'Pasa el cursor sobre un libro · clic para verlo', onBack: c.leave });
+      hud.show({ icon: '📚', title: 'Estante', hint: H(
+        { es: 'Pasa el cursor sobre un libro · clic para verlo', en: 'Hover over a book · click to see it' },
+        { es: 'Toca un libro para verlo', en: 'Tap a book to see it' }), onBack: c.leave });
       assign();
     },
 
@@ -833,7 +880,7 @@ function windowStation(c) {
         icon: '🪟',
         title: 'Ventana',
         actions: [{ id: 'toggle', label: '☀️ Amanecer', onClick: () => goTo(target === 1 ? 0 : 1) }],
-        hint: 'El cielo cambia con la hora del día',
+        hint: H({ es: 'El cielo cambia con la hora del día', en: 'The sky changes with the time of day' }),
         onBack: c.leave,
       });
       // desde el atardecer (o de día) anochece solo; si ya era de noche, amanece
@@ -962,13 +1009,13 @@ function skateStation(c) {
       const a = 0;
       ride = { state: 'laying', a, mountAt: 0 };
       hud.setStatus('JotAI baja la tabla al piso… 🛹');
-      hud.setHint('Pulsa Kickflip o Shove-it para que JotAI lo intente');
+      hud.setHint(H({ es: 'Pulsa Kickflip o Shove-it para que JotAI lo intente', en: 'Press Kickflip or Shove-it and JotAI will try it' }));
       poseBoard({ pos: ridePos(a), pivot: pivotFlat(), rotX: Math.PI / 2, yaw: rideYaw(a) }, 800, () => { if (ride) ride.state = 'mounting'; });
     } else {
       if (ride) c.cue?.('skate:dismount');
       ride = null;
       hud.setStatus('Se despegó de la pared 🛹');
-      hud.setHint('Arrastra para girarla en 3D · mira los stickers · voltéala para ver el grip');
+      hud.setHint(SKATE_HINT());
       poseBoard({ pos: SHOW.pos, pivot: PIVOT_STAND, rotX: SHOW.rotX }, 800);
     }
   }
@@ -1015,7 +1062,7 @@ function skateStation(c) {
           { id: 'flip', label: '↻ Voltear', onClick: () => { if (!trick) { const y0 = holder.rotation.y; tw.add(700, (p) => { holder.rotation.y = y0 + Math.PI * ease(p); }); idleAt = performance.now() + 2500; } } },
           { id: 'reset', label: '↺ Reiniciar', onClick: () => { if (!trick) tw.add(500, (() => { const a = holder.rotation.clone(); return (p) => { holder.rotation.set(lerp(a.x, 0, ease(p)), lerp(a.y, 0, ease(p)), 0); }; })()); } },
         ],
-        hint: 'Arrastra para girarla en 3D · mira los stickers · voltéala para ver el grip',
+        hint: SKATE_HINT(),
         status: 'Se despegó de la pared 🛹',
         onBack: c.leave,
       });
@@ -1201,7 +1248,7 @@ function jugglingStation(c) {
           { id: 'start', label: '▶ Empezar', hidden: true, onClick: () => { running = true; engine.start(performance.now()); hud.setAction('start', { hidden: true }); hud.setAction('catch', { hidden: false }); } },
           { id: 'catch', label: '¡Atrapar! (Espacio)', hidden: true, onClick: () => attempt(performance.now()) },
         ],
-        hint: 'Las 6 pelotas las tejió David a mano cuando le enseñaron a hacer malabares',
+        hint: H({ es: 'Las 6 pelotas las tejió David a mano cuando le enseñaron a hacer malabares', en: 'David knitted these 6 balls by hand when he learned to juggle' }),
         onBack: c.leave,
       });
       setMode('watch');
@@ -1310,7 +1357,7 @@ function pukisStation(c) {
       hud.show({
         icon: '🐾',
         title: 'Pukis',
-        hint: 'Haz clic sobre Pukis para acariciarlo',
+        hint: H({ es: 'Haz clic sobre Pukis para acariciarlo', en: 'Click Pukis to pet him' }, { es: 'Toca a Pukis para acariciarlo', en: 'Tap Pukis to pet him' }),
         status: statusFor(0),
         onBack: c.leave,
       });
@@ -1583,7 +1630,7 @@ function chessStation(c) {
           { id: 'undo', label: '↶ Deshacer', onClick: undo },
           { id: 'new', label: '↻ Nueva partida', onClick: newMatch },
         ],
-        hint: 'Clic en una pieza blanca y luego en la casilla destino',
+        hint: H({ es: 'Clic en una pieza blanca y luego en la casilla destino', en: 'Click a white piece, then its target square' }, { es: 'Toca una pieza blanca y luego la casilla destino', en: 'Tap a white piece, then its target square' }),
         onBack: c.leave,
       });
       say(statusText());
@@ -1680,7 +1727,7 @@ function lumbreStation(c) {
         tabs: LUMBRE_SHOTS.map((_, i) => ({ id: String(i), label: `${i + 1}` })),
         active: '0',
         onTab: (id) => { show(Number(id)); c.cue?.('lumbre:shot'); },
-        hint: 'Clic en el póster o en los números para cambiar de captura',
+        hint: H({ es: 'Clic en el póster o en los números para cambiar de captura', en: 'Click the poster or the numbers to change screenshot' }, { es: 'Toca el póster o los números para cambiar de captura', en: 'Tap the poster or the numbers to change screenshot' }),
         onBack: c.leave,
       });
       show(0);
@@ -1785,7 +1832,9 @@ function medalsStation(c) {
     c.setOutline([]);
     c.setLabel(null);
     place(i, true, 700);
-    hud.setHint('Mueve el mouse para girarlo · clic para abrir la caja · clic afuera para dejarlo');
+    hud.setHint(H(
+      { es: 'Mueve el mouse para girarlo · clic para abrir la caja · clic afuera para dejarlo', en: 'Move the mouse to turn it · click to open the case · click outside to put it back' },
+      { es: 'Toca la caja para abrirla · toca afuera para dejarla', en: 'Tap the case to open it · tap outside to put it back' }));
     envelope(getAudioContext(), { freq: 523, type: 'triangle', duration: 0.12, gain: 0.05 });
     c.cue?.('medals:pick', { world: root.localToWorld(boxes[i].top.clone()) });
   }
@@ -1807,7 +1856,7 @@ function medalsStation(c) {
     focused = -1;
     opened = false;
     hud.setCard(null);
-    hud.setHint('Haz clic en un trofeo para verlo de cerca');
+    hud.setHint(TROPHY_HINT());
   }
 
   return {
@@ -1818,7 +1867,7 @@ function medalsStation(c) {
       hud.show({
         icon: '🏆',
         title: L(c.content.title) || 'Trofeos',
-        hint: 'Haz clic en un trofeo para verlo de cerca',
+        hint: TROPHY_HINT(),
         onBack: c.leave,
       });
     },
@@ -1920,7 +1969,9 @@ function starwarsStation(c) {
       hud.show({
         icon: '⭐',
         title: L(c.content.title) || 'Star Wars',
-        hint: 'Mueve el mouse para girarlo · Hazlo, o no lo hagas. Pero no lo intentes. — Maestro Yoda',
+        hint: H(
+          { es: 'Mueve el mouse para girarlo · Hazlo, o no lo hagas. Pero no lo intentes. — Maestro Yoda', en: 'Move the mouse to turn it · Do, or do not. There is no try. — Master Yoda' },
+          { es: 'Arrastra para girarlo · Hazlo, o no lo hagas. Pero no lo intentes. — Maestro Yoda', en: 'Drag to turn it · Do, or do not. There is no try. — Master Yoda' }),
         onBack: c.leave,
       });
       moveTo(SHOW, 900, () => { shown = true; });
@@ -2056,7 +2107,7 @@ function guitarStation(c) {
       g.fillText('Acordes', 40, 78);
       g.fillStyle = '#5a5248';
       g.font = `30px ${SERIF}`;
-      g.fillText('clic en uno o teclas 1–8 para tocarlo', 40, 122);
+      g.fillText(TOUCH ? 'toca uno para tocarlo' : 'clic en uno o teclas 1–8 para tocarlo', 40, 122);
       CHORD_SET.forEach((name, i) => {
         const cx = CHORD_GRID.x0 + (i % CHORD_GRID.cols) * CHORD_GRID.cw;
         const cy = CHORD_GRID.y0 + Math.floor(i / CHORD_GRID.cols) * CHORD_GRID.ch;
@@ -2149,8 +2200,10 @@ function guitarStation(c) {
     if (!songs && engine?.playing) { engine.stop(); setPlaying(false); step = -1; }
     hud.setStatus(songs ? `♪ ${esc(L(songById(song).label))}` : '');
     hud.setHint(songs
-      ? '‹ › cambia de canción · clic en la guitarra o Espacio para rasguear'
-      : 'Clic en un acorde de la partitura o teclas 1–8 · Espacio repite el último');
+      ? H({ es: '‹ › cambia de canción · clic en la guitarra o Espacio para rasguear', en: '‹ › changes song · click the guitar or Space to strum' },
+          { es: '‹ › cambia de canción · toca la guitarra para rasguear', en: '‹ › changes song · tap the guitar to strum' })
+      : H({ es: 'Clic en un acorde de la partitura o teclas 1–8 · Espacio repite el último', en: 'Click a chord on the sheet or keys 1–8 · Space repeats the last one' },
+          { es: 'Toca un acorde de la partitura para tocarlo', en: 'Tap a chord on the sheet to play it' }));
     drawSheet();
   }
 
@@ -2357,7 +2410,7 @@ function soundbarStation(c) {
         actions: ct.playlistUrl
           ? [{ id: 'open', label: '▶ Abrir playlist', onClick: () => window.open(ct.playlistUrl, '_blank', 'noopener') }]
           : [],
-        hint: 'Lo que suena mientras programo',
+        hint: H({ es: 'Lo que suena mientras programo', en: 'What plays while I code' }),
         onBack: c.leave,
       });
       const tracks = (ct.tracks || []).map((t) => {

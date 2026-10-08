@@ -1,5 +1,6 @@
 import { ProjectDetail } from './project-detail.js';
 import { LangSwitcher } from './lang.js';
+import { canEmbedPdf } from './pdf-support.js';
 
 const MODE_EMOJI = { dev: '⚙️', ia: '🤖', sec: '🔒', gam: '🎮' };
 
@@ -73,6 +74,7 @@ export const ProjectGallery = (() => {
               <img class="pgal__img" id="pgal-img" src="" alt="" />
               <div class="pgal__placeholder" id="pgal-placeholder" aria-hidden="true"></div>
               <iframe class="pgal__pdf" id="pgal-pdf" src="" title="${LangSwitcher.t('gallery.pdfTitle')}" loading="lazy"></iframe>
+              <div class="pgal__pdf-fallback" id="pgal-pdf-fallback" hidden></div>
             </div>
             <button class="pgal__arrow pgal__arrow--next" id="pgal-next" aria-label="${LangSwitcher.t('projects.next')}">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -161,6 +163,27 @@ export const ProjectGallery = (() => {
     });
   }
 
+  /* ── PDF sin visor embebido (iOS/Android): tarjeta con abrir/descargar ── */
+  function _renderPdfFallback(doc) {
+    const box = document.getElementById('pgal-pdf-fallback');
+    const url = _src(doc.url);
+    const label = LangSwitcher.L(doc.label) || LangSwitcher.t('gallery.pdfTitle');
+    const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    box.innerHTML = `
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+      </svg>
+      <p class="pgal__pdf-fallback-label">${esc(label)}</p>
+      <p class="pgal__pdf-fallback-note">${LangSwitcher.t('gallery.pdfNoEmbed')}</p>
+      <div class="pgal__pdf-fallback-actions">
+        <a class="pgal__pdf-fallback-btn pgal__pdf-fallback-btn--primary" href="${url}" target="_blank" rel="noopener">${LangSwitcher.t('gallery.pdfOpen')}</a>
+        <a class="pgal__pdf-fallback-btn" href="${url}" download>${LangSwitcher.t('gallery.pdfDownload')}</a>
+      </div>`;
+    box.hidden = false;
+  }
+
   /* ── Navigate to index ── */
   function _goTo(idx) {
     const img = document.getElementById('pgal-img');
@@ -175,10 +198,14 @@ export const ProjectGallery = (() => {
 
       img.style.display = 'none';
       ph.style.display  = 'none';
-      pdf.style.display = 'block';
-      pdf.classList.add('is-swapping');
-      pdf.src = _src(doc.url);
-      pdf.onload = () => pdf.classList.remove('is-swapping');
+      if (canEmbedPdf) {
+        pdf.style.display = 'block';
+        pdf.classList.add('is-swapping');
+        pdf.src = _src(doc.url);
+        pdf.onload = () => pdf.classList.remove('is-swapping');
+      } else {
+        _renderPdfFallback(doc);
+      }
 
       document.getElementById('pgal-counter').textContent =
         _docs.length > 1 ? `${_idx + 1} / ${_docs.length}` : '';
@@ -201,6 +228,7 @@ export const ProjectGallery = (() => {
 
     /* Image mode */
     pdf.style.display = 'none';
+    document.getElementById('pgal-pdf-fallback').hidden = true;
 
     if (_images.length === 0) {
       img.style.display = 'none';

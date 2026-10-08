@@ -1,4 +1,4 @@
-const _isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+import { canEmbedPdf } from './pdf-support.js';
 
 export const PDFModal = (() => {
   let _el        = null;
@@ -38,16 +38,7 @@ export const PDFModal = (() => {
           </button>
         </div>
       </div>
-      ${_isIOS
-        ? `<div class="pdf-modal__ios-fallback" id="pdf-modal-body">
-             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-               <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-               <polyline points="14 2 14 8 20 8"/>
-             </svg>
-             <p>Safari no soporta la vista previa de PDF.<br>Usa el botón Descargar para abrir el documento.</p>
-           </div>`
-        : `<iframe class="pdf-modal__iframe" id="pdf-modal-frame" title="Visor de PDF"></iframe>`
-      }
+      <iframe class="pdf-modal__iframe" id="pdf-modal-frame" title="Visor de PDF"></iframe>
     `;
 
     document.body.appendChild(_el);
@@ -74,6 +65,12 @@ export const PDFModal = (() => {
   }
 
   function open(url, label = 'Documento') {
+    // Sin visor embebido (iOS/Android): un modal con el iframe vacío no sirve
+    // de nada — se abre el PDF directo en el visor nativo del sistema.
+    if (!canEmbedPdf) {
+      window.open(url, '_blank', 'noopener');
+      return;
+    }
     if (!_el) _inject();
 
     _prevFocus = document.activeElement;

@@ -153,6 +153,9 @@ const TRANSLATIONS = {
     // Gallery / detalle de proyecto
     'gallery.closeAria':  'Cerrar galería',
     'gallery.pdfTitle':   'Documento PDF',
+    'gallery.pdfNoEmbed': 'Este navegador no muestra PDF dentro de la página.',
+    'gallery.pdfOpen':    'Abrir PDF',
+    'gallery.pdfDownload':'Descargar',
     'gallery.thumb':      'Miniatura',
     'gallery.imgAlt':     'imagen',
     'detail.closeAria':   'Cerrar detalle del proyecto',
@@ -307,6 +310,9 @@ const TRANSLATIONS = {
     // Gallery / project detail
     'gallery.closeAria':  'Close gallery',
     'gallery.pdfTitle':   'PDF document',
+    'gallery.pdfNoEmbed': "This browser can't show PDFs inside the page.",
+    'gallery.pdfOpen':    'Open PDF',
+    'gallery.pdfDownload':'Download',
     'gallery.thumb':      'Thumbnail',
     'gallery.imgAlt':     'image',
     'detail.closeAria':   'Close project detail',

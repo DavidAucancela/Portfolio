@@ -78,6 +78,7 @@ js/
   command-palette.js          # CommandPalette — buscador global estilo Spotlight/VS Code
   sec-terminal.js             # SecTerminal — terminal interactiva en hero modo .sec
   pdf-modal.js                # PDFModal — visor PDF inline (modal overlay con iframe)
+  pdf-support.js              # canEmbedPdf — ¿el navegador muestra PDF en iframe? (no en iOS/Android)
   section-divider.js          # SectionDivider — divisor animado entre secciones (canvas partículas)
   analytics.js                 # Analytics — sink de eventos custom hacia Vercel Analytics
   gam/
@@ -882,6 +883,8 @@ Cuando `mode === 'sec'` y el proyecto tiene `docs[]`, la gallery entra en **docs
 - El filmstrip muestra **doc tabs** (`.pgal__doc-tab`) con el `label` de cada doc — chips de texto en lugar de thumbnails de imagen
 - Flechas ← → y teclas navegan entre documentos del array `docs[]`
 - Al cerrar la gallery, `iframe.src` se limpia para detener la carga
+- Sin visor embebido (`canEmbedPdf`, ver PDF Modal) el iframe no se usa: `_renderPdfFallback()`
+  pinta `#pgal-pdf-fallback` con el nombre del doc + "Abrir PDF" / "Descargar"
 - Si el proyecto no tiene `docs[]` o tiene array vacío, se usa el modo imagen normal
 - **Links de documentos en el panel info:** los `.pdm__doc-link` tienen `data-doc-index="N"`.
   Un listener delegado en `#pgal-info` intercepta el click y llama `_goTo(N)` — el PDF
@@ -912,8 +915,10 @@ Visor inline de PDF — modal fullscreen que renderiza el documento en un `<ifra
 - **Header:** título del documento · botón `⬇ Descargar` (`<a download>`) · botón `✕` cerrar
 - **Cierre:** botón ✕ · tecla Esc · clic en el overlay oscuro
 - **z-index:** 10500 (sobre gallery en 9990 y command palette)
-- **iOS Safari:** no soporta PDF en `<iframe>` — el modal muestra un mensaje de fallback
-  con instrucción de usar el botón de descarga
+- **Sin visor embebido** (`canEmbedPdf` en `js/pdf-support.js`: iOS/iPadOS, Android o
+  `navigator.pdfViewerEnabled === false`): `open()` no muestra el modal — abre el PDF en el
+  visor nativo (`window.open`). Un iframe ahí queda en blanco (Android) o muestra solo la 1ª
+  página (iOS)
 - **Botón CV en `index.html`:** `<button id="cv-open-btn" data-pdf-url="..." data-pdf-label="...">` —
   reemplaza el antiguo `<a download>`. El texto cambió de "Descargar CV" a "Ver CV".
 

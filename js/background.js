@@ -1467,18 +1467,32 @@ const SecField = (() => {
     const pct = integrity / 100;
     const danger = pct < 0.3;
 
+    // Mobile: fijo arriba a la izquierda quedaba encima del título del hero y,
+    // al scrollear, de cada encabezado/filtro. Ahí se ancla al hero (scrollea
+    // con él) y, ya fuera del hero, solo reaparece abajo al centro (entre ↑ y
+    // JotAI) si hay daño — a 100% no aporta nada.
+    let x = METER_X, y = METER_Y;
+    if (view.vw <= 768) {
+      y = METER_Y - view.scrollTop;
+      if (y < view.navBottom) {
+        if (integrity >= 100) return;
+        x = (view.vw - METER_W) / 2;
+        y = view.vh - 22;
+      }
+    }
+
     ctx.font = "10px 'Fira Code', 'Courier New', monospace";
     ctx.textAlign = 'left';
     ctx.fillStyle = rgba(danger ? C2 : C, 0.75);
-    ctx.fillText('INTEGRIDAD DEL SISTEMA', METER_X, METER_Y - 6);
+    ctx.fillText('INTEGRIDAD DEL SISTEMA', x, y - 6);
 
     ctx.strokeStyle = rgba(C, 0.35);
     ctx.lineWidth = 1;
-    ctx.strokeRect(METER_X, METER_Y, METER_W, METER_H);
+    ctx.strokeRect(x, y, METER_W, METER_H);
 
     const flicker = danger ? 0.7 + 0.3 * Math.sin(performance.now() * 0.02) : 1;
     ctx.fillStyle = rgba(danger ? C2 : C, 0.75 * flicker);
-    ctx.fillRect(METER_X + 1, METER_Y + 1, Math.max(0, METER_W - 2) * pct, METER_H - 2);
+    ctx.fillRect(x + 1, y + 1, Math.max(0, METER_W - 2) * pct, METER_H - 2);
   }
 
   /* ── Lluvia ── */

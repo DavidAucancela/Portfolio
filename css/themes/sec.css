@@ -172,3 +172,11 @@
   background: rgba(0, 255, 65, 0.2);
   color: #00ff41;
 }
+
+/* Mobile: el medidor "INTEGRIDAD DEL SISTEMA" (canvas, background.js) va
+   anclado arriba del hero — más aire para que no pise el título. */
+@media (max-width: 768px) {
+  [data-theme="sec"] .hero-section {
+    padding-top: calc(var(--mode-bar-height) + var(--nav-height) + 3.25rem);
+  }
+}

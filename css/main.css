@@ -2060,6 +2060,25 @@ ul, ol { list-style: none; }
   /* About stats */
   .about-stats { grid-template-columns: repeat(3, 1fr); }
 
+  /* Encabezados: la etiqueta (// sobre mí) siempre arriba del título. Con
+     ambos inline-block quedaban en la misma línea si el título era corto
+     ("Quién soy") y en dos si era largo ("Trabajo seleccionado"). */
+  .section-label { display: block; }
+
+  /* Menú hamburguesa: fondo sólido del tema (en táctil el blur se nota poco
+     y el 85% de --bg-nav dejaba leer el hero detrás de los links) + velo
+     sobre el resto de la página. El click en el velo lo cierra app.js. */
+  .navbar__mobile-menu {
+    /* Vive dentro de #navbar, cuyo backdrop-filter lo vuelve el bloque
+       contenedor de los fixed: el top del viewport sumaba la altura del
+       mode-bar dos veces y dejaba una franja de 34px. Anclado a la navbar. */
+    position: absolute;
+    top: 100%;
+    background: var(--bg-primary);
+    box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.55);
+    clip-path: inset(0 0 -100vmax 0);  /* el velo solo hacia abajo: la navbar (✕) queda nítida */
+  }
+
   /* Timeline */
   .timeline::before { left: 12px; }
   .timeline-dot { left: 3px; }

@@ -23,28 +23,19 @@
   position: relative;
 }
 
-/* ─── Panel visible en modo .dev — mismo chrome que .sec-terminal ─── */
+/* ─── Panel visible en modo .dev — el look (franja, cifra, secciones,
+   franja de Ver más) viene de css/hero-widget.css (.hw) ─── */
 [data-theme="dev"] .git-activity {
-  --git-cell-size: 16px;
-  position: absolute;
-  top: 0;
-  right: 0;
+  --hw-acc: #4c8dff;
+  --hw-acc-rgb: 76, 141, 255;
+  --hw-acc2: #7dd3fc;
+  --git-cell-size: 18px;
+  position: absolute; /* centrado en la columna derecha: ver css/hero-widget.css */
   z-index: 2;
   display: flex;
   flex-direction: column;
-  width: min(500px, 44vw);
-  /* Techo propio con scroll interno — el panel nunca depende del alto
-     de .hero-section para caber; simplemente deja de crecer y scrollea. */
-  max-height: min(640px, calc(100vh - 200px));
-  background: rgba(10, 10, 26, 0.94);
-  border: 1px solid rgba(59, 130, 246, 0.22);
-  border-radius: 10px;
-  box-shadow:
-    0 0 0 1px rgba(59, 130, 246, 0.06),
-    0 24px 64px rgba(0, 0, 0, 0.75),
-    0 0 48px rgba(59, 130, 246, 0.08);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  --hw-col: min(500px, 44vw);
+  width: var(--hw-col);
   font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
   overflow-x: hidden;
   overflow-y: auto;
@@ -56,231 +47,119 @@
   animation: sd-right 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: 0.3s;
   opacity: 0;
-  /* Ahora que expandir/colapsar es un cambio aislado (no reflowea nada
-     más), se puede animar el propio tamaño sin miedo a que el resto de
-     la página "salte" en cada frame de la transición. */
   transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ═══ Estados colapsado / expandido ═══════════════════════ */
 
 [data-theme="dev"] .git-activity[data-widget-state="collapsed"] {
-  width: min(320px, 34vw);
+  width: min(340px, 34vw);
 }
 
 .git-activity[data-widget-state="collapsed"] .git-activity__body { display: none; }
-.git-activity[data-widget-state="expanded"]  .git-activity__summary { display: none; }
-
-.git-activity[data-widget-state="expanded"] .git-activity__body {
-  animation: gaBodyReveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@keyframes gaBodyReveal {
-  from { opacity: 0; clip-path: inset(0 100% 0 0); }
-  to   { opacity: 1; clip-path: inset(0 0 0 0); }
-}
-
-/* ─── Cara compacta (solo colapsado): nº de Pull requests ─── */
-.git-activity__summary {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.25rem;
-  width: 100%;
-  padding: 1.3rem 1.35rem 1.4rem;
-  background: none;
-  border: none;
-  font-family: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-
-.git-activity__summary-value {
-  font-size: 2.6rem;
-  font-weight: 700;
-  line-height: 1;
-  color: #60a5fa;
-}
-
-.git-activity__summary-label {
-  font-size: 0.66rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: rgba(148, 163, 184, 0.6);
-}
-
-.git-activity__summary-hint {
-  margin-top: 0.55rem;
-  font-size: 0.68rem;
-  letter-spacing: 0.04em;
-  color: rgba(96, 165, 250, 0.85);
-  transition: color 0.2s ease;
-}
-
-.git-activity__summary:hover .git-activity__summary-hint,
-.git-activity__summary:focus-visible .git-activity__summary-hint {
-  color: #60a5fa;
-}
 
 @media (prefers-reduced-motion: reduce) {
   [data-theme="dev"] .git-activity { transition: none; animation: none; opacity: 1; }
-  .git-activity[data-widget-state="expanded"] .git-activity__body { animation: none; }
 }
 
-/* ─── Barra de título (idéntica a .sec-terminal__bar) ─── */
-.git-activity__bar {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.55rem 0.8rem;
-  background: rgba(59, 130, 246, 0.05);
-  border-bottom: 1px solid rgba(59, 130, 246, 0.12);
-  flex-shrink: 0;
+/* ─── Tendencia semanal (debajo de la cifra) ─── */
+.git-activity__spark {
+  display: block;
+  width: 100%;
+  height: 36px;
+  margin-top: 0.2rem;
+  overflow: visible;
 }
 
-.git-activity__dot {
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
+.git-activity__spark-base { stroke: var(--hw-line); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.git-activity__spark-area { fill: rgba(var(--hw-acc-rgb), 0.12); }
+.git-activity__spark-line { fill: none; stroke: var(--hw-acc); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.git-activity__spark-dot  { fill: var(--hw-acc2); }
 
-.git-activity__title {
-  flex: 1;
-  text-align: center;
-  font-size: 0.67rem;
-  color: rgba(59, 130, 246, 0.55);
-  letter-spacing: 0.06em;
-  user-select: none;
-}
-
-/* ─── Cuerpo ─── */
+/* ─── Cuerpo (solo expandido): heatmap por día + PRs ─── */
 .git-activity__body {
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
-  padding: 1.15rem 1.25rem 1.3rem;
+  gap: 0.8rem;
+  padding: 0.2rem 1.1rem 1.1rem;
 }
 
-.git-activity__section-label {
-  font-size: 0.66rem;
-  letter-spacing: 0.04em;
-  color: rgba(226, 232, 240, 0.42);
-  text-transform: uppercase;
-}
-
-/* ─── Chart: meses arriba, días a la izquierda, grid de celdas ─── */
+/* ─── Heatmap: burbujas de ancho fijo repartidas de borde a borde
+   (space-between) — la primera columna toca el margen izquierdo y la
+   última el derecho, a cualquier ancho del panel ─── */
 .git-activity__chart {
   position: relative; /* ancla .git-activity__tip */
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 5px;
+}
+
+.git-activity__months,
+.git-activity__grid {
+  display: grid;
+  grid-template-columns: repeat(12, var(--git-cell-size));
+  justify-content: space-between;
 }
 
 .git-activity__months {
-  display: grid;
-  gap: 4px;
-  margin-left: 26px; /* alinea con el ancho de .git-activity__weekdays */
+  margin-left: 32px; /* ancho de .git-activity__weekdays + gap */
   height: 12px;
 }
 
 .git-activity__month-label {
-  font-size: 0.62rem;
-  color: rgba(148, 163, 184, 0.55);
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.4);
   white-space: nowrap;
 }
 
 .git-activity__chart-row {
   display: flex;
-  gap: 6px;
-}
-
-/* ─── Fila exterior: chart de commits + cards de stats ─── */
-.git-activity__row {
-  display: flex;
-  align-items: stretch;
-  gap: 1.1rem;
-}
-
-.git-activity__stats {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 0.4rem;
-  flex: 1;
-  min-width: 108px;
-}
-
-.git-activity__stat {
-  display: flex;
-  flex-direction: row;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.4rem 0.6rem;
-  border-radius: 6px;
-  background: rgba(59, 130, 246, 0.06);
-  border: 1px solid rgba(59, 130, 246, 0.14);
-}
-
-.git-activity__stat-value {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #60a5fa;
-  line-height: 1.1;
-  white-space: nowrap;
-}
-
-.git-activity__stat-label {
-  font-size: 0.62rem;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  text-align: right;
-  color: rgba(148, 163, 184, 0.6);
+  gap: 8px;
 }
 
 .git-activity__weekdays {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  width: 22px;
+  display: grid;
+  grid-template-rows: repeat(7, var(--git-cell-size));
+  row-gap: 5px;
+  width: 24px;
   flex-shrink: 0;
 }
 
 .git-activity__weekdays span {
-  height: var(--git-cell-size);
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   line-height: var(--git-cell-size);
-  color: rgba(148, 163, 184, 0.5);
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .git-activity__grid {
-  display: grid;
-  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  grid-template-rows: repeat(7, var(--git-cell-size));
+  row-gap: 5px;
 }
 
 .git-activity__day {
   width: var(--git-cell-size);
   height: var(--git-cell-size);
-  border-radius: 3px;
-  background: rgba(148, 163, 184, 0.1);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
   outline: 1px solid transparent;
-  outline-offset: 1px;
+  outline-offset: 2px;
   transition: outline-color 0.12s ease, transform 0.12s ease;
 }
 
 .git-activity__day--empty  { background: transparent; }
-.git-activity__day--l0     { background: rgba(148, 163, 184, 0.1); }
-.git-activity__day--l1     { background: rgba(59, 130, 246, 0.35); }
-.git-activity__day--l2     { background: rgba(59, 130, 246, 0.58); }
-.git-activity__day--l3     { background: rgba(59, 130, 246, 0.82); }
-.git-activity__day--l4     { background: #3b82f6; box-shadow: 0 0 6px rgba(59, 130, 246, 0.7); }
+.git-activity__day--l0     { background: rgba(255, 255, 255, 0.06); }
+.git-activity__day--l1     { background: rgba(var(--hw-acc-rgb), 0.35); }
+.git-activity__day--l2     { background: rgba(var(--hw-acc-rgb), 0.6); }
+.git-activity__day--l3     { background: var(--hw-acc); }
+.git-activity__day--l4     { background: var(--hw-acc2); box-shadow: 0 0 8px rgba(125, 211, 252, 0.7); }
 
 /* Realce al pasar el cursor — junto con .git-activity__tip, muestra el
    detalle exacto del día en vez del tooltip nativo del navegador */
 .git-activity__day:not(.git-activity__day--empty):hover {
   outline-color: rgba(226, 232, 240, 0.65);
-  transform: scale(1.22);
+  transform: scale(1.18);
 }
 
 /* ─── Tooltip de celda: reemplaza el `title` nativo del navegador por
@@ -292,15 +171,15 @@
   top: 0;
   transform: translate(-50%, calc(-100% - 9px));
   padding: 0.4rem 0.6rem;
-  border-radius: 6px;
-  background: rgba(6, 8, 20, 0.97);
-  border: 1px solid rgba(59, 130, 246, 0.35);
+  border-radius: 2px;
+  background: var(--hw-panel-2);
+  border: 1px solid rgba(var(--hw-acc-rgb), 0.4);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
-  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  font-family: inherit;
   font-size: 0.68rem;
   line-height: 1.4;
   white-space: nowrap;
-  color: #cbd5e1;
+  color: #cfd4de;
   pointer-events: none;
   opacity: 0;
   visibility: hidden;
@@ -310,8 +189,8 @@
 .git-activity__tip.is-visible { opacity: 1; visibility: visible; }
 
 .git-activity__tip strong {
-  color: #60a5fa;
-  font-weight: 700;
+  color: var(--hw-acc);
+  font-weight: 600;
 }
 
 .git-activity__tip::after {
@@ -321,7 +200,7 @@
   top: 100%;
   transform: translateX(-50%);
   border: 5px solid transparent;
-  border-top-color: rgba(6, 8, 20, 0.97);
+  border-top-color: var(--hw-panel-2);
 }
 
 @media (hover: none), (pointer: coarse) {
@@ -329,149 +208,63 @@
   .git-activity__tip { display: none; }
 }
 
-.git-activity__total {
-  font-size: 0.72rem;
-  color: rgba(226, 232, 240, 0.5);
-  letter-spacing: 0.02em;
-}
-
-/* ─── Botón "Ver más" — expande el historial de PRs ─── */
-.git-activity__more-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  margin-top: 0.3rem;
-  padding: 0;
-  background: none;
-  border: none;
-  font-family: inherit;
-  font-size: 0.68rem;
-  letter-spacing: 0.04em;
-  color: rgba(96, 165, 250, 0.8);
-  cursor: pointer;
-  transition: color 0.2s ease;
-}
-
-.git-activity__more-btn:hover,
-.git-activity__more-btn:focus-visible {
-  color: #60a5fa;
-}
-
-.git-activity__more-icon {
-  font-size: 0.6rem;
-  transition: transform 0.2s ease;
-}
-
-.git-activity__more-btn[aria-expanded="true"] .git-activity__more-icon {
-  transform: rotate(180deg);
-}
-
-/* ─── Panel de historial (PRs del repo) ─── */
-.git-activity__history {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-  width: 100%;
-  margin-top: 0.65rem;
-  padding-top: 0.65rem;
-  border-top: 1px solid rgba(59, 130, 246, 0.14);
-  animation: gitActivityHistoryIn 0.25s ease both;
-}
-
-/* `display:flex` (arriba) le gana al `display:none` del UA stylesheet para
-   [hidden] por orden de cascada — hace falta este override explícito. */
-.git-activity__history[hidden] {
-  display: none;
-}
-
-@keyframes gitActivityHistoryIn {
-  from { opacity: 0; transform: translateY(-4px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.git-activity__history-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.git-activity__history-label {
-  font-size: 0.6rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: rgba(226, 232, 240, 0.42);
-}
-
+/* ─── PRs mergeados — filas de registro: nº · título · repo y fecha ─── */
 .git-activity__pr-list {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
-  margin: 0;
+  margin: -0.3rem 0 0;
   padding: 0;
   list-style: none;
-  max-height: 140px;
+  max-height: 168px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(59, 130, 246, 0.25) transparent;
+  scrollbar-color: rgba(var(--hw-acc-rgb), 0.25) transparent;
 }
 
 .git-activity__pr-list::-webkit-scrollbar { width: 3px; }
-.git-activity__pr-list::-webkit-scrollbar-thumb { background: rgba(59, 130, 246, 0.25); border-radius: 2px; }
+.git-activity__pr-list::-webkit-scrollbar-thumb { background: rgba(var(--hw-acc-rgb), 0.25); border-radius: 2px; }
+
+.git-activity__pr-item + .git-activity__pr-item { border-top: 1px dashed var(--hw-line); }
 
 .git-activity__history-empty {
+  padding: 0.4rem 0;
   font-size: 0.68rem;
-  color: rgba(226, 232, 240, 0.35);
-  font-style: italic;
+  color: rgba(255, 255, 255, 0.35);
 }
 
 .git-activity__pr-link {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.6rem;
-  width: 100%;
-  padding: 0.3rem 0.4rem;
-  border-radius: 5px;
-  background: none;
-  border: none;
-  font-family: inherit;
+  display: grid;
+  grid-template-columns: 3.2em minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 0.7rem;
+  padding: 0.5rem 0.2rem;
   text-decoration: none;
-  cursor: pointer;
   transition: background 0.15s ease;
 }
 
-.git-activity__pr-link:hover {
-  background: rgba(59, 130, 246, 0.08);
+.git-activity__pr-link:hover,
+.git-activity__pr-link:focus-visible {
+  background: rgba(var(--hw-acc-rgb), 0.07);
+}
+
+.git-activity__pr-num {
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--hw-acc);
 }
 
 .git-activity__pr-title {
-  flex: 1;
   min-width: 0;
-  font-size: 0.7rem;
-  color: rgba(226, 232, 240, 0.8);
+  font-size: 0.72rem;
+  color: rgba(226, 232, 240, 0.85);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  text-align: left;
 }
 
-.git-activity__pr-repo {
-  display: inline-block;
-  margin-right: 0.4rem;
-  padding: 0.05rem 0.32rem;
-  border-radius: 4px;
-  background: rgba(59, 130, 246, 0.14);
-  color: rgba(96, 165, 250, 0.9);
-  font-size: 0.58rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  vertical-align: 1px;
-}
-
-.git-activity__pr-date {
-  flex-shrink: 0;
+.git-activity__pr-meta {
   font-size: 0.62rem;
-  color: rgba(96, 165, 250, 0.6);
+  color: rgba(255, 255, 255, 0.4);
   white-space: nowrap;
 }
 
@@ -498,36 +291,14 @@
   [data-theme="dev"] .git-activity[data-widget-state="collapsed"] {
     width: 100%;
   }
-
-  /* Mismo padding que .ia-tokens__body / .sec-terminal__prompt-row en mobile — simetría entre modos */
-  .git-activity__body {
-    padding: 1.2rem 1.3rem;
-  }
 }
 
 @media (max-width: 480px) {
   [data-theme="dev"] .git-activity {
-    --git-cell-size: 12px;
+    --git-cell-size: 15px;
   }
 
-  .git-activity__row {
-    flex-direction: column;
-  }
-
-  .git-activity__stats {
-    flex-direction: row;
-  }
-
-  /* Cajas angostas (1/3 del ancho) — número y label vuelven a apilarse
-     y centrarse en vez de compartir una fila estrecha */
-  .git-activity__stat {
-    flex: 1;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.1rem;
-  }
-
-  .git-activity__stat-label {
-    text-align: center;
-  }
+  /* El repo + fecha no entran al lado del título: pasan abajo */
+  .git-activity__pr-link { grid-template-columns: 3.2em minmax(0, 1fr); row-gap: 0.15rem; }
+  .git-activity__pr-meta { grid-column: 2; }
 }

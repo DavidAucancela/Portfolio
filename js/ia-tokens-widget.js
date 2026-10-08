@@ -1,12 +1,10 @@
 /* ============================================================
    IA TOKENS WIDGET — Total de tokens de LLM Observatory (modo .ia)
 
+   Panel tipo "instrumento" (piezas compartidas en css/hero-widget.css).
    Dos estados (data-widget-state en #ia-tokens):
-   - collapsed: solo el total de tokens (cara compacta)
-   - expanded : desglose por proyecto de IA con sus tokens
-
-   El cambio collapsed → expanded revela el cuerpo directamente,
-   sin animación de intro.
+   - collapsed: franja + total de tokens (cifra grande) + reparto por proyecto
+   - expanded : además la lista de proyectos de IA con sus tokens
    ============================================================ */
 
 import { navigateToProject } from './app.js';
@@ -40,15 +38,23 @@ function _monthLabel(dateStr) {
   return Number.isInteger(idx) && months[idx] ? `${months[idx]} ${y}` : '';
 }
 
-function _countUp(el, to, suffix = '', duration = 1200) {
-  const from = 0;
+/** 3812455 → "3,8M": la cifra grande va compacta para que entre a 72px. */
+function _compact(n) {
+  try {
+    return new Intl.NumberFormat(_locale(), { notation: 'compact', maximumFractionDigits: 1 })
+      .format(n).replace(/\s/g, '');
+  } catch {
+    return n.toLocaleString(_locale());
+  }
+}
+
+function _countUp(el, to, duration = 1200) {
   const start = performance.now();
 
   function tick(now) {
     const t = Math.min((now - start) / duration, 1);
     const eased = 1 - Math.pow(1 - t, 3);
-    const value = Math.round(from + (to - from) * eased);
-    el.textContent = value.toLocaleString(_locale()) + suffix;
+    el.textContent = _compact(Math.round(to * eased));
     if (t < 1) requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
@@ -76,12 +82,38 @@ export const IaTokensWidget = (() => {
   let _statusKey = 'iaw.status.connecting';
   let _totalTokens = null;
 
-  /** Reaplica el texto del status pill según el idioma activo. */
+  /** Reaplica la línea de estado (total exacto + estado) y el color del LED. */
   function _applyStatus() {
     const statusEl = document.getElementById('ia-tokens-status');
-    if (!statusEl) return;
-    statusEl.removeAttribute('data-i18n');
-    statusEl.textContent = LangSwitcher.t(_statusKey);
+    if (statusEl) {
+      statusEl.removeAttribute('data-i18n');
+      const exact = Number.isFinite(_totalTokens)
+        ? `${_totalTokens.toLocaleString(_locale())} · ` : '';
+      statusEl.textContent = exact + LangSwitcher.t(_statusKey);
+    }
+    const led = document.getElementById('ia-tokens-led');
+    if (led) {
+      led.classList.toggle('hw__led--wait', /connecting|syncing/.test(_statusKey));
+      led.classList.toggle('hw__led--off', _statusKey === 'iaw.status.offline');
+    }
+  }
+
+  /** Barra apilada: cuánto del total aporta cada proyecto (los 5 mayores + resto). */
+  function _renderMix() {
+    const mix = document.getElementById('ia-tokens-mix');
+    if (!mix) return;
+    const rows = _projectBreakdown
+      .filter((r) => Number.isFinite(r.totalTokens) && r.totalTokens > 0)
+      .sort((a, b) => b.totalTokens - a.totalTokens);
+    const total = rows.reduce((s, r) => s + r.totalTokens, 0);
+    if (!total) { mix.hidden = true; return; }
+    const top = rows.slice(0, 5);
+    const rest = total - top.reduce((s, r) => s + r.totalTokens, 0);
+    const seg = (name, v, i) =>
+      `<span class="ia-tokens__mix-seg" style="flex-grow:${v};--i:${i}" title="${_escapeHtml(name)} · ${_formatTokens(v)}"></span>`;
+    mix.innerHTML = top.map((r, i) => seg(r.name, r.totalTokens, i)).join('')
+      + (rest > 0 ? seg(LangSwitcher.getLang() === 'es' ? 'otros' : 'others', rest, 5) : '');
+    mix.hidden = false;
   }
 
   function init() {
@@ -98,10 +130,11 @@ export const IaTokensWidget = (() => {
       }
     }, 120);
 
-    document.getElementById('ia-tokens-summary')
-      ?.addEventListener('click', _expand);
-    document.getElementById('ia-tokens-more-btn')
-      ?.addEventListener('click', _collapse);
+    document.getElementById('ia-tokens-toggle')?.addEventListener('click', () => {
+      const root = document.getElementById('ia-tokens');
+      if (root?.dataset.widgetState === 'expanded') _collapse();
+      else _expand();
+    });
     document.getElementById('ia-tokens')
       ?.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') _collapse();
@@ -113,8 +146,9 @@ export const IaTokensWidget = (() => {
       _applyStatus();
       const valueEl = document.getElementById('ia-tokens-value');
       if (valueEl && Number.isFinite(_totalTokens)) {
-        valueEl.textContent = _totalTokens.toLocaleString(_locale());
+        valueEl.textContent = _compact(_totalTokens);
       }
+      _renderMix();
       if (_historyLoaded) _loadProjectHistory();
     });
   }
@@ -124,7 +158,7 @@ export const IaTokensWidget = (() => {
     const root = document.getElementById('ia-tokens');
     if (!root || root.dataset.widgetState === 'expanded') return;
     root.dataset.widgetState = 'expanded';
-    document.getElementById('ia-tokens-summary')
+    document.getElementById('ia-tokens-toggle')
       ?.setAttribute('aria-expanded', 'true');
 
     if (!_historyLoaded) {
@@ -137,7 +171,7 @@ export const IaTokensWidget = (() => {
     const root = document.getElementById('ia-tokens');
     if (!root) return;
     root.dataset.widgetState = 'collapsed';
-    document.getElementById('ia-tokens-summary')
+    document.getElementById('ia-tokens-toggle')
       ?.setAttribute('aria-expanded', 'false');
   }
 
@@ -175,7 +209,7 @@ export const IaTokensWidget = (() => {
           .map((name) => _projectBreakdown.find((row) => row.name === name))
           .filter(Boolean);
         const tokens = rows.length ? rows.reduce((sum, row) => sum + row.totalTokens, 0) : null;
-        const meta   = tokens !== null ? _formatTokens(tokens) : _monthLabel(p.date);
+        const meta   = tokens !== null ? _compact(tokens) : _monthLabel(p.date);
         return { p, tokens, meta };
       });
 
@@ -186,19 +220,14 @@ export const IaTokensWidget = (() => {
         // la lista — da una lectura visual inmediata del peso relativo,
         // no solo el número. Sin dato de tokens (fallback a mes) no hay
         // barra que dibujar: se oculta en vez de mostrar un 0% engañoso.
-        const pct = tokens !== null && maxTokens > 0 ? Math.max(4, Math.round((tokens / maxTokens) * 100)) : null;
-        const bar = pct !== null
-          ? `<span class="ia-tokens__project-bar"><span class="ia-tokens__project-bar-fill" style="width:${pct}%"></span></span>`
-          : '';
+        const pct = tokens !== null && maxTokens > 0 ? Math.max(4, Math.round((tokens / maxTokens) * 100)) : 0;
 
         return `
         <li class="ia-tokens__project-item" style="animation-delay:${0.06 * idx}s">
           <button type="button" class="ia-tokens__project-link" data-slug="${p.slug}">
-            <span class="ia-tokens__project-row">
-              <span class="ia-tokens__project-title">${_escapeHtml(p.title)}</span>
-              <span class="ia-tokens__project-tokens">${_escapeHtml(meta)}</span>
-            </span>
-            ${bar}
+            <span class="ia-tokens__project-title">${_escapeHtml(LangSwitcher.L(p.title))}</span>
+            <span class="ia-tokens__project-bar${pct ? '' : ' is-empty'}"><span class="ia-tokens__project-bar-fill" style="width:${pct}%"></span></span>
+            <span class="ia-tokens__project-tokens">${_escapeHtml(meta)}</span>
           </button>
         </li>
       `;
@@ -228,22 +257,20 @@ export const IaTokensWidget = (() => {
 
       if (data.mock || !Number.isFinite(data.totalTokens)) {
         valueEl.textContent = '···';
-        valueEl.classList.remove('ia-tokens__value--live');
         _totalTokens = null;
         _statusKey = 'iaw.status.syncing';
         _applyStatus();
         return;
       }
 
-      valueEl.classList.add('ia-tokens__value--live');
       _totalTokens = data.totalTokens;
       _countUp(valueEl, data.totalTokens);
+      _renderMix();
       _statusKey = 'iaw.status.live';
       _applyStatus();
     } catch (err) {
       console.error('[ia-tokens-widget] Error:', err.message);
       valueEl.textContent = '—';
-      valueEl.classList.remove('ia-tokens__value--live');
       _totalTokens = null;
       _statusKey = 'iaw.status.offline';
       _applyStatus();

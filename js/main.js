@@ -36,6 +36,7 @@ import '../css/project-detail.css';
 import '../css/project-gallery.css';
 import '../css/trajectory.css';
 import '../css/command-palette.css';
+import '../css/hero-widget.css';
 import '../css/sec-terminal.css';
 import '../css/pdf-modal.css';
 import '../css/ia-mascot.css';

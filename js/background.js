@@ -1390,10 +1390,16 @@ const SecField = (() => {
 
   // El sistema se repara desde sec-terminal.js (comandos nmap/patch/quarantine/
   // block) — sin acoplarse por import, solo por este evento en window.
+  // Avisa el % de integridad (lo muestra la cifra grande de la terminal del hero).
+  const _emitIntegrity = () => window.dispatchEvent(
+    new CustomEvent('portfolio:secIntegrity', { detail: { integrity: Math.round(integrity) } })
+  );
+
   window.addEventListener('portfolio:secRepaired', () => {
     locked = false;
     integrity = 100;
     hacked = 0;
+    _emitIntegrity();
     virus = []; debris = []; flash = [];
     spawnT = 90;
   });
@@ -1403,6 +1409,7 @@ const SecField = (() => {
     // terminal) el reset normal de modo/crossfade no debe devolver integrity a
     // 100 — solo portfolio:secRepaired puede hacerlo.
     if (!locked) { integrity = 100; hacked = 0; }
+    _emitIntegrity();
     METER_Y = view.navBottom + 26;
     const step = (view.lite ? 22 : 16) / Math.max(0.5, view.density);
     cols = _mkCols(view, step, FS, 0.08, 0.20);
@@ -1660,6 +1667,7 @@ const SecField = (() => {
   /* ── Desintegración ── */
   function _kill(v, x, y) {
     integrity = Math.min(100, integrity + KILL_REPAIR);
+    _emitIntegrity();
     for (let i = 0; i < 12; i++) {
       const ang = (Math.PI * 2 * i) / 12 + rnd(-0.3, 0.3);
       const sp  = rnd(1.4, 4.2);
@@ -1677,6 +1685,7 @@ const SecField = (() => {
   /* ── Ataque logrado: el virus no fue neutralizado a tiempo ── */
   function _breach(x, y) {
     integrity = Math.max(0, integrity - BREACH_DAMAGE);
+    _emitIntegrity();
     for (let i = 0; i < 8; i++) {
       const ang = rnd(0, Math.PI * 2);
       const sp  = rnd(1, 3);

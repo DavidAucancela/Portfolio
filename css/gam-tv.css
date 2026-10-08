@@ -189,7 +189,7 @@
 
 /* `display:flex` (arriba) le gana al `display:none` del UA stylesheet
    para [hidden] por orden de cascada — hace falta este override explícito
-   (mismo caso que .git-activity__history[hidden] en git-history.css). */
+   (un `display` propio le gana al `[hidden]` del UA stylesheet). */
 .gam-prompt[hidden] { display: none; }
 
 /* ─── Hint de controles — visible solo mientras se juega ─── */

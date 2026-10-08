@@ -1,0 +1,233 @@
+/* ============================================================
+   HERO WIDGET — piezas compartidas por los paneles del hero
+   (.git-activity en .dev, .ia-tokens en .ia, .sec-terminal en .sec)
+
+   Dirección "panel de instrumentos": un módulo oscuro y opaco con una
+   franja superior (LED "en vivo" + nombre + fuente del dato), una cifra
+   grande que se lee primero y el detalle como registro debajo. La franja
+   inferior "Ver más / Ver menos" alterna data-widget-state.
+
+   Cada widget pone sus colores con --hw-acc / --hw-acc-rgb / --hw-acc2 y
+   su propia posición, ancho y visibilidad por modo en su archivo
+   (git-history.css, ia-tokens-widget.css, sec-terminal.css).
+   ============================================================ */
+
+.hw {
+  --hw-acc: #4c8dff;
+  --hw-acc-rgb: 76, 141, 255;
+  --hw-acc2: #7dd3fc;
+  /* Superficies teñidas con los colores del modo (--bg-primary y el acento) */
+  --hw-line: rgba(var(--hw-acc-rgb), 0.14);
+  --hw-panel: color-mix(in srgb, var(--bg-primary, #0a0a1a) 94%, transparent);
+  --hw-panel-2: rgba(var(--hw-acc-rgb), 0.06);
+  /* Columna derecha del hero: ancho del widget expandido (cada widget lo ajusta) */
+  --hw-col: min(480px, 42vw);
+  background:
+    linear-gradient(180deg, rgba(var(--hw-acc-rgb), 0.05), transparent 45%),
+    var(--hw-panel);
+  border: 1px solid rgba(var(--hw-acc-rgb), 0.24);
+  border-radius: 10px;
+  box-shadow:
+    0 0 0 1px rgba(var(--hw-acc-rgb), 0.05),
+    0 24px 64px rgba(0, 0, 0, 0.7),
+    0 0 48px rgba(var(--hw-acc-rgb), 0.08);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  color: var(--text-primary, #e2e8f0);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(var(--hw-acc-rgb), 0.3) transparent;
+}
+
+/* ─── Escritorio: el widget vive centrado en la columna derecha del hero ───
+   El bloque contenedor pasa a ser .hero-section (el .container queda static)
+   y el widget se ancla por su CENTRO: al expandir crece hacia los cuatro
+   lados en vez de solo hacia la izquierda y abajo. La zona va del borde
+   inferior del navbar hasta antes de la franja que invade #section-divider
+   (--sdiv-overlap); max-height = esa zona, así nunca la pisa (scroll interno).
+   El centrado usa `translate` (propiedad aparte), no `transform`: la
+   animación de entrada sd-right anima transform y lo pisaría. */
+@media (min-width: 961px) {
+  /* .hero-section en el selector: le gana al `position:relative` que cada
+     widget pone en su archivo (se cargan después que este) */
+  [data-theme="dev"] #hero.hero-section .container,
+  [data-theme="ia"] #hero.hero-section .container,
+  [data-theme="sec"] #hero.hero-section .container {
+    position: static;
+  }
+
+  /* El texto del hero nunca pasa por debajo de la columna del widget
+     (500px = el widget expandido más ancho, .git-activity) */
+  [data-theme="dev"] .hero-content,
+  [data-theme="ia"] .hero-content,
+  [data-theme="sec"] .hero-content {
+    max-width: min(800px, calc(100% - min(500px, 44vw) - 2.5rem));
+  }
+
+  #hero .hw {
+    --hw-top: calc(var(--mode-bar-height) + var(--nav-height) + 1.25rem);
+    --hw-bottom: calc(var(--sdiv-overlap, 120px) + 1rem);
+    /* borde derecho del contenido del .container, medido desde el del hero */
+    --hw-edge: max(var(--container-padding), calc((100% - var(--container-max)) / 2 + var(--container-padding)));
+    position: absolute;
+    left: calc(100% - var(--hw-edge) - var(--hw-col) / 2);
+    top: calc(var(--hw-top) + (100% - var(--hw-top) - var(--hw-bottom)) / 2);
+    right: auto;
+    translate: -50% -50%;
+    max-height: calc(100% - var(--hw-top) - var(--hw-bottom));
+    transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+@keyframes hwLed { 50% { opacity: 0.35; } }
+@keyframes hwReveal {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ─── Franja superior: LED + nombre + fuente del dato ─── */
+.hw__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.9rem;
+  background: var(--hw-panel-2);
+  border-bottom: 1px solid var(--hw-line);
+  flex-shrink: 0;
+}
+
+.hw__led {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--hw-acc);
+  box-shadow: 0 0 8px var(--hw-acc);
+  animation: hwLed 2.4s ease-in-out infinite;
+  transition: background 0.3s, box-shadow 0.3s;
+}
+/* Estados del dato: esperando (ámbar), sin conexión (apagado), alerta (rojo) */
+.hw__led--wait  { background: #f5b942; box-shadow: 0 0 8px #f5b942; }
+.hw__led--off   { background: rgba(255, 255, 255, 0.25); box-shadow: none; animation: none; }
+.hw__led--alert { background: #ff3355; box-shadow: 0 0 10px #ff3355; animation-duration: 0.6s; }
+
+.hw__name {
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-primary, #fff);
+  white-space: nowrap;
+}
+
+.hw__src {
+  margin-left: auto;
+  min-width: 0;
+  font-size: 0.66rem;
+  color: rgba(255, 255, 255, 0.4);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: none;
+}
+
+/* ─── Cara: cifra grande + unidad + resumen ─── */
+.hw__face {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 1.1rem 1.1rem 0.9rem;
+}
+
+.hw__read {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.8rem;
+}
+
+.hw__big {
+  font-size: 4.5rem;
+  font-weight: 500;
+  line-height: 0.85;
+  letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums;
+  color: var(--hw-acc);
+  text-shadow: 0 0 22px rgba(var(--hw-acc-rgb), 0.35);
+  white-space: nowrap;
+}
+
+.hw__unit {
+  max-width: 14ch;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.hw__sub {
+  font-size: 0.7rem;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+/* ─── Separador de sección del detalle ─── */
+.hw__sect {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding-top: 0.8rem;
+  border-top: 1px dashed var(--hw-line);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* El detalle aparece al expandir */
+.hw[data-widget-state="expanded"] .hw__reveal {
+  animation: hwReveal 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* ─── Franja inferior: Ver más / Ver menos ─── */
+.hw__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: auto;
+  padding: 0.6rem 0.9rem;
+  flex-shrink: 0;
+  background: var(--hw-panel-2);
+  border: 0;
+  border-top: 1px solid var(--hw-line);
+  font-family: inherit;
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.hw__toggle:hover,
+.hw__toggle:focus-visible { color: var(--hw-acc); }
+.hw__toggle:focus-visible { outline: 1px solid var(--hw-acc); outline-offset: -3px; }
+
+.hw__toggle-less,
+.hw__toggle[aria-expanded="true"] .hw__toggle-more { display: none; }
+.hw__toggle[aria-expanded="true"] .hw__toggle-less { display: inline; }
+.hw__toggle-icon { margin-left: auto; transition: transform 0.2s ease; }
+.hw__toggle[aria-expanded="true"] .hw__toggle-icon { transform: rotate(180deg); }
+
+@media (prefers-reduced-motion: reduce) {
+  .hw__led { animation: none; }
+  .hw[data-widget-state="expanded"] .hw__reveal { animation: none; }
+}
+
+@media (max-width: 480px) {
+  .hw__big { font-size: 3.75rem; }
+}

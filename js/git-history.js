@@ -1,12 +1,12 @@
 /* ============================================================
-   GIT HISTORY — Heatmap de actividad + stats (modo .dev)
+   GIT HISTORY — Actividad de GitHub (modo .dev)
 
+   Panel tipo "instrumento": franja con LED + nombre + fuente, una cifra
+   grande (commits de las últimas 12 semanas, la misma suma que pinta el
+   heatmap) con su línea de tendencia semanal, y el detalle debajo.
    Dos estados (data-widget-state en #git-activity):
-   - collapsed: solo el nº de Pull requests (cara compacta)
-   - expanded : heatmap ("mapa de PR") + stats + historial de PRs
-
-   El cambio collapsed → expanded revela el cuerpo directamente,
-   sin animación de intro.
+   - collapsed: franja + cifra + tendencia
+   - expanded : además el heatmap por día y los PRs mergeados
    ============================================================ */
 
 import { LangSwitcher } from './lang.js';
@@ -75,12 +75,11 @@ function _levelFor(count, max) {
 export const GitHistory = (() => {
   let _fetched = false;
   let _data = null;
-  let _expandRendered = false;
 
   function init() {
     window.addEventListener('portfolio:modeChange', (e) => {
       if (e.detail.mode === 'dev') {
-        _collapse();
+        _setState('collapsed');
         _onEnterDev();
       }
     });
@@ -91,19 +90,19 @@ export const GitHistory = (() => {
       }
     }, 120);
 
-    document.getElementById('git-activity-summary')
-      ?.addEventListener('click', _expand);
-    document.getElementById('git-activity-more-btn')
-      ?.addEventListener('click', _collapse);
+    document.getElementById('git-activity-toggle')?.addEventListener('click', () => {
+      const root = document.getElementById('git-activity');
+      _setState(root?.dataset.widgetState === 'expanded' ? 'collapsed' : 'expanded');
+    });
     document.getElementById('git-activity')
       ?.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') _collapse();
+        if (e.key === 'Escape') _setState('collapsed');
       });
 
     // Re-render de las partes dinámicas al cambiar de idioma (los <span>
     // estáticos los reetiqueta LangSwitcher vía data-i18n).
     window.addEventListener('portfolio:langChange', () => {
-      if (_data && _expandRendered) _renderDeferred();
+      if (_data) _renderAll();
     });
 
     _bindCellTooltip();
@@ -148,65 +147,35 @@ export const GitHistory = (() => {
   }
 
   /* ── Estados ──────────────────────────────────────── */
-  function _expand() {
-    const root = document.getElementById('git-activity');
-    if (!root || root.dataset.widgetState === 'expanded') return;
-    root.dataset.widgetState = 'expanded';
-    document.getElementById('git-activity-summary')
-      ?.setAttribute('aria-expanded', 'true');
-
-    if (!_expandRendered && _data) {
-      _expandRendered = true;
-      _renderDeferred();
-    }
-  }
-
-  function _collapse() {
+  function _setState(state) {
     const root = document.getElementById('git-activity');
     if (!root) return;
-    root.dataset.widgetState = 'collapsed';
-    document.getElementById('git-activity-summary')
-      ?.setAttribute('aria-expanded', 'false');
+    root.dataset.widgetState = state;
+    document.getElementById('git-activity-toggle')
+      ?.setAttribute('aria-expanded', String(state === 'expanded'));
   }
 
   /* ── Fetch de datos (al entrar al modo .dev) ──────── */
   async function _onEnterDev() {
-    if (_fetched) {
-      if (document.getElementById('git-activity')?.dataset.widgetState === 'expanded') {
-        _expandRendered = true;
-        _renderDeferred();
-      }
-      return;
-    }
+    if (_fetched) return;
     _fetched = true;
 
-    const el = document.getElementById('git-activity');
-    if (!el) return;
-
     try {
-      const [localRes, ghRes, statsRes] = await Promise.all([
-        fetch('data/git-history.json'),
-        fetch('/api/github-contributions').catch(() => null),
-        fetch('/api/github-stats').catch(() => null),
-      ]);
+      // Lo local primero: la cara y el heatmap se pintan sin esperar a /api
+      // (en dev sin `vercel dev` el proxy tarda varios segundos en fallar).
+      const ghReq    = fetch('/api/github-contributions').catch(() => null);
+      const statsReq = fetch('/api/github-stats').catch(() => null);
+      const localRes = await fetch('data/git-history.json');
       if (!localRes.ok) throw new Error(`data/git-history.json respondió ${localRes.status}`);
-      const local = await localRes.json();
-      const gh    = ghRes    ? await ghRes.json().catch(() => null)    : null;
-      const stats = statsRes ? await statsRes.json().catch(() => null) : null;
-      _data = { local, gh, stats };
+      _data = { local: await localRes.json(), gh: null, stats: null };
+      _renderAll();
 
-      const liveStats = _data.stats && !_data.stats.mock ? _data.stats : null;
-      _renderStats({
-        totalPRs:      liveStats?.totalMerged ?? _data.local.prs?.length ?? null,
-        prsIsExact:    Boolean(liveStats),
-        totalCommits:  liveStats?.totalCommits ?? _data.local.totalCommitsAllTime ?? null,
-        totalProjects: _data.local.totalProjects ?? null,
-      });
-
-      // Si el usuario ya expandió antes de que llegaran los datos, renderiza ya.
-      if (el.dataset.widgetState === 'expanded' && !_expandRendered) {
-        _expandRendered = true;
-        _renderDeferred();
+      const [ghRes, statsRes] = await Promise.all([ghReq, statsReq]);
+      const gh    = ghRes?.ok    ? await ghRes.json().catch(() => null)    : null;
+      const stats = statsRes?.ok ? await statsRes.json().catch(() => null) : null;
+      if (gh || stats) {
+        _data = { ..._data, gh, stats };
+        _renderAll();
       }
     } catch (err) {
       console.error('[git-history] Error:', err.message);
@@ -214,16 +183,65 @@ export const GitHistory = (() => {
     }
   }
 
-  /* ── Render diferido: heatmap + historial de PRs ──── */
-  function _renderDeferred() {
+  /* ── Render: cara + heatmap + PRs (todo junto — es barato) ── */
+  function _renderAll() {
     if (!_data) return;
     const useGh = _data.gh && !_data.gh.mock && Array.isArray(_data.gh.days) && _data.gh.days.length;
-    _renderHeatmap(
-      useGh
-        ? { days: _data.gh.days, total: _data.gh.totalContributions, source: 'github', username: _data.gh.username }
-        : { days: _data.local.days, total: _data.local.totalCommits, source: 'local' }
-    );
+    const source = useGh ? 'github' : 'local';
+    const range = _renderHeatmap({
+      days: useGh ? _data.gh.days : _data.local.days,
+      source,
+      username: _data.gh?.username,
+    });
+
+    const liveStats = _data.stats && !_data.stats.mock ? _data.stats : null;
+    const prs = liveStats?.totalMerged ?? _data.local.prs?.length ?? null;
+    _renderFace({
+      total:    range.total,
+      weekly:   range.weekly,
+      source,
+      allTime:  liveStats?.totalCommits ?? _data.local.totalCommitsAllTime ?? null,
+      prs:      Number.isFinite(prs) ? `${prs}${liveStats ? '' : '+'}` : null,
+      projects: _data.local.totalProjects ?? null,
+    });
     _renderPrHistory();
+  }
+
+  function _renderFace({ total, weekly, source, allTime, prs, projects }) {
+    const big  = document.getElementById('git-activity-big');
+    const unit = document.getElementById('git-activity-unit');
+    const sub  = document.getElementById('git-activity-sub');
+    if (big) big.textContent = String(total);
+    if (unit) {
+      unit.dataset.i18n = source === 'github' ? 'gitw.unitContribs' : 'gitw.unitCommits';
+      unit.textContent = LangSwitcher.t(unit.dataset.i18n);
+    }
+    if (sub) {
+      sub.removeAttribute('data-i18n');
+      const parts = [];
+      if (Number.isFinite(allTime)) parts.push(`${allTime} ${LangSwitcher.t('gitw.allTime')}`);
+      if (prs) parts.push(`${prs} PRs`);
+      if (Number.isFinite(projects)) parts.push(`${projects} ${LangSwitcher.t('gitw.projects')}`);
+      sub.textContent = parts.join(' · ');
+    }
+    _renderSpark(weekly);
+  }
+
+  /** Línea de tendencia: commits por semana, con el último punto marcado. */
+  function _renderSpark(weekly) {
+    const svg = document.getElementById('git-activity-spark');
+    if (!svg || weekly.length < 2) return;
+    const W = 300, H = 40;
+    const max = Math.max(1, ...weekly);
+    const step = W / (weekly.length - 1);
+    const pts = weekly.map((v, i) => [i * step, H - 3 - (v / max) * (H - 8)]);
+    const d = pts.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join(' ');
+    const [lx, ly] = pts[pts.length - 1];
+    svg.innerHTML = `
+      <line class="git-activity__spark-base" x1="0" x2="${W}" y1="${H - 0.5}" y2="${H - 0.5}"/>
+      <path class="git-activity__spark-area" d="${d} L${W} ${H} L0 ${H} Z"/>
+      <path class="git-activity__spark-line" d="${d}"/>
+      <circle class="git-activity__spark-dot" cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="3"/>`;
   }
 
   function _renderPrHistory() {
@@ -240,61 +258,46 @@ export const GitHistory = (() => {
     }
 
     // `pr.repo` viene como "owner/name" (PRs de todos los repos de proyectos,
-    // no solo este) — se muestra solo el nombre del repo como etiqueta.
+    // no solo este) — se muestra solo el nombre del repo.
     list.innerHTML = prs.map((pr) => {
       const repoName = pr.repo ? pr.repo.split('/').pop() : '';
-      const repoTag = repoName
-        ? `<span class="git-activity__pr-repo">${_escapeHtml(repoName)}</span>`
-        : '';
       return `
       <li class="git-activity__pr-item">
         <a href="${pr.url}" target="_blank" rel="noopener noreferrer" class="git-activity__pr-link">
-          <span class="git-activity__pr-title">${repoTag}#${pr.number} ${_escapeHtml(pr.title)}</span>
-          <span class="git-activity__pr-date">${_timeAgo(pr.mergedAt)}</span>
+          <span class="git-activity__pr-num">#${pr.number}</span>
+          <span class="git-activity__pr-title">${_escapeHtml(pr.title)}</span>
+          <span class="git-activity__pr-meta">${repoName ? `${_escapeHtml(repoName)} · ` : ''}${_timeAgo(pr.mergedAt)}</span>
         </a>
       </li>
     `;
     }).join('');
   }
 
-  function _renderStats({ totalPRs, prsIsExact, totalCommits, totalProjects }) {
-    const faceEl     = document.getElementById('git-activity-face-prs');
-    const prsEl      = document.getElementById('git-activity-stat-prs');
-    const commitsEl  = document.getElementById('git-activity-stat-commits');
-    const projectsEl = document.getElementById('git-activity-stat-projects');
-
-    const prsText = Number.isFinite(totalPRs) ? `${totalPRs}${prsIsExact ? '' : '+'}` : '—';
-    if (faceEl) faceEl.textContent = prsText;
-    if (prsEl)  prsEl.textContent  = prsText;
-    if (commitsEl)  commitsEl.textContent  = Number.isFinite(totalCommits)  ? String(totalCommits)  : '—';
-    if (projectsEl) projectsEl.textContent = Number.isFinite(totalProjects) ? String(totalProjects) : '—';
-  }
-
+  /** Pinta el heatmap y devuelve { total, weekly } del rango mostrado. */
   function _renderHeatmap(data) {
     const grid   = document.getElementById('git-activity-grid');
     const months = document.getElementById('git-activity-months');
-    const total  = document.getElementById('git-activity-total');
+    const range  = document.getElementById('git-activity-range');
     const label  = document.getElementById('git-activity-heatmap-label');
-    if (!grid) return;
+    const out = { total: 0, weekly: [] };
+    if (!grid) return out;
 
     const counts = new Map((data.days || []).map((d) => [d.date, d.count]));
 
-    // Alinea el inicio al domingo de la semana (WEEKS - 1) atrás, para armar
-    // una grilla de 7 filas (dom-sáb) x WEEKS columnas, terminando hoy.
+    // Grilla de 7 filas (dom-sáb) x WEEKS columnas: la última columna es la
+    // semana de hoy (los días que faltan quedan vacíos). Antes se restaban
+    // WEEKS*7-1 días y después se retrocedía al domingo, y la grilla
+    // terminaba el sábado anterior: los últimos días no se veían.
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const start = new Date(today.getTime() - (WEEKS * 7 - 1) * DAY_MS);
-    start.setDate(start.getDate() - start.getDay());
+    const start = new Date(today);
+    start.setDate(today.getDate() - today.getDay() - (WEEKS - 1) * 7);
 
     // Máximo dentro del rango mostrado — base para los cuartiles de _levelFor.
     const maxCount = Math.max(0, ...Array.from(counts.values()));
 
     grid.innerHTML = '';
-    grid.style.gridTemplateColumns = `repeat(${WEEKS}, var(--git-cell-size))`;
-    grid.style.gridTemplateRows    = `repeat(7, var(--git-cell-size))`;
-
     months.innerHTML = '';
-    months.style.gridTemplateColumns = `repeat(${WEEKS}, var(--git-cell-size))`;
     let lastMonth = null;
 
     for (let col = 0; col < WEEKS; col++) {
@@ -302,13 +305,14 @@ export const GitHistory = (() => {
       const month = colStartDay.getMonth();
       if (month !== lastMonth) {
         lastMonth = month;
-        const label = document.createElement('span');
-        label.className = 'git-activity__month-label';
-        label.style.gridColumn = String(col + 1);
-        label.textContent = _monthLabels()[month];
-        months.appendChild(label);
+        const m = document.createElement('span');
+        m.className = 'git-activity__month-label';
+        m.style.gridColumn = String(col + 1);
+        m.textContent = _monthLabels()[month];
+        months.appendChild(m);
       }
 
+      let week = 0;
       for (let row = 0; row < 7; row++) {
         const day = new Date(start.getTime() + (col * 7 + row) * DAY_MS);
         const cell = document.createElement('span');
@@ -324,10 +328,10 @@ export const GitHistory = (() => {
           const noun  = data.source === 'github'
             ? LangSwitcher.t(one ? 'gitw.contribSingular' : 'gitw.contribPlural')
             : LangSwitcher.t(one ? 'gitw.commitSingular' : 'gitw.commitPlural');
+          week += count;
           cell.className = `git-activity__day git-activity__day--l${_levelFor(count, maxCount)}`;
           // Sin `title`: el tooltip nativo del navegador duplicaría al
-          // custom de _bindCellTooltip (ver más abajo) con un delay propio
-          // que no se puede sincronizar. aria-label mantiene el dato
+          // custom de _bindCellTooltip. aria-label mantiene el dato
           // accesible para lectores de pantalla.
           cell.dataset.date  = iso;
           cell.dataset.count = String(count);
@@ -336,25 +340,21 @@ export const GitHistory = (() => {
         }
         grid.appendChild(cell);
       }
+      out.weekly.push(week);
+      out.total += week;
     }
 
-    if (total) {
-      total.removeAttribute('data-i18n');
-      const suffix = data.source === 'github'
-        ? LangSwitcher.t('gitw.contribsSuffix')
-        : LangSwitcher.t('gitw.commitsRepoSuffix');
-      total.textContent = `${data.total || 0} ${suffix} · ${LangSwitcher.t('gitw.weeksSuffix')}`;
+    if (range) {
+      const ml = _monthLabels();
+      range.textContent = `${ml[start.getMonth()]} → ${ml[today.getMonth()]}`;
     }
-
     if (label) {
       label.removeAttribute('data-i18n');
-      const es = LangSwitcher.getLang() === 'es';
-      label.textContent = data.source === 'github'
-        ? (es
-            ? `Contribuciones en GitHub (@${data.username}) · por semana`
-            : `GitHub contributions (@${data.username}) · per week`)
-        : LangSwitcher.t('gitw.heatmapLabel');
+      label.textContent = data.source === 'github' && data.username
+        ? `${LangSwitcher.t('gitw.byDay')} · @${data.username}`
+        : LangSwitcher.t('gitw.byDay');
     }
+    return out;
   }
 
   return { init };

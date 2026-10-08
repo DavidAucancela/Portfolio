@@ -102,7 +102,6 @@ const TRANSLATIONS = {
     'footer.copy':    '© 2026 Jonathan Aucancela.',
     'footer.mode':    'Modo:',
     // Mode bar
-    'modebar.label':      '4 modos',
     'modebar.aria':       'Selector de modo — 4 modos disponibles',
     'modebar.dev.aria':   '.dev — Modo desarrollador: proyectos full-stack',
     'modebar.ia.aria':    '.ia — Modo inteligencia artificial: proyectos con LLMs y ML',
@@ -118,7 +117,14 @@ const TRANSLATIONS = {
     'gitw.statCommits':   'Commits',
     'gitw.statProjects':  'Proyectos',
     'gitw.loading':       'Cargando…',
-    'gitw.prHistory':     'Historial de pull requests',
+    'gitw.prHistory':     'Pull requests mergeados',
+    'gitw.label':         'Actividad',
+    'gitw.unitCommits':   'commits en 12 semanas',
+    'gitw.unitContribs':  'contribuciones en 12 semanas',
+    'gitw.allTime':       'en total',
+    'gitw.projects':      'proyectos',
+    'gitw.byDay':         'Por día',
+    'gitw.allRepos':      'todos los repos',
     'gitw.day.mon':       'Lun',
     'gitw.day.wed':       'Mié',
     'gitw.day.fri':       'Vie',
@@ -137,11 +143,13 @@ const TRANSLATIONS = {
     'iaw.label':          'Tokens procesados · total (todos los proyectos)',
     'iaw.more':           'Ver más',
     'iaw.less':           'Ver menos',
-    'iaw.projectsLabel':  'Proyectos de IA · tokens por proyecto',
+    'iaw.projectsLabel':  'Proyectos de IA',
+    'iaw.name':           'Tokens',
+    'iaw.unit':           'tokens procesados',
     'iaw.loading':        'Cargando…',
     'iaw.status.connecting': 'conectando…',
     'iaw.status.syncing':    'sincronizando…',
-    'iaw.status.live':       'en vivo · LLM Observatory',
+    'iaw.status.live':       'en vivo',
     'iaw.status.offline':    'sin conexión',
     'iaw.noProjects':     'Sin proyectos disponibles',
     'iaw.offline':        'Sin conexión',
@@ -150,6 +158,10 @@ const TRANSLATIONS = {
     'secterm.aria':       'Terminal interactiva',
     'secterm.gatePre':    'Click',
     'secterm.gatePost':   'para acceder',
+    'secterm.name':       'Terminal',
+    'secterm.unit':       'integridad del sistema',
+    'secterm.open':       'Abrir terminal',
+    'secterm.close':      'Cerrar terminal',
     // Gallery / detalle de proyecto
     'gallery.closeAria':  'Cerrar galería',
     'gallery.pdfTitle':   'Documento PDF',
@@ -160,7 +172,9 @@ const TRANSLATIONS = {
     'gallery.imgAlt':     'imagen',
     'detail.closeAria':   'Cerrar detalle del proyecto',
     // Lang button
-    'lang.btn':       'EN',
+    'lang.aria':      'Cambiar idioma',
+    'nav.tour':       'Tour',
+    'nav.tourAria':   'Iniciar el tour guiado',
   },
   en: {
     // Nav desktop
@@ -259,7 +273,6 @@ const TRANSLATIONS = {
     'footer.copy':    '© 2026 Jonathan Aucancela.',
     'footer.mode':    'Mode:',
     // Mode bar
-    'modebar.label':      '4 modes',
     'modebar.aria':       'Mode selector — 4 modes available',
     'modebar.dev.aria':   '.dev — Developer mode: full-stack projects',
     'modebar.ia.aria':    '.ia — Artificial intelligence mode: LLM and ML projects',
@@ -275,7 +288,14 @@ const TRANSLATIONS = {
     'gitw.statCommits':   'Commits',
     'gitw.statProjects':  'Projects',
     'gitw.loading':       'Loading…',
-    'gitw.prHistory':     'Pull request history',
+    'gitw.prHistory':     'Merged pull requests',
+    'gitw.label':         'Activity',
+    'gitw.unitCommits':   'commits in 12 weeks',
+    'gitw.unitContribs':  'contributions in 12 weeks',
+    'gitw.allTime':       'all time',
+    'gitw.projects':      'projects',
+    'gitw.byDay':         'Per day',
+    'gitw.allRepos':      'all repos',
     'gitw.day.mon':       'Mon',
     'gitw.day.wed':       'Wed',
     'gitw.day.fri':       'Fri',
@@ -294,11 +314,13 @@ const TRANSLATIONS = {
     'iaw.label':          'Tokens processed · total (all projects)',
     'iaw.more':           'See more',
     'iaw.less':           'See less',
-    'iaw.projectsLabel':  'AI projects · tokens per project',
+    'iaw.projectsLabel':  'AI projects',
+    'iaw.name':           'Tokens',
+    'iaw.unit':           'tokens processed',
     'iaw.loading':        'Loading…',
     'iaw.status.connecting': 'connecting…',
     'iaw.status.syncing':    'syncing…',
-    'iaw.status.live':       'live · LLM Observatory',
+    'iaw.status.live':       'live',
     'iaw.status.offline':    'offline',
     'iaw.noProjects':     'No projects available',
     'iaw.offline':        'No connection',
@@ -307,6 +329,10 @@ const TRANSLATIONS = {
     'secterm.aria':       'Interactive terminal',
     'secterm.gatePre':    'Click',
     'secterm.gatePost':   'to enter',
+    'secterm.name':       'Terminal',
+    'secterm.unit':       'system integrity',
+    'secterm.open':       'Open terminal',
+    'secterm.close':      'Close terminal',
     // Gallery / project detail
     'gallery.closeAria':  'Close gallery',
     'gallery.pdfTitle':   'PDF document',
@@ -317,7 +343,9 @@ const TRANSLATIONS = {
     'gallery.imgAlt':     'image',
     'detail.closeAria':   'Close project detail',
     // Lang button
-    'lang.btn':       'ES',
+    'lang.aria':      'Change language',
+    'nav.tour':       'Tour',
+    'nav.tourAria':   'Start the guided tour',
   },
 };
 
@@ -376,25 +404,61 @@ function _apply(lang) {
   document.documentElement.lang = lang;
 }
 
-function toggle() {
-  currentLang = currentLang === 'es' ? 'en' : 'es';
+function setLang(lang) {
+  if (!TRANSLATIONS[lang] || lang === currentLang) return;
+  currentLang = lang;
   localStorage.setItem('portfolio-lang', currentLang);
   _apply(currentLang);
-
-  const btn = document.getElementById('lang-btn');
-  if (btn) btn.textContent = TRANSLATIONS[currentLang]['lang.btn'];
-
+  _syncLangMenu();
   window.dispatchEvent(new CustomEvent('portfolio:langChange', { detail: { lang: currentLang } }));
+}
+
+function toggle() {
+  setLang(currentLang === 'es' ? 'en' : 'es');
+}
+
+/* ── Menú de idioma (botón con el mundo en la navbar) ── */
+function _syncLangMenu() {
+  const code = document.getElementById('lang-btn-code');
+  if (code) code.textContent = currentLang.toUpperCase();
+  document.querySelectorAll('.lang-menu__item').forEach((item) => {
+    item.setAttribute('aria-pressed', String(item.dataset.lang === currentLang));
+  });
+}
+
+function _bindLangMenu() {
+  const btn  = document.getElementById('lang-btn');
+  const list = document.getElementById('lang-list');
+  if (!btn || !list) return;
+
+  const open = (on) => {
+    list.hidden = !on;
+    btn.setAttribute('aria-expanded', String(on));
+    if (on) list.querySelector('[aria-pressed="true"]')?.focus();
+  };
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    open(list.hidden);
+  });
+  list.addEventListener('click', (e) => {
+    const item = e.target.closest('.lang-menu__item');
+    if (!item) return;
+    setLang(item.dataset.lang);
+    open(false);
+    btn.focus();
+  });
+  document.addEventListener('click', (e) => {
+    if (!list.hidden && !e.target.closest('.lang-menu')) open(false);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !list.hidden) { open(false); btn.focus(); }
+  });
 }
 
 function init() {
   _apply(currentLang);
-
-  const btn = document.getElementById('lang-btn');
-  if (btn) {
-    btn.textContent = TRANSLATIONS[currentLang]['lang.btn'];
-    btn.addEventListener('click', toggle);
-  }
+  _syncLangMenu();
+  _bindLangMenu();
 }
 
-export const LangSwitcher = { init, toggle, t, getLang, L };
+export const LangSwitcher = { init, toggle, setLang, t, getLang, L };

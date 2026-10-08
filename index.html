@@ -238,138 +238,123 @@
         </div>
 
         <!-- Actividad de Git — solo visible en modo .dev -->
-        <div class="git-activity" id="git-activity" role="region" data-i18n-aria="gitw.aria" aria-label="Actividad de Git" data-widget-state="collapsed">
-          <div class="git-activity__bar" aria-hidden="true">
-            <span class="git-activity__dot" style="background:#ff5f57"></span>
-            <span class="git-activity__dot" style="background:#ffbd2e"></span>
-            <span class="git-activity__dot" style="background:#28ca41"></span>
-            <span class="git-activity__title">github.com/DavidAucancela</span>
+        <div class="git-activity hw" id="git-activity" role="region" data-i18n-aria="gitw.aria" aria-label="Actividad de Git" data-widget-state="collapsed">
+          <div class="hw__bar">
+            <span class="hw__led" aria-hidden="true"></span>
+            <span class="hw__name" data-i18n="gitw.label">Actividad</span>
+            <span class="hw__src">github.com/DavidAucancela</span>
           </div>
 
-          <!-- Cara compacta — visible solo colapsado -->
+          <!-- Cara: siempre visible — total de commits del rango + tendencia semanal -->
+          <div class="hw__face">
+            <div class="hw__read">
+              <span class="hw__big" id="git-activity-big">—</span>
+              <span class="hw__unit" id="git-activity-unit" data-i18n="gitw.unitCommits">commits en 12 semanas</span>
+            </div>
+            <span class="hw__sub" id="git-activity-sub" data-i18n="gitw.loading">Cargando…</span>
+            <svg class="git-activity__spark" id="git-activity-spark" viewBox="0 0 300 40" preserveAspectRatio="none" aria-hidden="true"></svg>
+          </div>
+
+          <div class="git-activity__body hw__reveal" id="git-activity-body">
+            <div class="hw__sect">
+              <span id="git-activity-heatmap-label" data-i18n="gitw.byDay">Por día</span>
+              <span id="git-activity-range"></span>
+            </div>
+            <div class="git-activity__chart">
+              <div class="git-activity__months" id="git-activity-months"></div>
+              <div class="git-activity__chart-row">
+                <div class="git-activity__weekdays">
+                  <span></span><span data-i18n="gitw.day.mon">Lun</span><span></span><span data-i18n="gitw.day.wed">Mié</span><span></span><span data-i18n="gitw.day.fri">Vie</span><span></span>
+                </div>
+                <div class="git-activity__grid" id="git-activity-grid"></div>
+              </div>
+              <div class="git-activity__tip" id="git-activity-tip" role="tooltip" aria-hidden="true"></div>
+            </div>
+
+            <div class="hw__sect">
+              <span data-i18n="gitw.prHistory">Pull requests mergeados</span>
+              <span data-i18n="gitw.allRepos">todos los repos</span>
+            </div>
+            <ul class="git-activity__pr-list" id="git-activity-pr-list">
+              <li class="git-activity__history-empty" data-i18n="gitw.loading">Cargando…</li>
+            </ul>
+          </div>
+
           <button
             type="button"
-            class="git-activity__summary"
-            id="git-activity-summary"
+            class="hw__toggle"
+            id="git-activity-toggle"
             aria-expanded="false"
             aria-controls="git-activity-body"
           >
-            <span class="git-activity__summary-value" id="git-activity-face-prs">—</span>
-            <span class="git-activity__summary-label" data-i18n="gitw.summaryLabel">Pull requests</span>
-            <span class="git-activity__summary-hint"><span data-i18n="gitw.more">Ver más</span> <span aria-hidden="true">▾</span></span>
+            <span class="hw__toggle-more" data-i18n="gitw.more">Ver más</span>
+            <span class="hw__toggle-less" data-i18n="gitw.less">Ver menos</span>
+            <span class="hw__toggle-icon" aria-hidden="true">▾</span>
           </button>
-
-          <div class="git-activity__body" id="git-activity-body">
-            <span class="git-activity__section-label" id="git-activity-heatmap-label" data-i18n="gitw.heatmapLabel">Commits por semana · últimas 12 semanas</span>
-            <div class="git-activity__row">
-              <div class="git-activity__chart">
-                <div class="git-activity__months" id="git-activity-months"></div>
-                <div class="git-activity__chart-row">
-                  <div class="git-activity__weekdays">
-                    <span></span><span data-i18n="gitw.day.mon">Lun</span><span></span><span data-i18n="gitw.day.wed">Mié</span><span></span><span data-i18n="gitw.day.fri">Vie</span><span></span>
-                  </div>
-                  <div class="git-activity__grid" id="git-activity-grid"></div>
-                </div>
-                <div class="git-activity__tip" id="git-activity-tip" role="tooltip" aria-hidden="true"></div>
-              </div>
-
-              <div class="git-activity__stats">
-                <div class="git-activity__stat">
-                  <span class="git-activity__stat-value" id="git-activity-stat-prs">—</span>
-                  <span class="git-activity__stat-label" data-i18n="gitw.statPrs">Pull requests</span>
-                </div>
-                <div class="git-activity__stat">
-                  <span class="git-activity__stat-value" id="git-activity-stat-commits">—</span>
-                  <span class="git-activity__stat-label" data-i18n="gitw.statCommits">Commits</span>
-                </div>
-                <div class="git-activity__stat">
-                  <span class="git-activity__stat-value" id="git-activity-stat-projects">—</span>
-                  <span class="git-activity__stat-label" data-i18n="gitw.statProjects">Proyectos</span>
-                </div>
-              </div>
-            </div>
-            <span class="git-activity__total" id="git-activity-total" data-i18n="gitw.loading">Cargando…</span>
-
-            <div class="git-activity__history" id="git-activity-history">
-              <div class="git-activity__history-group">
-                <span class="git-activity__history-label" data-i18n="gitw.prHistory">Historial de pull requests</span>
-                <ul class="git-activity__pr-list" id="git-activity-pr-list">
-                  <li class="git-activity__history-empty" data-i18n="gitw.loading">Cargando…</li>
-                </ul>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              class="git-activity__more-btn"
-              id="git-activity-more-btn"
-            >
-              <span data-i18n="gitw.less">Ver menos</span>
-              <span class="git-activity__more-icon" aria-hidden="true">▴</span>
-            </button>
-          </div>
         </div>
 
         <!-- Total de tokens de LLM Observatory — solo visible en modo .ia -->
-        <div class="ia-tokens" id="ia-tokens" role="region" data-i18n-aria="iaw.aria" aria-label="Tokens procesados por LLM Observatory" data-widget-state="collapsed">
-          <div class="ia-tokens__bar" aria-hidden="true">
-            <span class="ia-tokens__dot" style="background:#ff5f57"></span>
-            <span class="ia-tokens__dot" style="background:#ffbd2e"></span>
-            <span class="ia-tokens__dot" style="background:#28ca41"></span>
-            <span class="ia-tokens__title">llm-observatory · stats</span>
+        <div class="ia-tokens hw" id="ia-tokens" role="region" data-i18n-aria="iaw.aria" aria-label="Tokens procesados por LLM Observatory" data-widget-state="collapsed">
+          <div class="hw__bar">
+            <span class="hw__led hw__led--wait" id="ia-tokens-led" aria-hidden="true"></span>
+            <span class="hw__name" data-i18n="iaw.name">Tokens</span>
+            <span class="hw__src">llm-observatory</span>
           </div>
 
-          <!-- Cara compacta — visible solo colapsado -->
+          <!-- Cara: siempre visible — total de tokens de todos los proyectos -->
+          <div class="hw__face">
+            <div class="hw__read">
+              <span class="hw__big" id="ia-tokens-value">···</span>
+              <span class="hw__unit" data-i18n="iaw.unit">tokens procesados</span>
+            </div>
+            <span class="hw__sub" id="ia-tokens-status" data-i18n="iaw.status.connecting">conectando…</span>
+            <!-- Reparto del total entre los proyectos (solo con datos en vivo) -->
+            <div class="ia-tokens__mix" id="ia-tokens-mix" hidden></div>
+          </div>
+
+          <div class="ia-tokens__body hw__reveal" id="ia-tokens-body">
+            <div class="hw__sect">
+              <span data-i18n="iaw.projectsLabel">Proyectos de IA</span>
+              <span data-i18n="iaw.tokensSuffix">tokens</span>
+            </div>
+            <ul class="ia-tokens__project-list" id="ia-tokens-project-list">
+              <li class="ia-tokens__history-empty" data-i18n="iaw.loading">Cargando…</li>
+            </ul>
+          </div>
+
           <button
             type="button"
-            class="ia-tokens__summary"
-            id="ia-tokens-summary"
+            class="hw__toggle"
+            id="ia-tokens-toggle"
             aria-expanded="false"
             aria-controls="ia-tokens-body"
           >
-            <span class="ia-tokens__label" data-i18n="iaw.label">Tokens procesados · total (todos los proyectos)</span>
-            <span class="ia-tokens__value" id="ia-tokens-value">···</span>
-            <span class="ia-tokens__status" id="ia-tokens-status" data-i18n="iaw.status.connecting">conectando…</span>
-            <span class="ia-tokens__summary-hint"><span data-i18n="iaw.more">Ver más</span> <span aria-hidden="true">▾</span></span>
+            <span class="hw__toggle-more" data-i18n="iaw.more">Ver más</span>
+            <span class="hw__toggle-less" data-i18n="iaw.less">Ver menos</span>
+            <span class="hw__toggle-icon" aria-hidden="true">▾</span>
           </button>
-
-          <div class="ia-tokens__body" id="ia-tokens-body">
-            <div class="ia-tokens__history" id="ia-tokens-history">
-              <div class="ia-tokens__history-group">
-                <span class="ia-tokens__history-label" data-i18n="iaw.projectsLabel">Proyectos de IA · tokens por proyecto</span>
-                <ul class="ia-tokens__project-list" id="ia-tokens-project-list">
-                  <li class="ia-tokens__history-empty" data-i18n="iaw.loading">Cargando…</li>
-                </ul>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              class="ia-tokens__more-btn"
-              id="ia-tokens-more-btn"
-            >
-              <span data-i18n="iaw.less">Ver menos</span>
-              <span class="ia-tokens__more-icon" aria-hidden="true">▴</span>
-            </button>
-          </div>
         </div>
 
         <!-- Terminal interactiva — solo visible en modo .sec -->
-        <div class="sec-terminal" id="sec-terminal" role="region" data-i18n-aria="secterm.aria" aria-label="Terminal interactiva" data-widget-state="collapsed">
-          <div class="sec-terminal__bar" aria-hidden="true">
-            <span class="sec-terminal__dot" style="background:#ff5f57"></span>
-            <span class="sec-terminal__dot" style="background:#ffbd2e"></span>
-            <span class="sec-terminal__dot" style="background:#28ca41"></span>
-            <span class="sec-terminal__title">bash — jonathan@sec</span>
+        <div class="sec-terminal hw" id="sec-terminal" role="region" data-i18n-aria="secterm.aria" aria-label="Terminal interactiva" data-widget-state="collapsed">
+          <div class="hw__bar">
+            <span class="hw__led" id="sec-terminal-led" aria-hidden="true"></span>
+            <span class="hw__name" data-i18n="secterm.name">Terminal</span>
+            <span class="hw__src">bash · jonathan@sec</span>
           </div>
 
-          <!-- Compuerta colapsada — clic para abrir la terminal -->
-          <button type="button" class="sec-terminal__gate" id="sec-terminal-gate" aria-expanded="false" aria-controls="sec-terminal-body">
-            <span class="sec-terminal__gate-text"><span data-i18n="secterm.gatePre">Click</span> <span data-i18n="secterm.gatePost">para acceder</span></span>
-            <span class="sec-terminal__gate-caret" aria-hidden="true"></span>
+          <!-- Cara: integridad del sistema (la baja la lluvia de virus del fondo,
+               ver background.js SecField → portfolio:secIntegrity). Colapsada
+               es la compuerta: click / Enter abre la terminal. -->
+          <button type="button" class="hw__face sec-terminal__gate" id="sec-terminal-gate" aria-expanded="false" aria-controls="sec-terminal-body">
+            <span class="hw__read">
+              <span class="hw__big" id="sec-terminal-integrity">100%</span>
+              <span class="hw__unit" data-i18n="secterm.unit">integridad del sistema</span>
+            </span>
+            <span class="hw__sub sec-terminal__gate-text"><span class="sec-terminal__gate-caret" aria-hidden="true"></span><span data-i18n="secterm.gatePre">Click</span> <span data-i18n="secterm.gatePost">para acceder</span></span>
           </button>
 
-          <div class="sec-terminal__body" id="sec-terminal-body" aria-live="polite" aria-atomic="false"></div>
+          <div class="sec-terminal__body hw__reveal" id="sec-terminal-body" aria-live="polite" aria-atomic="false"></div>
           <div class="sec-terminal__prompt-row">
             <span class="sec-terminal__ps1" aria-hidden="true">jonathan@sec:~$&nbsp;</span>
             <input
@@ -383,6 +368,18 @@
               aria-label="Introduce un comando de terminal"
             />
           </div>
+
+          <button
+            type="button"
+            class="hw__toggle"
+            id="sec-terminal-toggle"
+            aria-expanded="false"
+            aria-controls="sec-terminal-body"
+          >
+            <span class="hw__toggle-more" data-i18n="secterm.open">Abrir terminal</span>
+            <span class="hw__toggle-less" data-i18n="secterm.close">Cerrar terminal</span>
+            <span class="hw__toggle-icon" aria-hidden="true">▾</span>
+          </button>
         </div>
 
         <!-- TV del cuarto interactivo — pantalla completa propia en modo

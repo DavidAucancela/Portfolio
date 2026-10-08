@@ -16,26 +16,18 @@
   position: relative;
 }
 
-/* ─── Terminal visible en modo .sec ─── */
+/* ─── Terminal visible en modo .sec — el look (franja, cifra, franja de
+   abrir/cerrar) viene de css/hero-widget.css (.hw) ─── */
 [data-theme="sec"] .sec-terminal {
-  position: absolute;
-  top: 0;
-  right: 0;
+  --hw-acc: #00ff41;
+  --hw-acc-rgb: 0, 255, 65;
+  --hw-acc2: #ff3355;
+  position: absolute; /* centrado en la columna derecha: ver css/hero-widget.css */
   z-index: 2;
   display: flex;
   flex-direction: column;
-  width: min(440px, 40vw);
-  min-height: 240px;
-  max-height: 400px;
-  background: rgba(0, 6, 0, 0.94);
-  border: 1px solid rgba(0, 255, 65, 0.22);
-  border-radius: 10px;
-  box-shadow:
-    0 0 0 1px rgba(0, 255, 65, 0.06),
-    0 24px 64px rgba(0, 0, 0, 0.85),
-    0 0 48px rgba(0, 255, 65, 0.07);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  --hw-col: min(460px, 40vw);
+  width: var(--hw-col);
   font-family: 'Fira Code', 'Source Code Pro', 'Courier New', monospace;
   font-size: 0.8rem;
   overflow: hidden;
@@ -50,38 +42,57 @@
   transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* La integridad baja de 50%: la cifra pasa al rojo de amenaza */
+.sec-terminal .hw__big { transition: color 0.4s, text-shadow 0.4s; }
+.sec-terminal .hw__big.is-degraded {
+  color: var(--hw-acc2);
+  text-shadow: 0 0 22px rgba(255, 51, 85, 0.45);
+}
+
 /* ═══ Estados: compuerta colapsada ⇄ terminal expandida ═══ */
 
 [data-theme="sec"] .sec-terminal[data-widget-state="collapsed"] {
-  min-height: 0;
-  max-height: none;
-  width: min(360px, 34vw);
+  width: min(340px, 34vw);
 }
 
 .sec-terminal[data-widget-state="collapsed"] .sec-terminal__body,
 .sec-terminal[data-widget-state="collapsed"] .sec-terminal__prompt-row { display: none; }
-.sec-terminal[data-widget-state="expanded"]  .sec-terminal__gate { display: none; }
 
-/* ─── Compuerta: "Click para acceder" ─── */
+/* Con el sistema comprometido no se puede cerrar: la terminal es la salida */
+body.is-sec-hacked .sec-terminal .hw__toggle { display: none; }
+
+/* ─── Cara = compuerta: click / Enter abre la terminal ─── */
 .sec-terminal__gate {
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
   width: 100%;
-  padding: 1rem 1.05rem;
   background: none;
   border: none;
   font-family: inherit;
-  font-size: 0.8rem;
-  letter-spacing: 0.04em;
-  color: #00ff41;
+  text-align: left;
   cursor: pointer;
+  flex-shrink: 0;
+}
+.sec-terminal__gate:focus-visible { outline: 1px solid var(--hw-acc); outline-offset: -3px; }
+
+/* Expandida: la cifra se compacta para dejarle el alto a la terminal */
+.sec-terminal[data-widget-state="expanded"] .sec-terminal__gate {
+  cursor: default;
+  padding-block: 0.8rem 0.7rem;
+  border-bottom: 1px dashed var(--hw-line);
+}
+.sec-terminal[data-widget-state="expanded"] .hw__big { font-size: 2.6rem; }
+.sec-terminal[data-widget-state="expanded"] .sec-terminal__gate-text { display: none; }
+
+.sec-terminal__gate-text {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--hw-acc);
 }
 
 .sec-terminal__gate-caret {
-  width: 9px;
-  height: 1.1em;
-  background: #00ff41;
+  width: 8px;
+  height: 1em;
+  background: var(--hw-acc);
   animation: sec-gate-blink 1s step-end infinite;
 }
 
@@ -95,38 +106,12 @@
   .sec-terminal__gate-caret { animation: none; }
 }
 
-/* ─── Barra de título ─── */
-.sec-terminal__bar {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.55rem 0.8rem;
-  background: rgba(0, 255, 65, 0.04);
-  border-bottom: 1px solid rgba(0, 255, 65, 0.1);
-  flex-shrink: 0;
-}
-
-.sec-terminal__dot {
-  width: 11px;
-  height: 11px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.sec-terminal__title {
-  flex: 1;
-  text-align: center;
-  font-size: 0.67rem;
-  color: rgba(0, 255, 65, 0.35);
-  letter-spacing: 0.06em;
-  user-select: none;
-}
-
 /* ─── Área de salida ─── */
 .sec-terminal__body {
   flex: 1;
+  min-height: 150px;
   overflow-y: auto;
-  padding: 0.7rem 0.85rem;
+  padding: 0.7rem 1.1rem;
   display: flex;
   flex-direction: column;
   gap: 0.1rem;
@@ -163,8 +148,8 @@
 .sec-terminal__prompt-row {
   display: flex;
   align-items: center;
-  padding: 0.45rem 0.85rem 0.55rem;
-  border-top: 1px solid rgba(0, 255, 65, 0.1);
+  padding: 0.55rem 1.1rem 0.65rem;
+  border-top: 1px dashed var(--hw-line);
   flex-shrink: 0;
 }
 
@@ -243,15 +228,12 @@ body.is-sec-hacked #hero .container {
        git-history.css) para quedar por encima de #section-divider */
     position: relative;
     width: 100%;
-    min-height: 200px;
-    max-height: 260px;
+    max-height: 420px;
     font-size: 0.76rem;
   }
 
   [data-theme="sec"] .sec-terminal[data-widget-state="collapsed"] {
     width: 100%;
-    min-height: 0;
-    max-height: none;
   }
 
   /* ≥16px en el input: evita el zoom automático de iOS Safari al enfocar */
@@ -259,17 +241,11 @@ body.is-sec-hacked #hero .container {
     font-size: 1rem;
   }
 
-  /* Mismo padding horizontal que .git-activity__body / .ia-tokens__body en mobile — simetría entre modos */
-  .sec-terminal__body,
-  .sec-terminal__prompt-row {
-    padding-left: 1.3rem;
-    padding-right: 1.3rem;
-  }
 }
 
 @media (max-width: 480px) {
   [data-theme="sec"] .sec-terminal {
-    max-height: 220px;
+    max-height: 380px;
     font-size: 0.72rem;
   }
 }

@@ -115,6 +115,16 @@ export const SecTerminal = (() => {
     document.getElementById('sec-terminal-gate')
       ?.addEventListener('click', _enter);
 
+    // Franja inferior: abrir / cerrar. Con el sistema comprometido la terminal
+    // es la única vía de recuperación — no se puede cerrar (CSS oculta la franja).
+    document.getElementById('sec-terminal-toggle')?.addEventListener('click', () => {
+      if (terminal?.dataset.widgetState !== 'expanded') _enter();
+      else if (!_hackState) _collapse();
+    });
+
+    // Cifra grande = integridad del sistema (la emite SecField en background.js)
+    window.addEventListener('portfolio:secIntegrity', (e) => _renderIntegrity(e.detail.integrity));
+
     // Escuchar cambios de modo → siempre arranca colapsada
     window.addEventListener('portfolio:modeChange', e => {
       if (e.detail.mode === 'sec') _onEnterSec();
@@ -241,11 +251,22 @@ export const SecTerminal = (() => {
     _collapse();
   }
 
+  /** 100% en verde; bajo 50% la cifra pasa a rojo y bajo 25% el LED parpadea en alerta. */
+  function _renderIntegrity(value) {
+    const big = document.getElementById('sec-terminal-integrity');
+    if (big) {
+      big.textContent = `${value}%`;
+      big.classList.toggle('is-degraded', value < 50);
+    }
+    document.getElementById('sec-terminal-led')?.classList.toggle('hw__led--alert', value < 25);
+  }
+
   function _collapse() {
     const root = document.getElementById('sec-terminal');
     if (!root) return;
     root.dataset.widgetState = 'collapsed';
     document.getElementById('sec-terminal-gate')?.setAttribute('aria-expanded', 'false');
+    document.getElementById('sec-terminal-toggle')?.setAttribute('aria-expanded', 'false');
     _booted = false;
   }
 
@@ -254,6 +275,7 @@ export const SecTerminal = (() => {
     if (!root || root.dataset.widgetState === 'expanded') return;
     root.dataset.widgetState = 'expanded';
     document.getElementById('sec-terminal-gate')?.setAttribute('aria-expanded', 'true');
+    document.getElementById('sec-terminal-toggle')?.setAttribute('aria-expanded', 'true');
 
     if (_booted) return;
     _booted = true;

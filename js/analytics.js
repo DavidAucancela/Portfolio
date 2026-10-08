@@ -14,7 +14,10 @@ function init() {
   });
 
   window.addEventListener('portfolio:projectOpen', ({ detail }) => {
-    const project = detail?.project?.slug || detail?.project?.title || 'unknown';
+    // title puede ser {es,en} (prac-001, cert-002) y track() solo acepta primitivos
+    const p = detail?.project;
+    const title = typeof p?.title === 'string' ? p.title : p?.title?.es;
+    const project = p?.slug || p?.id || title || 'unknown';
     track('project_open', { project, mode: detail?.mode || '' });
   });
 

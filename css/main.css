@@ -1442,12 +1442,12 @@ ul, ol { list-style: none; }
 
 .card-btn--primary {
   background: var(--color-primary, #0066FF);
-  color: #fff;
+  color: var(--btn-text, #fff);   /* .ia/.sec/.gam: acento claro → texto oscuro */
   border: 1px solid transparent;
 }
 
 .card-btn--primary:hover {
-  background: #0052cc;
+  filter: brightness(0.88);       /* oscurece el acento del modo (antes azul fijo) */
 }
 
 .card-btn--outline {
@@ -2081,6 +2081,19 @@ ul, ol { list-style: none; }
   .card-btn--process      { flex: 0 0 100%; justify-content: center; }
 
   /* El layout apilado fullbleed en touch lo maneja @media (hover: none). */
+}
+
+/* Teléfonos angostos (≤374px, ej. 320/360): logo + acciones no entraban y el
+   hamburguesa quedaba fuera de la pantalla. */
+@media (max-width: 374px) {
+  .navbar__inner    { gap: 0.5rem; }
+  .navbar__actions  { gap: 0.3rem; }
+  .logo-pill__name  { font-size: 0.95rem; padding: 5px 8px 5px 12px; }
+  .logo-pill .logo-suffix { padding: 5px 10px 5px 7px; }
+  .navbar__hamburger { padding: 0.3rem; }
+  /* "4 modos" se partía en 2 líneas; el aria-label del toolbar ya lo dice */
+  .mode-bar__label  { display: none; }
+  .mode-bar__inner  { justify-content: center; }
 }
 
 /* ═══════════════════════════════════════════════════

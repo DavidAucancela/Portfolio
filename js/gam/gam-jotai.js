@@ -38,7 +38,7 @@
  *
  * Fase 4 (estaciones): poses `pianoSit` / `chessStand` / `chin` / `guitarHold`
  * / `juggle` / `ride` / `fallSit`, clips `reachL/R`, `scratch`, `strum`,
- * `juggleHands` (loop), `pointL/R`, `salute`, `bob` (loop), `hop`, `wobble`,
+ * `juggleHands` / `juggleOne` (loop), `pointL/R`, `salute`, `bob` (loop), `hop`, `wobble`,
  * `dust`. `setPose(name, { hipsY })` sienta a otra altura y `handsWorld()`
  * da las palmas en el mundo.
  */
@@ -252,6 +252,12 @@ const CLIPS = {
     [0, { elbowL: [-1.25, 0, 0], elbowR: [-0.85, 0, 0] }],
     [400, { elbowL: [-0.85, 0, 0], elbowR: [-1.25, 0, 0] }],
     [800, { elbowL: [-1.25, 0, 0], elbowR: [-0.85, 0, 0] }],
+  ],
+  // malabares con una mano (loop): solo la derecha lanza; la izquierda descansa abajo
+  juggleOne: [
+    [0, { elbowR: [-1.3, 0, 0], shoulderL: [0, 0, 0.12], elbowL: [-0.35, 0, 0] }],
+    [250, { elbowR: [-0.8, 0, 0], shoulderL: [0, 0, 0.12], elbowL: [-0.35, 0, 0] }],
+    [500, { elbowR: [-1.3, 0, 0], shoulderL: [0, 0, 0.12], elbowL: [-0.35, 0, 0] }],
   ],
   // señala con el brazo estirado (izquierdo / derecho)
   pointL: [[0, {}], [260, { shoulderL: [-1.4, 0, 0.35], elbowL: [-0.05, 0, 0], head: [0, 0.2, 0] }], [1500, { shoulderL: [-1.4, 0, 0.35], elbowL: [-0.05, 0, 0], head: [0, 0.2, 0] }], [1900, {}]],

@@ -15,6 +15,8 @@
  * posiciones de mundo a pantalla. Los estilos viven en css/gam-tv.css
  * (`.gam-hud*`).
  */
+import { LangSwitcher } from '../lang.js';
+
 export function createHud(container) {
   const root = document.createElement('div');
   root.className = 'gam-hud';
@@ -63,7 +65,37 @@ export function createHud(container) {
     const ro = new ResizeObserver(placeBelowBar);
     ro.observe(barEl);
     ro.observe(statusEl);
+    // en el celular la ayuda va justo encima de la tarjeta (hoja inferior)
+    new ResizeObserver(() => {
+      root.style.setProperty('--hud-card-h', `${cardEl.hidden ? 0 : cardEl.offsetHeight}px`);
+    }).observe(cardEl);
   }
+
+  /* Celular: la tarjeta (hoja inferior o panel lateral en horizontal) tapaba
+     el objeto y sus animaciones. Si es larga arranca plegada — solo el
+     título — y se despliega con un toque; ▾ la vuelve a plegar. */
+  const compact = window.matchMedia('(max-width: 760px), (max-aspect-ratio: 9/10), (max-height: 520px)');
+  const cardToggle = document.createElement('button');
+  cardToggle.type = 'button';
+  cardToggle.className = 'gam-hud__card-toggle';
+  function setCollapsed(on) {
+    cardEl.classList.toggle('is-collapsed', on);
+    cardToggle.setAttribute('aria-expanded', String(!on));
+    cardToggle.textContent = on ? '▴' : '▾';
+    cardToggle.setAttribute('aria-label', LangSwitcher.L(on ? { es: 'Ver más', en: 'Show more' } : { es: 'Ocultar', en: 'Hide' }));
+    cardEl.scrollTop = 0;
+  }
+  cardToggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    setCollapsed(!cardEl.classList.contains('is-collapsed'));
+  });
+  // plegada: cualquier toque la despliega (sin activar el botón/enlace que haya debajo)
+  cardEl.addEventListener('click', (e) => {
+    if (!cardEl.classList.contains('is-collapsed')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setCollapsed(false);
+  }, true);
 
   tabsEl.addEventListener('click', (e) => {
     const btn = e.target.closest('.gam-hud__tab');
@@ -90,6 +122,7 @@ export function createHud(container) {
   /** cfg: { icon, title, tabs?, active?, onTab?, actions?, hint?, status?, onBack } */
   function show(cfg) {
     iconEl.textContent = cfg.icon || '';
+    backBtn.innerHTML = `← ${LangSwitcher.L({ es: 'Volver', en: 'Back' })} <kbd>Esc</kbd>`;
     nameEl.textContent = cfg.title || '';
     onBackCb = cfg.onBack || null;
     onTabCb = cfg.onTab || null;
@@ -164,9 +197,11 @@ export function createHud(container) {
   /** node: HTMLElement | null */
   function setCard(node) {
     cardEl.innerHTML = '';
-    if (node) cardEl.appendChild(node);
+    if (node) cardEl.append(cardToggle, node);
     cardEl.hidden = !node;
-    cardEl.scrollTop = 0;
+    setCollapsed(false);
+    // las chicas (trofeo, libro: título + una línea) se quedan abiertas — eso es todo su contenido
+    if (node && compact.matches && cardEl.scrollHeight > container.clientHeight * 0.22) setCollapsed(true);
   }
 
   /** list: [{ pos: THREE.Vector3 (mundo), text }] */

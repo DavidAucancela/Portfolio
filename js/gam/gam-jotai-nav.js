@@ -11,8 +11,13 @@
  * `findPath` = A* 8-conexo (sin cortar esquinas) + suavizado por línea de
  * vista, así el camino no queda en zigzag de celda en celda.
  *
+ * `findPath(from, to, avoid)`: `avoid` = pasillo a evitar (lo que ve la cámara
+ * entre el objeto enfocado y ella). No bloquea — sus celdas cuestan más, así
+ * igual llega a un spot que esté adentro (banqueta del piano), pero entrando
+ * por el costado en vez de cruzar el encuadre — y el suavizado no ataja por él.
+ *
  * API: createNavGrid(boxes, { half, cell, radius }) →
- *   { findPath(from, to) → [{x,z}…] | null, nearestFree(x, z) → {x,z} | null,
+ *   { findPath(from, to, avoid?) → [{x,z}…] | null, nearestFree(x, z) → {x,z} | null,
  *     isFree(x, z), clear(a, b), debugString() }
  */
 
@@ -83,6 +88,20 @@ export function createNavGrid(boxes, { half = 3.4, cell = 0.17, radius = 0.25 } 
     return true;
   }
 
+  /* Pasillo a evitar: { x, z, dx, dz, len, half } — desde el objeto (x,z) hacia
+     la cámara (dx,dz unitario) hasta `len`, ±`half` a los costados. */
+  const AVOID_COST = 8;   // por celda: rodear unas cuantas celdas sale más barato que cruzar
+  const avoidMask = new Uint8Array(N * N);
+  const inAvoid = (av, x, z) => {
+    const t = (x - av.x) * av.dx + (z - av.z) * av.dz;
+    return t > 0 && t < av.len && Math.abs((x - av.x) * av.dz - (z - av.z) * av.dx) < av.half;
+  };
+  function markAvoid(av) {
+    avoidMask.fill(0);
+    if (!av) return;
+    for (let iz = 0; iz < N; iz++) for (let ix = 0; ix < N; ix++) if (inAvoid(av, cx(ix), cx(iz))) avoidMask[idx(ix, iz)] = 1;
+  }
+
   /* A* con heap binario mínimo sobre índices de celda. */
   const g = new Float32Array(N * N);
   const came = new Int32Array(N * N);
@@ -142,7 +161,7 @@ export function createNavGrid(boxes, { half = 3.4, cell = 0.17, radius = 0.25 } 
         // diagonal: no cortar la esquina de un obstáculo
         if (dx && dz && (!freeCell(ix + dx, iz) || !freeCell(ix, iz + dz))) continue;
         const j = idx(nx, nz);
-        const ng = g[i] + cost;
+        const ng = g[i] + cost + (avoidMask[j] ? AVOID_COST : 0);
         if (ng < g[j]) {
           g[j] = ng;
           came[j] = i;
@@ -159,10 +178,11 @@ export function createNavGrid(boxes, { half = 3.4, cell = 0.17, radius = 0.25 } 
   /** Camino de `from` a `to` ({x,z} en mundo). El primer punto es `from`; el
    *  último es `to`, o la celda libre más cercana si `to` cae dentro de un
    *  mueble. null si no hay camino. */
-  function findPath(from, to) {
+  function findPath(from, to, avoid = null) {
     const sc = nearestCell(from.x, from.z);
     const tc = nearestCell(to.x, to.z);
     if (!sc || !tc) return null;
+    markAvoid(avoid);
     const cells = astar(idx(sc[0], sc[1]), idx(tc[0], tc[1]));
     if (!cells) return null;
 
@@ -174,11 +194,25 @@ export function createNavGrid(boxes, { half = 3.4, cell = 0.17, radius = 0.25 } 
     raw.push(end);
 
     // Suavizado: desde cada punto, saltar al más lejano con línea de vista
+    // (y sin recorrer dentro del pasillo a evitar más que el tramo original)
+    const zoneLen = (p, q) => {
+      const d = Math.hypot(q.x - p.x, q.z - p.z), steps = Math.max(1, Math.ceil(d / (cell * 0.33)));
+      let n = 0;
+      for (let k = 0; k < steps; k++) if (inAvoid(avoid, p.x + (q.x - p.x) * (k + 0.5) / steps, p.z + (q.z - p.z) * (k + 0.5) / steps)) n++;
+      return d * n / steps;
+    };
+    const shortcut = (a, b) => {
+      if (!clear(raw[a], raw[b])) return false;
+      if (!avoid) return true;
+      let orig = 0;
+      for (let k = a; k < b; k++) orig += zoneLen(raw[k], raw[k + 1]);
+      return zoneLen(raw[a], raw[b]) <= orig + cell * 0.5;
+    };
     const out = [raw[0]];
     let a = 0;
     while (a < raw.length - 1) {
       let b = raw.length - 1;
-      while (b > a + 1 && !clear(raw[a], raw[b])) b--;
+      while (b > a + 1 && !shortcut(a, b)) b--;
       out.push(raw[b]);
       a = b;
     }
